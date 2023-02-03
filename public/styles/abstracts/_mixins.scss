@@ -1,0 +1,265 @@
+@use "variables";
+@use "sass:math";
+
+/// @name icon-font
+/// @author Valentin FORTIN <contact@valentin-fortin.pro>
+/// @param {String} $content 'code de l'icon'
+
+@mixin icon-font($content)
+{
+    content: $content;
+    font-family: unicons-line;
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+}
+
+/// @name breakpoint
+/// @author Valentin FORTIN <contact@valentin-fortin.pro>
+/// @param {String} $size 'taille écran'
+
+@mixin breakpoint($size: 'lg')
+{
+    // Taille SM (> 640px)
+    @if $size == 'sm'
+    {
+        @media only screen and (min-width: map-get($screen-size, "sm"))
+        {
+            @content;
+        }
+    }
+
+    // Taille MD (> 640px)
+    @else if $size == 'md'
+    {
+        @media only screen and (min-width: map-get($screen-size, "md"))
+        {
+            @content;
+        }
+    }
+
+    // Taille LG (> 640px)
+    @else if $size == 'lg'
+    {
+        @media only screen and (min-width: map-get($screen-size, "lg"))
+        {
+            @content;
+        }
+    }
+
+    // Taille XL (> 640px)
+    @else if $size == 'xl'
+    {
+        @media only screen and (min-width: map-get($screen-size, "xl"))
+        {
+            @content;
+        }
+    }
+
+    // Taille 2XL (> 640px)
+    @else if $size == '2xl'
+    {
+        @media only screen and (min-width: map-get($screen-size, "2xl"))
+        {
+            @content;
+        }
+    }
+
+    // Erreur
+    @else
+    {
+        @error "Unknown value '#{$size}'";
+    }
+}
+
+/// @name font-size
+/// @author Valentin FORTIN <contact@valentin-fortin.pro>
+/// @param {String} $size 'taille'
+
+@mixin font-size($size: base)
+{
+    @if $size {
+        // Taille 2XS
+        @if $size == "2xs"
+        {
+            font-size: map-get($font-size, '2xs');
+            line-height: 0.75rem;
+        }
+
+        // Taille XS
+        @if $size == "xs"
+        {
+            font-size: map-get($font-size, 'xs');
+            line-height: 1rem;
+        }
+
+        // Taille SM
+        @else if $size == "sm"
+        {
+            font-size: map-get($font-size, 'sm');
+            line-height: 1.25rem;
+        }
+
+        // Taille Base
+        @else if $size == "base"
+        {
+            font-size: map-get($font-size, 'base');
+            line-height: 1.5rem;
+        }
+
+        // Taille LG
+        @else if $size == "lg"
+        {
+            font-size: map-get($font-size, 'lg');
+            line-height: 1.75rem;
+        }
+
+        // Taille XL
+        @else if $size == "xl"
+        {
+            font-size: map-get($font-size, 'xl');
+            line-height: 1.75rem;
+        }
+
+        // Taille 2XL
+        @else if $size == "2xl"
+        {
+            font-size: map-get($font-size, '2xl');
+            line-height: 2rem;
+        }
+
+        // Taille 3XL
+        @else if $size == "3xl"
+        {
+            font-size: map-get($font-size, '3xl');
+            line-height: 2.25rem;
+        }
+
+        // Taille 4XL
+        @else if $size == "4xl"
+        {
+            font-size: map-get($font-size, '4xl');
+            line-height: 2.5rem;
+        }
+
+        // Taille 5XL
+        @else if $size == "5xl"
+        {
+            font-size: map-get($font-size, '5xl');
+            line-height: 1;
+        }
+
+        // Taille 6XL
+        @else if $size == "6xl"
+        {
+            font-size: map-get($font-size, '6xl');
+            line-height: 1;
+        }
+
+        // Taille 7XL
+        @else if $size == "7xl"
+        {
+            font-size: map-get($font-size, '7xl');
+            line-height: 1;
+        }
+
+        // Taille 8XL
+        @else if $size == "8xl"
+        {
+            font-size: map-get($font-size, '8xl');
+            line-height: 1;
+        }
+
+        // Taille 9XL
+        @else if $size == "9xl"
+        {
+            font-size: map-get($font-size, '9xl');
+            line-height: 1;
+        }
+    }
+
+    // Avertissement
+    @else
+    {
+        @warn "No value in variable";
+    }
+}
+
+/// @name text-constrast
+/// @author Valentin FORTIN <contact@valentin-fortin.pro>
+/// @param {String} $color 'couleur à tester'
+
+@mixin text-contrast($color)
+{
+    // Sensibilité
+    $sensibility: 1;
+
+    $color-brightness: round(math.div((red($color) * 299) + (green($color)* 587) + (blue($color) * 114), 1000));
+    $light-color: round(math.div((red(white) * 299) + (green(white) * 587) + (blue(white) * 114), 1000));
+
+    @if abs($color-brightness) < (math.div($light-color, $sensibility))
+    {
+        color: white;
+    }
+    @else
+    {
+        color: black;
+    }
+}
+
+/// @name text-truncate
+/// @author Valentin FORTIN <contact@valentin-fortin.pro>
+
+@mixin text-truncate()
+{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/// @name clearfix
+/// @author Valentin FORTIN <contact@valentin-fortin.pro>
+
+@mixin clearfix()
+{
+    &:after
+    {
+        content: "";
+        display: table;
+        clear: both;
+    }
+}
+
+/// @name button
+/// @author Valentin FORTIN <contact@valentin-fortin.pro>
+/// @param {String} $color-1 'première couleur du bouton'
+/// @param {String} $color-2 'deuxième couleur du bouton'
+/// @param {Boolean}
+
+@mixin button($isSecondary: false, $color-1, $color-2: $color-1)
+{
+    transition: box-shadow, transform;
+    transition-duration: 300ms;
+    border-radius: 0.25rem;
+
+    @if $isSecondary == true
+    {
+        color: $color-1;
+        background-color: transparent;
+        border: $color-2 solid 2px;
+    }
+    @else
+    {
+        @include text-contrast($color-2);
+        background-color: $color-2;
+    }
+
+    &:hover {
+        transform: scale(1.005);
+        box-shadow: rgba($color-2, .35) 0px 5px 15px;
+    }
+}

@@ -1,0 +1,29 @@
+// Réinitialisation des propriétés par défaut.
+* {
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+
+    // Pseudo-élément "before".
+    &::before {
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+    }
+
+    // Pseudo-élément "after".
+    &::after {
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+    }
+}

@@ -1,0 +1,12 @@
+@use "variables";
+
+/// Convertir un nombre en pourcentage
+/// @name percentage
+/// @author Valentin FORTIN <contac@valentin-fortin.pro>
+/// @param {Number} $value - La valeur à convertir en pourcentage
+/// @return {Percentage} - L'équivalent en pourcentage de la valeur d'entrée
+
+@function percentage($value)
+{
+    @return $value * 100%;
+}
