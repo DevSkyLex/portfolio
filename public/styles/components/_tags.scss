@@ -1,0 +1,19 @@
+@use "../abstracts/variables";
+@use "../abstracts/mixins";
+@use "../abstracts/functions";
+
+.tag_group {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    background-color: $neutral-100;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+.tag {
+    width: max-content;
+    color: $secondary;
+    background-color: rgba($primary, .25);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+}

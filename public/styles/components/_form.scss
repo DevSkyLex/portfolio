@@ -1,0 +1,111 @@
+@use "../abstracts/variables";
+@use "../abstracts/mixins";
+@use "../abstracts/functions";
+
+// Formulaire
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    // Groupe de champs
+    .input_group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem 0.5rem;
+        @include breakpoint('md') {
+            flex-direction: row;
+        }
+
+        // Espace de champ (libelle et champ)
+        & > .input-field {
+            flex: 1 1 0;
+            display: flex;
+            gap: 0.2rem;
+            flex-direction: column;
+        }
+    }
+
+    // Texte d'exemple/temporaire
+    ::placeholder {
+        @include font-size('sm');
+    }
+
+    // Champs de texte, mot de passe et nombre
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    input[type="email"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="date"] {
+        padding: 0.5rem 1rem;
+        outline: none;
+        border: none;
+        background-color: $tertiary;
+        user-select: none;
+
+        &::placeholder {
+            @include font-size('xs');
+        }
+    }
+
+    //Champ bouton radio
+    input[type="radio"] {
+        cursor: pointer;
+        appearance: none;
+        background-color: $tertiary;
+        border-radius: 15px;
+        display: block;
+        width: 18px;
+        height: 18px;
+        transition-property: background;
+        transition-duration: 300ms;
+        transition-timing-function: step-start;
+
+        // Coché
+        &:checked {
+            background-color: $primary;
+            border: 4px solid $tertiary;
+        }
+    }
+
+    // Champ case à cocher
+    input[type="checkbox"] {
+        cursor: pointer;
+        appearance: none;
+        background-color: $tertiary;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        transition: 300ms;
+
+        // Coché
+        &:checked {
+            background-color: $primary;
+
+            &::before {
+                display: block;
+            }
+        }
+
+        // Pseudo élément "before".
+        &::before {
+            display: none;
+            content: "\e9c3";
+            @include font-size('base');
+            color: white;
+            font-family: unicons-line;
+        }
+    }
+
+    // Étiquette
+    label {
+        user-select: none;
+        @include font-size('base');
+    }
+}
