@@ -23,7 +23,7 @@
 
 @mixin breakpoint($size: 'lg')
 {
-    // Taille SM (> 640px)
+    // Taille SM
     @if $size == 'sm'
     {
         @media only screen and (min-width: map-get($screen-size, "sm"))
@@ -32,7 +32,7 @@
         }
     }
 
-    // Taille MD (> 640px)
+    // Taille MD
     @else if $size == 'md'
     {
         @media only screen and (min-width: map-get($screen-size, "md"))
@@ -41,7 +41,7 @@
         }
     }
 
-    // Taille LG (> 640px)
+    // Taille LG
     @else if $size == 'lg'
     {
         @media only screen and (min-width: map-get($screen-size, "lg"))
@@ -50,7 +50,7 @@
         }
     }
 
-    // Taille XL (> 640px)
+    // Taille XL
     @else if $size == 'xl'
     {
         @media only screen and (min-width: map-get($screen-size, "xl"))
@@ -59,7 +59,7 @@
         }
     }
 
-    // Taille 2XL (> 640px)
+    // Taille 2XL
     @else if $size == '2xl'
     {
         @media only screen and (min-width: map-get($screen-size, "2xl"))

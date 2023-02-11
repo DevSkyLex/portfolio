@@ -44,7 +44,7 @@ class Skill
     }
     #endregion
 
-    #region Assesseur.s
+    #region Accesseur.s
     /**
      * Retourne le nom de la compétence
      * @return string

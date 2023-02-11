@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Libraries\Project;
-
+use App\Libraries\Project\Skill;
 use Exception;
 
 /**
@@ -32,9 +32,9 @@ class Project
 
     /**
      * Lien vers le projet
-     * @var string
+     * @var string|null
      */
-    private string $link;
+    private ?string $link;
     #endregion
 
     #region Constructeur
@@ -46,22 +46,32 @@ class Project
      * @param string $link
      * @throws Exception
      */
-    public function __construct(string $title, string $description, string $link, array $skills)
+    public function __construct(string $title, string $description, ?string $link, ...$skills)
     {
         $this->title = $title;
         $this->description = $description;
+        $this->skills = array();
+
+        // Vérification du paramètre $skills (Si le paramètre est un tableau)
+        if (count($skills) === 1 && is_array($skills[0]))
+        {
+            $skills = $skills[0];
+        }
 
         // Vérification et ajout de.s compétence.s
         try { $this->addSkills($skills); }
         catch (Exception $e) { throw new Exception($e->getMessage()); }
 
-        // Vérification et ajout du lien au projet
-        try { $this->setLink($link); }
-        catch (Exception $e) { throw new Exception($e->getMessage()); }
+        if(isset($link)) 
+        {
+            // Vérification et ajout du lien au projet
+            try { $this->setLink($link); }
+            catch (Exception $e) { throw new Exception($e->getMessage()); }
+        }
     }
     #endregion
 
-    #region Assesseur.s
+    #region Accesseur.s
     /**
      * Retourne le titre
      * @return string
@@ -151,7 +161,11 @@ class Project
      */
     public function addSkills(...$skills): void
     {
-        throw new Exception(print_r($skills));
+        // Vérification du paramètre $skills (Si le paramètre est un tableau)
+        if (count($skills) === 1 && is_array($skills[0])) 
+        {
+            $skills = $skills[0];
+        }
 
         // Vérification et ajout de.s compétence.s
         foreach($skills as $skill)

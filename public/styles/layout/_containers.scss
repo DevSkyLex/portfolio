@@ -1,0 +1,19 @@
+.section_container {
+    padding: 5rem 2rem;
+
+    @include breakpoint('sm') {
+        padding: 5rem 5rem;
+    }
+
+    @include breakpoint('md') {
+        padding: 5rem 7rem;
+    }
+
+    @include breakpoint('lg') {
+        padding: 5rem 9rem;
+    }
+
+    @include breakpoint('xl') {
+        padding: 5rem 10rem;
+    }
+}

@@ -14,11 +14,13 @@
 @import "components/buttons";
 @import "components/form";
 @import "components/cards";
+@import "components/tags";
 
 // Layout
 @import "layout/body";
 @import "layout/header";
 @import "layout/footer";
+@import "layout/containers";
 
 // Pages
 @import "pages/home";
