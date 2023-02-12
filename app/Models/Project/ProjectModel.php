@@ -4,6 +4,7 @@ namespace App\Models\Project;
 use CodeIgniter\Model;
 use App\Libraries\Project\Project;
 use App\Libraries\Project\Skill;
+use App\Libraries\Project\Category;
 use Exception;
 
 /**
@@ -158,21 +159,29 @@ class ProjectModel extends Model
                     ->join("skills", "project_skill.skill_id = skills.id")
                     ->getWhere("project_skill.project_id = " . $project['id']);
 
+                // Requête permettant de récupérer les données des catégories
+                $categories_query = $db->table('categories')
+                    ->select('categorie.*')
+                    ->join('projects', 'projects.code_categorie = categorie.code')
+                    ->getWhere("categorie.code =".$project['code_categorie'])
+
                 // Vérification du résultat de la requête
-                if ($skills_query->getFieldCount() > 0) 
+                if(($skills_query->getFieldCount() > 0) && ($categories_query->getFieldCount() > 0)) 
                 {
                     $skills = $skills_query->getResultArray();
+                    $category = $categories_query->getResultArray()[0];
 
                     // Initialisation d'un tableau temporaire
                     $skills_temp = array();
 
                     // Ajout des compétences dans le tableau temporaire
-                    foreach ($skills as $skill) {
+                    foreach($skills as $skill) 
+                    {
                         array_push($skills_temp, new Skill($skill["name"], $skill["level"], $skill["percent"]));
                     }
 
                     // Création d'un objet Project avec les infomations recueillis depuis la base de données
-                    array_push($result, new Project($project["title"], $project["description"], $project["link"], $skills_temp));
+                    array_push($result, new Project($project["title"], $project["description"], $project["link"], $skills_temp, $category));
                 }
             }
         }

@@ -53,11 +53,4 @@ function viewNavMenu(state)
 
     // Défini l'attribut data-nav
     mobileMenu.setAttribute("data-nav", state);
-
-    document.addEventListener('click', (event) => {
-        if (!menu.contains(event.target)) {
-            menu.setAttribute("data-nav", "false");
-            document.removeEventListener("click", closeMobileMenu);
-        }
-    });
 }

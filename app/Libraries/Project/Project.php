@@ -2,6 +2,7 @@
 
 namespace App\Libraries\Project;
 use App\Libraries\Project\Skill;
+use App\Libraries\Project\Category;
 use Exception;
 
 /**
@@ -35,6 +36,12 @@ class Project
      * @var string|null
      */
     private ?string $link;
+
+    /**
+     * Catégorie du projet
+     * @var Category
+     */
+    private Category $category;
     #endregion
 
     #region Constructeur
@@ -44,12 +51,14 @@ class Project
      * @param string $description
      * @param array $skills
      * @param string $link
+     * @param Category $category;
      * @throws Exception
      */
-    public function __construct(string $title, string $description, ?string $link, ...$skills)
+    public function __construct(string $title, string $description, ?string $link, ...$skills, Category $category)
     {
         $this->title = $title;
         $this->description = $description;
+        $this->category = $category;
         $this->skills = array();
 
         // Vérification du paramètre $skills (Si le paramètre est un tableau)
@@ -106,6 +115,11 @@ class Project
     public function getLink(): string
     {
         return $this->link;
+    }
+
+    public function getCategory(): Category
+    {
+        return $this->category;
     }
     #endregion
 

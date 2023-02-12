@@ -13,7 +13,7 @@
                         <!-- En-tête de la carte -->
                         <div class="card_header">
                             <div class="card_titles">
-                                <span class="subtitle">Projet scolaire</span>
+                                <span class="subtitle">Projet <?= $project->getCategory(); ?></span>
                                 <h3><?= $project->getTitle(); ?></h3>
                             </div>
                         </div>

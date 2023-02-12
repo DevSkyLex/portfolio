@@ -136,6 +136,10 @@ form ::-moz-placeholder {
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
+form :-ms-input-placeholder {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
 form ::placeholder {
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -154,9 +158,14 @@ form input[type=date] {
   background-color: #1b263b;
   -webkit-user-select: none;
      -moz-user-select: none;
+      -ms-user-select: none;
           user-select: none;
 }
 form input[type=text]::-moz-placeholder, form input[type=password]::-moz-placeholder, form input[type=number]::-moz-placeholder, form input[type=email]::-moz-placeholder, form input[type=search]::-moz-placeholder, form input[type=tel]::-moz-placeholder, form input[type=url]::-moz-placeholder, form input[type=date]::-moz-placeholder {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+form input[type=text]:-ms-input-placeholder, form input[type=password]:-ms-input-placeholder, form input[type=number]:-ms-input-placeholder, form input[type=email]:-ms-input-placeholder, form input[type=search]:-ms-input-placeholder, form input[type=tel]:-ms-input-placeholder, form input[type=url]:-ms-input-placeholder, form input[type=date]:-ms-input-placeholder {
   font-size: 0.75rem;
   line-height: 1rem;
 }
@@ -220,6 +229,7 @@ form input[type=checkbox]::before {
 form label {
   -webkit-user-select: none;
      -moz-user-select: none;
+      -ms-user-select: none;
           user-select: none;
   font-size: 1rem;
   line-height: 1.5rem;
@@ -288,6 +298,7 @@ form label {
 .tag {
   font-size: 0.75rem;
   line-height: 1rem;
+  width: -webkit-max-content;
   width: -moz-max-content;
   width: max-content;
   color: #1e88e5;
@@ -361,7 +372,7 @@ header .contact_bar .media-link#email span {
 header .nav-mobile-btn {
   background-color: transparent;
   border: none;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   line-height: 1.75rem;
   display: block;
   cursor: pointer;
@@ -379,9 +390,9 @@ header .nav-mobile-btn [data-icon=false] {
 }
 header nav.nav-mobile {
   padding: 3rem;
-  background-color: white;
+  background-color: #fafafa;
   display: block;
-  min-height: 100%;
+  min-height: 100vh;
 }
 @media only screen and (min-width: 640px) {
   header nav.nav-mobile {
@@ -406,8 +417,8 @@ header nav.nav-mobile .nav-menu .nav-link {
   text-decoration: none;
   color: inherit;
   padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
   align-items: center;
   border-radius: 5px;
 }
@@ -420,8 +431,8 @@ header nav.nav-mobile .nav-menu .nav-link:hover .icon {
 }
 header nav.nav-mobile .nav-menu .nav-link .icon {
   margin-right: 1rem;
-  font-size: 1.25rem;
-  line-height: 1.75rem;
+  font-size: 1.5rem;
+  line-height: 2rem;
 }
 header .navigation_bar {
   background-color: white;

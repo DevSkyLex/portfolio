@@ -66,7 +66,7 @@ header {
     .nav-mobile-btn {
         background-color: transparent;
         border: none;
-        @include font-size('lg');
+        @include font-size('xl');
         display: block;
         cursor: pointer;
 
@@ -85,9 +85,9 @@ header {
 
     nav.nav-mobile {
         padding: 3rem;
-        background-color: white;
+        background-color: $neutral-50;
         display: block;
-        min-height: 100%;
+        min-height: 100vh;
 
         @include breakpoint('sm') {
             padding-inline: 5rem;
@@ -111,7 +111,7 @@ header {
                 text-decoration: none;
                 color: inherit;
                 padding: 0.5rem 1rem;
-                @include font-size('sm');
+                @include font-size('base');
                 align-items: center;
                 border-radius: 5px;
 
@@ -126,7 +126,7 @@ header {
 
                 .icon {
                     margin-right: 1rem;
-                    @include font-size('xl');
+                    @include font-size('2xl');
                 }
             }
         }
