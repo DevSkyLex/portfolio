@@ -6,6 +6,21 @@
  | --------------------------------------------------------------------
 */
 
+
+// Prénom
+const FIRSTNAME = "Valentin";
+
+// Nom
+const LASTNAME = "FORTIN";
+
+// Age
+const AGE = 20;
+
+// Niveau de bac
+const BAC_LEVEL = 2;
+
+
+
 /*
  | --------------------------------------------------------------------
  | App Namespace

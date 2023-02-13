@@ -9,12 +9,15 @@
 @import "base/typography";
 @import "base/font";
 @import "base/hidden";
+@import "base/reveals";
 
 // Components
 @import "components/buttons";
 @import "components/form";
 @import "components/cards";
 @import "components/tags";
+@import "components/box-icon";
+@import "components/box-career";
 
 // Layout
 @import "layout/body";

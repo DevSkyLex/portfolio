@@ -157,13 +157,14 @@ class ProjectModel extends Model
                 $skills_query = $db->table('project_skill')
                     ->select("skills.*")
                     ->join("skills", "project_skill.skill_id = skills.id")
-                    ->getWhere("project_skill.project_id = " . $project['id']);
+                    ->getWhere("project_skill.project_id = ".$project['id']);
+
+                var_dump($project["code_category"]);
 
                 // Requête permettant de récupérer les données des catégories
                 $categories_query = $db->table('categories')
-                    ->select('categorie.*')
-                    ->join('projects', 'projects.code_categorie = categorie.code')
-                    ->getWhere("categorie.code =".$project['code_categorie'])
+                    ->select('categories.*')
+                    ->getWhere("categories.code = '".$project["code_category"]."'");
 
                 // Vérification du résultat de la requête
                 if(($skills_query->getFieldCount() > 0) && ($categories_query->getFieldCount() > 0)) 
@@ -180,8 +181,10 @@ class ProjectModel extends Model
                         array_push($skills_temp, new Skill($skill["name"], $skill["level"], $skill["percent"]));
                     }
 
+                    $category = new Category($category['label'], $category['description']);
+
                     // Création d'un objet Project avec les infomations recueillis depuis la base de données
-                    array_push($result, new Project($project["title"], $project["description"], $project["link"], $skills_temp, $category));
+                    array_push($result, new Project($project["title"], $project["description"], $project["link"], $category, $skills_temp));
                 }
             }
         }

@@ -1,0 +1,8 @@
+h2:not([class]) {
+    margin-bottom: 1rem;
+    @include font-size('4xl');
+}
+
+h3:not([class]) {
+    margin-bottom: 0.75rem;
+}

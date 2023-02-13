@@ -18,6 +18,26 @@
     overflow: hidden;
     box-shadow: rgba($neutral-600, 0.05) 0px 48px 100px 0px;
 
+    &:hover {
+        animation: scaleUp 600ms forwards;
+    }
+
+    &:not(:hover) {
+        animation: scaleDown 600ms forwards;
+    }
+
+    @keyframes scaleUp {
+        100% {
+          transform: scale(1.05);
+        }
+      }
+
+      @keyframes scaleDown {
+        100% {
+          transform: scale(1);
+        }
+      }
+
     .card-img-top {
         width: 100%;
     }

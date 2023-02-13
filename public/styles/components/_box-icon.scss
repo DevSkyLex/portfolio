@@ -1,0 +1,44 @@
+@use "../abstracts/variables";
+@use "../abstracts/mixins";
+@use "../abstracts/functions";
+
+.box_group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    justify-content: space-between;
+
+    & > * {
+        flex: 1 1 0;
+    }
+}
+
+.box_icon {
+    display: flex;
+    gap: 1.25rem;
+    color: $tertiary;
+
+    @include breakpoint('sm') {
+        align-items: center;
+    }
+
+    .icon {
+        @include font-size("5xl");
+        color: $primary;
+    }
+
+    .content {
+        display: flex;
+        flex-direction: column;
+
+        .number {
+            @include font-size("3xl");
+            font-weight: bold;
+        }
+
+        .label {
+            color: $neutral-500;
+            font-weight: 500;
+        }
+    }
+}

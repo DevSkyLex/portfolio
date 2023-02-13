@@ -1,12 +1,12 @@
-.section_container {
+.container {
     padding: 5rem 2rem;
 
     @include breakpoint('sm') {
-        padding: 5rem 5rem;
+        padding: 5rem 3rem;
     }
 
     @include breakpoint('md') {
-        padding: 5rem 7rem;
+        padding: 5rem 6rem;
     }
 
     @include breakpoint('lg') {
@@ -14,6 +14,14 @@
     }
 
     @include breakpoint('xl') {
-        padding: 5rem 10rem;
+        padding: 5rem 20rem;
+    }
+}
+
+.section-infos {
+    margin-bottom: 3rem;
+
+    &.center {
+        text-align: center;
     }
 }

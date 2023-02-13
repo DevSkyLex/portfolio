@@ -24,7 +24,7 @@
     <!-- Navigation du site -->
     <div class="navigation_bar">
         <div class="brand">
-            <span id="name">Valentin FORTIN</span>
+            <span id="name"><?= FIRSTNAME." ".LASTNAME; ?></span>
         </div>
 
         <!-- Icon menu de navigation -->

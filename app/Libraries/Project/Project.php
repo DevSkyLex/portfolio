@@ -54,7 +54,7 @@ class Project
      * @param Category $category;
      * @throws Exception
      */
-    public function __construct(string $title, string $description, ?string $link, ...$skills, Category $category)
+    public function __construct(string $title, string $description, ?string $link, Category $category, ...$skills)
     {
         $this->title = $title;
         $this->description = $description;
