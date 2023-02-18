@@ -3,9 +3,12 @@
 namespace App\Libraries\Project;
 
 /**
- * Classe Skill (compétence)
+ * Classe Skill (Compétence) : classe permettant la gestion des compétences
+ * utilisées dans les {@link Project} du portfolio.
+ *
  * @package App\Libraries\Project
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
+ * @version 1.0.0
  */
 class Skill
 {

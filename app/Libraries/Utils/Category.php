@@ -1,11 +1,15 @@
 <?php
 
-namespace App\Libraries\Project;
+namespace App\Libraries\Utils;
 
 /**
- * Classe Category (Catégorie)
- * @package App\Libraries\Project
+ * Classe Category (Catégorie) : classe permettant la création et la gestion
+ * des catégories. Les catégories peuvent être définies en tant que professionnelles, personnelles ou scolaires et
+ * sont utilisées dans les {@link Project} et les {@link Career}.
+ *
+ * @package App\Libraries\Utils
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
+ * @version 1.0.0
  */
 class Category
 {

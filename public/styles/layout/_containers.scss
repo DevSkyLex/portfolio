@@ -1,27 +1,78 @@
 .container {
-    padding: 5rem 2rem;
+    padding: 8rem 2rem;
 
     @include breakpoint('sm') {
-        padding: 5rem 3rem;
+        padding: 8rem 3rem;
     }
 
     @include breakpoint('md') {
-        padding: 5rem 6rem;
+        padding: 8rem 6rem;
     }
 
     @include breakpoint('lg') {
-        padding: 5rem 9rem;
+        padding: 8rem 9rem;
     }
 
     @include breakpoint('xl') {
-        padding: 5rem 20rem;
+        padding: 8rem 15rem;
+    }
+
+    @include breakpoint('2xl') {
+        padding: 8rem 20rem;
     }
 }
 
 .section-infos {
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+
+    h2 {
+        position: relative;
+        color: $tertiary;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+
+        .bg-text {
+            display: none;
+            color: $neutral-50;
+            text-transform: uppercase;
+            user-select: none;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+
+            @include breakpoint('sm') {
+                display: inline-block;
+                @include font-size('7xl');
+            }
+
+            @include breakpoint('md') {
+                @include font-size('8xl');
+            }
+        }
+    }
+
+    hr {
+        height: 3px;
+        width: 45px;
+        background-color: $primary;
+        border: none;
+    }
+
+    p {
+        margin-top: 2.5rem;
+    }
 
     &.center {
-        text-align: center;
+        justify-content: center;
+        align-items: center;
+
+        p {
+            text-align: center;
+            max-width: 75%;
+        }
     }
 }

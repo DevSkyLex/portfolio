@@ -1,0 +1,21 @@
+@use "../abstracts/variables";
+@use "../abstracts/mixins";
+@use "../abstracts/functions";
+
+ul.links_bar {
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+
+    &.medias a {
+        text-decoration: none;
+        color: $tertiary;
+        @include font-size('2xl');
+        transition: color 300ms;
+
+        &:hover {
+            color: $primary;
+        }
+    }
+}

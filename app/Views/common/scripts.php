@@ -1,3 +1,3 @@
-        <?= script_tag("public/javascripts/main.js"); ?>
+        <?= script_tag("javascripts/main.js"); ?>
     </body>
 </html>

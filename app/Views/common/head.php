@@ -32,7 +32,7 @@
 
         <!-- Feuilles de style -->
         <?php
-            echo link_tag("public/styles/main.css");
+            echo link_tag("/styles/main.css");
             echo link_tag("https://unicons.iconscout.com/release/v4.0.0/css/line.css");
         ?>
     </head>

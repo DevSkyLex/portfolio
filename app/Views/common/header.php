@@ -38,7 +38,7 @@
             <menu class="nav-menu">
                 <!-- Accueil -->
                 <li class="nav-item">
-                    <a href="<?= base_url("/public"); ?>" class="nav-link" id="home">Accueil</a>
+                    <a href="<?= base_url(); ?>" class="nav-link" id="home">Accueil</a>
                 </li>
 
                 <!-- Compétences -->
@@ -65,7 +65,7 @@
         <menu class="nav-menu">
             <!-- Accueil -->
             <li class="nav-item">
-                <a href="<?= base_url("/public"); ?>" class="nav-link" id="home"><i class="icon uil uil-estate"></i> Accueil</a>
+                <a href="<?= base_url(); ?>" class="nav-link" id="home"><i class="icon uil uil-estate"></i> Accueil</a>
             </li>
 
             <!-- Compétences -->

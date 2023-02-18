@@ -66,13 +66,13 @@ function revealOnScroll()
 {
     // Sélectionne tous les éléments avec la classe "reveal"
     let listItems = [...document.querySelectorAll(".reveal")];
-  
+
     // Définit les options pour l'observateur d'intersection
     let options = {
       rootMargin: "-10%",
       threshold: 0.0,
     };
-  
+
     // Crée un nouvel observateur d'intersection
     let observer = new IntersectionObserver((entries) => {
       // Boucle à travers les entrées
@@ -84,13 +84,13 @@ function revealOnScroll()
         }
       });
     }, options);
-  
+
     // Observe chaque élément de la liste
     listItems.forEach((item) => {
       observer.observe(item);
     });
   };
-  
+
   // Appelle la fonction pour révéler les éléments au fur et à mesure du défilement de la page
   revealOnScroll();
 
@@ -100,7 +100,7 @@ function revealOnScroll()
  * @param {int} start Valeur de départ
  * @param {int} duration Temps de l'animation d'incrémentation de la valeur
  */
-function animateValue(selector, start, duration) 
+function animateValue(selector, start, duration)
 {
     // Récupère l'objet HTML qui doit afficher la valeur animée en utilisant son identifiant
     let objs = document.getElementsByClassName(selector);
@@ -125,7 +125,7 @@ function animateValue(selector, start, duration)
       let stepTime = Math.abs(Math.floor(duration / range));
 
       // Définit une boucle en utilisant setInterval()
-      let timer = setInterval(function() 
+      let timer = setInterval(function()
       {
         // Incrémente la valeur courante
         current += increment;
@@ -134,11 +134,11 @@ function animateValue(selector, start, duration)
         obj.innerHTML = current;
 
         // Si la valeur courante atteint la valeur finale, arrête la boucle en appelant clearInterval()
-        if (current == end) 
+        if (current == end)
         {
           clearInterval(timer);
         }
-      }, stepTime);   
+      }, stepTime);
     });
 }
 

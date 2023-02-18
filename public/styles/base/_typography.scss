@@ -6,3 +6,31 @@ h2:not([class]) {
 h3:not([class]) {
     margin-bottom: 0.75rem;
 }
+
+// Liste à puces
+ul:not([class]) {
+    list-style: none;
+
+    li:not([class]) {
+        padding-left: 30px;
+        position: relative;
+        margin-bottom: 0.5rem;
+
+        &::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            position: absolute;
+            left: 6px;
+            top: calc(1em - 8px);
+            display: inline-block;
+            border-radius: 5px;
+            box-shadow: 0 0 0 5px rgba($primary, .1);
+            border: 2px solid $primary;
+        }
+    }
+}
+
+p:not([class]) {
+    color: $neutral-700;
+}

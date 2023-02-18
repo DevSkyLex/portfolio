@@ -14,7 +14,6 @@
     font-weight: normal;
     font-variant: normal;
     text-transform: none;
-    line-height: 1;
 }
 
 /// @name breakpoint
@@ -244,7 +243,6 @@
 {
     transition: box-shadow, transform;
     transition-duration: 300ms;
-    border-radius: 0.25rem;
 
     @if $isSecondary == true
     {

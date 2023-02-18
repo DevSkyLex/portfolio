@@ -6,7 +6,7 @@
 form {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
 
     // Groupe de champs
     .input_group {
@@ -23,6 +23,12 @@ form {
             display: flex;
             gap: 0.2rem;
             flex-direction: column;
+
+            &.inline {
+                flex-direction: row;
+                gap: 0.5rem;
+                align-items: center;
+            }
         }
     }
 
@@ -39,17 +45,23 @@ form {
     input[type="search"],
     input[type="tel"],
     input[type="url"],
-    input[type="date"] {
+    input[type="date"],
+    textarea {
         padding: 0.5rem 1rem;
         outline: none;
         border: none;
-        background-color: $tertiary;
+        background-color: $neutral-100;
         user-select: none;
 
         &::placeholder {
             @include font-size('xs');
         }
     }
+
+    textarea {
+        resize: vertical;
+    }
+
 
     //Champ bouton radio
     input[type="radio"] {
@@ -75,8 +87,7 @@ form {
     input[type="checkbox"] {
         cursor: pointer;
         appearance: none;
-        background-color: $tertiary;
-        border-radius: 5px;
+        background-color: $neutral-100;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -106,6 +117,17 @@ form {
     // Étiquette
     label {
         user-select: none;
-        @include font-size('base');
+        @include font-size('sm');
+
+        &.for-checkbox {
+            @include font-size('xs');
+            cursor: pointer;
+        }
+
+        &.required::after {
+            content: "*";
+            margin-left: 0.25rem;
+            color: red;
+        }
     }
 }

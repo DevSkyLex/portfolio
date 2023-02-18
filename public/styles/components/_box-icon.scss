@@ -4,9 +4,9 @@
 
 .box_group {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem 2rem;
+    gap: 2rem 2rem;
     justify-content: space-between;
+    flex-wrap: wrap;
 
     & > * {
         flex: 1 1 0;
@@ -29,6 +29,7 @@
 
     .content {
         display: flex;
+        width: 100%;
         flex-direction: column;
 
         .number {
@@ -37,6 +38,7 @@
         }
 
         .label {
+            @include font-size('sm');
             color: $neutral-500;
             font-weight: 500;
         }

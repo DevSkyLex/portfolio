@@ -2,13 +2,19 @@
 
 namespace App\Libraries\Project;
 use App\Libraries\Project\Skill;
-use App\Libraries\Project\Category;
+use App\Libraries\Utils\Category;
 use Exception;
 
 /**
- * Classe Project (projet)
+ * Classe Project (projet) : classe permettant la création et la gestion
+ * des projets du portfolio. Les projets sont classés en tant que professionnels,
+ * personnels ou scolaires en fonction de la {@link Category} à laquelle ils appartiennent.
+ * De plus, cette classe utilise une collection de {@link Skill} pour répertorier les
+ * compétences associées au projet.
+ *
  * @package App\Libraries\Project
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
+ * @version 1.0.0
  */
 class Project
 {
@@ -102,6 +108,7 @@ class Project
     /**
      * Retourne les compétences
      * @return array
+     * @see Skill
      */
     public function getSkills(): array
     {
@@ -117,6 +124,11 @@ class Project
         return $this->link;
     }
 
+    /**
+     * Retourne la catégorie associée au projet
+     * @return Category
+     * @see Category
+     */
     public function getCategory(): Category
     {
         return $this->category;
@@ -172,11 +184,12 @@ class Project
      * @param array $skills
      * @throws Exception
      * @return void
+     * @see Skill
      */
     public function addSkills(...$skills): void
     {
         // Vérification du paramètre $skills (Si le paramètre est un tableau)
-        if (count($skills) === 1 && is_array($skills[0])) 
+        if (count($skills) === 1 && is_array($skills[0]))
         {
             $skills = $skills[0];
         }

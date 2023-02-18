@@ -4,12 +4,16 @@ namespace App\Models\Project;
 use CodeIgniter\Model;
 use App\Libraries\Project\Project;
 use App\Libraries\Project\Skill;
-use App\Libraries\Project\Category;
+use App\Libraries\Utils\Category;
 use Exception;
 
 /**
- * Modèle de gestion des projets
+ * Modèle permettant la récupération des {@link Project} et de leurs
+ * {@link Category} à partir de la base de données.
+ *
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
+ * @version 1.0.0
+ * @see Model
  */
 class ProjectModel extends Model
 {
@@ -150,16 +154,14 @@ class ProjectModel extends Model
         {
             // Initialisation du tableau contenant les projets et leurs compétences
             $result = array();
-            
-            foreach ($projects_query->getResultArray() as $project) 
+
+            foreach ($projects_query->getResultArray() as $project)
             {
                 // Requête permettant de récupérer les données des compétences
                 $skills_query = $db->table('project_skill')
                     ->select("skills.*")
                     ->join("skills", "project_skill.skill_id = skills.id")
                     ->getWhere("project_skill.project_id = ".$project['id']);
-
-                var_dump($project["code_category"]);
 
                 // Requête permettant de récupérer les données des catégories
                 $categories_query = $db->table('categories')

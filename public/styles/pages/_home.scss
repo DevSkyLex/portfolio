@@ -6,3 +6,26 @@ section#hero {
     height: 100vh;
     background-color: $neutral-100;
 }
+
+section#contact {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+    align-items: center;
+
+    .subtitle {
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        color: $primary;
+        font-weight: 600;
+        @include font-size('sm')
+    }
+
+    h2 {
+        font-weight: 600;
+    }
+
+    & > * {
+        flex: 1 1 0;
+    }
+}
