@@ -53,6 +53,7 @@
 
                 <!-- Contact -->
                 <li class="nav-item">
+                    <?= anchor('#contact', 'Lien vers la section'); ?>
                     <a href="<?= base_url("#contact"); ?>" class="nav-link" id="contact">Contact</a>
                 </li>
             </menu>

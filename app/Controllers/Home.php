@@ -40,78 +40,81 @@ class Home extends BaseController
      */
     public function submit(): RedirectResponse
     {
-        if($this->request->getMethod() === "post")
+        // Vérification de la méthode POST
+        if ($this->request->getMethod() === 'post') 
         {
             // Création d'une session
             $session = session();
-
-            // Règles du formulaire
-            $rules = array(
+    
+            // Règles de validation du formulaire
+            $validationRules = [
                 'firstname' => 'required|max_length[64]',
                 'lastname' => 'required|max_length[64]',
                 'email' => 'required|valid_email|max_length[254]',
                 'message' => 'required|max_length[2048]',
                 'accept-tos' => 'required'
-            );
-
-            // Messages d'erreur des règles du formulaire
-            $errors = array(
+            ];
+    
+            // Messages d'erreur de validation du formulaire
+            $validationMessages = [
                 'firstname' => [
-                    'required' => "Veuillez saisir votre prénom.",
-                    'max_length' => "Votre prénom ne peut pas être égale ou supérieur à 64 caractères.",
+                    'required' => 'Veuillez saisir votre prénom.',
+                    'max_length' => 'Votre prénom ne peut pas dépasser 64 caractères.'
                 ],
                 'lastname' => [
-                    'required' => "Veuillez saisir votre nom.",
-                    'max_length' => "Votre nom ne peut pas être égale ou supérieur à 64 caractères.",
+                    'required' => 'Veuillez saisir votre nom.',
+                    'max_length' => 'Votre nom ne peut pas dépasser 64 caractères.'
                 ],
                 'email' => [
-                    'required' => "Veuillez saisir votre adresse email.",
-                    'valid_email' => "Votre adresse email n'est pas valide.",
-                    'max_length' => "Votre adresse email ne peut pas être égale ou supérieur à 254 caractères.",
+                    'required' => 'Veuillez saisir votre adresse e-mail.',
+                    'valid_email' => 'Votre adresse e-mail n\'est pas valide.',
+                    'max_length' => 'Votre adresse e-mail ne peut pas dépasser 254 caractères.'
                 ],
                 'message' => [
-                    'required' => "Veuillez saisir votre message.",
-                    'max_length' => "Votre message ne peut pas être égale ou supérieur à 2048 caractères.",
+                    'required' => 'Veuillez saisir votre message.',
+                    'max_length' => 'Votre message ne peut pas dépasser 2048 caractères.'
                 ],
                 'accept-tos' => [
-                    'required' => "Veuillez accepter les conditions générales d'utilisation avant d'envoyer votre message."
+                    'required' => 'Veuillez accepter les conditions générales d\'utilisation avant d\'envoyer votre message.'
                 ]
-            );
-
-            // Mise en place des règles du formulaire
+            ];
+    
+            // Initialisation de la validation
             $validation = Services::validation();
-            $validation->setRules($rules, $errors);
-
-            // Passage des valeurs des champs aux contrôles par règles
-            if($this->validate($rules, $errors))
+            $validation->setRules($validationRules, $validationMessages);
+    
+            // Validation du formulaire
+            if ($validation->withRequest($this->request)->run()) 
             {
-                // Récupération des valeurs des champs du formulaire
-                $infos = array(
-                    "firstname" => $this->request->getPost('firstname'),
-                    "lastname" => $this->request->getPost('lastname'),
-                    "email" => $this->request->getPost('email'),
-                    "message" => $this->request->getPost('message'),
-                );
-
-                // Mise en place des emails
+                // Récupération des valeurs du formulaire
+                $infos = [
+                    'firstname' => $this->request->getPost('firstname'),
+                    'lastname' => $this->request->getPost('lastname'),
+                    'email' => $this->request->getPost('email'),
+                    'message' => $this->request->getPost('message')
+                ];
+    
+                // Configuration de l'e-mail
                 $email = Services::email();
-
-                $email->setTo("contact@valentin-fortin.pro");
-                $email->setFrom("no-reply@valentin-fortin.pro");
-                $email->setSubject("Message du portfolio");
+                $email->setTo('contact@valentin-fortin.pro');
+                $email->setFrom('no-reply@valentin-fortin.pro');
+                $email->setSubject('Message du portfolio');
                 $email->setMessage($infos['message']);
-
-                // Envoi et contrôle de l'envoi du mail
-                if(!$email->send())
-                {
+    
+                // Envoi de l'e-mail
+                if (!$email->send()) {
+                    // Redirection avec erreur en cas d'échec d'envoi de l'e-mail
+                    $session->setFlashdata('errors', 'L\'envoi de l\'e-mail a échoué. Veuillez contacter un administrateur si le problème persiste.');
+                } else {
+                    // Redirection avec succès en cas de réussite d'envoi de l'e-mail
+                    $session->setFlashdata('success', 'L\'e-mail a bien été envoyé !');
                 }
-            }
-            else {
-                // Redirection vers la page d'accueil avec les erreurs
-                return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+            } else {
+                // Redirection avec erreurs en cas d'erreurs de validation du formulaire
+                $session->setFlashdata('errors', $validation->getErrors());
             }
         }
-
+    
         // Redirection vers la page d'accueil
         return redirect()->back();
     }

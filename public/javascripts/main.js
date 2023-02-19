@@ -99,6 +99,8 @@ function revealOnScroll()
  * @param {String} selector Classe de l'élément HTML
  * @param {int} start Valeur de départ
  * @param {int} duration Temps de l'animation d'incrémentation de la valeur
+ * @author Valentin FORTIN <contact@valentin-fortin.pro>
+ * @version 1.0.0
  */
 function animateValue(selector, start, duration)
 {
@@ -143,3 +145,15 @@ function animateValue(selector, start, duration)
 }
 
 animateValue("animate-value", 0, 1000);
+
+/**
+ * Déclenche la fermeture d'un élément visuel.
+ * @param {HTMLElement} button - Élément devant être fermé (caché)
+ * @author Valentin FORTIN <contact@valentin-fortin.pro>
+ * @version 1.0.0
+ */
+function closeButton(button)
+{
+    // Suppression de l'élément
+    button.parentElement.remove();
+}

@@ -135,7 +135,7 @@
     </section>
 
     <!-- Projets -->
-    <section class="container reveal fade-bottom decoration deco-square deco-medium" id="projects">
+    <section class="container reveal fade-bottom decoration" id="projects">
         <!-- Informations de la section : projets -->
         <div class="section-infos center">
             <h2>Projets<span class="bg-text">Portfolio</span></h2>
@@ -177,7 +177,7 @@
     </section>
 
     <section class="container" id="contact">
-        <div class="wrapper">
+        <div class="wrapper reveal fade-left">
             <span class="subtitle">Formulaire</span>
             <h2>Contact</h2>
             <p>
@@ -203,19 +203,45 @@
             </ul>
         </div>
 
-        <div class="wrapper">
+        <div class="wrapper reveal fade-right">
             <?= form_open("/submit"); ?>
                 <div class="input_group">
                     <!-- Prénom -->
                     <div class="input-field">
                         <label class="required" for="firstname">Prénom</label>
-                        <input placeholder="Votre prénom" value="<?= set_value('firstname'); ?>" id="firstname" name="firstname" type="text">
+                        <?= form_input([
+                            'name' => 'firstname',
+                            'id' => 'firstname',
+                            'placeholder' => 'Votre prénom',
+                            'value' => set_value('firstname'),
+                            'type' => 'text'
+                        ]); ?>
+
+                        <?php if(session()->getFlashdata('errors')) : ?>
+                            <div class="alert alert-error">
+                                <span><?= esc(session()->getFlashdata('errors')['firstname']) ?></span>
+                                <span onclick="closeButton(this);" class="alert-close"></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Nom -->
                     <div class="input-field">
                         <label class="required" for="lastname">Nom</label>
-                        <input placeholder="Votre nom" value="<?= set_value('lastname'); ?>" id="lastname" name="lastname" type="text">
+                        <?= form_input([
+                            'name' => 'lastname',
+                            'id' => 'lastname',
+                            'placeholder' => 'Votre nom',
+                            'value' => set_value('lastname'),
+                            'type' => 'text'
+                        ]); ?>
+
+                        <?php if(session()->getFlashdata('errors')) : ?>
+                            <div class="alert alert-error">
+                                <span><?= esc(session()->getFlashdata('errors')['lastname']); ?></span>
+                                <span onclick="closeButton(this);" class="alert-close"></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -223,7 +249,20 @@
                     <!-- Adresse email -->
                     <div class="input-field">
                         <label class="required" for="email">Adresse email</label>
-                        <input placeholder="Votre adresse email" value="<?= set_value('email'); ?>" id="email" name="email" type="email">
+                        <?= form_input([
+                            'name' => 'email',
+                            'id' => 'email',
+                            'placeholder' => 'Votre adresse email',
+                            'value' => set_value('email'),
+                            'type' => 'text'
+                        ]); ?>
+
+                        <?php if(session()->getFlashdata('errors')) : ?>
+                            <div class="alert alert-error">
+                                <span><?= esc(session()->getFlashdata('errors')['email']) ?></span>
+                                <span onclick="closeButton(this);" class="alert-close"></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -231,20 +270,54 @@
                     <!-- Adresse email -->
                     <div class="input-field">
                         <label class="required" for="message">Message</label>
-                        <textarea placeholder="Votre message" value="<?= set_value('message'); ?>" rows="6" id="message" name="message"></textarea>
+                        <?= form_textarea([
+                            'name' => 'message',
+                            'id' => 'message',
+                            'rows' => '6',
+                            'placeholder' => 'Votre message',
+                            'value' => set_value('message')
+                        ]); ?>
+
+                        <?php if(session()->getFlashdata('errors')) : ?>
+                            <div class="alert alert-error">
+                                <span><?= esc(session()->getFlashdata('errors')['message']) ?></span>
+                                <span onclick="closeButton(this);" class="alert-close"></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="input_group">
                     <div class="input-field inline">
-                        <input type="checkbox" name="accept-tos" id="accept-tos">
+                        <?= form_checkbox('accept-tos', '1', false, 'id="accept-tos"'); ?>
                         <label class="for-checkbox required" for="accept-tos">J'accepte les conditions générales d'utilisation.</label>
                     </div>
                 </div>
 
+                <?php foreach(['accept-tos', 'email_send'] as $errorKey): ?>
+                    <?php if(session()->getFlashdata('errors') && array_key_exists($errorKey, session()->getFlashdata('errors'))): ?>
+                        <div class="alert alert-error">
+                            <span><?= esc(session()->getFlashdata('errors')[$errorKey]) ?></span>
+                            <span class="alert-close" onclick="closeButton(this);"></span>
+                        </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+
                 <div class="btn_group">
-                    <button type="submit" class="btn btn-medium btn-primary">Envoyer</button>
+                    <?= form_button([
+                        'name' => 'submit', 
+                        'type' => 'submit', 
+                        'content' => 'Envoyer', 
+                        'class' => 'btn btn-medium btn-primary'
+                    ]); ?>
                 </div>
+
+                <?php if(session()->getFlashdata('success')): ?>
+                    <div class="alert alert-success">
+                        <span><?= esc(session()->getFlashdata('success')); ?></span>
+                        <span class="alert-close" onclick="closeButton(this);"></span>
+                    </div>
+                <?php endif; ?>
             <?= form_close(); ?>
         </div>
     </section>

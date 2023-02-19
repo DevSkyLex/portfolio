@@ -542,6 +542,67 @@ ul.links_bar.medias a:hover {
   color: #2196f3;
 }
 
+.alert {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+.alert .alert-close {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  cursor: pointer;
+  margin-left: auto;
+  color: inherit;
+}
+.alert .alert-close::after {
+  content: "\e9b8";
+  font-family: unicons-line;
+}
+.alert-transparent {
+  background-color: transparent !important;
+}
+.alert-error {
+  color: rgb(182, 16, 16);
+  border-color: rgba(182, 16, 16, 0.5);
+  background-color: rgba(255, 0, 0, 0.1);
+}
+.alert-error::before {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  content: "\e9b5";
+  font-family: unicons-line;
+}
+.alert-warning {
+  color: rgb(255, 165, 0);
+  border-color: rgba(255, 165, 0, 0.5);
+  background-color: rgba(255, 165, 0, 0.1);
+}
+.alert-warning::before {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  content: "\e9b0";
+  font-family: unicons-line;
+}
+.alert-success {
+  color: rgb(50, 205, 50);
+  border-color: rgba(50, 205, 50, 0.5);
+  background-color: rgba(50, 205, 50, 0.1);
+}
+.alert-success::before {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  content: "\e9c2";
+  font-family: unicons-line;
+}
+.alert p {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: inherit;
+}
+
 header {
   display: flex;
   position: fixed;
