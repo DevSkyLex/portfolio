@@ -1,0 +1,74 @@
+<span class="sr-only" [id]="id + '-label'">{{ label() }}</span>
+<button
+  #button
+  type="button"
+  aria-haspopup="listbox"
+  [id]="id + '-button'"
+  [class]="buttonClasses()"
+  [attr.aria-expanded]="open()"
+  [attr.aria-labelledby]="id + '-label ' + id + '-button'"
+  (click)="toggle()"
+  (keydown)="onButtonKeydown($event)"
+>
+  <span class="flex min-w-0 items-center">
+    @if (selected(); as option) {
+      <span class="inline-flex items-center" [class]="size() === 'sm' ? 'gap-2' : 'gap-2.5'">
+        @if (iconTemplate(); as icon) {
+          <ng-container *ngTemplateOutlet="icon.template; context: { $implicit: option }" />
+        }
+        <span>{{ option.label }}</span>
+      </span>
+    }
+  </span>
+  <ng-icon
+    #chevron
+    class="shrink-0"
+    color="var(--star-muted)"
+    [svg]="icons.chevron"
+    size="16"
+    strokeWidth="1.5"
+    aria-hidden="true"
+  />
+</button>
+<ul
+  #list
+  role="listbox"
+  tabindex="-1"
+  [class]="listClasses()"
+  [attr.aria-labelledby]="id + '-label'"
+  [attr.aria-activedescendant]="activeId()"
+  (keydown)="onListKeydown($event)"
+  (click)="onListClick($event)"
+  (pointermove)="onListPointerMove($event)"
+>
+  <li
+    #pill
+    class="pointer-events-none absolute top-0 right-1 left-1 z-0 h-10 rounded-option bg-star/5 opacity-0 transition-[transform,height,opacity] duration-[320ms,320ms,150ms] ease-orbit data-on:opacity-100 motion-reduce:transition-opacity motion-reduce:duration-150"
+    role="none"
+    aria-hidden="true"
+  ></li>
+  @for (option of options(); track option.value; let i = $index) {
+    <li
+      role="option"
+      [id]="id + '-' + i"
+      [attr.data-index]="i"
+      [class]="optionClasses()"
+      [style.--i]="i"
+      [attr.lang]="option.lang ?? null"
+      [attr.aria-selected]="option.value === value()"
+      [attr.data-active]="open() && active() === i ? '' : null"
+    >
+      @if (iconTemplate(); as icon) {
+        <ng-container *ngTemplateOutlet="icon.template; context: { $implicit: option }" />
+      }
+      <span>{{ option.label }}</span>
+      <ng-icon
+        class="invisible ml-auto group-aria-selected/option:visible"
+        [svg]="icons.check"
+        size="16"
+        strokeWidth="1.5"
+        aria-hidden="true"
+      />
+    </li>
+  }
+</ul>

@@ -1,0 +1,296 @@
+# Deployment files (compose, Nginx, Postgres, scripts), secrets rendered from the vault, backup timers,
+# then deployment by scripts/deploy.sh (images → backup → roles → migrations → services → Nginx).
+- name: Shared Traefik configuration
+  ansible.builtin.assert:
+    that:
+      - portfolio_app_port | int > 0 and portfolio_app_port | int <= 65535
+      - portfolio_trusted_proxies is match('^[0-9a-fA-F:.]+(/[0-9]{1,3})?$')
+      - portfolio_trusted_proxies not in ['0.0.0.0/0', '::/0']
+    fail_msg: >-
+      Set TRUSTED_PROXIES to the exact shared Traefik IP address or a reviewed narrow CIDR
+      and VPS_APP_PORT to the internal Nginx port (1-65535). Do not trust the whole shared network.
+    quiet: true
+
+- name: Validate the trusted proxy address
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - >-
+        import ipaddress, sys;
+        network = ipaddress.ip_network(sys.argv[1], strict=False);
+        sys.exit(0 if network.prefixlen > 0 else 1)
+      - '{{ portfolio_trusted_proxies }}'
+  changed_when: false
+  check_mode: false
+
+- name: Inspect the existing shared Traefik network
+  ansible.builtin.command:
+    argv: [docker, network, inspect, traefik_proxy]
+  register: portfolio_traefik_network
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Shared Traefik network is available
+  ansible.builtin.assert:
+    that: portfolio_traefik_network.rc == 0
+    fail_msg: >-
+      The shared Traefik stack must provide the external traefik_proxy network before provisioning
+      or deploying this application. This repository does not create or manage that stack.
+    quiet: true
+
+- name: Vault secrets filled in
+  ansible.builtin.assert:
+    that:
+      - "'CHANGE_ME' not in (vault_db | to_json)"
+      - vault_db | dict2items | map(attribute='value') | map('dict2items') | flatten
+        | map(attribute='value') | reject('match', '^[A-Za-z0-9]{24,}$') | list | length == 0
+      - vault_postgres_password is match('^[A-Za-z0-9]{24,}$')
+      - vault_contact_smtp_url is match('^smtps?://')
+      - vault_contact_client_key_secret | length >= 32
+      - vault_site_build_token != 'CHANGE_ME'
+      - identity_signing_kid in vault_identity_signing_keys
+      - "'CHANGE_ME' not in (vault_identity_signing_keys | to_json)"
+    fail_msg: inventory/group_vars/all/vault.yml is incomplete (see vault.example.yml)
+    quiet: true
+  no_log: true
+
+- name: Deployment tag (commit SHA, -e tag=…)
+  ansible.builtin.assert:
+    that: tag is defined and tag is match('^[0-9a-f]{7,40}$')
+    fail_msg: tag required (-e tag=<commit sha>)
+    quiet: true
+  when: portfolio_deploy_services
+
+- name: Application and backup directories (deployment account only)
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0750'
+  loop:
+    - '{{ app_root }}'
+    - '{{ backup_root }}'
+
+# Public static site: readable by the Nginx workers (UID 101 in the container).
+- name: Site directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0755'
+  loop:
+    - '{{ site_root }}'
+    - '{{ site_root }}/releases'
+
+# Copied as root (the first run connects with the provider's account), owned by the deployment account.
+- name: Deployment files
+  ansible.posix.synchronize:
+    src: '{{ playbook_dir }}/../../docker/{{ item }}'
+    dest: '{{ app_root }}/'
+    delete: true
+    # Readable by the containers (Postgres reads its init script); these files hold no secrets.
+    rsync_opts:
+      - --chmod=D755,F644
+      - --chown={{ deploy_user }}:{{ deploy_user }}
+  loop: [compose.prod.yml, nginx, postgres, scripts]
+
+# TAG is written by scripts/deploy.sh after each successful deployment: kept as is.
+- name: Compose variables
+  ansible.builtin.lineinfile:
+    path: '{{ app_root }}/.env'
+    regexp: '^{{ item.key }}='
+    # Quote dotenv values and escape Compose interpolation, including literal dollar signs.
+    line: >-
+      {{ item.key }}={{ item.value | string | replace('$', '$$') | to_json(ensure_ascii=false) }}
+    create: true
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0640'
+  loop:
+    - { key: APP_HOST, value: '{{ domain }}' }
+    - { key: APP_PORT, value: '{{ portfolio_app_port }}' }
+    - { key: COMPOSE_PROJECT_NAME, value: '{{ portfolio_docker_project_name }}' }
+    - { key: CONTAINER_NAME, value: '{{ portfolio_docker_container_name }}' }
+    - { key: TRAEFIK_ROUTER_NAME, value: '{{ portfolio_traefik_router_name }}' }
+    - { key: TRAEFIK_SECURE_MIDDLEWARES, value: '{{ portfolio_traefik_secure_middlewares }}' }
+    - { key: TRUSTED_PROXIES, value: '{{ portfolio_trusted_proxies }}' }
+    - { key: SITE_ROOT, value: '{{ site_root }}' }
+    - { key: LOG_LEVEL, value: '{{ portfolio_log_level }}' }
+    - { key: CONTACT_MAIL_FROM, value: '{{ portfolio_contact_mail_from }}' }
+    - { key: CONTACT_NOTIFY_TO, value: '{{ portfolio_contact_notify_to }}' }
+    - { key: WEB_MEMORY_LIMIT, value: '{{ portfolio_web_memory_limit }}' }
+    - { key: WEB_CPU_LIMIT, value: '{{ portfolio_web_cpu_limit }}' }
+    - { key: LOG_MAX_SIZE, value: '{{ portfolio_log_max_size }}' }
+    - { key: LOG_MAX_FILES, value: '{{ portfolio_log_max_files }}' }
+    - { key: REGISTRY, value: '{{ registry }}' }
+    - { key: IDENTITY_SIGNING_KID, value: '{{ identity_signing_kid }}' }
+    - { key: SITE_BUILD_REPOSITORY, value: '{{ site_build_repository }}' }
+  loop_control:
+    label: '{{ item.key }}'
+
+- name: Backup settings
+  ansible.builtin.copy:
+    dest: '{{ app_root }}/backup.env'
+    content: |
+      BACKUP_DIR='{{ backup_root }}'
+      BACKUP_RETENTION_DAYS='{{ portfolio_backup_retention_days | int }}'
+      BACKUP_AGE_RECIPIENT='{{ portfolio_backup_age_recipient }}'
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0640'
+
+- name: Encryption tool for backups (age)
+  ansible.builtin.apt:
+    name: age
+    state: present
+  when: portfolio_backup_age_recipient | length > 0
+
+# Secrets: world-readable files (bind-mounted as-is into containers whose users differ from the host's)
+# in a directory that only the deployment account can traverse.
+- name: Secrets directory
+  ansible.builtin.file:
+    path: '{{ app_root }}/secrets'
+    state: directory
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0700'
+
+- name: Postgres role passwords
+  ansible.builtin.copy:
+    dest: '{{ app_root }}/secrets/{{ item.0.key }}_{{ item.1 }}_password'
+    content: '{{ item.0.value[item.1] }}'
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0444'
+  loop: "{{ vault_db | dict2items | product(['migrator', 'app']) | list }}"
+  loop_control:
+    label: '{{ item.0.key }}_{{ item.1 }}'
+  no_log: true
+
+- name: Connection URLs for the services (application role) and the migrations (migration role)
+  ansible.builtin.copy:
+    dest: '{{ app_root }}/secrets/{{ item.0.key }}_{{ item.1.file }}'
+    content: 'postgres://{{ item.0.key }}_{{ item.1.role }}:{{ item.0.value[item.1.role] }}@postgres:5432/portfolio'
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0444'
+  loop: >-
+    {{ vault_db | dict2items | product([{'role': 'app', 'file': 'database_url'},
+                                        {'role': 'migrator', 'file': 'migrator_url'}]) | list }}
+  loop_control:
+    label: '{{ item.0.key }}_{{ item.1.file }}'
+  no_log: true
+
+- name: Other secrets
+  ansible.builtin.copy:
+    dest: '{{ app_root }}/secrets/{{ item.name }}'
+    content: '{{ item.value }}'
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0444'
+  loop:
+    - { name: postgres_password, value: '{{ vault_postgres_password }}' }
+    - { name: contact_smtp_url, value: '{{ vault_contact_smtp_url }}' }
+    - { name: contact_client_key_secret, value: '{{ vault_contact_client_key_secret }}' }
+    - { name: site_build_token, value: '{{ vault_site_build_token }}' }
+  loop_control:
+    label: '{{ item.name }}'
+  no_log: true
+
+- name: Signing keys directory (read by the container user)
+  ansible.builtin.file:
+    path: '{{ app_root }}/secrets/identity-keys'
+    state: directory
+    owner: '{{ service_uid }}'
+    group: '{{ service_uid }}'
+    mode: '0500'
+
+- name: Token signing keys
+  ansible.builtin.copy:
+    dest: '{{ app_root }}/secrets/identity-keys/{{ item.key }}.pem'
+    content: '{{ item.value }}'
+    owner: '{{ service_uid }}'
+    group: '{{ service_uid }}'
+    mode: '0400'
+  loop: '{{ vault_identity_signing_keys | dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  no_log: true
+
+# Keys removed from the vault (rotation) are removed from the server.
+- name: Find signing keys on the server
+  ansible.builtin.find:
+    paths: '{{ app_root }}/secrets/identity-keys'
+    patterns: '*.pem'
+  register: portfolio_signing_key_files
+
+- name: Remove signing keys no longer in the vault
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: absent
+  loop: '{{ portfolio_signing_key_files.files }}'
+  loop_control:
+    label: '{{ item.path | basename }}'
+  when: (item.path | basename | regex_replace('\.pem$', '')) not in vault_identity_signing_keys
+
+- name: Log in to the image registry (GHCR, read-only)
+  ansible.builtin.command: docker login ghcr.io --username {{ vault_ghcr_user }} --password-stdin
+  args:
+    stdin: '{{ vault_ghcr_token }}'
+  become: true
+  become_user: '{{ deploy_user }}'
+  changed_when: false
+  no_log: true
+
+- name: Backup and restore-test units
+  ansible.builtin.template:
+    src: '{{ item }}.service.j2'
+    dest: /etc/systemd/system/{{ item }}.service
+    owner: root
+    group: root
+    mode: '0644'
+  loop: [portfolio-backup, portfolio-restore-check]
+  notify: Reload systemd
+
+- name: Backup and restore-test timers
+  ansible.builtin.template:
+    src: portfolio.timer.j2
+    dest: /etc/systemd/system/{{ item.name }}.timer
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - name: portfolio-backup
+      description: Daily portfolio database backup
+      on_calendar: '{{ portfolio_backup_on_calendar }}'
+    - name: portfolio-restore-check
+      description: Weekly restore test of the latest portfolio backup
+      on_calendar: '{{ portfolio_restore_check_on_calendar }}'
+  loop_control:
+    label: '{{ item.name }}'
+  notify: Reload systemd
+
+- name: Apply systemd changes before enabling the timers
+  ansible.builtin.meta: flush_handlers
+
+- name: Timers enabled
+  ansible.builtin.systemd_service:
+    name: '{{ item }}.timer'
+    state: started
+    enabled: true
+  loop: [portfolio-backup, portfolio-restore-check]
+
+- name: Deploy the services (scripts/deploy.sh)
+  ansible.builtin.command: bash ./scripts/deploy.sh
+  args:
+    chdir: '{{ app_root }}'
+  environment:
+    TAG: '{{ tag }}'
+  become: true
+  become_user: '{{ deploy_user }}'
+  changed_when: true
+  when: portfolio_deploy_services

@@ -1,0 +1,278 @@
+import AxeBuilder from '@axe-core/playwright';
+import {
+  expect,
+  test,
+  type Page,
+  type APIResponse,
+  type Locator,
+  type Response,
+  type Route,
+} from '@playwright/test';
+import { stackTotp } from '@internal/web-e2e/support/stack';
+
+/**
+ * Interface StackProjectSummary
+ *
+ * @description
+ * Seeded project fields used by browser acceptance to select editor targets.
+ */
+interface StackProjectSummary {
+  id: string;
+  title: { fr: string };
+  version: number;
+}
+
+// Authentication request bodies must not be persisted in browser trace artifacts.
+test.use({ trace: 'off' });
+
+/**
+ * Function assertAdminAccessibility
+ *
+ * @description
+ * Applies the public acceptance severity policy to real, authenticated administration screens.
+ *
+ * @param {Page} page - Stable administration screen with its normal controls present.
+ * @returns {Promise<void>} Completion after checking all page elements for blocking WCAG findings.
+ */
+async function assertAdminAccessibility(page: Page): Promise<void> {
+  const result: Awaited<ReturnType<AxeBuilder['analyze']>> = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa'])
+    .analyze();
+  expect(
+    result.violations.filter(
+      (violation: (typeof result.violations)[number]): boolean =>
+        violation.impact === 'serious' || violation.impact === 'critical',
+    ),
+  ).toEqual([]);
+}
+
+test.describe('isolated stack acceptance @stack', (): void => {
+  test.skip(!process.env['STACK_TOTP_SECRET'], 'Requires the isolated e2e-stack runner.');
+  test('authenticates with TOTP, rotates cookies, protects editor revisions and delivers contact notifications', async ({
+    page,
+  }: {
+    page: Page;
+  }): Promise<void> => {
+    test.setTimeout(180_000);
+    await page.goto('/admin/login');
+    await expect(page.getByRole('heading', { name: 'Administration', exact: true })).toBeVisible();
+    await assertAdminAccessibility(page);
+    await page
+      .getByLabel('Adresse e-mail', { exact: false })
+      .fill(process.env['STACK_EMAIL'] ?? '');
+    await page
+      .getByLabel('Mot de passe', { exact: false })
+      .fill(process.env['STACK_PASSWORD'] ?? '');
+    await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Code de vérification' })).toBeVisible();
+    const authenticated: Promise<Response> = page.waitForResponse(
+      (response: Response): boolean =>
+        response.url().endsWith('/api/auth/login/totp') && response.request().method() === 'POST',
+    );
+    await page.getByRole('textbox', { name: 'Code à six chiffres' }).fill(stackTotp());
+    const login: Response = await authenticated;
+    expect(login.status()).toBe(200);
+    await expect(page).toHaveURL(/\/admin\/projects$/);
+    await expect(page.getByRole('heading', { name: 'Projets', exact: true })).toBeVisible();
+    await assertAdminAccessibility(page);
+    const session: APIResponse<unknown> = await page.request.post('/api/auth/refresh', {
+      headers: { 'x-csrf': '1' },
+    });
+    expect(session.status()).toBe(200);
+    const token: string = ((await session.json()) as { accessToken: string }).accessToken;
+    const headers: { authorization: string; 'x-csrf': string } = {
+      authorization: `Bearer ${token}`,
+      'x-csrf': '1',
+    };
+    const listed: APIResponse<unknown> = await page.request.get('/api/content/admin/projects', {
+      headers,
+    });
+    expect(listed.status()).toBe(200);
+    const projects: StackProjectSummary[] = (
+      (await listed.json()) as {
+        member: StackProjectSummary[];
+      }
+    ).member;
+    const first: StackProjectSummary | undefined = projects[0];
+    const second: StackProjectSummary | undefined = projects[1];
+    expect(first).toBeDefined();
+    expect(second).toBeDefined();
+    if (!first || !second) throw new Error('Seed must provide two projects.');
+    await page.goto(`/admin/projects/${first.id}`);
+    await expect(page.getByRole('heading', { name: first.title.fr, exact: true })).toBeVisible();
+    await page.keyboard.press('ControlOrMeta+k');
+    await page.getByRole('option', { name: second.title.fr, exact: false }).click();
+    await expect(page).toHaveURL(new RegExp(`/admin/projects/${second.id}$`));
+    await expect(page.getByRole('heading', { name: second.title.fr, exact: true })).toBeVisible();
+
+    const titleField: Locator = page.getByLabel(/Titre.*FR/);
+    await titleField.fill(`${second.title.fr} draft`);
+    await page.getByRole('link', { name: 'Tous les projets', exact: true }).click();
+    const discard: Locator = page.getByRole('alertdialog', { name: 'Quitter sans enregistrer ?' });
+    await expect(discard).toBeVisible();
+    await discard.getByRole('button', { name: 'Continuer la modification', exact: true }).click();
+    await expect(titleField).toHaveValue(`${second.title.fr} draft`);
+    await page.getByRole('link', { name: 'Tous les projets', exact: true }).click();
+    await discard.getByRole('button', { name: 'Quitter', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/projects$/);
+
+    await page.goto(`/admin/projects/${first.id}`);
+    const editorTitle: Locator = page.getByLabel(/Titre.*FR/);
+    await expect(editorTitle).toHaveValue(first.title.fr);
+    await assertAdminAccessibility(page);
+    const siteUrl: Locator = page.getByPlaceholder('https://', { exact: true });
+    const initialUrl: string = await siteUrl.inputValue();
+    await siteUrl.fill('http://invalid.example');
+    await page.getByRole('button', { name: 'Enregistrer', exact: false }).click();
+    await expect(page.getByText('Utilisez une URL HTTPS valide.', { exact: true })).toBeVisible();
+    await siteUrl.fill(initialUrl);
+    const updatedTitle: string = `${first.title.fr} acceptance`;
+    await editorTitle.fill(updatedTitle);
+    const uiSave: Promise<Response> = page.waitForResponse(
+      (response: Response): boolean =>
+        response.url().endsWith(`/api/content/admin/projects/${first.id}`) &&
+        response.request().method() === 'PUT',
+    );
+    await page.getByRole('button', { name: 'Enregistrer', exact: false }).click();
+    expect((await uiSave).status()).toBe(200);
+    await expect(page.getByRole('heading', { name: updatedTitle, exact: true })).toBeVisible();
+    await expect(page.getByText('Tout est enregistré', { exact: true })).toBeVisible();
+
+    const current: APIResponse<unknown> = await page.request.get(
+      `/api/content/admin/projects/${first.id}`,
+      { headers },
+    );
+    const project: Record<string, unknown> = (await current.json()) as Record<string, unknown>;
+    const fields: string[] = [
+      'title',
+      'summary',
+      'lead',
+      'periodLabel',
+      'client',
+      'role',
+      'place',
+      'siteUrl',
+      'techs',
+      'featured',
+      'article',
+    ];
+    const revision: Record<string, unknown> = Object.fromEntries(
+      fields.map((field: string): [string, unknown] => [field, project[field]]),
+    );
+    const version: string = String(project['version']);
+    const externalTitle: string = `${first.title.fr} external revision`;
+    const saved: APIResponse<unknown> = await page.request.put(
+      `/api/content/admin/projects/${first.id}`,
+      {
+        headers: { ...headers, 'if-match': `"${version}"` },
+        data: { ...revision, title: { ...(project['title'] as object), fr: externalTitle } },
+      },
+    );
+    expect(saved.status()).toBe(200);
+    await editorTitle.fill(`${first.title.fr} stale draft`);
+    const staleSave: Promise<Response> = page.waitForResponse(
+      (response: Response): boolean =>
+        response.url().endsWith(`/api/content/admin/projects/${first.id}`) &&
+        response.request().method() === 'PUT',
+    );
+    await page.getByRole('button', { name: 'Enregistrer', exact: false }).click();
+    expect((await staleSave).status()).toBe(412);
+    await expect(
+      page.getByText('Le projet a été modifié ailleurs depuis son ouverture.', { exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Recharger', exact: true }).click();
+    await expect(editorTitle).toHaveValue(externalTitle);
+    await page.getByRole('button', { name: 'Dépublier', exact: true }).click();
+    await page
+      .getByRole('alertdialog')
+      .getByRole('button', { name: 'Dépublier', exact: true })
+      .click();
+    await expect(page.getByText('Retiré du site public.', { exact: true })).toBeVisible();
+    const publication: Promise<Response> = page.waitForResponse((response: Response): boolean =>
+      response.url().endsWith(`/api/content/admin/projects/${first.id}/publish`),
+    );
+    await page.getByRole('button', { name: 'Publier', exact: true }).click();
+    expect((await publication).status()).toBe(200);
+    await expect(
+      page.getByText('Publié. Le site public sera reconstruit dans quelques minutes.', {
+        exact: true,
+      }),
+    ).toBeVisible();
+
+    const content: string = `Acceptance message ${Date.now()}: please verify delivery to the local inbox.`;
+    await page.goto('/#contact');
+    const contact: Locator = page.getByRole('form', { name: 'Formulaire de contact' });
+    await contact.getByRole('textbox', { name: 'Nom', exact: false }).fill('Acceptance sender');
+    await contact
+      .getByRole('textbox', { name: 'Adresse e-mail', exact: false })
+      .fill('sender@example.test');
+    await contact.getByRole('textbox', { name: 'Message', exact: false }).fill(content);
+    const sent: Promise<Response> = page.waitForResponse(
+      (response: Response): boolean =>
+        response.url().endsWith('/api/contact/messages') && response.request().method() === 'POST',
+    );
+    await contact.getByRole('button', { name: 'Envoyer le message', exact: true }).click();
+    expect((await sent).status()).toBe(202);
+    await expect(page.getByRole('heading', { name: 'Message envoyé', exact: true })).toBeVisible();
+    await expect
+      .poll(
+        async (): Promise<number> => {
+          const mail: APIResponse<unknown> = await page.request.get(
+            `${process.env['MAILPIT_URL']}/api/v1/messages`,
+          );
+          return ((await mail.json()) as { total: number }).total;
+        },
+        { timeout: 30_000 },
+      )
+      .toBeGreaterThan(0);
+    await page.goto('/admin/messages');
+    await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible();
+    const messageLink: Locator = page
+      .getByRole('navigation', { name: 'Administration', exact: true })
+      .getByRole('link', { name: /Messages/ });
+    await expect(messageLink).toContainText('1');
+    await page.getByRole('button', { name: 'Tous', exact: true }).click();
+    await page
+      .getByRole('list', { name: 'Messages reçus' })
+      .getByRole('button', { name: /Acceptance sender/ })
+      .click();
+    const detail: Locator = page.getByRole('article', {
+      name: 'Message de Acceptance sender',
+      exact: true,
+    });
+    await expect(detail.getByText(content, { exact: true })).toBeVisible();
+    await assertAdminAccessibility(page);
+    const read: Promise<Response> = page.waitForResponse(
+      (response: Response): boolean =>
+        response.url().endsWith('/read') && response.request().method() === 'POST',
+    );
+    await detail.getByRole('button', { name: 'Marquer comme lu', exact: true }).click();
+    expect((await read).status()).toBe(200);
+    await expect(messageLink).toHaveText('Messages');
+    const archived: Promise<Response> = page.waitForResponse(
+      (response: Response): boolean =>
+        response.url().endsWith('/archive') && response.request().method() === 'POST',
+    );
+    await detail.getByRole('button', { name: 'Archiver', exact: true }).click();
+    expect((await archived).status()).toBe(200);
+    await page.getByRole('button', { name: 'Archivés', exact: true }).click();
+    await expect(
+      page
+        .getByRole('list', { name: 'Messages reçus' })
+        .getByRole('button', { name: /Acceptance sender/ }),
+    ).toBeVisible();
+    await page.route('**/api/auth/logout', (route: Route): Promise<void> => route.abort('failed'));
+    await page.getByRole('button', { name: 'Se déconnecter', exact: true }).click();
+    await expect(
+      page.getByText('La déconnexion n’a pas été confirmée. Réessayez.', { exact: true }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/messages$/);
+    await page.unroute('**/api/auth/logout');
+    await page.getByRole('button', { name: 'Se déconnecter', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/login$/);
+    const revoked: APIResponse<unknown> = await page.request.post('/api/auth/refresh', {
+      headers: { 'x-csrf': '1' },
+    });
+    expect(revoked.status()).toBe(401);
+  });
+});

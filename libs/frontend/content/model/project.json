@@ -1,0 +1,15 @@
+{
+  "name": "content-web-model",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/content/model/src",
+  "projectType": "library",
+  "tags": ["scope:content", "platform:web", "layer:model"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/frontend/content/model/tsconfig.lib.json --noEmit"
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+<ng-template #palette>
+  <ui-command class="rounded-none border-0 bg-transparent focus-within:outline-transparent">
+    <ui-command-input
+      placeholder="Rechercher une page, un projet ou une action…"
+      ariaLabel="Rechercher une commande"
+    />
+    <div uiCommandList class="max-h-[min(24rem,60dvh)] border-t border-line">
+      <p uiCommandEmpty>Aucun résultat.</p>
+      <ui-command-group heading="Aller à">
+        @for (link of links(); track link.path) {
+          <div uiCommandItem class="gap-2.5" (selected)="choosePage(link.path)">
+            <ng-icon class="text-star-muted" [svg]="link.icon" size="16" aria-hidden="true" />
+            {{ link.label }}
+          </div>
+        }
+      </ui-command-group>
+      @if (projects().length > 0) {
+        <ui-command-group heading="Projets">
+          @for (project of projects(); track project.id) {
+            <div
+              uiCommandItem
+              class="gap-2.5"
+              [keywords]="project.keywords"
+              (selected)="choosePage(project.path)"
+            >
+              <ng-icon
+                [class]="project.status === 'published' ? 'text-success-ink' : 'text-star-faint'"
+                [svg]="project.status === 'published' ? icons.published : icons.draft"
+                size="16"
+                aria-hidden="true"
+              />
+              {{ project.label }}
+            </div>
+          }
+        </ui-command-group>
+      }
+      <ui-command-group heading="Actions">
+        <div uiCommandItem class="gap-2.5" (selected)="chooseSite()">
+          <ng-icon class="text-star-muted" [svg]="icons.site" size="16" aria-hidden="true" />
+          Voir le site
+        </div>
+        <div uiCommandItem class="gap-2.5" (selected)="chooseLogout()">
+          <ng-icon class="text-star-muted" [svg]="icons.logout" size="16" aria-hidden="true" />
+          Se déconnecter
+        </div>
+      </ui-command-group>
+    </div>
+  </ui-command>
+</ng-template>

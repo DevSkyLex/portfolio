@@ -1,0 +1,61 @@
+<input
+  #field
+  uiInput
+  type="text"
+  role="combobox"
+  autocomplete="off"
+  aria-autocomplete="list"
+  [size]="size()"
+  [class]="fieldClasses()"
+  [id]="inputId()"
+  [value]="text()"
+  [placeholder]="placeholder()"
+  [disabled]="disabled()"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="open() ? listboxId() : null"
+  [attr.aria-activedescendant]="activeItem()?.id ?? null"
+  [attr.aria-label]="ariaLabel() ?? null"
+  [attr.aria-labelledby]="ariaLabelledby() ?? null"
+  [attr.aria-describedby]="ariaDescribedby() ?? null"
+  [attr.aria-invalid]="invalid() || null"
+  [attr.aria-required]="required() || null"
+  (input)="onInput(field.value)"
+  (keydown)="onKeydown($event)"
+  (click)="show()"
+  (blur)="onBlur()"
+/>
+<ng-icon
+  class="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-star-muted transition-transform duration-(--dur-pop) ease-orbit motion-reduce:transition-none"
+  [class.rotate-180]="open()"
+  [svg]="icons.chevron"
+  size="16"
+  aria-hidden="true"
+/>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="field"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayMinWidth]="minWidth()"
+  (overlayOutsideClick)="onOutsideClick($event)"
+  (detach)="close()"
+>
+  <!-- Pressing inside the list keeps the focus in the field. -->
+  <div [class]="panelClasses()" data-slot="combobox-content" (mousedown)="$event.preventDefault()">
+    <div
+      role="listbox"
+      class="flex flex-col"
+      [id]="listboxId()"
+      [attr.aria-label]="ariaLabel() ?? null"
+      [attr.aria-labelledby]="ariaLabelledby() ?? null"
+    >
+      <ng-content />
+    </div>
+    @if (!items().length) {
+      <p role="status" class="px-2.5 py-2 text-sm text-star-faint" data-slot="combobox-empty">
+        {{ emptyText() }}
+      </p>
+    }
+  </div>
+</ng-template>

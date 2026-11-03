@@ -1,0 +1,24 @@
+# false: files, secrets and timers only (provision.yml); true: also runs scripts/deploy.sh (deploy.yml).
+portfolio_deploy_services: true
+# Shared deployment conventions used by the other applications behind Traefik.
+portfolio_docker_project_name: "{{ lookup('ansible.builtin.env', 'DOCKER_PROJECT_NAME') | default('portfolio', true) }}"
+portfolio_docker_container_name: "{{ lookup('ansible.builtin.env', 'DOCKER_CONTAINER_NAME') | default(portfolio_docker_project_name, true) }}"
+portfolio_app_port: "{{ lookup('ansible.builtin.env', 'VPS_APP_PORT') | default('80', true) }}"
+portfolio_traefik_router_name: "{{ lookup('ansible.builtin.env', 'TRAEFIK_ROUTER_NAME') | default(portfolio_docker_project_name, true) }}"
+portfolio_traefik_secure_middlewares: "{{ lookup('ansible.builtin.env', 'TRAEFIK_SECURE_MIDDLEWARES') }}"
+# Exact Traefik address or a reviewed narrow CIDR; never the whole shared application network.
+portfolio_trusted_proxies: "{{ lookup('ansible.builtin.env', 'TRUSTED_PROXIES') }}"
+portfolio_log_level: "{{ lookup('ansible.builtin.env', 'LOG_LEVEL') | default('info', true) }}"
+portfolio_contact_mail_from: "{{ lookup('ansible.builtin.env', 'CONTACT_MAIL_FROM') | default('Portfolio <noreply@' ~ domain ~ '>', true) }}"
+portfolio_contact_notify_to: "{{ lookup('ansible.builtin.env', 'CONTACT_NOTIFY_TO') | default('contact@' ~ domain, true) }}"
+portfolio_web_memory_limit: "{{ lookup('ansible.builtin.env', 'WEB_MEMORY_LIMIT') | default('128M', true) }}"
+portfolio_web_cpu_limit: "{{ lookup('ansible.builtin.env', 'WEB_CPU_LIMIT') | default('1.0', true) }}"
+portfolio_log_max_size: "{{ lookup('ansible.builtin.env', 'LOG_MAX_SIZE') | default('10m', true) }}"
+portfolio_log_max_files: "{{ lookup('ansible.builtin.env', 'LOG_MAX_FILES') | default('5', true) }}"
+# Backups: daily (systemd OnCalendar, server time zone), kept N days, restore-tested weekly.
+portfolio_backup_on_calendar: '*-*-* 03:30:00'
+portfolio_backup_retention_days: 14
+portfolio_restore_check_on_calendar: 'Sun *-*-* 04:00:00'
+# age public key (age1…): backups stored encrypted. The private key stays off the server, so the weekly
+# restore test is then skipped on the server (run it where the key is). Empty: plain dumps (0600).
+portfolio_backup_age_recipient: ''

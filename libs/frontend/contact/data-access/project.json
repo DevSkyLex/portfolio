@@ -1,0 +1,31 @@
+{
+  "name": "contact-web-data-access",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/contact/data-access/src",
+  "prefix": "contact",
+  "projectType": "library",
+  "tags": ["scope:contact", "platform:web", "layer:data-access"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/frontend/contact/data-access/tsconfig.lib.json --noEmit"
+      },
+      "dependsOn": ["typecheck-spec"]
+    },
+    "typecheck-spec": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": ["typescript"]
+        }
+      ],
+      "options": {
+        "command": "tsc -p libs/frontend/contact/data-access/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

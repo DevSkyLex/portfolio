@@ -1,0 +1,341 @@
+/*
+ * Orbite — design system tokens (dark theme by default, light theme on [data-theme='light']).
+ * Source: "Portfolio — One page v2" mockup (orbite.css + v2.css).
+ * Values live in CSS variables; @theme inline exposes them to Tailwind without copying them.
+ */
+:root {
+  color-scheme: dark;
+  /* Motion durations of the mockup (used as duration-(--dur-*)). */
+  --dur-press: 120ms;
+  --dur-pop: 180ms;
+  --dur-roll: 420ms;
+  --dur-wipe: 560ms;
+  --dur-reveal: 900ms;
+  --dur-pulse: 2400ms;
+  --void: #05050b;
+  --void-raised: #0e0e19;
+  --void-sunk: #020207;
+  --void-glass: rgb(14 14 25 / 0.62);
+  --star: #eeedfb;
+  --star-muted: #aaa8c8;
+  --star-faint: #7f7da3;
+  --line: #1d1c2e;
+  --line-strong: #62608a;
+  /*
+   * Interactive states, derived from the ink and the strong line so both themes follow:
+   * every control (field, select, outline button, toggle, checkbox) rests on --line-field and takes
+   * --line-hover under the pointer; transparent controls tint with the ink (bg-star/5, /8 pressed);
+   * raised surfaces take --void-hover; filled ink buttons soften to --star-hover.
+   */
+  --line-field: color-mix(in srgb, var(--line-strong) 42%, var(--void));
+  --line-hover: color-mix(in srgb, var(--line-strong) 68%, var(--void));
+  --void-hover: color-mix(in srgb, var(--star) 6%, var(--void-raised));
+  --star-hover: color-mix(in srgb, var(--star) 86%, var(--void));
+  --aurora-pink: #ff4fae;
+  --aurora-violet: #9b6dff;
+  --aurora-blue: #4f80ff;
+  --aurora-cyan: #4fe6ff;
+  --on-aurora: #05050b;
+  /* Brand accent: focus rings, selection and the planet lens; never a status. */
+  --signal: var(--aurora-cyan);
+  --signal-ink: #6eebff;
+  --on-signal: #05050b;
+  /*
+   * Status colours (D37), tuned to the aurora night: success green, warning amber, danger red, info
+   * the aurora blue. `<status>` fills dots, icons and buttons; `<status>-ink` is text (4.5:1 or more on
+   * void, raised and an 8 % tint of itself); `on-<status>` is text on a `<status>` fill.
+   */
+  --success: #2fbf84;
+  --success-ink: #4fd69b;
+  --on-success: #05050b;
+  --warning: #f0a43a;
+  --warning-ink: #f7b860;
+  --on-warning: #05050b;
+  --danger: #ff5c6c;
+  --danger-ink: #ff8590;
+  --on-danger: #05050b;
+  --info: var(--aurora-blue);
+  --info-ink: #8aa9ff;
+  --on-info: #05050b;
+  --focus: var(--signal);
+  --scrim: rgb(2 2 7 / 0.66);
+  --shadow-float: 0 24px 48px -16px rgb(2 2 7 / 0.9);
+  --glow: 0 0 32px 0 rgb(155 109 255 / 0.45);
+  --aurora: linear-gradient(
+    90deg,
+    var(--aurora-pink) 0%,
+    var(--aurora-violet) 38%,
+    var(--aurora-blue) 70%,
+    var(--aurora-cyan) 100%
+  );
+  --aurora-diag: linear-gradient(
+    225deg,
+    var(--aurora-pink) 0%,
+    var(--aurora-violet) 38%,
+    var(--aurora-blue) 70%,
+    var(--aurora-cyan) 100%
+  );
+  --aurora-down: linear-gradient(
+    180deg,
+    var(--aurora-pink) 0%,
+    var(--aurora-violet) 38%,
+    var(--aurora-blue) 70%,
+    var(--aurora-cyan) 100%
+  );
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --void: #ffffff;
+  --void-raised: #f6f6fa;
+  --void-sunk: #eeeef4;
+  --void-glass: rgb(255 255 255 / 0.72);
+  --star: #121222;
+  --star-muted: #4a4964;
+  --star-faint: #64637f;
+  --line: #e7e6f0;
+  --line-strong: #7d7c99;
+  --aurora-pink: #c8156f;
+  --aurora-violet: #6a3fe6;
+  --aurora-blue: #2257e0;
+  --aurora-cyan: #007f99;
+  --on-aurora: #ffffff;
+  --signal-ink: #006d84;
+  --on-signal: #ffffff;
+  --success: #0d7f57;
+  --success-ink: #0a6b49;
+  --on-success: #ffffff;
+  --warning: #b45309;
+  --warning-ink: #9a4508;
+  --on-warning: #ffffff;
+  --danger: #d1243b;
+  --danger-ink: #b51d32;
+  --on-danger: #ffffff;
+  --info-ink: #1d48c0;
+  --on-info: #ffffff;
+  --scrim: rgb(11 11 22 / 0.32);
+  --shadow-float: 0 16px 32px -16px rgb(11 11 22 / 0.25);
+  --glow: 0 0 24px 0 rgb(106 63 230 / 0.25);
+}
+
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
+/*
+ * A scroll scene that does not run lays its content out as a static flow: reduced motion, no script or no
+ * application ([data-js] missing on <html>, see apps/web/public/theme.js), or a failed mount ([data-static]).
+ */
+@custom-variant scene-static {
+  @media (prefers-reduced-motion: reduce) {
+    @slot;
+  }
+  &:where(:root:not([data-js]) *, [data-static], [data-static] *) {
+    @slot;
+  }
+}
+
+@theme inline {
+  --color-void: var(--void);
+  --color-void-raised: var(--void-raised);
+  --color-void-sunk: var(--void-sunk);
+  --color-void-glass: var(--void-glass);
+  --color-void-hover: var(--void-hover);
+  --color-star: var(--star);
+  --color-star-hover: var(--star-hover);
+  --color-star-muted: var(--star-muted);
+  --color-star-faint: var(--star-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-field: var(--line-field);
+  --color-line-hover: var(--line-hover);
+  --color-aurora-pink: var(--aurora-pink);
+  --color-aurora-violet: var(--aurora-violet);
+  --color-aurora-blue: var(--aurora-blue);
+  --color-aurora-cyan: var(--aurora-cyan);
+  --color-on-aurora: var(--on-aurora);
+  --color-signal: var(--signal);
+  --color-signal-ink: var(--signal-ink);
+  --color-on-signal: var(--on-signal);
+  --color-success: var(--success);
+  --color-success-ink: var(--success-ink);
+  --color-on-success: var(--on-success);
+  --color-warning: var(--warning);
+  --color-warning-ink: var(--warning-ink);
+  --color-on-warning: var(--on-warning);
+  --color-danger: var(--danger);
+  --color-danger-ink: var(--danger-ink);
+  --color-on-danger: var(--on-danger);
+  --color-info: var(--info);
+  --color-info-ink: var(--info-ink);
+  --color-on-info: var(--on-info);
+  --color-focus: var(--focus);
+  --color-scrim: var(--scrim);
+  --shadow-float: var(--shadow-float);
+  --shadow-glow: var(--glow);
+}
+
+@theme {
+  --font-display: 'Unbounded Variable', 'Unbounded', system-ui, sans-serif;
+  --font-sans:
+    'Host Grotesk Variable', 'Host Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Martian Mono Variable', 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Type scale of the mockup (orbite.css .t-* / .m-*); -sm variants apply below 768px. */
+  --text-hero: 96px;
+  --text-hero--line-height: 96px;
+  --text-hero--letter-spacing: -0.04em;
+  --text-hero--font-weight: 600;
+  --text-hero-sm: 44px;
+  --text-hero-sm--line-height: 46px;
+  --text-hero-sm--letter-spacing: -0.04em;
+  --text-hero-sm--font-weight: 600;
+  --text-d1: 60px;
+  --text-d1--line-height: 64px;
+  --text-d1--letter-spacing: -0.03em;
+  --text-d1--font-weight: 600;
+  --text-d1-sm: 36px;
+  --text-d1-sm--line-height: 40px;
+  --text-d1-sm--letter-spacing: -0.03em;
+  --text-d1-sm--font-weight: 600;
+  --text-d2: 36px;
+  --text-d2--line-height: 42px;
+  --text-d2--letter-spacing: -0.02em;
+  --text-d2--font-weight: 600;
+  --text-d2-sm: 28px;
+  --text-d2-sm--line-height: 34px;
+  --text-d2-sm--letter-spacing: -0.02em;
+  --text-d2-sm--font-weight: 600;
+  --text-d3: 22px;
+  --text-d3--line-height: 28px;
+  --text-d3--letter-spacing: -0.01em;
+  --text-d3--font-weight: 600;
+  --text-lead: 21px;
+  --text-lead--line-height: 32px;
+  --text-lead--letter-spacing: -0.01em;
+  --text-lead-sm: 18px;
+  --text-lead-sm--line-height: 28px;
+  --text-lead-sm--letter-spacing: -0.01em;
+  --text-body: 17px;
+  --text-body--line-height: 28px;
+  --text-small: 15px;
+  --text-small--line-height: 24px;
+  --text-control: 15px;
+  --text-control--line-height: 20px;
+  --text-control--letter-spacing: -0.005em;
+  --text-control--font-weight: 500;
+  --text-label: 12px;
+  --text-label--line-height: 16px;
+  --text-label--letter-spacing: 0.08em;
+  --text-label--font-weight: 500;
+  --text-data: 14px;
+  --text-data--line-height: 20px;
+  --text-code: 14px;
+  --text-code--line-height: 22px;
+
+  --radius-field: 10px;
+  --radius-option: 6px;
+  --radius-card: 16px;
+
+  --container-content: 1200px;
+  --container-measure: 68ch;
+
+  --radius-sm: 4px;
+
+  --ease-orbit: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-orbit-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-orbit-roll: cubic-bezier(0.65, 0, 0.35, 1);
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Entrance animations of the mockup (ob-fade, v2-menu-in). */
+@theme {
+  --animate-fade-up: fade-up 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-menu-in: menu-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Floating shapes (v2-float): duration and delay set per shape. */
+  --animate-float: float 6s ease-in-out infinite alternate;
+  /* Pixel of the error code lighting up (v2-px-in): delay set per cell. */
+  --animate-px-in: px-in 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Hero name (v2-slot): each letter rolls up from its shape, delay set per letter. */
+  --animate-slot-up: slot-up 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Scroll hint wheel (v2-wheel). */
+  --animate-wheel: wheel 1800ms cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  /* Hero copy leaving on scroll (v2-hero-out), driven by a view timeline. */
+  --animate-hero-out: hero-out linear both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+      filter: blur(4px);
+    }
+  }
+  @keyframes float {
+    from {
+      transform: translateY(-10px) rotate(-10deg);
+    }
+    to {
+      transform: translateY(10px) rotate(10deg);
+    }
+  }
+  @keyframes px-in {
+    from {
+      opacity: 0;
+      transform: scale(0.2);
+    }
+  }
+  @keyframes slot-up {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-50%);
+    }
+  }
+  @keyframes wheel {
+    0% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(11px);
+      opacity: 0;
+    }
+  }
+  @keyframes hero-out {
+    to {
+      opacity: 0;
+      transform: translateY(-96px);
+    }
+  }
+}
+
+/*
+ * Page column of the mockup (.ob-wrap): 1200px of content, gutter 24px → 48px (768px) → 64px (1280px).
+ * Like the mockup, the steps follow the page container (the layouts carry @container), not the window:
+ * the window's scrollbar is not part of the width.
+ */
+@utility wrap {
+  width: 100%;
+  max-width: calc(var(--container-content) + 48px);
+  margin-inline: auto;
+  padding-inline: 24px;
+
+  @container (width >= 768px) {
+    max-width: calc(var(--container-content) + 96px);
+    padding-inline: 48px;
+  }
+  @container (width >= 1280px) {
+    max-width: calc(var(--container-content) + 128px);
+    padding-inline: 64px;
+  }
+}

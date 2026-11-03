@@ -1,0 +1,9 @@
+# Local development secrets, created from dev/secrets.example by scripts/dev-secrets.sh.
+/dev/secrets/
+# Server-side files written next to compose.prod.yml (Ansible, scripts/deploy.sh), never committed.
+/.env
+/backup.env
+/.deploy.lock
+/secrets/
+# Temporary file of scripts/check-ops.sh.
+/compose.dev.check.yml

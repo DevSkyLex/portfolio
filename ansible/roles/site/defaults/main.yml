@@ -1,0 +1,2 @@
+# Site build output, relative to the playbook (ansible/playbooks).
+site_dist: '{{ playbook_dir }}/../../dist/apps/web'

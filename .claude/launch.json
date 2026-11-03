@@ -1,0 +1,39 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "web"],
+      "port": 4200
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "apps/web-e2e/support/preview/serve-site.mjs",
+        "dist/apps/web/browser",
+        "4300"
+      ],
+      "port": 4300
+    },
+    {
+      "name": "content-service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "content-service"],
+      "port": 3101
+    },
+    {
+      "name": "contact-service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "contact-service"],
+      "port": 3102
+    },
+    {
+      "name": "identity-service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "identity-service"],
+      "port": 3103
+    }
+  ]
+}

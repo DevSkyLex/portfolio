@@ -1,0 +1,6 @@
+# Collections installed from requirements.yml (ansible-galaxy … -p .collections).
+.collections/
+# Decrypted vault and vault password: never committed (vault.yml itself is committed encrypted).
+inventory/group_vars/all/vault.yml.dec
+.vault-pass
+*.retry

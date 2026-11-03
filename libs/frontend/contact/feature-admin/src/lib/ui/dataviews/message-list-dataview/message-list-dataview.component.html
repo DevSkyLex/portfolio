@@ -1,0 +1,83 @@
+<ul class="min-h-0 flex-1 overflow-y-auto" role="list" aria-label="Messages reçus">
+  @for (message of messages(); track message.id) {
+    @let unread = message.status === 'received';
+    <li class="border-b border-line">
+      <button
+        class="relative flex w-full cursor-pointer gap-3 px-4 py-3 text-left outline-2 -outline-offset-2 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-star/3 focus-visible:outline-signal/55 aria-[current=true]:bg-star/6 aria-[current=true]:before:absolute aria-[current=true]:before:inset-y-0 aria-[current=true]:before:left-0 aria-[current=true]:before:w-0.5 aria-[current=true]:before:bg-signal"
+        type="button"
+        [id]="'message-' + message.id"
+        [attr.aria-current]="selectedId() === message.id"
+        (click)="opened.emit(message)"
+      >
+        <span
+          uiAvatar
+          size="sm"
+          class="size-7 font-sans text-[11px] font-semibold"
+          aria-hidden="true"
+        >
+          <span uiAvatarFallback>{{ initials(message.name) }}</span>
+        </span>
+        <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span class="flex items-center gap-2">
+            @if (unread) {
+              <span class="size-1.5 shrink-0 rounded-full bg-info" aria-hidden="true"></span>
+              <span class="sr-only">Non lu</span>
+            }
+            <span
+              class="truncate text-[13px] text-star"
+              [class]="unread ? 'font-semibold' : 'font-medium'"
+              >{{ message.name }}</span
+            >
+            <time
+              class="ml-auto shrink-0 text-[12px] text-star-faint"
+              [attr.datetime]="message.receivedAt"
+              [title]="message.receivedAt | date: 'dd/MM/yyyy HH:mm'"
+              >{{ when(message.receivedAt) }}</time
+            >
+          </span>
+          <span class="truncate text-[12px] text-star-muted">{{ subjects[message.subject] }}</span>
+          <span class="truncate text-[13px] text-star-faint">{{ message.message }}</span>
+        </span>
+      </button>
+    </li>
+  }
+</ul>
+<p
+  class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-t border-line px-4 py-2 text-[12px] text-star-faint @max-[1024px]:hidden"
+>
+  <span class="inline-flex items-center gap-1"><kbd uiKbd>J</kbd><kbd uiKbd>K</kbd> naviguer</span>
+  <span class="inline-flex items-center gap-1"><kbd uiKbd>R</kbd> lu</span>
+  <span class="inline-flex items-center gap-1"><kbd uiKbd>E</kbd> archiver</span>
+</p>
+@if (pages() > 1) {
+  <nav
+    class="flex h-11 shrink-0 items-center justify-between gap-2 border-t border-line px-3"
+    aria-label="Pages"
+  >
+    <button
+      uiBtn
+      size="sm"
+      variant="ghost"
+      class="h-7 px-2.5 text-[13px]"
+      type="button"
+      [disabled]="page() <= 1"
+      (click)="pageChange.emit(page() - 1)"
+    >
+      <ng-icon [svg]="icons.previous" size="14" aria-hidden="true" />
+      Précédents
+    </button>
+    <span class="text-[12px] text-star-faint">{{ page() }} / {{ pages() }}</span>
+    <button
+      uiBtn
+      size="sm"
+      variant="ghost"
+      class="h-7 px-2.5 text-[13px]"
+      type="button"
+      [disabled]="page() >= pages()"
+      (click)="pageChange.emit(page() + 1)"
+    >
+      Suivants
+      <ng-icon [svg]="icons.next" size="14" aria-hidden="true" />
+    </button>
+  </nav>
+}

@@ -1,0 +1,33 @@
+<label
+  class="flex items-baseline gap-2 font-medium text-star"
+  [class]="labelClasses()"
+  [attr.for]="controlId()"
+>
+  {{ label() }}
+  @if (required()) {
+    <span class="-ml-1 font-semibold text-danger-ink" aria-hidden="true">*</span>
+  }
+</label>
+<ng-content />
+<div class="flex justify-between gap-4 empty:hidden">
+  @if (error(); as message) {
+    <p
+      class="flex items-start gap-2 text-sm text-danger-ink transition-[opacity,translate] duration-(--dur-pop) ease-orbit motion-reduce:transition-none starting:-translate-y-1 starting:opacity-0"
+      [id]="controlId() + '-error'"
+      role="alert"
+    >
+      <ng-icon
+        class="mt-0.5 shrink-0"
+        color="var(--danger)"
+        [svg]="icons.alert"
+        size="16"
+        strokeWidth="2.25"
+        aria-hidden="true"
+      />
+      <span>{{ message }}</span>
+    </p>
+  } @else if (hint(); as text) {
+    <p class="text-sm text-star-muted" [id]="controlId() + '-hint'">{{ text }}</p>
+  }
+  <ng-content select="[uiFieldAside]" />
+</div>

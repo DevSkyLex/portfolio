@@ -1,0 +1,40 @@
+<form class="flex flex-col gap-5" novalidate (submit)="submit($event)">
+  @if (message(); as text) {
+    <div uiAlert variant="danger">
+      <ng-icon [svg]="icons.alert" size="16" aria-hidden="true" />
+      <p uiAlertTitle>{{ text }}</p>
+    </div>
+  }
+  <ui-input-otp
+    controlId="login-totp"
+    ariaLabel="Code à six chiffres"
+    [formField]="codeForm.totp"
+    (completed)="submit()"
+  >
+    <div uiInputOtpGroup>
+      <ui-input-otp-slot [index]="0" />
+      <ui-input-otp-slot [index]="1" />
+      <ui-input-otp-slot [index]="2" />
+    </div>
+    <ui-input-otp-separator />
+    <div uiInputOtpGroup>
+      <ui-input-otp-slot [index]="3" />
+      <ui-input-otp-slot [index]="4" />
+      <ui-input-otp-slot [index]="5" />
+    </div>
+  </ui-input-otp>
+  <div class="flex items-start gap-2.5 px-0.5 py-1 text-[13px]/5">
+    <ui-checkbox
+      class="mt-0.5"
+      size="sm"
+      controlId="login-trust-device"
+      [formField]="codeForm.trustDevice"
+    />
+    <label class="cursor-pointer text-star" for="login-trust-device">
+      Faire confiance à cet appareil
+    </label>
+  </div>
+  <button uiBtn class="h-10 w-full text-[14px]" type="submit" [disabled]="pending()">
+    {{ pending() ? 'Vérification…' : 'Vérifier' }}
+  </button>
+</form>

@@ -1,0 +1,26 @@
+<ng-content />
+<input
+  #control
+  class="absolute inset-0 z-20 size-full cursor-text bg-transparent text-base opacity-0 disabled:cursor-not-allowed"
+  data-slot="input-otp-control"
+  type="text"
+  autocomplete="one-time-code"
+  spellcheck="false"
+  [id]="controlId()"
+  [value]="value()"
+  [disabled]="disabled()"
+  [required]="required()"
+  [attr.inputmode]="inputMode()"
+  [attr.maxlength]="length()"
+  [attr.name]="name() || null"
+  [attr.aria-invalid]="showInvalid() || null"
+  [attr.aria-label]="ariaLabelledby() ? null : ariaLabel()"
+  [attr.aria-labelledby]="ariaLabelledby() ?? null"
+  [attr.aria-describedby]="ariaDescribedby() ?? null"
+  (input)="onInput($event)"
+  (paste)="onPaste($event)"
+  (keydown)="onKeydown($event)"
+  (focus)="focused.set(true); moveCaretToEnd()"
+  (mouseup)="moveCaretToEnd()"
+  (blur)="focused.set(false); touch.emit()"
+/>

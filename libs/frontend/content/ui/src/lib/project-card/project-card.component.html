@@ -1,0 +1,66 @@
+@let item = project();
+@let wide = featured();
+<a
+  class="group transition-[opacity,translate] delay-(--rd) duration-(--dur-reveal) ease-orbit focus-visible:outline-offset-6 in-data-js:not-data-in:translate-y-6 in-data-js:not-data-in:opacity-0 motion-reduce:transition-none"
+  [class]="
+    wide
+      ? 'col-span-full grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] grid-rows-[1fr_auto_auto_auto] gap-x-12 gap-y-3 @max-[960px]:grid-cols-[minmax(0,1fr)] @max-[960px]:grid-rows-none'
+      : 'row-span-4 grid grid-rows-subgrid content-start gap-y-3'
+  "
+  [style.--rd.ms]="delay()"
+  [routerLink]="link()"
+  uiReveal
+>
+  <div
+    class="relative grid place-items-center overflow-hidden rounded-card bg-void-raised [clip-path:inset(calc((1-var(--e,1))*9%)_round_16px)]"
+    [class]="
+      wide ? 'col-start-1 row-[1/-1] aspect-video @max-[960px]:row-auto' : 'mb-2 aspect-[4/3]'
+    "
+    uiScrollProgress
+    aria-hidden="true"
+  >
+    <div
+      class="absolute inset-0 [transform:scale(calc(1+(1-var(--e,1))*0.25))] transition-[scale] duration-(--dur-reveal) ease-orbit group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none"
+      [class]="tintClass()"
+    ></div>
+  </div>
+  <div
+    class="flex justify-between"
+    [class]="
+      wide
+        ? 'col-start-2 row-start-2 flex-col items-start gap-2 @max-[960px]:col-start-1 @max-[960px]:row-auto @max-[960px]:flex-row @max-[960px]:items-baseline'
+        : 'items-baseline gap-4'
+    "
+  >
+    <h3
+      class="font-display font-semibold"
+      [class]="
+        wide
+          ? 'text-[36px] leading-[42px] tracking-[-0.02em] @max-[768px]:text-[26px] @max-[768px]:leading-8'
+          : 'text-d3'
+      "
+    >
+      <span
+        class="underline decoration-transparent decoration-1 underline-offset-[6px] transition-[text-decoration-color] duration-(--dur-pop) ease-orbit group-hover:decoration-current group-focus-visible:decoration-current motion-reduce:transition-none"
+        >{{ item.title }}</span
+      >
+    </h3>
+    <p class="font-mono text-data text-star-faint">{{ years() }}</p>
+  </div>
+  <p
+    class="max-w-[52ch] text-star-muted"
+    [class]="
+      wide
+        ? 'col-start-2 row-start-3 text-[17px] leading-[27px] @max-[960px]:col-start-1 @max-[960px]:row-auto'
+        : 'text-small'
+    "
+  >
+    {{ item.summary }}
+  </p>
+  <content-tech-tags
+    [class]="
+      wide ? 'col-start-2 row-start-4 @max-[960px]:col-start-1 @max-[960px]:row-auto' : 'self-start'
+    "
+    [techs]="item.techs"
+  />
+</a>

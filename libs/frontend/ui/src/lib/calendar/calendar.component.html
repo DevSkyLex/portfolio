@@ -1,0 +1,73 @@
+<div class="flex items-center justify-between gap-2">
+  <button
+    uiBtn
+    type="button"
+    variant="ghost"
+    size="sm"
+    class="w-9 px-0"
+    [attr.aria-label]="previousLabel()"
+    [disabled]="!canGoPrevious()"
+    (click)="shiftMonth(-1)"
+  >
+    <ng-icon class="rtl:-scale-x-100" [svg]="icons.previous" size="16" aria-hidden="true" />
+  </button>
+  <div class="text-control text-star first-letter:uppercase" aria-live="polite" [id]="headingId">
+    {{ monthLabel() }}
+  </div>
+  <button
+    uiBtn
+    type="button"
+    variant="ghost"
+    size="sm"
+    class="w-9 px-0"
+    [attr.aria-label]="nextLabel()"
+    [disabled]="!canGoNext()"
+    (click)="shiftMonth(1)"
+  >
+    <ng-icon class="rtl:-scale-x-100" [svg]="icons.next" size="16" aria-hidden="true" />
+  </button>
+</div>
+<!-- Keyboard of the focused day button, handled once for the whole grid. -->
+<!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+<table
+  class="border-collapse"
+  role="grid"
+  [attr.aria-labelledby]="headingId"
+  (keydown)="onKeydown($event)"
+>
+  <thead>
+    <tr>
+      @for (weekday of weekdays(); track weekday.long) {
+        <th
+          class="size-9 p-0 text-center text-label font-normal text-star-faint"
+          scope="col"
+          [attr.abbr]="weekday.long"
+        >
+          {{ weekday.short }}
+        </th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (week of weeks(); track week[0]?.key) {
+      <tr>
+        @for (day of week; track day.key) {
+          <td class="p-0.5 text-center" [attr.aria-selected]="day.selected || null">
+            <button
+              type="button"
+              [class]="dayClasses(day)"
+              [attr.data-date]="day.key"
+              [attr.tabindex]="day.focused ? 0 : -1"
+              [attr.aria-label]="day.label"
+              [attr.aria-current]="day.today ? 'date' : null"
+              [attr.aria-disabled]="day.disabled || null"
+              (click)="pick(day.date)"
+            >
+              {{ day.number }}
+            </button>
+          </td>
+        }
+      </tr>
+    }
+  </tbody>
+</table>

@@ -1,0 +1,154 @@
+# System: updates (now and unattended), firewall, fail2ban, deployment account, key-only SSH.
+- name: At least one SSH key for the deployment account (key-only SSH must not lock everyone out)
+  ansible.builtin.assert:
+    that: deploy_authorized_keys | length > 0
+    fail_msg: deploy_authorized_keys is empty (inventory/group_vars/all/vars.yml)
+    quiet: true
+
+- name: Base packages
+  ansible.builtin.apt:
+    name: [ufw, fail2ban, python3-systemd, unattended-upgrades, rsync, ca-certificates, curl, gnupg]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Installed packages up to date
+  ansible.builtin.apt:
+    upgrade: safe
+    update_cache: true
+    cache_valid_time: 3600
+  when: base_upgrade_packages
+
+- name: Automatic security updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reboot after updates that need it, old kernels removed
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    content: |
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "{{ base_reboot_time }}";
+      Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Deployment account (SSH key only, no password)
+  ansible.builtin.user:
+    name: '{{ deploy_user }}'
+    shell: /bin/bash
+    groups: [sudo]
+    append: true
+    password_lock: true
+
+# Exclusive: a key removed from the inventory is revoked on the server.
+- name: SSH keys of the deployment account
+  ansible.posix.authorized_key:
+    user: '{{ deploy_user }}'
+    key: "{{ deploy_authorized_keys | join('\n') }}"
+    exclusive: true
+
+# Automated deployments need sudo without a prompt; the account has no password, and membership of the
+# `docker` group is root-equivalent anyway.
+- name: Passwordless sudo for deployment
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/{{ deploy_user }}
+    content: "{{ deploy_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: '0440'
+    validate: visudo -cf %s
+
+# Drop-in read before the distribution's files (first value wins in sshd_config).
+- name: SSH hardening (keys only, no root, no forwarding)
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitEmptyPasswords no
+      AuthenticationMethods publickey
+      MaxAuthTries 3
+      LoginGraceTime 20
+      ClientAliveInterval 300
+      ClientAliveCountMax 2
+      X11Forwarding no
+      AllowAgentForwarding no
+      AllowTcpForwarding no
+    owner: root
+    group: root
+    mode: '0644'
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Reload SSH
+
+- name: Kernel network hardening
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/60-hardening.conf
+    content: |
+      net.ipv4.conf.all.accept_redirects = 0
+      net.ipv4.conf.default.accept_redirects = 0
+      net.ipv6.conf.all.accept_redirects = 0
+      net.ipv6.conf.default.accept_redirects = 0
+      net.ipv4.conf.all.send_redirects = 0
+      net.ipv4.conf.all.accept_source_route = 0
+      net.ipv4.conf.all.log_martians = 1
+      net.ipv4.tcp_syncookies = 1
+      kernel.kptr_restrict = 2
+      kernel.dmesg_restrict = 1
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Apply kernel settings
+
+# SSH rate-limited (6 connections in 30 s per address); Docker publishes 80/443 itself, ahead of UFW.
+- name: Firewall rules (SSH limited, HTTP, HTTPS)
+  community.general.ufw:
+    rule: '{{ item.rule }}'
+    port: '{{ item.port }}'
+    proto: tcp
+  loop:
+    - { rule: limit, port: '22' }
+    - { rule: allow, port: '80' }
+    - { rule: allow, port: '443' }
+  loop_control:
+    label: '{{ item.rule }} {{ item.port }}'
+
+- name: Firewall enabled, incoming denied by default
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+- name: Fail2ban jail for SSH (journald, bans through UFW)
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.d/portfolio.local
+    content: |
+      [DEFAULT]
+      bantime = {{ base_fail2ban_bantime }}
+      findtime = {{ base_fail2ban_findtime }}
+      maxretry = {{ base_fail2ban_maxretry }}
+      banaction = ufw
+
+      [sshd]
+      enabled = true
+      backend = systemd
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart fail2ban
+
+- name: Fail2ban enabled
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true

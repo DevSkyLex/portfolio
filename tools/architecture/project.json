@@ -1,0 +1,61 @@
+{
+  "name": "architecture",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/architecture/src",
+  "projectType": "library",
+  "tags": ["scope:platform", "platform:neutral", "layer:tooling"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint/**/*.mjs",
+        { "externalDependencies": ["eslint"] }
+      ],
+      "options": {
+        "cwd": ".",
+        "command": "eslint --config eslint.config.mjs tools/architecture tools/eslint"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["test-tooling"],
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint/**/*.mjs",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/libs/**/*",
+        "{workspaceRoot}/apps/**/*",
+        { "externalDependencies": ["eslint", "@nx/eslint-plugin", "typescript", "vitest"] }
+      ],
+      "options": {
+        "command": "vitest run --config tools/architecture/vitest.config.mts"
+      }
+    },
+    "test-tooling": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/eslint/**/*.mjs",
+        "{workspaceRoot}/eslint.config.mjs",
+        { "externalDependencies": ["eslint", "typescript-eslint"] }
+      ],
+      "options": {
+        "command": "node --test tools/eslint/testing/explicit-types.test.mjs"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/**/*", "{workspaceRoot}/tsconfig.base.json"],
+      "options": {
+        "command": "tsc -p tools/architecture/tsconfig.json --noEmit"
+      }
+    }
+  }
+}

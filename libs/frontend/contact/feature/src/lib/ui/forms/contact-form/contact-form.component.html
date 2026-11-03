@@ -1,0 +1,176 @@
+<form
+  class="flex flex-col gap-6"
+  novalidate
+  i18n-aria-label="@@contact.form.label"
+  aria-label="Formulaire de contact"
+  (submit)="send($event)"
+>
+  @if (invalidCount() > 0 || failure()) {
+    <div
+      uiAlert
+      variant="danger"
+      class="gap-y-0 rounded-none border-danger bg-void-raised px-4 py-3.5"
+    >
+      <ng-icon [svg]="icons.alert" size="16" strokeWidth="2.25" aria-hidden="true" />
+      <p uiAlertTitle class="min-h-0 text-[15px]/5 font-medium" i18n="@@contact.failed">
+        Le message n'est pas parti.
+      </p>
+      <p uiAlertDescription class="block">
+        @if (invalidCount() === 1) {
+          <ng-container i18n="@@contact.failed.one"
+            >Un champ est à corriger ci-dessous.</ng-container
+          >
+        } @else if (invalidCount() > 1) {
+          <ng-container i18n="@@contact.failed.many"
+            >{{ invalidCount() }} champs sont à corriger ci-dessous.</ng-container
+          >
+        } @else {
+          {{ failure() }}
+        }
+      </p>
+    </div>
+  }
+
+  <div class="grid gap-6 @min-[520px]:grid-cols-2">
+    <ui-field
+      i18n-label="@@contact.field.name"
+      label="Nom"
+      controlId="contact-name"
+      [required]="true"
+      [error]="error('name')"
+    >
+      <input
+        uiInput
+        id="contact-name"
+        type="text"
+        autocomplete="name"
+        aria-required="true"
+        [formField]="contactForm.name"
+        [attr.aria-invalid]="error('name') ? 'true' : null"
+        [attr.aria-describedby]="describedBy('name')"
+      />
+    </ui-field>
+    <ui-field
+      i18n-label="@@contact.field.company"
+      label="Entreprise"
+      controlId="contact-company"
+      [error]="error('company')"
+    >
+      <input
+        uiInput
+        id="contact-company"
+        type="text"
+        autocomplete="organization"
+        [formField]="contactForm.company"
+        [attr.aria-invalid]="error('company') ? 'true' : null"
+        [attr.aria-describedby]="describedBy('company')"
+      />
+    </ui-field>
+  </div>
+
+  <ui-field
+    i18n-label="@@contact.field.email"
+    label="Adresse e-mail"
+    controlId="contact-email"
+    [required]="true"
+    [error]="error('email')"
+  >
+    <input
+      uiInput
+      id="contact-email"
+      type="email"
+      autocomplete="email"
+      inputmode="email"
+      aria-required="true"
+      i18n-placeholder="@@contact.field.email.placeholder"
+      placeholder="nom@domaine.fr"
+      [formField]="contactForm.email"
+      [attr.aria-invalid]="error('email') ? 'true' : null"
+      [attr.aria-describedby]="describedBy('email')"
+    />
+  </ui-field>
+
+  <ui-field i18n-label="@@contact.field.subject" label="Objet" controlId="contact-subject">
+    <ui-select triggerId="contact-subject" [formField]="contactForm.subject">
+      @for (subject of subjects; track subject.value) {
+        <ui-select-option [value]="subject.value">{{ subject.label }}</ui-select-option>
+      }
+    </ui-select>
+  </ui-field>
+
+  <ui-field
+    i18n-label="@@contact.field.message"
+    label="Message"
+    controlId="contact-message"
+    [required]="true"
+    [error]="error('message')"
+    i18n-hint="@@contact.field.message.hint"
+    hint="Le contexte, le délai, le budget si vous l'avez."
+  >
+    <textarea
+      uiTextarea
+      id="contact-message"
+      rows="6"
+      aria-required="true"
+      [formField]="contactForm.message"
+      [attr.aria-invalid]="error('message') ? 'true' : null"
+      [attr.aria-describedby]="describedBy('message', true)"
+    ></textarea>
+    <p
+      class="font-mono text-data whitespace-nowrap text-star-faint"
+      uiFieldAside
+      aria-hidden="true"
+    >
+      {{ length() }} / {{ limits.messageMax }}
+    </p>
+  </ui-field>
+
+  <!-- Honeypot field: invisible and out of the keyboard path; only a bot fills it in. -->
+  <div class="absolute -left-[9999px] size-px overflow-hidden" aria-hidden="true">
+    <label for="contact-website">Site web</label>
+    <input
+      id="contact-website"
+      type="text"
+      tabindex="-1"
+      autocomplete="off"
+      [formField]="contactForm.website"
+    />
+  </div>
+
+  <button
+    class="group w-full"
+    uiBtn
+    size="lg"
+    type="submit"
+    [attr.aria-busy]="pending()"
+    [disabled]="pending()"
+  >
+    @if (pending()) {
+      <span
+        class="size-4 shrink-0 animate-[spin_700ms_linear_infinite] rounded-full border-[1.5px] border-current border-r-transparent motion-reduce:animate-none"
+        aria-hidden="true"
+      ></span>
+      <ng-container i18n="@@contact.sending">Envoi en cours</ng-container>
+    } @else {
+      <ng-container i18n="@@contact.send">Envoyer le message</ng-container>
+      <ng-icon
+        class="transition-transform duration-(--dur-roll) ease-orbit-roll group-hover:translate-x-[3px] group-focus-visible:translate-x-[3px] motion-reduce:transition-none"
+        [svg]="icons.send"
+        size="16"
+        strokeWidth="2.25"
+        aria-hidden="true"
+      />
+    }
+  </button>
+
+  <p class="text-sm text-star-faint" i18n="@@contact.privacy">
+    Vos informations servent uniquement à vous répondre ; le message est supprimé au bout de trois
+    ans.
+  </p>
+  <a
+    class="-mt-3 w-fit text-sm text-star-muted underline decoration-line-strong underline-offset-4 hover:text-star"
+    routerLink="/privacy"
+    i18n="@@contact.privacyLink"
+    >Politique de confidentialité</a
+  >
+</form>

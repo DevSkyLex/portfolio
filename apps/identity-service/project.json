@@ -1,0 +1,77 @@
+{
+  "name": "identity-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/identity-service/src",
+  "projectType": "application",
+  "tags": ["scope:app", "platform:server", "layer:app"],
+  "targets": {
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/identity-service/package.json",
+        "{workspaceRoot}/dist/apps/identity-service/package-lock.json"
+      ],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": ["{workspaceRoot}/dist/apps/identity-service/workspace_modules"],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "readyWhen": {
+        "signal": true
+      },
+      "options": {
+        "buildTarget": "identity-service:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "identity-service:build:development"
+        },
+        "production": {
+          "buildTarget": "identity-service:build:production"
+        }
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p apps/identity-service/tsconfig.app.json --noEmit"
+      }
+    },
+    "db-migrate": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node dist/apps/identity-service/cli.js migrate"
+      }
+    },
+    "generate-key": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node dist/apps/identity-service/cli.js generate-key"
+      }
+    }
+  }
+}

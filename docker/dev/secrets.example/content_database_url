@@ -1,0 +1,1 @@
+postgres://content_app:dev-content-app@postgres:5432/portfolio

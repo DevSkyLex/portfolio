@@ -1,0 +1,5 @@
+{
+  "challenge": "3q2-7wEXAMPLEchallengeTokenBase64url_0123456789",
+  "totp": "123456",
+  "trustDevice": true
+}

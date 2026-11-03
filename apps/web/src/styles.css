@@ -1,0 +1,113 @@
+/* Imports, Tailwind sources and document rules only (dentalstock convention). */
+/*
+ * ng-icons colours its host inside `@layer ng-icon`. Declared before Tailwind's layers, that layer ranks
+ * lowest, so a `text-*` utility on an icon wins and status icons take their ink (D37).
+ */
+@layer ng-icon;
+@import 'tailwindcss';
+/* Self-hosted fonts (OFL): no request to a third-party service. */
+@import '@fontsource-variable/unbounded';
+@import '@fontsource-variable/host-grotesk';
+@import '@fontsource-variable/martian-mono';
+@import '../../../libs/frontend/design-tokens/src/theme.css';
+/* Positioning of the CDK overlays (menus, popovers, dialogs of @vfortin/ui). */
+@import '@angular/cdk/overlay-prebuilt.css';
+
+@source '../../../libs/frontend';
+
+@layer base {
+  html {
+    background: var(--void);
+    color: var(--star);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scrollbar-gutter: stable;
+    /* The header compacts on scroll (72 → 56px): scroll anchoring would pull the page back by the difference. */
+    overflow-anchor: none;
+  }
+
+  /* Body copy of the mockup; on body so that rem-based utilities keep a 16px root. */
+  body {
+    font-size: 17px;
+    line-height: 28px;
+    background: var(--void);
+  }
+
+  ::selection {
+    background: var(--aurora-violet);
+    color: var(--on-aurora);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+}
+
+/*
+ * Window scrollbar (mockup v2.css): thin thumb in the theme's tint, transparent track. Recent engines take the
+ * standard properties; once a scrollbar-color exists Chrome ignores ::-webkit-scrollbar, hence the fallback below.
+ */
+:root {
+  /* Derived from the tokens, so both themes follow (D37). */
+  --sb: color-mix(in srgb, var(--star) 24%, transparent);
+  --sb-hover: color-mix(in srgb, var(--star) 36%, transparent);
+  --sb-drag: color-mix(in srgb, var(--signal) 58%, transparent);
+}
+@supports (scrollbar-color: auto) {
+  :root,
+  :root * {
+    scrollbar-color: var(--sb) transparent;
+    scrollbar-width: thin;
+  }
+}
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+    background: transparent;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    min-height: 48px;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    background: var(--sb) padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--sb-hover);
+  }
+  ::-webkit-scrollbar-thumb:active {
+    background-color: var(--sb-drag);
+  }
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
+}
+
+/*
+ * Theme switch (mockup orbite.css, data-ob-vt): the new theme opens in a circle from the theme menu
+ * (--vt-x / --vt-y, set by ThemeService) and goes from an 8px blur to sharp.
+ */
+html[data-theme-vt]::view-transition-old(root),
+html[data-theme-vt]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html[data-theme-vt]::view-transition-new(root) {
+  animation: theme-vt 900ms cubic-bezier(0.76, 0, 0.24, 1) both;
+}
+@keyframes theme-vt {
+  from {
+    clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 0));
+    filter: blur(8px);
+  }
+  to {
+    clip-path: circle(150vmax at var(--vt-x, 50%) var(--vt-y, 0));
+    filter: blur(0);
+  }
+}

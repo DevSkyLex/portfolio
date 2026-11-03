@@ -1,0 +1,206 @@
+<form class="flex flex-col gap-10" novalidate (submit)="onSubmit($event)">
+  @if (summary(); as message) {
+    <div uiAlert variant="danger" class="-mb-4">
+      <ng-icon [svg]="icons.alert" size="16" aria-hidden="true" />
+      <p uiAlertTitle class="text-[13px]/5">{{ message }}</p>
+    </div>
+  }
+
+  <!-- A legend sits in the fieldset border unless it floats: float-left keeps it in the flow. -->
+  <fieldset [disabled]="pending()">
+    <legend class="float-left w-full border-b border-line pb-2 text-[14px] font-semibold text-star">
+      Présentation
+    </legend>
+    <div class="clear-left flex flex-col gap-4 pt-4">
+      <div
+        class="grid grid-cols-2 gap-3 text-[12px] font-medium text-star-faint @max-[768px]:hidden"
+        aria-hidden="true"
+      >
+        <span>Français</span>
+        <span>English</span>
+      </div>
+      @for (field of shortFields; track field.key) {
+        <div class="grid grid-cols-2 gap-3 @max-[768px]:grid-cols-1">
+          <div class="flex flex-col gap-1.5 text-[13px] font-medium text-star-muted">
+            <label [for]="'edit-' + field.key + '-fr'"
+              >{{ field.label }}<span class="@min-[768px]:sr-only"> (FR)</span></label
+            >
+            @if (field.multiline) {
+              <textarea
+                uiInput
+                size="sm"
+                multiline
+                rows="3"
+                class="text-[14px]"
+                aria-required="true"
+                [id]="'edit-' + field.key + '-fr'"
+                [formField]="projectForm[field.key].fr"
+              ></textarea>
+            } @else {
+              <input
+                uiInput
+                size="sm"
+                class="text-[14px]"
+                aria-required="true"
+                [id]="'edit-' + field.key + '-fr'"
+                [formField]="projectForm[field.key].fr"
+              />
+            }
+            @if (fieldError(field.key); as message) {
+              <span class="font-normal text-danger-ink">{{ message }}</span>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5 text-[13px] font-medium text-star-muted">
+            <label [for]="'edit-' + field.key + '-en'"
+              >{{ field.label }}<span class="@min-[768px]:sr-only"> (EN)</span></label
+            >
+            @if (field.multiline) {
+              <textarea
+                uiInput
+                size="sm"
+                multiline
+                rows="3"
+                class="text-[14px]"
+                [id]="'edit-' + field.key + '-en'"
+                [formField]="projectForm[field.key].en"
+              ></textarea>
+            } @else {
+              <input
+                uiInput
+                size="sm"
+                class="text-[14px]"
+                [id]="'edit-' + field.key + '-en'"
+                [formField]="projectForm[field.key].en"
+              />
+            }
+            @if (fieldError(field.key, 'en'); as message) {
+              <span class="font-normal text-danger-ink">{{ message }}</span>
+            }
+          </div>
+        </div>
+      }
+      <div class="grid grid-cols-2 gap-3 pt-2 @max-[768px]:grid-cols-1">
+        <label class="flex flex-col gap-1.5 text-[13px] font-medium text-star-muted">
+          Site (https://…, facultatif)
+          <input
+            uiInput
+            size="sm"
+            class="text-[14px]"
+            type="url"
+            placeholder="https://"
+            [formField]="projectForm.siteUrl"
+          />
+          @if (simpleError('siteUrl'); as message) {
+            <span class="font-normal text-danger-ink">{{ message }}</span>
+          }
+        </label>
+        <label class="flex flex-col gap-1.5 text-[13px] font-medium text-star-muted">
+          Technos (clés séparées par des virgules)
+          <input uiInput size="sm" class="font-mono text-[13px]" [formField]="projectForm.techs" />
+          @if (simpleError('techs'); as message) {
+            <span class="font-normal text-danger-ink">{{ message }}</span>
+          }
+        </label>
+      </div>
+      <div class="flex w-fit items-center gap-2.5 py-1">
+        <ui-checkbox size="sm" controlId="edit-featured" [formField]="projectForm.featured" />
+        <label class="cursor-pointer text-[13px] font-medium text-star" for="edit-featured">
+          Projet mis en avant sur l'accueil
+        </label>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset [disabled]="pending()">
+    <legend class="float-left w-full border-b border-line pb-2 text-[14px] font-semibold text-star">
+      Étude de cas
+    </legend>
+    <div class="clear-left flex flex-col gap-4 pt-4">
+      <p class="max-w-[72ch] text-[13px]/5 text-star-faint">
+        Un paragraphe par bloc, séparés par une ligne vide ; l'anglais suit les paragraphes français
+        dans le même ordre, un paragraphe pas encore traduit s'écrit « {{ untranslated }} ».
+      </p>
+      <div
+        class="grid grid-cols-2 gap-3 text-[12px] font-medium text-star-faint @max-[768px]:hidden"
+        aria-hidden="true"
+      >
+        <span>Français</span>
+        <span>English</span>
+      </div>
+      @for (section of sections; track section.key) {
+        <div class="grid grid-cols-2 gap-3 @max-[768px]:grid-cols-1">
+          <label class="flex flex-col gap-1.5 text-[13px] font-medium text-star-muted">
+            {{ section.label }} (FR)
+            <textarea
+              uiInput
+              size="sm"
+              multiline
+              rows="6"
+              class="text-[14px]"
+              [formField]="projectForm.article[section.key].fr"
+            ></textarea>
+            @if (articleError(section.key, 'fr'); as message) {
+              <span class="font-normal text-danger-ink">{{ message }}</span>
+            }
+          </label>
+          <label class="flex flex-col gap-1.5 text-[13px] font-medium text-star-muted">
+            {{ section.label }} (EN)
+            <textarea
+              uiInput
+              size="sm"
+              multiline
+              rows="6"
+              class="text-[14px]"
+              [formField]="projectForm.article[section.key].en"
+            ></textarea>
+            @if (articleError(section.key, 'en'); as message) {
+              <span class="font-normal text-danger-ink">{{ message }}</span>
+            }
+          </label>
+        </div>
+      }
+    </div>
+  </fieldset>
+
+  <div
+    class="sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-line bg-void-raised py-2 pr-2 pl-4 shadow-float"
+  >
+    <span class="flex items-center gap-2 text-[13px] text-star-muted">
+      @if (dirty()) {
+        <span class="size-1.5 rounded-full bg-warning" aria-hidden="true"></span>
+        Modifications non enregistrées
+      } @else {
+        <ng-icon class="text-success-ink" [svg]="icons.saved" size="14" aria-hidden="true" />
+        Tout est enregistré
+      }
+    </span>
+    <span class="flex items-center gap-1.5">
+      <button
+        uiBtn
+        variant="ghost"
+        size="sm"
+        class="h-8 px-3 text-[13px]"
+        type="button"
+        [disabled]="pending() || !dirty()"
+        (click)="cancel()"
+      >
+        Annuler
+      </button>
+      <button
+        uiBtn
+        size="sm"
+        class="h-8 gap-2 pr-2 pl-3 text-[13px]"
+        type="submit"
+        [disabled]="pending() || !dirty()"
+      >
+        {{ pending() ? 'Enregistrement…' : 'Enregistrer' }}
+        <kbd
+          uiKbd
+          class="h-4 min-w-0 rounded-[4px] border-0 bg-current/12 px-1 text-[11px]/4 font-normal text-current"
+          aria-hidden="true"
+          >Ctrl S</kbd
+        >
+      </button>
+    </span>
+  </div>
+</form>

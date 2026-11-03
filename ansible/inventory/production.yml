@@ -1,0 +1,8 @@
+# OVH VPS. Fill in the address and account (the `deploy` account is created by provision.yml; first connection as
+# root or with the account provided by OVH: -e ansible_user=ubuntu).
+all:
+  hosts:
+    vps:
+      ansible_host: "{{ lookup('ansible.builtin.env', 'VPS_HOST') | default('VPS_IP_ADDRESS', true) }}"
+      ansible_user: "{{ lookup('ansible.builtin.env', 'VPS_USER') | default('deploy', true) }}"
+      ansible_port: "{{ lookup('ansible.builtin.env', 'VPS_PORT') | default('22', true) | int }}"

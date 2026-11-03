@@ -1,0 +1,125 @@
+<header
+  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-line bg-void px-6 text-[13px] @max-[640px]:px-4"
+>
+  <a
+    class="inline-flex h-7 items-center gap-1.5 rounded-option px-1.5 font-medium text-star-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-star/5 hover:text-star focus-visible:outline-signal/55"
+    routerLink=".."
+  >
+    <ng-icon [svg]="icons.back" size="14" aria-hidden="true" />
+    Tous les projets
+  </a>
+  @if (project(); as current) {
+    <ng-icon class="shrink-0 text-star-faint" [svg]="icons.chevron" size="14" aria-hidden="true" />
+    <span class="truncate font-medium text-star">{{ current.title.fr }}</span>
+    <span class="ml-auto flex shrink-0 items-center gap-1.5">
+      @if (current.status === 'published') {
+        <a
+          uiBtn
+          variant="ghost"
+          size="sm"
+          class="h-7 px-2.5 text-[13px]"
+          [href]="'/projects/' + current.slug"
+          target="_blank"
+          rel="noopener"
+        >
+          <ng-icon [svg]="icons.open" size="14" aria-hidden="true" />
+          Voir la page
+        </a>
+      }
+      <button
+        uiBtn
+        size="sm"
+        class="h-7 px-2.5 text-[13px]"
+        [variant]="current.status === 'published' ? 'secondary' : 'primary'"
+        type="button"
+        [disabled]="
+          store.writing() || dirty() || (current.status === 'draft' && current.missing.length > 0)
+        "
+        [title]="dirty() ? 'Enregistrez d’abord les modifications.' : ''"
+        (click)="togglePublication()"
+      >
+        {{ current.status === 'published' ? 'Dépublier' : 'Publier' }}
+      </button>
+    </span>
+  }
+</header>
+
+@if (project(); as current) {
+  <div class="grid flex-1 grid-cols-[minmax(0,1fr)_288px] @max-[1180px]:grid-cols-1">
+    <div
+      class="mx-auto flex w-full max-w-[920px] min-w-0 flex-col gap-6 px-10 py-8 @max-[640px]:px-4"
+    >
+      <div class="flex flex-col gap-2">
+        <h1 class="text-[24px]/8 font-semibold tracking-[-0.01em] text-star">
+          {{ current.title.fr }}
+        </h1>
+        <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-star-muted">
+          @if (current.status === 'published') {
+            <span uiBadge variant="success" dot>Publié</span>
+          } @else {
+            <span uiBadge variant="outline" dot>Brouillon</span>
+          }
+          <span>version {{ current.version }}</span>
+          <span class="text-star-faint" aria-hidden="true">·</span>
+          <span class="font-mono text-[12px] text-star-faint">{{ current.slug }}</span>
+        </p>
+      </div>
+
+      @if (store.conflict()) {
+        <div uiAlert variant="warning">
+          <ng-icon [svg]="icons.conflict" size="16" aria-hidden="true" />
+          <p uiAlertTitle class="text-[13px]/5">
+            Le projet a été modifié ailleurs depuis son ouverture.
+          </p>
+          <div uiAlertDescription class="gap-2 text-[13px]/5">
+            <p>Recharger remplace vos modifications.</p>
+            <button
+              uiBtn
+              variant="secondary"
+              size="sm"
+              class="h-7 px-2.5 text-[13px]"
+              type="button"
+              (click)="reload()"
+            >
+              Recharger
+            </button>
+          </div>
+        </div>
+      } @else if (store.writeError(); as error) {
+        <div uiAlert variant="danger">
+          <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+          <p uiAlertTitle class="text-[13px]/5">{{ error.message }}</p>
+        </div>
+      }
+      @if (notice(); as message) {
+        <div uiAlert variant="success" role="status">
+          <ng-icon [svg]="icons.saved" size="16" aria-hidden="true" />
+          <p uiAlertTitle class="text-[13px]/5">{{ message }}</p>
+        </div>
+      }
+
+      @if (values(); as initial) {
+        <content-project-form
+          [values]="initial"
+          [pending]="store.writing()"
+          [serverErrors]="store.writeError()?.fieldErrors ?? []"
+          (submitted)="save($event)"
+          (cancelled)="reload()"
+        />
+      }
+    </div>
+
+    <content-project-properties-panel [project]="current" />
+  </div>
+} @else if (store.loading()) {
+  <div class="flex flex-col gap-3 px-10 py-8" role="status">
+    <span class="sr-only">Chargement…</span>
+    <span uiSkeleton class="h-7 w-64 rounded-[6px]"></span>
+    <span uiSkeleton class="h-4 w-40 rounded-[6px]"></span>
+  </div>
+} @else {
+  <div uiAlert variant="danger" class="mx-10 my-8 w-auto max-w-[920px] @max-[640px]:mx-4">
+    <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+    <p uiAlertTitle class="text-[13px]/5">Projet introuvable.</p>
+  </div>
+}

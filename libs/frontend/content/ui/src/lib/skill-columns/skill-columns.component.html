@@ -1,0 +1,47 @@
+<ul
+  class="grid grid-cols-4 border-y border-line @max-[1024px]:grid-cols-2 @max-[768px]:grid-cols-1"
+  role="list"
+>
+  @for (column of columns(); track column.id; let i = $index) {
+    @let look = mark(i);
+    <li
+      class="group relative row-span-3 grid grid-rows-subgrid items-start gap-y-8 px-8 pt-8 pb-12 transition-[opacity,translate] delay-(--rd) duration-(--dur-reveal) ease-orbit not-first:border-l not-first:border-line before:absolute before:inset-x-0 before:-top-px before:h-0.5 before:origin-left before:scale-x-0 before:bg-(--c) before:transition-transform before:duration-520 before:ease-orbit first:pl-0 last:pr-0 hover:before:scale-x-100 in-data-js:not-data-in:translate-y-6 in-data-js:not-data-in:opacity-0 motion-reduce:transition-none motion-reduce:before:transition-none @max-[1280px]:px-6 @max-[1024px]:odd:border-l-0 @max-[1024px]:odd:pl-0 @max-[1024px]:even:pr-0 @max-[1024px]:nth-[n+3]:border-t @max-[768px]:gap-y-4 @max-[768px]:px-0 @max-[768px]:pt-6 @max-[768px]:pb-8 @max-[768px]:not-first:border-t @max-[768px]:not-first:border-l-0 @max-[768px]:odd:px-0 @max-[768px]:even:px-0"
+      [style.--c]="look.color"
+      [style.--rd.ms]="i * 80"
+      uiReveal
+    >
+      <h3 class="flex items-center gap-3 font-sans text-small font-medium text-star-muted">
+        <ui-glyph
+          class="text-(--c) transition-transform duration-420 ease-orbit group-hover:rotate-90 motion-reduce:transition-none"
+          [class]="look.shape === 'cross' ? 'text-[32px]' : 'text-[40px]'"
+          [shape]="look.shape"
+        />
+        {{ column.domain }}
+      </h3>
+      <ul
+        class="flex flex-col gap-1.5 [&:has(>li:hover)>li:not(:hover)]:text-star-faint"
+        role="list"
+      >
+        @for (tech of column.techs; track tech.key) {
+          <li
+            class="group/tech flex items-start gap-3 text-[26px] leading-9 font-medium tracking-[-0.015em] text-star transition-colors duration-240 ease-orbit motion-reduce:transition-none @max-[1280px]:text-2xl @max-[1280px]:leading-8"
+          >
+            <content-tech-icon
+              class="mt-1.5 size-6 text-star-muted transition-colors duration-240 ease-orbit group-hover/tech:text-(--c) motion-reduce:transition-none @max-[1280px]:mt-1 @max-[768px]:mt-1.5 @max-[768px]:size-5"
+              [tech]="tech.key"
+            />
+            <span class="inline-flex min-w-0 flex-wrap items-baseline gap-x-2 whitespace-nowrap">
+              {{ label(tech.key) }}
+              @if (tech.language) {
+                <small class="text-sm leading-none font-normal tracking-normal text-star-faint">{{
+                  tech.language
+                }}</small>
+              }
+            </span>
+          </li>
+        }
+      </ul>
+      <p class="text-small text-pretty text-star-muted">{{ column.usage }}</p>
+    </li>
+  }
+</ul>

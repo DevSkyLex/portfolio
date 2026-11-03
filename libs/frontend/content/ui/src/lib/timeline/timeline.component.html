@@ -1,0 +1,58 @@
+<div
+  class="relative h-[900px] overflow-hidden bg-void group-data-live:sticky group-data-live:top-0 group-data-live:h-screen scene-static:h-auto scene-static:overflow-visible scene-static:bg-transparent"
+>
+  <canvas
+    class="absolute inset-0 block size-full in-data-secfx:opacity-[calc(var(--in)*(1_-_var(--out)))] scene-static:hidden"
+    aria-hidden="true"
+  ></canvas>
+  <div
+    class="absolute inset-x-0 top-[104px] z-2 wrap in-data-secfx:[transform:translateY(calc((1_-_var(--in))*40px_-_var(--out)*32px))] in-data-secfx:opacity-[calc(var(--in)*(1_-_var(--out)))] @max-3xl:top-[88px] scene-static:static"
+  >
+    <ng-content />
+  </div>
+  <div
+    class="pointer-events-none absolute inset-0 z-2 wrap in-data-secfx:[transform:translateY(calc((1_-_var(--in))*40px_-_var(--out)*32px))] in-data-secfx:opacity-[calc(var(--in)*(1_-_var(--out)))] scene-static:pointer-events-auto scene-static:static scene-static:grid scene-static:gap-16 scene-static:pt-12 @min-[1024px]:scene-static:grid-cols-2"
+  >
+    @for (track of tracks(); track track.key) {
+      <ol
+        class="absolute inset-x-6 @3xl:inset-x-12 @7xl:inset-x-16 scene-static:static scene-static:flex scene-static:flex-col scene-static:gap-12"
+        [class]="
+          track.key === 'edu'
+            ? 'top-[38%] @max-3xl:top-auto @max-3xl:bottom-[290px]'
+            : 'top-[68%] @max-3xl:top-auto @max-3xl:bottom-16'
+        "
+        role="list"
+        [attr.data-track]="track.key"
+        [attr.aria-label]="track.label"
+      >
+        @for (step of track.steps; track step.id) {
+          <li
+            class="pointer-events-none absolute top-0 left-0 flex w-[min(420px,36%)] [transform:translate(-48px,-50%)] flex-col items-start gap-2 opacity-0 blur-[8px] [transition:opacity_420ms_cubic-bezier(0.16,1,0.3,1),transform_900ms_cubic-bezier(0.16,1,0.3,1),filter_900ms_cubic-bezier(0.16,1,0.3,1)] data-on:pointer-events-auto data-on:[transform:translateY(-50%)] data-on:opacity-100 data-on:filter-none data-past:[transform:translate(0,calc(-50%_-_64px))] motion-reduce:filter-none motion-reduce:transition-none @max-3xl:top-auto @max-3xl:bottom-0 @max-3xl:w-full @max-3xl:[transform:translate(0,-100%)] @max-3xl:data-on:[transform:none] @max-3xl:data-past:[transform:translateY(-24px)] scene-static:pointer-events-auto scene-static:static scene-static:w-full scene-static:[transform:none] scene-static:opacity-100 scene-static:filter-none"
+            [attr.data-start]="year(step.start)"
+            [attr.data-end]="year(step.end)"
+          >
+            <p
+              class="font-display text-[32px] leading-none font-semibold tracking-[-0.03em] text-star @max-3xl:text-[24px]"
+            >
+              {{ step.dateLabel }}
+            </p>
+            <h3
+              class="font-display text-[20px] leading-[26px] font-semibold tracking-[-0.02em] text-balance text-star @max-3xl:text-[17px] @max-3xl:leading-[22px]"
+            >
+              {{ step.title }}
+            </h3>
+            <p class="text-data text-star-muted">{{ track.label }} · {{ step.place }}</p>
+            <p
+              class="text-[15px] leading-[23px] text-star-muted @max-3xl:hidden scene-static:block"
+            >
+              {{ step.description }}
+            </p>
+            @if (step.techs.length > 0) {
+              <content-tech-tags class="block" [techs]="step.techs" />
+            }
+          </li>
+        }
+      </ol>
+    }
+  </div>
+</div>

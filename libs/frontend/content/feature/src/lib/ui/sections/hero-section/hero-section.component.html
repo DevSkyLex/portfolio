@@ -1,0 +1,68 @@
+<section
+  #hero
+  class="group/hero relative flex min-h-[max(640px,calc(100dvh-70px))] flex-col justify-center py-[120px] supports-[animation-timeline:view()]:motion-safe:[view-timeline:--hero_block] @max-[768px]:min-h-[max(560px,calc(100dvh-60px))] @max-[768px]:justify-start @max-[768px]:pt-14 @max-[768px]:pb-[120px]"
+  id="top"
+>
+  <!-- The planet is pinned behind the page; this box clips it to the hero and the header above. -->
+  <div class="pointer-events-none absolute inset-x-0 -top-[100vh] bottom-0 [clip-path:inset(0)]">
+    <content-ascii-planet forms="squares" [scale]="0.65" [lift]="0.16" fixed />
+  </div>
+  <div
+    class="relative z-1 wrap group-data-scroll/hero:[transform:translateY(calc(var(--hp,0)*-120px))] group-data-scroll/hero:opacity-[calc(1-var(--hp,0)*1.3)] supports-[animation-timeline:view()]:motion-safe:animate-hero-out supports-[animation-timeline:view()]:motion-safe:[animation-range:exit_0%_exit_90%] supports-[animation-timeline:view()]:motion-safe:[animation-timeline:--hero]"
+  >
+    <div class="flex flex-col items-start gap-8 @max-[768px]:gap-6">
+      <h1
+        class="font-display text-[clamp(44px,9cqi,132px)] leading-none font-semibold tracking-[-0.04em]"
+      >
+        <span class="sr-only">Valentin Fortin</span>
+        <span class="flex flex-col" aria-hidden="true">
+          @for (word of words; track $index) {
+            <span class="flex">
+              @for (letter of word; track letter.k) {
+                <span class="inline-block h-[1em] overflow-hidden">
+                  <span
+                    class="flex animate-slot-up flex-col [animation-delay:calc(200ms+var(--k)*60ms)] motion-reduce:[transform:translateY(-50%)] motion-reduce:animate-none"
+                    [style.--k]="letter.k"
+                  >
+                    <span class="flex h-[1em] items-center justify-center">
+                      <ui-glyph [class]="letter.color" [shape]="letter.shape" />
+                    </span>
+                    <span class="flex h-[1em] items-center justify-center">{{ letter.char }}</span>
+                  </span>
+                </span>
+              }
+            </span>
+          }
+        </span>
+      </h1>
+      <p class="max-w-[560px] text-lead text-star-muted @max-[768px]:text-lead-sm">
+        {{ content.profile().heroIntro }}
+      </p>
+      <div
+        class="flex flex-wrap gap-3 @max-[560px]:w-full @max-[560px]:flex-col @max-[560px]:items-stretch"
+      >
+        <a uiBtn size="lg" class="@max-[560px]:w-full" href="#projects" i18n="@@hero.projects"
+          >Voir les projets</a
+        >
+        <a uiBtn variant="secondary" size="lg" class="@max-[560px]:w-full" href="#" i18n="@@hero.cv"
+          >CV en PDF</a
+        >
+      </div>
+    </div>
+  </div>
+  <a
+    class="group/hint absolute bottom-8 left-1/2 z-2 -ml-[22px] grid h-14 w-11 place-items-center rounded-[12px] text-star transition-opacity duration-240 ease-orbit group-data-scroll/hero:opacity-[calc(1-var(--hp,0)*4)] focus-visible:outline-offset-2 motion-reduce:transition-none @max-[768px]:bottom-5"
+    href="#projects"
+    i18n-aria-label="@@hero.scroll"
+    aria-label="Aller aux projets"
+  >
+    <span
+      class="relative h-[38px] w-6 rounded-[12px] border-[1.5px] border-line-hover bg-[color-mix(in_srgb,var(--void-raised)_70%,transparent)] transition-colors duration-240 ease-orbit group-hover/hint:border-line-strong group-focus-visible/hint:border-line-strong motion-reduce:transition-none"
+      aria-hidden="true"
+    >
+      <span
+        class="absolute top-[7px] left-1/2 -ml-[1.5px] h-[7px] w-[3px] animate-wheel rounded-[2px] bg-star-muted transition-colors duration-240 ease-orbit group-hover/hint:bg-star group-focus-visible/hint:bg-star motion-reduce:animate-none motion-reduce:transition-none"
+      ></span>
+    </span>
+  </a>
+</section>

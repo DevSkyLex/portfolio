@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+[Unit]
+Description={{ item.description }}
+
+[Timer]
+OnCalendar={{ item.on_calendar }}
+# Runs at the next boot when the server was off at the scheduled time.
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,138 @@
+# Static site: rebuilt from the content published in production, then published by an atomic switch.
+# Triggered by the content service on each publication (workflow_dispatch, `revision` input),
+# and on every change to the site code on main. After CI, only the commit that is still the head of
+# main is published (a late, older CI run is skipped); `ref` builds an explicit commit (rollback).
+name: Site build
+
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Published content revision (provided by content-service)
+        required: false
+      ref:
+        description: Commit SHA, tag or branch of the site code (rollback = an older SHA)
+        required: false
+        default: main
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+# One rebuild at a time; the most recent one replaces the pending one.
+concurrency:
+  group: site-build
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PORT: ${{ vars.VPS_PORT }}
+      VPS_APP_DIR: ${{ vars.VPS_APP_DIR }}
+      APP_HOST: ${{ vars.APP_HOST }}
+      VPS_APP_PORT: ${{ vars.VPS_APP_PORT }}
+      DOCKER_PROJECT_NAME: ${{ vars.DOCKER_PROJECT_NAME }}
+      DOCKER_CONTAINER_NAME: ${{ vars.DOCKER_CONTAINER_NAME }}
+      TRAEFIK_ROUTER_NAME: ${{ vars.TRAEFIK_ROUTER_NAME }}
+      TRAEFIK_SECURE_MIDDLEWARES: ${{ vars.TRAEFIK_SECURE_MIDDLEWARES }}
+      TRUSTED_PROXIES: ${{ vars.TRUSTED_PROXIES }}
+      WEB_MEMORY_LIMIT: ${{ vars.WEB_MEMORY_LIMIT }}
+      WEB_CPU_LIMIT: ${{ vars.WEB_CPU_LIMIT }}
+      LOG_MAX_SIZE: ${{ vars.LOG_MAX_SIZE }}
+      LOG_MAX_FILES: ${{ vars.LOG_MAX_FILES }}
+      LOG_LEVEL: ${{ vars.LOG_LEVEL }}
+      CONTACT_MAIL_FROM: ${{ vars.CONTACT_MAIL_FROM }}
+      CONTACT_NOTIFY_TO: ${{ vars.CONTACT_NOTIFY_TO }}
+    steps:
+      - name: Code to build
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          REF: ${{ inputs.ref || 'main' }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$REF" --jq .sha)
+            publish=true
+          else
+            head=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+            sha="$RUN_SHA"
+            if [ "$head" = "$sha" ]; then publish=true; else
+              publish=false
+              echo "::notice::$sha is no longer the head of main ($head): not published"
+            fi
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v5
+        if: steps.target.outputs.publish == 'true'
+        with:
+          ref: ${{ steps.target.outputs.sha }}
+      - uses: actions/setup-node@v5
+        if: steps.target.outputs.publish == 'true'
+        with:
+          node-version: 24
+          cache: npm
+      - if: steps.target.outputs.publish == 'true'
+        run: npm ci
+      - name: Snapshot of the published content
+        if: steps.target.outputs.publish == 'true'
+        run: npx nx run web:content-snapshot
+        env:
+          CONTENT_API_URL: https://${{ vars.APP_HOST || 'valentin-fortin.pro' }}
+      - if: steps.target.outputs.publish == 'true'
+        run: npx nx run web:build --skip-nx-cache
+      - name: Release name
+        if: steps.target.outputs.publish == 'true'
+        id: release
+        run: |
+          revision=$(node -p "require('./apps/web/content-snapshot/fr.json').revision")
+          echo "name=r${revision}-$(git rev-parse --short HEAD)-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+      - name: Ansible
+        if: steps.target.outputs.publish == 'true'
+        working-directory: ansible
+        run: |
+          pipx install ansible-core==2.21.5
+          ansible-galaxy collection install -r requirements.yml -p .collections
+      - name: VPS access (SSH key, server fingerprint, vault password)
+        if: steps.target.outputs.publish == 'true'
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf '%s\n' "$ANSIBLE_VAULT_PASSWORD" > ansible/.vault-pass
+          chmod 600 ansible/.vault-pass
+      # The build takes minutes: a newer commit may have reached main meanwhile, and its own run publishes it.
+      - name: Still the head of main
+        if: steps.target.outputs.publish == 'true' && github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          head=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+          if [ "$head" != "$SHA" ]; then
+            echo "::error::$SHA is no longer the head of main ($head): publication stopped"
+            exit 1
+          fi
+      - name: Copy and switch
+        if: steps.target.outputs.publish == 'true'
+        working-directory: ansible
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: >-
+          ansible-playbook playbooks/publish-site.yml --vault-password-file .vault-pass
+          -e ansible_host="$VPS_HOST"
+          -e release=${{ steps.release.outputs.name }}

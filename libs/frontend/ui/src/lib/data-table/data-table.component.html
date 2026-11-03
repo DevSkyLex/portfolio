@@ -1,0 +1,141 @@
+@if (filterable()) {
+  <div class="flex items-center gap-3">
+    <input
+      class="max-w-xs"
+      uiInput
+      size="sm"
+      type="search"
+      [value]="filter()"
+      [placeholder]="filterPlaceholder()"
+      [attr.aria-label]="filterLabel()"
+      [attr.aria-controls]="tableId"
+      (input)="onFilter($event)"
+    />
+  </div>
+}
+<div
+  class="relative w-full [scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--star)_24%,transparent)_transparent] overflow-x-auto rounded-field border border-line"
+>
+  <table class="w-full caption-bottom border-collapse text-data" [id]="tableId">
+    @if (caption(); as text) {
+      <caption class="sr-only">
+        {{
+          text
+        }}
+      </caption>
+    }
+    <thead>
+      <tr class="border-b border-line">
+        @if (selectable()) {
+          <th class="w-10 px-3 align-middle" scope="col">
+            <input
+              type="checkbox"
+              [class]="checkboxClass"
+              [checked]="allSelected()"
+              [indeterminate]="someSelected()"
+              [disabled]="!rows().length"
+              [attr.aria-label]="selectAllLabel()"
+              (change)="toggleAll()"
+            />
+          </th>
+        }
+        @for (column of columns(); track column.id) {
+          <th scope="col" [class]="headerClasses(column)" [attr.aria-sort]="ariaSort(column)">
+            @if (column.sortable) {
+              <button
+                class="-mx-2 inline-flex h-8 items-center gap-1.5 rounded-option border border-transparent px-2 uppercase outline-4 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) hover:text-star focus-visible:border-star/55 focus-visible:outline-star/12 motion-reduce:transition-none"
+                type="button"
+                [class.text-star]="ariaSort(column)"
+                (click)="toggleSort(column)"
+              >
+                {{ column.header }}
+                <ng-icon [svg]="sortIcon(column)" size="14" aria-hidden="true" />
+              </button>
+            } @else {
+              {{ column.header }}
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track trackKey(row); let index = $index) {
+        <tr
+          class="border-b border-line transition-colors duration-(--dur-pop) last:border-0 hover:bg-star/3 data-[state=selected]:bg-star/5 motion-reduce:transition-none"
+          [attr.data-state]="isSelected(row) ? 'selected' : null"
+        >
+          @if (selectable()) {
+            <td class="w-10 px-3 align-middle">
+              <input
+                type="checkbox"
+                [class]="checkboxClass"
+                [checked]="isSelected(row)"
+                [attr.aria-label]="rowCheckboxLabel(row, index)"
+                (change)="toggleRow(row)"
+              />
+            </td>
+          }
+          @for (column of columns(); track column.id) {
+            <td [class]="cellClasses(column)">
+              @if (templates().get(column.id); as template) {
+                <ng-container
+                  [ngTemplateOutlet]="template"
+                  [ngTemplateOutletContext]="{ $implicit: row, index }"
+                />
+              } @else {
+                {{ column.cell?.(row) }}
+              }
+            </td>
+          }
+        </tr>
+      } @empty {
+        <tr>
+          <td class="h-24 px-3 text-star-faint" [attr.colspan]="colspan()">
+            {{ emptyText() }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+@if (paginated()) {
+  <div class="flex flex-wrap items-center justify-end gap-x-6 gap-y-3 text-data text-star-muted">
+    <label class="flex items-center gap-2">
+      {{ rowsPerPageLabel() }}
+      <select class="w-20" uiInput size="sm" (change)="onPageSize($event)">
+        @for (option of pageSizeOptions(); track option) {
+          <option [value]="option" [selected]="option === pageSize()">{{ option }}</option>
+        }
+      </select>
+    </label>
+    <span aria-live="polite">{{ pageStatus() }}</span>
+    <div class="flex items-center gap-2">
+      <button
+        uiBtn
+        type="button"
+        variant="secondary"
+        size="sm"
+        class="w-9 px-0"
+        [attr.aria-label]="previousPageLabel()"
+        [attr.aria-controls]="tableId"
+        [disabled]="currentPage() === 0"
+        (click)="goTo(currentPage() - 1)"
+      >
+        <ng-icon class="rtl:-scale-x-100" [svg]="icons.previous" size="16" aria-hidden="true" />
+      </button>
+      <button
+        uiBtn
+        type="button"
+        variant="secondary"
+        size="sm"
+        class="w-9 px-0"
+        [attr.aria-label]="nextPageLabel()"
+        [attr.aria-controls]="tableId"
+        [disabled]="currentPage() >= pageTotal() - 1"
+        (click)="goTo(currentPage() + 1)"
+      >
+        <ng-icon class="rtl:-scale-x-100" [svg]="icons.next" size="16" aria-hidden="true" />
+      </button>
+    </div>
+  </div>
+}

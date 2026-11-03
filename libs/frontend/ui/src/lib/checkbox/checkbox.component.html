@@ -1,0 +1,32 @@
+<input
+  #control
+  type="checkbox"
+  [class]="controlClasses"
+  [id]="controlId()"
+  [checked]="checked()"
+  [indeterminate]="indeterminate()"
+  [disabled]="disabled()"
+  [required]="required()"
+  [attr.name]="name() || null"
+  [attr.aria-invalid]="invalid() || null"
+  [attr.aria-label]="ariaLabel() ?? null"
+  [attr.aria-labelledby]="ariaLabelledby() ?? null"
+  [attr.aria-describedby]="ariaDescribedby() ?? null"
+  (change)="onChange($event)"
+  (blur)="touch.emit()"
+/>
+@if (indeterminate()) {
+  <ng-icon
+    class="pointer-events-none absolute text-void peer-disabled:opacity-50"
+    [svg]="icons.minus"
+    [size]="iconSize()"
+    aria-hidden="true"
+  />
+} @else if (checked()) {
+  <ng-icon
+    class="pointer-events-none absolute text-void peer-disabled:opacity-50"
+    [svg]="icons.check"
+    [size]="iconSize()"
+    aria-hidden="true"
+  />
+}

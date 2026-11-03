@@ -1,0 +1,262 @@
+# Full stack locally (development, trials before deployment): Postgres with the production roles,
+# Mailpit, the three services built from source, Nginx with the production routing over HTTP.
+# Same hardening as production (read-only file systems, no capabilities), so problems show up here first.
+#
+#   bash docker/scripts/dev-secrets.sh                                              # dev secrets (once)
+#   npx nx run-many -t prune -p identity-service content-service contact-service   # service bundles
+#   npx nx build web                                                                # prerendered site
+#   docker compose -f docker/compose.dev.yml up --build -d --wait
+#   docker compose -f docker/compose.dev.yml --profile seed run --rm content-seed   # mockup content
+#   read -rs IDENTITY_BOOTSTRAP_PASSWORD && export IDENTITY_BOOTSTRAP_PASSWORD
+#   docker compose -f docker/compose.dev.yml --profile ops run --rm -e IDENTITY_BOOTSTRAP_PASSWORD \
+#     identity-bootstrap admin@localhost.test
+#
+# Site: http://localhost:8080 — admin: http://localhost:8080/admin/ — emails: http://localhost:8025
+# ./dev/secrets (git-ignored) is copied from ./dev/secrets.example: development values, used nowhere else.
+name: portfolio-dev
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ['no-new-privileges:true']
+
+x-service: &service
+  <<: *hardening
+  restart: unless-stopped
+  init: true
+  tmpfs: ['/tmp:size=16m']
+  networks: [proxy, database]
+
+x-job: &job
+  <<: *service
+  restart: 'no'
+  networks: [database]
+  healthcheck: { disable: true }
+
+x-auth: &auth
+  AUTH_ISSUER: http://localhost:8080/api/auth
+  AUTH_JWKS_URL: http://identity-service:3103/api/auth/jwks.json
+
+x-identity: &identity
+  IDENTITY_KEYS_DIR: /run/identity-keys
+  IDENTITY_SIGNING_KID: dev-1
+  IDENTITY_ISSUER: http://localhost:8080/api/auth
+
+x-contact: &contact
+  CONTACT_SMTP_URL: smtp://mailpit:1025
+  CONTACT_MAIL_FROM: 'Portfolio <noreply@localhost.test>'
+  CONTACT_NOTIFY_TO: contact@localhost.test
+
+x-build-identity: &build-identity
+  context: ../dist/apps/identity-service
+  dockerfile: ../../../docker/service.Dockerfile
+  args: { SERVICE: identity-service }
+
+x-build-content: &build-content
+  context: ../dist/apps/content-service
+  dockerfile: ../../../docker/service.Dockerfile
+  args: { SERVICE: content-service }
+
+x-build-contact: &build-contact
+  context: ../dist/apps/contact-service
+  dockerfile: ../../../docker/service.Dockerfile
+  args: { SERVICE: contact-service }
+
+# Jobs reuse their service's local image; only the three long-running services build it.
+x-image-identity: &image-identity
+  image: ${COMPOSE_PROJECT_NAME:-portfolio-dev}-identity-service
+  pull_policy: never
+
+x-image-content: &image-content
+  image: ${COMPOSE_PROJECT_NAME:-portfolio-dev}-content-service
+  pull_policy: never
+
+x-image-contact: &image-contact
+  image: ${COMPOSE_PROJECT_NAME:-portfolio-dev}-contact-service
+  pull_policy: never
+
+services:
+  postgres:
+    <<: *hardening
+    image: postgres:17.11-alpine3.23@sha256:05aa77262db9277fde6374bb2f901c9604b8a9373029e1a7993440c6aae48736
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs: ['/tmp:size=64m', '/var/run/postgresql:size=1m']
+    environment:
+      POSTGRES_DB: portfolio
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_INITDB_ARGS: --data-checksums
+    secrets:
+      - postgres_password
+      - content_migrator_password
+      - content_app_password
+      - contact_migrator_password
+      - contact_app_password
+      - identity_migrator_password
+      - identity_app_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d portfolio']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [database]
+
+  mailpit:
+    <<: *hardening
+    image: axllent/mailpit:v1.33.0@sha256:9b3a463be15354c0f0eba91697d80e3e0d8a5623ef0e627cacc836bc17fd5231
+    tmpfs: ['/tmp:size=16m']
+    ports: ['127.0.0.1:8025:8025']
+    networks: [proxy]
+
+  # Signing key created on first run, in a volume (no private key in the repository).
+  identity-keys:
+    <<: [*hardening, *image-identity]
+    restart: 'no'
+    user: root
+    cap_add: [CHOWN]
+    network_mode: none
+    healthcheck: { disable: true }
+    command:
+      - node
+      - -e
+      - >-
+        const f='/run/identity-keys/dev-1.pem', fs=require('fs');
+        if (!fs.existsSync(f)) { fs.writeFileSync(f, require('crypto').generateKeyPairSync('ed25519').privateKey
+        .export({format:'pem',type:'pkcs8'}), {mode: 0o400}); fs.chownSync(f, 1000, 1000); console.log('Key dev-1 created'); }
+    volumes: ['identity-keys:/run/identity-keys']
+
+  identity-migrate:
+    <<: [*job, *image-identity]
+    command: ['node', 'cli.js', 'migrate']
+    environment:
+      <<: *identity
+      IDENTITY_DATABASE_URL_FILE: /run/secrets/identity_migrator_url
+    secrets: [identity_migrator_url]
+    depends_on: { postgres: { condition: service_healthy } }
+
+  content-migrate:
+    <<: [*job, *image-content]
+    command: ['node', 'cli.js', 'migrate']
+    environment:
+      <<: *auth
+      CONTENT_DATABASE_URL_FILE: /run/secrets/content_migrator_url
+    secrets: [content_migrator_url]
+    depends_on: { postgres: { condition: service_healthy } }
+
+  contact-migrate:
+    <<: [*job, *image-contact]
+    command: ['node', 'cli.js', 'migrate']
+    environment:
+      <<: [*auth, *contact]
+      CONTACT_DATABASE_URL_FILE: /run/secrets/contact_migrator_url
+      CONTACT_CLIENT_KEY_SECRET_FILE: /run/secrets/contact_client_key_secret
+    secrets: [contact_migrator_url, contact_client_key_secret]
+    depends_on: { postgres: { condition: service_healthy } }
+
+  identity-service:
+    <<: [*service, *image-identity]
+    build: *build-identity
+    environment:
+      <<: *identity
+      IDENTITY_PORT: '3103'
+      SERVICE_PORT: '3103'
+      IDENTITY_DATABASE_URL_FILE: /run/secrets/identity_database_url
+      IDENTITY_COOKIE_SECURE: 'false'
+      NODE_ENV: production
+    secrets: [identity_database_url]
+    volumes: ['identity-keys:/run/identity-keys:ro']
+    depends_on:
+      identity-keys: { condition: service_completed_successfully }
+      identity-migrate: { condition: service_completed_successfully }
+
+  content-service:
+    <<: [*service, *image-content]
+    build: *build-content
+    environment:
+      <<: *auth
+      CONTENT_PORT: '3101'
+      SERVICE_PORT: '3101'
+      CONTENT_DATABASE_URL_FILE: /run/secrets/content_database_url
+      NODE_ENV: production
+    secrets: [content_database_url]
+    depends_on: { content-migrate: { condition: service_completed_successfully } }
+
+  contact-service:
+    <<: [*service, *image-contact]
+    build: *build-contact
+    environment:
+      <<: [*auth, *contact]
+      CONTACT_PORT: '3102'
+      SERVICE_PORT: '3102'
+      CONTACT_DATABASE_URL_FILE: /run/secrets/contact_database_url
+      CONTACT_CLIENT_KEY_SECRET_FILE: /run/secrets/contact_client_key_secret
+      NODE_ENV: production
+    secrets: [contact_database_url, contact_client_key_secret]
+    depends_on: { contact-migrate: { condition: service_completed_successfully } }
+
+  nginx:
+    <<: *hardening
+    image: nginx:1.29.8-alpine3.23@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+    cap_add: [CHOWN, NET_BIND_SERVICE, SETGID, SETUID]
+    tmpfs: ['/var/cache/nginx:size=32m', '/run:size=1m', '/tmp:size=16m']
+    ports: ['127.0.0.1:8080:80']
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d/00-http.conf:/etc/nginx/conf.d/00-http.conf:ro
+      - ./nginx/dev/portfolio.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - ./nginx/dev/security-headers.conf:/etc/nginx/snippets/security-headers.conf:ro
+      - ../dist/apps/web:/srv/site/current:ro
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:8081/health']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks: [proxy]
+
+  # --- On-demand operations ---
+  content-seed:
+    <<: [*job, *image-content]
+    profiles: [seed]
+    command: ['node', 'cli.js', 'seed']
+    environment:
+      <<: *auth
+      CONTENT_DATABASE_URL_FILE: /run/secrets/content_migrator_url
+    secrets: [content_migrator_url]
+
+  identity-bootstrap:
+    <<: [*job, *image-identity]
+    profiles: [ops]
+    entrypoint: ['node', 'cli.js', 'bootstrap-admin']
+    environment:
+      <<: *identity
+      IDENTITY_DATABASE_URL_FILE: /run/secrets/identity_database_url
+    secrets: [identity_database_url]
+
+networks:
+  proxy: {}
+  database:
+    internal: true
+
+volumes:
+  pgdata: {}
+  identity-keys: {}
+
+secrets:
+  postgres_password: { file: ./dev/secrets/postgres_password }
+  content_migrator_password: { file: ./dev/secrets/content_migrator_password }
+  content_app_password: { file: ./dev/secrets/content_app_password }
+  contact_migrator_password: { file: ./dev/secrets/contact_migrator_password }
+  contact_app_password: { file: ./dev/secrets/contact_app_password }
+  identity_migrator_password: { file: ./dev/secrets/identity_migrator_password }
+  identity_app_password: { file: ./dev/secrets/identity_app_password }
+  content_database_url: { file: ./dev/secrets/content_database_url }
+  contact_database_url: { file: ./dev/secrets/contact_database_url }
+  identity_database_url: { file: ./dev/secrets/identity_database_url }
+  content_migrator_url: { file: ./dev/secrets/content_migrator_url }
+  contact_migrator_url: { file: ./dev/secrets/contact_migrator_url }
+  identity_migrator_url: { file: ./dev/secrets/identity_migrator_url }
+  contact_client_key_secret: { file: ./dev/secrets/contact_client_key_secret }

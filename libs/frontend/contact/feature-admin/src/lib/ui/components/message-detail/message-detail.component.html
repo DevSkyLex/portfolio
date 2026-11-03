@@ -1,0 +1,109 @@
+@let current = message();
+<article
+  class="flex min-h-0 flex-col overflow-y-auto"
+  [attr.aria-label]="'Message de ' + current.name"
+>
+  <div
+    class="flex min-h-12 shrink-0 flex-wrap items-center gap-1.5 border-b border-line px-6 py-2 @max-[640px]:px-4"
+  >
+    <a
+      uiBtn
+      size="sm"
+      variant="secondary"
+      class="h-7 px-2.5 text-[13px]"
+      [href]="'mailto:' + current.email"
+    >
+      <ng-icon [svg]="icons.reply" size="14" aria-hidden="true" />
+      Répondre
+    </a>
+    @if (current.status === 'received') {
+      <button
+        uiBtn
+        size="sm"
+        variant="ghost"
+        class="h-7 px-2.5 text-[13px]"
+        type="button"
+        [disabled]="writing()"
+        aria-keyshortcuts="R"
+        title="Marquer comme lu (R)"
+        (click)="readRequested.emit(current)"
+      >
+        <ng-icon class="text-success-ink" [svg]="icons.read" size="14" aria-hidden="true" />
+        Marquer comme lu
+      </button>
+    }
+    @if (current.status !== 'archived') {
+      <button
+        uiBtn
+        size="sm"
+        variant="ghost"
+        class="h-7 px-2.5 text-[13px]"
+        type="button"
+        [disabled]="writing()"
+        aria-keyshortcuts="E"
+        title="Archiver (E)"
+        (click)="archiveRequested.emit(current)"
+      >
+        <ng-icon [svg]="icons.archive" size="14" aria-hidden="true" />
+        Archiver
+      </button>
+    }
+    <button
+      uiBtn
+      size="sm"
+      variant="ghost"
+      class="ml-auto h-7 px-2.5 text-[13px]"
+      type="button"
+      [disabled]="writing()"
+      (click)="removeRequested.emit(current)"
+    >
+      <ng-icon class="text-danger-ink" [svg]="icons.remove" size="14" aria-hidden="true" />
+      Supprimer
+    </button>
+  </div>
+  <div class="flex max-w-[760px] flex-col gap-6 px-8 py-8 @max-[640px]:px-4 @max-[640px]:py-6">
+    <div class="flex items-start gap-3">
+      <span
+        uiAvatar
+        size="md"
+        class="size-10 font-sans text-[13px] font-semibold"
+        aria-hidden="true"
+      >
+        <span uiAvatarFallback>{{ initials(current.name) }}</span>
+      </span>
+      <div class="flex min-w-0 flex-col gap-0.5">
+        <h2 class="text-[16px]/6 font-semibold text-star">
+          {{ current.name }}
+          @if (current.company) {
+            <span class="font-normal text-star-muted">· {{ current.company }}</span>
+          }
+        </h2>
+        <a
+          class="w-fit truncate text-[13px] text-star-muted underline decoration-line-hover underline-offset-4 transition-colors duration-(--dur-pop) ease-orbit hover:text-star hover:decoration-current"
+          [href]="'mailto:' + current.email"
+          >{{ current.email }}</a
+        >
+      </div>
+    </div>
+    <dl class="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-x-3 gap-y-2 text-[13px]">
+      <dt class="text-star-faint">Statut</dt>
+      <dd>
+        <span uiBadge dot [variant]="statuses[current.status].variant">{{
+          statuses[current.status].label
+        }}</span>
+      </dd>
+      <dt class="text-star-faint">Objet</dt>
+      <dd class="text-star">{{ subjects[current.subject] }}</dd>
+      <dt class="text-star-faint">Reçu le</dt>
+      <dd class="text-star">{{ current.receivedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+      <dt class="text-star-faint">Langue</dt>
+      <dd class="text-star">{{ current.locale.toUpperCase() }}</dd>
+      <dt class="text-star-faint">Suppression</dt>
+      <dd class="text-star-muted">{{ current.purgeAt | date: 'dd/MM/yyyy' }}</dd>
+    </dl>
+    <p
+      class="border-t border-line pt-6 text-[15px]/7 whitespace-pre-line text-star"
+      [textContent]="current.message"
+    ></p>
+  </div>
+</article>

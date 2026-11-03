@@ -1,0 +1,28 @@
+# Build, cache and test outputs
+/dist
+/tmp
+coverage
+test-output
+test-results
+playwright-report
+blob-report
+/.nx
+/.angular
+/.data
+node_modules
+
+# Generated files
+/apps/web/content-snapshot
+/apps/*-service/migrations/meta
+/apps/web/src/locale
+/ansible/.collections
+package-lock.json
+
+# Files managed by external tools (Nx AI setup, agents)
+/.agents/*
+!/.agents/scripts/
+!/.agents/skills/
+/.agents/skills/*
+!/.agents/skills/pf-*/
+/.claude
+/.codex

@@ -1,0 +1,392 @@
+{
+  "locale": "en",
+  "revision": 1,
+  "profile": {
+    "heroIntro": "Full-stack web developer in Blois. I build carefully crafted web applications, from the interface to the server.",
+    "aboutStatement": "I like building applications that meet real needs, with as much care for the code as for the people who use them.",
+    "aboutLead": "After a BTS SIO and a bachelor's degree, I completed YNOV's master's programme while working three years at Object as a Service, on IoT interfaces and internal tools.",
+    "facts": [
+      {
+        "label": "Based in",
+        "value": "Blois, France"
+      },
+      {
+        "label": "Education",
+        "value": "Master's in Software Development, YNOV"
+      },
+      {
+        "label": "Outside of code",
+        "value": "Hardware, video games, 3D printing and modelling"
+      }
+    ]
+  },
+  "projects": [
+    {
+      "slug": "movah",
+      "title": "Movah",
+      "summary": "A mobile app to keep track of series, films and anime without losing the thread. Flutter on Android and iOS, with Supabase.",
+      "lead": "A mobile app to keep track of series, films and anime without losing the thread. Flutter on Android and iOS, with Supabase.",
+      "periodLabel": "Since July 2026",
+      "client": "Personal project",
+      "role": "Design and development",
+      "place": "Android and iOS",
+      "siteUrl": null,
+      "techs": [
+        "flutter",
+        "dart",
+        "supabase"
+      ],
+      "featured": true,
+      "article": {
+        "context": [
+          "With so many streaming platforms, it is easy to forget where you are in a series or when the next episode comes out. Movah brings together what you are watching, what you want to watch and what is coming soon.",
+          "A personal project, taken from mockup to app, to see a complete mobile product through: accounts, data, sync and release on two platforms."
+        ],
+        "work": [
+          "I designed the high-fidelity mockup, then built the Flutter app and its Supabase backend."
+        ],
+        "workList": [
+          "Tracking series, films and anime, episode by episode.",
+          "The catalogue and search, powered by the TMDB API.",
+          "The upcoming release calendar, lists and statistics.",
+          "Sign-in with email, Google or Apple, in French and English."
+        ],
+        "choices": [
+          "The app never calls TMDB directly: Supabase Edge Functions sit in between, with a cache in Postgres. The API key stays on the server, and screens keep showing the last known data if TMDB does not respond.",
+          "The code is organised by feature, in data, domain and presentation layers. Domain entities depend on neither Flutter nor Supabase, which keeps them easy to test; app state goes through Riverpod."
+        ],
+        "result": [
+          "The app runs on Android and iOS, with light and dark themes true to the mockup.",
+          "Every change goes through GitHub Actions continuous integration: formatting, code analysis, tests, then the app build."
+        ],
+        "lessons": [
+          "Starting from a complete mockup before writing the first line saved a lot of back-and-forth: every screen already had its states, colours and copy.",
+          "Moving from Angular to Flutter showed me that the same ideas carry over between frameworks: small components and data that flows in one direction."
+        ],
+        "captions": [
+          "Following a series, episode by episode.",
+          "The calendar of upcoming releases."
+        ]
+      }
+    },
+    {
+      "slug": "rdi-manager",
+      "title": "RDI Manager",
+      "summary": "R&D activity tracking at Object as a Service: time, planning, metrics. I took over maintenance and modernised the Symfony and Vue.js application.",
+      "lead": "R&D activity tracking at Object as a Service: time, planning, metrics. Symfony back end, Vue.js interface.",
+      "periodLabel": "2023 — 2026",
+      "client": "Object as a Service",
+      "role": "Full-stack web developer",
+      "place": "Remote",
+      "siteUrl": null,
+      "techs": [
+        "symfony",
+        "php",
+        "vue"
+      ],
+      "featured": false,
+      "article": {
+        "context": [
+          "RDI Manager is the internal tool that tracks R&D activity at Object as a Service: time spent on each project, the team's schedule and the metrics used to follow research projects.",
+          "The application pairs a Symfony back end with a Vue.js interface. It had been running for years on an old Symfony version. Every change took longer, and nobody dared touch the metrics calculation."
+        ],
+        "work": [
+          "I took over maintenance of the tool, then its modernisation, without interrupting the team using it."
+        ],
+        "workList": [
+          "Upgrading PHP, Symfony and dependencies, step by step.",
+          "Tests on the metrics calculation before any change.",
+          "Rewriting the most fragile parts: time entry and calculations.",
+          "Fixes and features requested by the R&D team, on both the Symfony and Vue.js sides."
+        ],
+        "choices": [
+          "A full rewrite would have frozen the tool for months. I chose a gradual migration: each step left the application usable, and tests checked that metrics stayed identical before and after.",
+          "The trade-off: a few older parts still live alongside the modernised code. They are isolated behind clear, documented interfaces so they can be replaced later."
+        ],
+        "result": [
+          "The tool runs on a maintained Symfony version, and changes no longer risk breaking the metrics calculation.",
+          "The R&D team kept entering time and following its projects throughout the modernisation."
+        ],
+        "lessons": [
+          "Starting with tests was the best investment of the project: without them, every upgrade would have been a gamble.",
+          "Taking over someone else's code taught me to read before judging. Several oddities had a business reason that needed understanding before fixing them."
+        ],
+        "captions": [
+          "Time entry.",
+          "The metrics dashboard."
+        ]
+      }
+    },
+    {
+      "slug": "crm-kodoka",
+      "title": "Kodoka CRM",
+      "summary": "A custom CRM for Kodoka: interfaces, business rules and data management.",
+      "lead": "A custom CRM for Kodoka: interfaces, business rules and data management.",
+      "periodLabel": "March — April 2023",
+      "client": "Kodoka",
+      "role": "Full-stack web developer",
+      "place": "Joué-lès-Tours",
+      "siteUrl": null,
+      "techs": [
+        "codeigniter",
+        "php"
+      ],
+      "featured": false,
+      "article": {
+        "context": [
+          "Kodoka tracked its clients and sales conversations in separate files. Information was scattered and hard to share across the team.",
+          "The company wanted a simple CRM that fit the way it works, rather than a general-purpose tool that takes weeks to configure."
+        ],
+        "work": [
+          "In two months, I designed and built the CRM with CodeIgniter 4, from the database to the screens."
+        ],
+        "workList": [
+          "Client and contact records, with the history of exchanges.",
+          "Tracking sales opportunities, stage by stage.",
+          "Business rules: statuses, follow-ups and role-based permissions.",
+          "Importing existing data from the old files."
+        ],
+        "choices": [
+          "CodeIgniter 4 was lightweight and already known to the team who would take the tool over after me. For a two-month project, that mattered more than a fuller framework.",
+          "I kept a plain, server-rendered interface to deliver on time. Only the most used screens got a little JavaScript, to avoid page reloads."
+        ],
+        "result": [
+          "The team finds clients, their contacts and the history of exchanges in one place, instead of separate files.",
+          "The code was handed over with setup and onboarding documentation, so the team could keep developing it."
+        ],
+        "lessons": [
+          "I would have spent more time with users before modelling the data: two fields added at the end of the project would have been obvious after a morning of observation.",
+          "Delivering a whole project in two months taught me to split work into usable versions, rather than finishing everything at once."
+        ],
+        "captions": [
+          "A client record.",
+          "Tracking opportunities."
+        ]
+      }
+    },
+    {
+      "slug": "iotplatform",
+      "title": "IOTPlatform",
+      "summary": "Monitoring and control of LoRaWAN sensors for Object as a Service. Angular and NgRx front end, improvements to the Django back end.",
+      "lead": "Monitoring and control of LoRaWAN sensors and actuators, published by Object as a Service. I built the Angular front end and improved the Django back end.",
+      "periodLabel": "2023 — 2026",
+      "client": "Object as a Service",
+      "role": "Full-stack web developer",
+      "place": "Remote",
+      "siteUrl": "https://iotplatform.fr/fr/",
+      "techs": [
+        "angular",
+        "ngrx",
+        "django"
+      ],
+      "featured": false,
+      "article": {
+        "context": [
+          "IOTPlatform lets industrial operators, network managers and local authorities monitor and control their equipment remotely: level, flow or temperature sensors, and actuators, on the Orange LoRa and The Things Network networks.",
+          "The platform collects and decodes the frames sent by devices, triggers alerts by email or SMS, and sends commands to actuators."
+        ],
+        "work": [
+          "I owned the whole Angular front end: designing pages and components, API calls and state management with NgRx.",
+          "On the Django back end, I improved the existing code and added several features."
+        ],
+        "workList": [
+          "Monitoring dashboards across several sites.",
+          "Sending commands to actuators, with their history.",
+          "Configuring email and SMS alerts.",
+          "Time-series charts and CSV data export."
+        ],
+        "choices": [
+          "Data comes from many devices and changes often. I centralised application state with NgRx: screens read the same store, API calls go through effects, and updated data is updated everywhere at once.",
+          "I split the interface into reusable components (tables, charts, forms) shared between screens. The interface stays consistent as features are added."
+        ],
+        "result": [
+          "The Angular front end is the clients' entry point for monitoring, commands and alerts."
+        ],
+        "lessons": [
+          "Working on a live product taught me to evolve existing code without breaking what clients use every day.",
+          "NgRx takes more code up front, but it keeps application behaviour predictable as screens multiply."
+        ],
+        "captions": [
+          "The monitoring dashboard.",
+          "Sending a command to an actuator."
+        ]
+      }
+    }
+  ],
+  "timeline": [
+    {
+      "id": "bts-sio",
+      "kind": "education",
+      "title": "BTS SIO, SLAM track",
+      "place": "Chambray-lès-Tours",
+      "description": "Software solutions and business applications.",
+      "start": {
+        "year": 2021,
+        "month": 9
+      },
+      "end": {
+        "year": 2023,
+        "month": 6
+      },
+      "techs": []
+    },
+    {
+      "id": "utopia",
+      "kind": "experience",
+      "title": "Front-end web developer, Utopia",
+      "place": "Tours",
+      "description": "WordPress showcase sites and an admin theme.",
+      "start": {
+        "year": 2022,
+        "month": 5
+      },
+      "end": {
+        "year": 2022,
+        "month": 6
+      },
+      "techs": [
+        "wordpress",
+        "php"
+      ]
+    },
+    {
+      "id": "kodoka",
+      "kind": "experience",
+      "title": "Full-stack web developer, Kodoka",
+      "place": "Joué-lès-Tours",
+      "description": "A custom CRM built with CodeIgniter 4.",
+      "start": {
+        "year": 2023,
+        "month": 3
+      },
+      "end": {
+        "year": 2023,
+        "month": 4
+      },
+      "techs": [
+        "codeigniter",
+        "php"
+      ]
+    },
+    {
+      "id": "bachelor-cefii",
+      "kind": "education",
+      "title": "Bachelor in Application Development, CEFii",
+      "place": "Avrillé",
+      "description": "Three-year degree, web and mobile applications.",
+      "start": {
+        "year": 2023,
+        "month": 9
+      },
+      "end": {
+        "year": 2024,
+        "month": 6
+      },
+      "techs": []
+    },
+    {
+      "id": "object-as-a-service",
+      "kind": "experience",
+      "title": "Full-stack web developer, Object as a Service",
+      "place": "Clerlande, remote",
+      "description": "The Angular front end and Django back end of IOTPlatform, and the modernisation of RDI Manager (Symfony, Vue.js).",
+      "start": {
+        "year": 2023,
+        "month": 9
+      },
+      "end": {
+        "year": 2026,
+        "month": 6
+      },
+      "techs": [
+        "angular",
+        "django",
+        "symfony",
+        "vue",
+        "php"
+      ]
+    },
+    {
+      "id": "mastere-ynov",
+      "kind": "education",
+      "title": "Master's in Software Development, YNOV",
+      "place": "Paris",
+      "description": "Five-year degree: software architecture, security, testing and CI/CD.",
+      "start": {
+        "year": 2024,
+        "month": 9
+      },
+      "end": {
+        "year": 2026,
+        "month": 6
+      },
+      "techs": []
+    }
+  ],
+  "skills": [
+    {
+      "id": "front-end",
+      "domain": "Front end",
+      "techs": [
+        {
+          "key": "angular",
+          "language": null
+        },
+        {
+          "key": "react",
+          "language": null
+        },
+        {
+          "key": "typescript",
+          "language": null
+        }
+      ],
+      "usage": "Monitoring interfaces for connected devices, internal tools."
+    },
+    {
+      "id": "back-end",
+      "domain": "Back end",
+      "techs": [
+        {
+          "key": "django",
+          "language": "Python"
+        },
+        {
+          "key": "symfony",
+          "language": "PHP"
+        }
+      ],
+      "usage": "APIs for IoT interfaces, R&D activity tracking, custom CRM."
+    },
+    {
+      "id": "cms",
+      "domain": "CMS",
+      "techs": [
+        {
+          "key": "wordpress",
+          "language": null
+        }
+      ],
+      "usage": "Showcase sites and a custom admin theme."
+    },
+    {
+      "id": "outils",
+      "domain": "Tools",
+      "techs": [
+        {
+          "key": "git",
+          "language": null
+        },
+        {
+          "key": "github",
+          "language": null
+        },
+        {
+          "key": "ci-cd",
+          "language": null
+        }
+      ],
+      "usage": "Version control, code reviews, automated deployments."
+    }
+  ]
+}

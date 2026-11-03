@@ -1,0 +1,31 @@
+{
+  "name": "web-shell",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/shell/src",
+  "prefix": "app",
+  "projectType": "library",
+  "tags": ["scope:app", "platform:web", "layer:shell"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/frontend/shell/tsconfig.lib.json --noEmit"
+      },
+      "dependsOn": ["typecheck-spec"]
+    },
+    "typecheck-spec": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": ["typescript"]
+        }
+      ],
+      "options": {
+        "command": "tsc -p libs/frontend/shell/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

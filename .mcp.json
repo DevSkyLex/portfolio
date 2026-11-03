@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "angular": {
+      "command": "npx",
+      "args": ["-y", "@angular/cli@22.2.5", "mcp", "--read-only", "--root", "."],
+      "env": {
+        "NG_CLI_ANALYTICS": "false"
+      }
+    }
+  }
+}

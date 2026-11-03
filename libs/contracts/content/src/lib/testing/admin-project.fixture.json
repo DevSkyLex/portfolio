@@ -1,0 +1,27 @@
+{
+  "id": "project-movah",
+  "slug": "movah",
+  "status": "published",
+  "version": 3,
+  "position": 0,
+  "title": { "fr": "Movah", "en": "Movah" },
+  "summary": { "fr": "Une application mobile.", "en": "A mobile app." },
+  "lead": { "fr": "Flutter sur Android et iOS.", "en": "Flutter on Android and iOS." },
+  "periodLabel": { "fr": "Depuis juillet 2026", "en": "Since July 2026" },
+  "client": { "fr": "Projet personnel", "en": "Personal project" },
+  "role": { "fr": "Conception et développement", "en": "Design and development" },
+  "place": { "fr": "Android et iOS", "en": "Android and iOS" },
+  "siteUrl": "https://movah.app",
+  "techs": ["flutter", "dart", "supabase"],
+  "featured": true,
+  "article": {
+    "context": [{ "fr": "Contexte.", "en": "Context." }],
+    "work": [{ "fr": "Travail.", "en": "Work." }],
+    "workList": [],
+    "choices": [{ "fr": "Choix.", "en": "Choices." }],
+    "result": [{ "fr": "Résultat.", "en": "Result." }],
+    "lessons": [{ "fr": "Leçon." }],
+    "captions": []
+  },
+  "missing": ["article.lessons.en"]
+}

@@ -1,0 +1,72 @@
+<input
+  #field
+  uiInput
+  type="text"
+  role="combobox"
+  autocomplete="off"
+  aria-autocomplete="list"
+  [size]="size()"
+  [class]="fieldClasses()"
+  [id]="inputId()"
+  [value]="value()"
+  [placeholder]="placeholder()"
+  [disabled]="disabled()"
+  [attr.aria-expanded]="expanded()"
+  [attr.aria-controls]="expanded() ? listboxId() : null"
+  [attr.aria-activedescendant]="activeItem()?.id ?? null"
+  [attr.aria-label]="ariaLabel() ?? null"
+  [attr.aria-labelledby]="ariaLabelledby() ?? null"
+  [attr.aria-describedby]="ariaDescribedby() ?? null"
+  [attr.aria-invalid]="invalid() || null"
+  [attr.aria-required]="required() || null"
+  (input)="onInput(field.value)"
+  (keydown)="onKeydown($event)"
+  (blur)="onBlur()"
+/>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="field"
+  [cdkConnectedOverlayOpen]="expanded()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayMinWidth]="minWidth()"
+  (overlayOutsideClick)="onOutsideClick($event)"
+  (detach)="close()"
+>
+  <!-- Pressing inside the list keeps the focus in the field. -->
+  <div
+    [class]="panelClasses()"
+    data-slot="autocomplete-content"
+    (mousedown)="$event.preventDefault()"
+  >
+    <div
+      role="listbox"
+      class="flex flex-col"
+      [id]="listboxId()"
+      [attr.aria-label]="ariaLabel() ?? null"
+      [attr.aria-labelledby]="ariaLabelledby() ?? null"
+    >
+      @for (item of items(); track item.id) {
+        <!-- Active-descendant listbox: focus stays in the input, which handles the keyboard. -->
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+        <div
+          role="option"
+          data-slot="autocomplete-option"
+          [id]="item.id"
+          [class]="optionClasses()"
+          [attr.aria-selected]="isActive(item)"
+          [attr.data-active]="isActive(item) ? '' : null"
+          (click)="choose(item)"
+          (pointermove)="activate(item)"
+        >
+          <span class="min-w-0 flex-1 truncate">{{ item.value }}</span>
+        </div>
+      }
+    </div>
+    @if (!items().length) {
+      <p role="status" class="px-2.5 py-2 text-sm text-star-faint" data-slot="autocomplete-empty">
+        {{ emptyText() }}
+      </p>
+    }
+  </div>
+</ng-template>

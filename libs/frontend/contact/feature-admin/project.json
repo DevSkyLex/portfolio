@@ -1,0 +1,31 @@
+{
+  "name": "contact-web-feature-admin",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/contact/feature-admin/src",
+  "prefix": "contact",
+  "projectType": "library",
+  "tags": ["scope:contact", "platform:web", "layer:feature"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/frontend/contact/feature-admin/tsconfig.lib.json --noEmit"
+      },
+      "dependsOn": ["typecheck-spec"]
+    },
+    "typecheck-spec": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": ["typescript"]
+        }
+      ],
+      "options": {
+        "command": "tsc -p libs/frontend/contact/feature-admin/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

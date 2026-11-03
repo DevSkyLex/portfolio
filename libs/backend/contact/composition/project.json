@@ -1,0 +1,30 @@
+{
+  "name": "contact-composition",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/contact/composition/src",
+  "projectType": "library",
+  "tags": ["scope:contact", "platform:server", "layer:composition"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/backend/contact/composition/tsconfig.lib.json --noEmit"
+      },
+      "dependsOn": ["typecheck-spec"]
+    },
+    "typecheck-spec": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": ["typescript"]
+        }
+      ],
+      "options": {
+        "command": "tsc -p libs/backend/contact/composition/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

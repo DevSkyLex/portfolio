@@ -1,0 +1,8 @@
+{
+  "name": "portfolio",
+  "version": "0.1.5",
+  "description": "Portfolio monorepo tooling: pf-web-* and pf-api-* builders and read-only reviewers for the Nx workspace (Angular 22 prerendered site, @vfortin/ui catalogue, NgRx SignalStore, Signal Forms, hexagonal NestJS services, Zod contracts, Docker, Nginx and Ansible), /pf-* commands, skills, and the guard, git-guard, delete-guard and Prettier format hooks. The plugin root is this .claude/ folder; the hooks only act inside a checkout whose package.json is named @vfortin/source.",
+  "author": {
+    "name": "Valentin FORTIN"
+  }
+}

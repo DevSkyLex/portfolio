@@ -1,0 +1,68 @@
+<button
+  #trigger
+  type="button"
+  role="combobox"
+  aria-haspopup="listbox"
+  [id]="triggerId()"
+  [class]="triggerClasses()"
+  [disabled]="disabled()"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="open() ? listboxId() : null"
+  [attr.aria-activedescendant]="activeId()"
+  [attr.aria-label]="ariaLabel() ?? null"
+  [attr.aria-labelledby]="ariaLabelledby() ?? null"
+  [attr.aria-describedby]="ariaDescribedby() ?? null"
+  [attr.aria-invalid]="invalid() || null"
+  [attr.aria-required]="required() || null"
+  (click)="toggle()"
+  (keydown)="onKeydown($event)"
+  (blur)="onBlur()"
+>
+  <span class="min-w-0 flex-1 truncate" [class.text-star-faint]="!selectedOption()">
+    {{ selectedLabel() ?? placeholder() }}
+  </span>
+  <!-- Turned by the unrolling of the list (menu-panel/menu-motion.ts). -->
+  <ng-icon
+    #chevron
+    class="shrink-0"
+    color="var(--star-muted)"
+    [svg]="icons.chevron"
+    size="16"
+    strokeWidth="2.25"
+    aria-hidden="true"
+  />
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="trigger"
+  [cdkConnectedOverlayOpen]="rendered()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayMinWidth]="minWidth()"
+  [cdkConnectedOverlayDisableClose]="true"
+  (overlayOutsideClick)="onOutsideClick($event)"
+  (positionChange)="onPositionChange()"
+  (detach)="onDetach()"
+>
+  <!-- Pressing inside the list keeps the focus (and the active descendant) on the button. -->
+  <div
+    #panel
+    role="listbox"
+    tabindex="-1"
+    [id]="listboxId()"
+    [class]="panelClasses()"
+    [attr.aria-label]="ariaLabel() ?? null"
+    [attr.aria-labelledby]="ariaLabelledby() ?? null"
+    [attr.data-closing]="open() ? null : ''"
+    data-slot="select-content"
+    (mousedown)="$event.preventDefault()"
+  >
+    <!-- Pill under the active option: it slides from option to option. -->
+    <div
+      #highlight
+      class="pointer-events-none absolute inset-x-1 top-0 z-0 h-10 rounded-option bg-star/5 opacity-0 transition-[translate,height,opacity] duration-[320ms,320ms,150ms] ease-orbit data-on:opacity-100 motion-reduce:transition-[opacity] motion-reduce:duration-150"
+      aria-hidden="true"
+    ></div>
+    <ng-content />
+  </div>
+</ng-template>

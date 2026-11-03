@@ -1,0 +1,38 @@
+# Disposable acceptance stack. Only committed, public development placeholders are mounted.
+# Always combine with compose.dev.yml and an explicit portfolio-e2e-* project name.
+services:
+  nginx:
+    ports: !override ['127.0.0.1:18080:80']
+  mailpit:
+    ports: !override ['127.0.0.1:18025:8025']
+  identity-service:
+    environment:
+      IDENTITY_ISSUER: http://localhost:18080/api/auth
+  identity-migrate:
+    environment:
+      IDENTITY_ISSUER: http://localhost:18080/api/auth
+  identity-bootstrap:
+    environment:
+      IDENTITY_ISSUER: http://localhost:18080/api/auth
+  content-service:
+    environment:
+      AUTH_ISSUER: http://localhost:18080/api/auth
+  contact-service:
+    environment:
+      AUTH_ISSUER: http://localhost:18080/api/auth
+
+secrets:
+  postgres_password: { file: ./dev/secrets.example/postgres_password }
+  content_migrator_password: { file: ./dev/secrets.example/content_migrator_password }
+  content_app_password: { file: ./dev/secrets.example/content_app_password }
+  contact_migrator_password: { file: ./dev/secrets.example/contact_migrator_password }
+  contact_app_password: { file: ./dev/secrets.example/contact_app_password }
+  identity_migrator_password: { file: ./dev/secrets.example/identity_migrator_password }
+  identity_app_password: { file: ./dev/secrets.example/identity_app_password }
+  content_database_url: { file: ./dev/secrets.example/content_database_url }
+  contact_database_url: { file: ./dev/secrets.example/contact_database_url }
+  identity_database_url: { file: ./dev/secrets.example/identity_database_url }
+  content_migrator_url: { file: ./dev/secrets.example/content_migrator_url }
+  contact_migrator_url: { file: ./dev/secrets.example/contact_migrator_url }
+  identity_migrator_url: { file: ./dev/secrets.example/identity_migrator_url }
+  contact_client_key_secret: { file: ./dev/secrets.example/contact_client_key_secret }

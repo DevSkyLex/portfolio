@@ -1,0 +1,12 @@
+# First run (and system updates):
+#   ansible-playbook playbooks/provision.yml -e ansible_user=ubuntu --ask-vault-pass
+# Hardened system, Docker, files and secrets in place; shared Traefik must already be running.
+- name: Provision the VPS
+  hosts: vps
+  become: true
+  roles:
+    - base
+    - docker
+    - role: portfolio
+      vars:
+        portfolio_deploy_services: false

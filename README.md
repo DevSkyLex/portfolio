@@ -1,54 +1,44 @@
-# CodeIgniter 4 Framework
+# Portfolio
 
-## What is CodeIgniter?
+French/English Angular portfolio with a prerendered public site, a French administration area and three NestJS services: content, contact and identity. The Nx workspace keeps each context's domain, application and adapters separate.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Development
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+Use Node.js 24 or newer and the npm version declared in `package.json`:
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+```bash
+npm ci
+npx nx run-many -t serve -p content-service contact-service identity-service
+npx nx serve web
+```
 
-The user guide corresponding to the latest version of the framework can be found
-[here](https://codeigniter4.github.io/userguide/).
+The web development server listens on port 4200; content, contact and identity use 3101, 3102 and 3103. Service configuration examples live in `apps/*-service/.env.example`. PGlite supports development without Docker.
 
-## Important Change with index.php
+For a standalone Docker stack, follow [local operations](docs/operations/deployment.md#locally): `docker/compose.dev.yml` builds the services and serves the site on `http://localhost:8080`, with Postgres and Mailpit. It needs no external Traefik network.
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+## Production
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+The existing shared Traefik routes HTTPS to a private Nginx origin over `traefik_proxy`. Nginx serves static releases and dispatches API requests to private services; Postgres uses a separate internal network. The portfolio publishes no production host ports and manages no certificates.
 
-**Please** read the user guide for a better explanation of how CI4 works!
+[Deployment and operations](docs/operations/deployment.md) documents the shared environment conventions, required `TRUSTED_PROXIES` setting, Ansible provisioning, Vault-rendered secrets, GitHub workflows, backups and migration from a standalone installation. Public runtime settings are listed in [docker/.env.example](docker/.env.example).
 
-## Repository Management
+## Verification
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+```bash
+npx nx affected -t lint typecheck test build
+npx nx run architecture:test
+bash docker/scripts/check-ops.sh
+```
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+The operations checks validate configuration in disposable containers; they do not deploy the application.
 
-## Contributing
+See [architecture boundaries](docs/architecture/boundaries.md), [architecture decisions](docs/architecture/decisions.md) and [workspace generators](docs/workspace/generators.md) before adding code.
 
-We welcome contributions from the community.
+## AI tooling
 
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
+The workspace supports [Claude Code](.claude/README.md) and [Codex](.codex/README.md). Both use
+[AGENTS.md](AGENTS.md), the shared Nx skills in `.agents/` and their own agents, rules and hooks.
+The root `.mcp.json` provides portable MCP configuration.
 
-## Server Requirements
-
-PHP version 7.4 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+Use `npm run ai:configure` to update the Nx integration for these two clients. The script selects
+Claude and Codex explicitly so an update does not recreate configurations for other assistants.

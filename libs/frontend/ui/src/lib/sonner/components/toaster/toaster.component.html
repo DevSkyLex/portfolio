@@ -1,0 +1,63 @@
+@for (toast of visible(); track toast.id) {
+  <div
+    data-slot="toast"
+    aria-atomic="true"
+    [attr.role]="toast.type === 'error' ? 'alert' : 'status'"
+    [attr.data-type]="toast.type"
+    [class]="toastClasses"
+  >
+    @switch (toast.type) {
+      @case ('success') {
+        <ng-icon
+          class="mt-1 shrink-0 text-success-ink"
+          [svg]="icons.success"
+          size="16"
+          aria-hidden="true"
+        />
+      }
+      @case ('warning') {
+        <ng-icon
+          class="mt-1 shrink-0 text-warning-ink"
+          [svg]="icons.warning"
+          size="16"
+          aria-hidden="true"
+        />
+      }
+      @case ('info') {
+        <ng-icon
+          class="mt-1 shrink-0 text-info-ink"
+          [svg]="icons.info"
+          size="16"
+          aria-hidden="true"
+        />
+      }
+      @case ('error') {
+        <ng-icon
+          class="mt-1 shrink-0 text-danger-ink"
+          [svg]="icons.error"
+          size="16"
+          aria-hidden="true"
+        />
+      }
+    }
+    <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+      <p class="text-star">{{ toast.message }}</p>
+      @if (toast.description; as description) {
+        <p class="text-star-muted">{{ description }}</p>
+      }
+    </div>
+    @if (toast.action; as action) {
+      <button type="button" [class]="actionClasses" (click)="act(toast, action)">
+        {{ action.label }}
+      </button>
+    }
+    <button
+      type="button"
+      [class]="closeClasses"
+      [attr.aria-label]="closeLabel()"
+      (click)="toasts.dismiss(toast.id)"
+    >
+      <ng-icon [svg]="icons.x" size="16" aria-hidden="true" />
+    </button>
+  </div>
+}

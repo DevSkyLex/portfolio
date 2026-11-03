@@ -1,0 +1,51 @@
+#!/bin/sh
+# Runs the fast CI checks before a branch push: npx nx format:check, then lint and typecheck of the
+# projects affected by the pushed commits (the full gate is in .github/workflows/ci.yml and AGENTS.md).
+# Tag pushes and branch deletions are not checked. Skipped when the dependencies are not installed yet.
+# Skip it only knowingly, as a human: PF_SKIP_PUSH_CHECKS=1 git push ... (agents are refused that variable).
+# Installed by "npm install" (prepare script: git config core.hooksPath .githooks).
+
+if [ "${PF_SKIP_PUSH_CHECKS:-}" = "1" ] || [ ! -f node_modules/nx/package.json ]; then
+  exit 0
+fi
+
+zero=0000000000000000000000000000000000000000
+base=""
+branch_push=0
+# stdin: <local ref> <local sha> <remote ref> <remote sha>, one line per pushed ref
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/*)
+      if [ "$local_sha" != "$zero" ]; then
+        branch_push=1
+        if [ "$remote_sha" != "$zero" ]; then
+          base="$remote_sha"
+        fi
+      fi
+      ;;
+  esac
+done
+
+[ $branch_push -eq 1 ] || exit 0
+
+# A new branch has no remote sha: compare with origin/main when it exists.
+if [ -z "$base" ] && git rev-parse --verify -q origin/main >/dev/null; then
+  base=$(git merge-base HEAD origin/main)
+fi
+
+echo "pre-push: npx nx format:check" >&2
+if ! npx --no -- nx format:check >&2; then
+  echo "pre-push: run npx nx format:write, commit, then push again." >&2
+  exit 1
+fi
+
+if [ -n "$base" ]; then
+  echo "pre-push: npx nx affected -t lint typecheck --base=$base --head=HEAD" >&2
+  if ! npx --no -- nx affected -t lint typecheck --base="$base" --head=HEAD >&2; then
+    echo "pre-push: fix the lint or type errors above, commit, then push again." >&2
+    exit 1
+  fi
+else
+  echo "pre-push: no base to compare with (first push): lint and typecheck left to CI." >&2
+fi
+exit 0

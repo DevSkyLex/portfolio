@@ -1,0 +1,32 @@
+<span
+  #track
+  class="relative h-1.5 w-full grow overflow-hidden rounded-full bg-line-field"
+  data-slot="slider-track"
+>
+  <span
+    class="absolute inset-y-0 start-0 bg-star"
+    data-slot="slider-range"
+    [style.width.%]="percent()"
+  ></span>
+</span>
+<span
+  #thumb
+  role="slider"
+  data-slot="slider-thumb"
+  aria-orientation="horizontal"
+  [class]="thumbClasses()"
+  [id]="controlId()"
+  [style.inset-inline-start.%]="percent()"
+  [attr.tabindex]="disabled() ? -1 : 0"
+  [attr.aria-valuemin]="lower()"
+  [attr.aria-valuemax]="upper()"
+  [attr.aria-valuenow]="current()"
+  [attr.aria-valuetext]="valueText()?.(current()) ?? null"
+  [attr.aria-disabled]="disabled() || null"
+  [attr.aria-invalid]="invalid() || null"
+  [attr.aria-label]="ariaLabel() ?? null"
+  [attr.aria-labelledby]="ariaLabelledby() ?? null"
+  [attr.aria-describedby]="ariaDescribedby() ?? null"
+  (keydown)="onKeydown($event)"
+  (blur)="touch.emit()"
+></span>

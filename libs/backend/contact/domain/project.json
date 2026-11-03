@@ -1,0 +1,30 @@
+{
+  "name": "contact-domain",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/contact/domain/src",
+  "projectType": "library",
+  "tags": ["scope:contact", "platform:neutral", "layer:domain"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/backend/contact/domain/tsconfig.lib.json --noEmit"
+      },
+      "dependsOn": ["typecheck-spec"]
+    },
+    "typecheck-spec": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": ["typescript"]
+        }
+      ],
+      "options": {
+        "command": "tsc -p libs/backend/contact/domain/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

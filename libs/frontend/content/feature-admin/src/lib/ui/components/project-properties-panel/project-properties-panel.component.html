@@ -1,0 +1,58 @@
+@let current = project();
+<aside
+  class="sticky top-12 flex h-[calc(100dvh-3rem)] flex-col gap-6 overflow-y-auto border-l border-line px-5 py-6 @max-[1180px]:static @max-[1180px]:h-auto @max-[1180px]:border-t @max-[1180px]:border-l-0"
+  aria-label="Propriétés"
+>
+  <h2 class="text-[13px] font-semibold text-star">Propriétés</h2>
+  <dl class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3 gap-y-3.5 text-[13px]">
+    <dt class="text-star-faint">Statut</dt>
+    <dd>
+      @if (current.status === 'published') {
+        <span uiBadge variant="success" dot>En ligne</span>
+      } @else {
+        <span uiBadge variant="outline" dot>Non publié</span>
+      }
+    </dd>
+    <dt class="text-star-faint">Version</dt>
+    <dd class="text-star">{{ current.version }}</dd>
+    <dt class="text-star-faint">Adresse</dt>
+    <dd class="truncate font-mono text-[12px]/5 text-star-muted">/projects/{{ current.slug }}</dd>
+    <dt class="text-star-faint">Accueil</dt>
+    <dd>
+      @if (current.featured) {
+        <span uiBadge variant="info">
+          <ng-icon [svg]="icons.featured" size="12" aria-hidden="true" />
+          Mis en avant
+        </span>
+      } @else {
+        <span class="text-star">Non</span>
+      }
+    </dd>
+    <dt class="text-star-faint">Traductions</dt>
+    <dd class="flex flex-col gap-2">
+      @if (current.missing.length > 0) {
+        <span class="flex items-center gap-1.5 text-star">
+          <ng-icon class="text-warning-ink" [svg]="icons.missing" size="14" aria-hidden="true" />
+          {{ current.missing.length }} à compléter
+        </span>
+        <span class="flex flex-wrap gap-1">
+          @for (field of current.missing; track field) {
+            <span
+              class="rounded-[4px] border border-line-field px-1.5 font-mono text-[11px]/5 text-star-muted"
+              >{{ field }}</span
+            >
+          }
+        </span>
+      } @else {
+        <span class="flex items-center gap-1.5 text-star">
+          <ng-icon class="text-success-ink" [svg]="icons.complete" size="14" aria-hidden="true" />
+          Complètes
+        </span>
+      }
+    </dd>
+  </dl>
+  <p class="border-t border-line pt-4 text-[12px]/5 text-star-faint">
+    Publier, dépublier ou enregistrer un projet publié reconstruit le site public en quelques
+    minutes.
+  </p>
+</aside>

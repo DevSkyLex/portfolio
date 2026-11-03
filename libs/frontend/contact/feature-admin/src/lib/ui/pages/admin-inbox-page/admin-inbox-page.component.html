@@ -1,0 +1,88 @@
+<header
+  class="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-void px-6 @max-[640px]:px-4"
+>
+  <h1 class="text-[14px] font-semibold text-star">Messages</h1>
+  <span class="text-[13px] text-star-faint">{{ store.total() }}</span>
+  <div
+    uiToggleGroup
+    required
+    class="ml-auto gap-px rounded-[8px] border border-line-field p-0.5"
+    aria-label="Filtrer par statut"
+    [value]="filterKey()"
+    (valueChange)="applyFilter($event)"
+  >
+    @for (filter of filters; track filter.key) {
+      <button
+        uiToggleGroupItem
+        class="h-6 min-w-0 rounded-[6px] px-2.5 text-[12px] font-medium"
+        [value]="filter.key"
+      >
+        {{ filter.label }}
+      </button>
+    }
+  </div>
+</header>
+
+@if (store.error(); as error) {
+  <div
+    uiAlert
+    class="mx-6 mt-4 w-auto px-3 py-2.5 text-[13px]/5 @max-[640px]:mx-4"
+    [variant]="store.conflict() ? 'warning' : 'danger'"
+  >
+    <ng-icon [svg]="store.conflict() ? icons.conflict : icons.error" size="14" aria-hidden="true" />
+    <p class="col-start-2">
+      {{
+        store.conflict()
+          ? 'Ce message a changé entre-temps ; la liste a été rechargée.'
+          : error.message
+      }}
+    </p>
+  </div>
+}
+
+@if (store.loading() && store.messages().length === 0) {
+  <div class="flex flex-col" role="status">
+    <span class="sr-only">Chargement…</span>
+    @for (row of [1, 2, 3]; track row) {
+      <div class="flex flex-col gap-2 border-b border-line px-4 py-3" aria-hidden="true">
+        <span uiSkeleton class="h-3 w-40 rounded-full"></span>
+        <span uiSkeleton class="h-3 w-64 rounded-full"></span>
+      </div>
+    }
+  </div>
+} @else if (store.messages().length === 0) {
+  <div
+    uiEmpty
+    class="justify-start gap-4 rounded-none px-6 py-16 md:px-6 md:py-16 @max-[640px]:px-4"
+  >
+    <div uiEmptyHeader>
+      <div uiEmptyMedia class="mb-1 text-star-faint">
+        <ng-icon [svg]="icons.empty" size="24" />
+      </div>
+      <p uiEmptyTitle class="font-sans text-[14px] font-medium">Aucun message.</p>
+      <p uiEmptyDescription class="text-[13px]">
+        Les messages sont supprimés automatiquement trois ans après leur réception.
+      </p>
+    </div>
+  </div>
+} @else {
+  <div class="grid min-h-0 flex-1 grid-cols-[360px_minmax(0,1fr)] @max-[1024px]:grid-cols-1">
+    <contact-message-list-dataview
+      [messages]="store.messages()"
+      [selectedId]="selected()?.id ?? null"
+      [page]="store.page()"
+      [pages]="store.pages()"
+      (opened)="select($event)"
+      (pageChange)="store.goTo($event)"
+    />
+    @if (selected(); as message) {
+      <contact-message-detail
+        [message]="message"
+        [writing]="store.writing()"
+        (readRequested)="store.markRead($event)"
+        (archiveRequested)="store.archive($event)"
+        (removeRequested)="remove($event)"
+      />
+    }
+  </div>
+}

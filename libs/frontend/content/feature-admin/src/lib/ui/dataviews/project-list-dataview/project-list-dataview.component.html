@@ -1,0 +1,107 @@
+@for (group of groups(); track group.status) {
+  <section [attr.aria-label]="group.label">
+    <div
+      class="flex h-9 items-center gap-2 border-b border-line bg-void-raised px-6 text-[13px] @max-[640px]:px-4"
+    >
+      @if (group.status === 'published') {
+        <ng-icon class="text-success-ink" [svg]="icons.published" size="14" aria-hidden="true" />
+      } @else {
+        <ng-icon class="text-star-faint" [svg]="icons.draft" size="14" aria-hidden="true" />
+      }
+      <span class="font-medium text-star">{{ group.label }}</span>
+      <span class="text-star-faint">{{ group.projects.length }}</span>
+    </div>
+    <ul role="list">
+      @for (project of group.projects; track project.id) {
+        <li
+          class="group flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-6 py-1.5 transition-colors duration-(--dur-pop) ease-orbit hover:bg-star/3 @max-[640px]:px-4"
+        >
+          @if (project.status === 'published') {
+            <ng-icon
+              class="shrink-0 text-success-ink"
+              [svg]="icons.published"
+              size="14"
+              aria-hidden="true"
+            />
+            <span class="sr-only">Publié</span>
+          } @else {
+            <ng-icon
+              class="shrink-0 text-star-faint"
+              [svg]="icons.draft"
+              size="14"
+              aria-hidden="true"
+            />
+            <span class="sr-only">Brouillon</span>
+          }
+          <a
+            class="truncate text-[14px] font-medium text-star outline-2 outline-offset-2 outline-transparent focus-visible:rounded-[4px] focus-visible:outline-signal/55"
+            [routerLink]="[project.id]"
+            >{{ project.title.fr }}</a
+          >
+          <span class="truncate font-mono text-[12px] text-star-faint">{{ project.slug }}</span>
+          <span class="flex-1"></span>
+          @if (project.featured) {
+            <span uiBadge variant="info" class="h-5 px-2">
+              <ng-icon [svg]="icons.featured" size="12" aria-hidden="true" />
+              Accueil
+            </span>
+          }
+          @if (project.missing.length > 0) {
+            <span uiBadge variant="warning" class="h-5 px-2" [title]="project.missing.join(', ')">
+              <ng-icon [svg]="icons.missing" size="12" aria-hidden="true" />
+              {{ project.missing.length }} champ(s) à compléter avant publication
+            </span>
+          } @else {
+            <span class="inline-flex h-5 items-center gap-1 px-1 text-[12px] text-star-faint">
+              <ng-icon
+                class="text-success-ink"
+                [svg]="icons.complete"
+                size="12"
+                aria-hidden="true"
+              />
+              Complet en français et en anglais
+            </span>
+          }
+          <span class="flex items-center gap-1">
+            <a
+              uiBtn
+              variant="ghost"
+              size="sm"
+              class="h-7 px-2.5 text-[13px]"
+              [routerLink]="[project.id]"
+            >
+              Modifier
+            </a>
+            @if (project.status === 'published') {
+              <button
+                uiBtn
+                variant="secondary"
+                size="sm"
+                class="h-7 px-2.5 text-[13px]"
+                type="button"
+                [disabled]="writing()"
+                (click)="unpublishRequested.emit(project)"
+              >
+                Dépublier
+              </button>
+            } @else {
+              <button
+                uiBtn
+                size="sm"
+                class="h-7 px-2.5 text-[13px]"
+                type="button"
+                [disabled]="writing() || project.missing.length > 0"
+                [title]="
+                  project.missing.length > 0 ? 'Complétez les champs manquants pour publier.' : ''
+                "
+                (click)="publishRequested.emit(project)"
+              >
+                Publier
+              </button>
+            }
+          </span>
+        </li>
+      }
+    </ul>
+  </section>
+}

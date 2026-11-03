@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "extraKnownMarketplaces": {
+    "nx-claude-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "nrwl/nx-ai-agents-config"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "nx@nx-claude-plugins": true
+  },
+  "sandbox": {
+    "network": {
+      "allowedDomains": ["www.google-analytics.com"]
+    }
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npx nx affected:*)",
+      "Bash(npx nx run-many:*)",
+      "Bash(npx nx test:*)",
+      "Bash(npx nx lint:*)",
+      "Bash(npx nx typecheck:*)",
+      "Bash(npx nx build:*)",
+      "Bash(npx nx e2e web-e2e:*)",
+      "Bash(npx nx run architecture:test)",
+      "Bash(npx nx run web:extract-i18n)",
+      "Bash(npx nx format:check:*)",
+      "Bash(npx nx format:write:*)",
+      "Bash(npx nx show:*)",
+      "Bash(npx prettier:*)",
+      "Bash(node --test:*)",
+      "Bash(python -B .codex/scripts/validate.py)",
+      "Bash(python -B .codex/scripts/check_agent_parity.py)",
+      "Bash(python -B .codex/scripts/check_links.py)",
+      "Bash(python -B -m unittest discover -s .codex/scripts -p \"test_*.py\")",
+      "Bash(git status)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(codex exec:*)",
+      "Bash(command -v codex)"
+    ],
+    "deny": [
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./.data/**)",
+      "Read(./docker/dev/secrets/**)",
+      "Read(./ansible/inventory/group_vars/all/vault.yml)",
+      "Read(./**/.vault-pass)",
+      "Read(./**/*.pem)"
+    ]
+  },
+  "enabledMcpjsonServers": ["playwright", "context7", "angular"],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.mjs\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-git.mjs\"",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-delete.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/format.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
+  "fastMode": false,
+  "env": {
+    "CLAUDE_CODE_DISABLE_FAST_MODE": "1"
+  }
+}

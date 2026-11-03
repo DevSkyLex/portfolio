@@ -1,0 +1,5 @@
+# ansible-lint configuration (docker/scripts/check-ops.sh runs it, production profile).
+profile: production
+offline: true
+exclude_paths:
+  - .collections/

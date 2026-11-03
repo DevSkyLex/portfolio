@@ -1,0 +1,9 @@
+# Build context of service.Dockerfile: one dist/apps/<service> directory, after Nx pruning.
+# Send only runtime files; maps, Nx metadata and workspace_modules stay outside the context.
+**
+!package.json
+!package-lock.json
+!main.js
+!cli.js
+!migrations/
+!migrations/**

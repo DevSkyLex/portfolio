@@ -1,0 +1,124 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/eslint.config.mjs",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/**/testing/**",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/vite.config.{js,ts,mjs,mts}",
+      "!{projectRoot}/vitest.config.{js,ts,mjs,mts}",
+      "!{projectRoot}/**/*.md",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/package-lock.json",
+      { "runtime": "node --version" }
+    ]
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
+      "plugin": "@nx/vitest",
+      "options": {
+        "testTargetName": "test",
+        "testMode": "run"
+      }
+    },
+    {
+      "plugin": "@nx/playwright/plugin",
+      "options": {
+        "targetName": "e2e"
+      }
+    },
+    {
+      "plugin": "@nx/webpack/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "previewTargetName": "preview",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps",
+        "serveStaticTargetName": "serve-static"
+      }
+    }
+  ],
+  "analytics": false,
+  "targetDefaults": {
+    "@angular/build:application": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "@angular/build:unit-test": {
+      "cache": true,
+      "inputs": ["default", "^production", { "externalDependencies": ["vitest"] }],
+      "outputs": ["{workspaceRoot}/coverage/{projectName}"]
+    },
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint/explicit-types.mjs",
+        { "externalDependencies": ["eslint"] }
+      ]
+    },
+    "test": {
+      "cache": true
+    },
+    "typecheck": {
+      "cache": true,
+      "inputs": ["default", "^production", { "externalDependencies": ["typescript"] }]
+    },
+    "e2e": {
+      "cache": false
+    },
+    "serve": {
+      "cache": false
+    },
+    "content-snapshot": {
+      "cache": false
+    },
+    "db-migrate": {
+      "cache": false
+    },
+    "db-seed": {
+      "cache": false
+    },
+    "generate-key": {
+      "cache": false
+    }
+  },
+  "generators": {
+    "@nx/angular:application": {
+      "e2eTestRunner": "playwright",
+      "linter": "eslint",
+      "style": "css",
+      "unitTestRunner": "vitest-angular"
+    },
+    "@nx/angular:library": {
+      "linter": "eslint",
+      "unitTestRunner": "vitest-analog"
+    },
+    "@nx/angular:component": {
+      "style": "none"
+    }
+  },
+  "defaultBase": "main"
+}

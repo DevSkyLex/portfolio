@@ -1,0 +1,1 @@
+postgres://identity_migrator:dev-identity-migrator@postgres:5432/portfolio

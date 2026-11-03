@@ -1,0 +1,77 @@
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# compiled output
+dist
+tmp
+out-tsc
+
+# dependencies
+node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+/.sass-cache
+/connect.lock
+/typings
+*.log
+
+# test outputs
+coverage
+test-output
+test-results
+playwright-report
+blob-report
+
+# System Files
+.DS_Store
+Thumbs.db
+
+.nx/cache
+.nx/workspace-data
+
+.claude/worktrees
+.claude/settings.local.json
+.nx/polygraph
+.nx/self-healing
+.nx/migrate-runs
+vitest.config.*.timestamp*
+.vitest
+
+.angular
+
+__screenshots__/
+
+# Local PGlite databases, development keys and admin credentials
+.data
+
+# Local service configuration: only apps/<service>/.env.example is versioned
+# (docker/dev/secrets/ is ignored by docker/.gitignore, examples in docker/dev/secrets.example/).
+apps/*/.env
+apps/*/.env.*
+!apps/*/.env.example
+.env.local
+
+# Local credentials stay outside the repository at every directory level.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+/ansible/inventory/group_vars/all/vault.yml

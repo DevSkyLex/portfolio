@@ -1,0 +1,1046 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="fr" target-language="en" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="project.back" datatype="html">
+        <source>Tous les projets</source>
+        <target>All projects</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">5,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.context" datatype="html">
+        <source>Contexte</source>
+        <target>Context</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">30,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.work" datatype="html">
+        <source>Ce que j&apos;ai fait</source>
+        <target>What I did</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">39,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.choices" datatype="html">
+        <source>Choix techniques</source>
+        <target>Technical choices</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">55,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.result" datatype="html">
+        <source>Résultat</source>
+        <target>Outcome</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">64,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.lessons" datatype="html">
+        <source>Ce que je retiens</source>
+        <target>What I learned</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">81,83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.toc" datatype="html">
+        <source>Sommaire</source>
+        <target>Contents</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">92,96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.others" datatype="html">
+        <source>Autres projets</source>
+        <target>Other projects</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">90,91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.previous" datatype="html">
+        <source>Projet précédent</source>
+        <target>Previous project</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">92,93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="project.next" datatype="html">
+        <source>Projet suivant</source>
+        <target>Next project</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/project-page/project-page.component.html</context>
+          <context context-type="linenumber">96,97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="section.projects" datatype="html">
+        <source>Projets</source>
+        <target>Projects</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/content-sections.component.html</context>
+          <context context-type="linenumber">2,3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="section.timeline" datatype="html">
+        <source>Parcours</source>
+        <target>Journey</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/content-sections.component.html</context>
+          <context context-type="linenumber">19,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="timeline.education" datatype="html">
+        <source>Formation</source>
+        <target>Education</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/content-sections.component.html</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="timeline.experience" datatype="html">
+        <source>Expérience</source>
+        <target>Experience</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/content-sections.component.html</context>
+          <context context-type="linenumber">25,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="section.skills" datatype="html">
+        <source>Compétences</source>
+        <target>Skills</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/content-sections.component.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="about.photoPlaceholder" datatype="html">
+        <source>[Photo]</source>
+        <target>[Photo]</target>
+      </trans-unit>
+      <trans-unit id="section.about" datatype="html">
+        <source>À propos</source>
+        <target>About</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/content-sections.component.html</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="hero.projects" datatype="html">
+        <source>Voir les projets</source>
+        <target>See the projects</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/hero-section.component.html</context>
+          <context context-type="linenumber">17,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="hero.cv" datatype="html">
+        <source>CV en PDF</source>
+        <target>Résumé (PDF)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/hero-section.component.html</context>
+          <context context-type="linenumber">18,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="hero.scroll" datatype="html">
+        <source>Aller aux projets</source>
+        <target>Go to the projects</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/hero-section.component.html</context>
+          <context context-type="linenumber">25,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.skip" datatype="html">
+        <source> Aller au contenu
+</source>
+        <target>Skip to content</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.html</context>
+          <context context-type="linenumber">6,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.menu" datatype="html">
+        <source>Menu</source>
+        <target>Menu</target>
+      </trans-unit>
+      <trans-unit id="layout.menuOpen" datatype="html">
+        <source>Menu</source>
+        <target>Menu</target>
+      </trans-unit>
+      <trans-unit id="layout.menuClose" datatype="html">
+        <source>Fermer</source>
+        <target>Close</target>
+      </trans-unit>
+      <trans-unit id="layout.nav" datatype="html">
+        <source>Navigation principale</source>
+        <target>Main navigation</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.html</context>
+          <context context-type="linenumber">19,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.tagline" datatype="html">
+        <source>Développeur web fullstack à Blois.</source>
+        <target>Fullstack web developer in Blois, France.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.html</context>
+          <context context-type="linenumber">45,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.language" datatype="html">
+        <source>Langue</source>
+        <target>Language</target>
+      </trans-unit>
+      <trans-unit id="layout.theme" datatype="html">
+        <source>Thème</source>
+        <target>Theme</target>
+      </trans-unit>
+      <trans-unit id="layout.themeSystem" datatype="html">
+        <source>Système</source>
+        <target>System</target>
+      </trans-unit>
+      <trans-unit id="layout.themeDark" datatype="html">
+        <source>Sombre</source>
+        <target>Dark</target>
+      </trans-unit>
+      <trans-unit id="layout.themeLight" datatype="html">
+        <source>Clair</source>
+        <target>Light</target>
+      </trans-unit>
+      <trans-unit id="layout.footerNavTitle" datatype="html">
+        <source>Navigation</source>
+        <target>Navigation</target>
+      </trans-unit>
+      <trans-unit id="layout.elsewhere" datatype="html">
+        <source>Ailleurs</source>
+        <target>Elsewhere</target>
+      </trans-unit>
+      <trans-unit id="layout.cv" datatype="html">
+        <source>CV en PDF</source>
+        <target>Résumé (PDF)</target>
+      </trans-unit>
+      <trans-unit id="layout.legalTitle" datatype="html">
+        <source>Informations légales</source>
+        <target>Legal information</target>
+      </trans-unit>
+      <trans-unit id="layout.privacyPolicy" datatype="html">
+        <source>Politique de confidentialité</source>
+        <target>Privacy policy</target>
+      </trans-unit>
+      <trans-unit id="legal.back" datatype="html">
+        <source>Accueil</source>
+        <target>Home</target>
+      </trans-unit>
+      <trans-unit id="legal.cookies.storage" datatype="html">
+        <source>Votre choix de thème est enregistré dans le stockage local de votre navigateur ; il n&apos;en sort pas.</source>
+        <target>Your theme choice is saved in your browser&apos;s local storage; it never leaves it.</target>
+      </trans-unit>
+      <trans-unit id="layout.top" datatype="html">
+        <source>Haut de page</source>
+        <target>Back to top</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.html</context>
+          <context context-type="linenumber">59,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nav.projects" datatype="html">
+        <source>Projets</source>
+        <target>Projects</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nav.timeline" datatype="html">
+        <source>Parcours</source>
+        <target>Journey</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nav.skills" datatype="html">
+        <source>Compétences</source>
+        <target>Skills</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nav.about" datatype="html">
+        <source>À propos</source>
+        <target>About</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="route.home" datatype="html">
+        <source>Valentin Fortin — Développeur web fullstack</source>
+        <target>Valentin Fortin — Full-stack web developer</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/app.routes.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.command.placeholder" datatype="html">
+        <source>Tapez une commande ou recherchez…</source>
+        <target>Type a command or search…</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/command/command-input.component.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.command.label" datatype="html">
+        <source>Rechercher une commande</source>
+        <target>Search for a command</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/command/command-input.component.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.confirm-dialog.cancel" datatype="html">
+        <source>Annuler</source>
+        <target>Cancel</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/confirm-dialog/confirm-dialog.component.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.dialog.close" datatype="html">
+        <source>Fermer</source>
+        <target>Close</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/dialog/dialog.service.ts</context>
+          <context context-type="linenumber">264</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.input-otp.label" datatype="html">
+        <source>Code à usage unique</source>
+        <target>One-time code</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/input-otp/input-otp.component.ts</context>
+          <context context-type="linenumber">211</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.select.placeholder" datatype="html">
+        <source>Choisir une option</source>
+        <target>Choose an option</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/select/select.component.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="section.contact" datatype="html">
+        <source>Contact</source>
+        <target>Contact</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">7,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.lead" datatype="html">
+        <source> Pour un poste, une mission ou une question. </source>
+        <target> For a job, a project or a question. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">13,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.sent.title" datatype="html">
+        <source> Message envoyé </source>
+        <target> Message sent </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">56,58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.sent.body" datatype="html">
+        <source> Merci <x id="INTERPOLATION" equiv-text="{{ firstName() }}"/>. Je vous réponds à <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;font-mono text-base text-star&quot;&gt;"/><x id="INTERPOLATION_1" equiv-text="{{ store.sentTo() }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+            &gt;"/>. </source>
+        <target> Thank you <x id="INTERPOLATION" equiv-text="{{ firstName() }}"/>. I will reply to <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;font-mono text-base text-star&quot;&gt;"/><x id="INTERPOLATION_1" equiv-text="{{ store.sentTo() }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+            &gt;"/>. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">59,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.sent.again" datatype="html">
+        <source> Écrire un autre message </source>
+        <target> Write another message </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">70,72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.form.label" datatype="html">
+        <source>Formulaire de contact</source>
+        <target>Contact form</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">78,79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.failed" datatype="html">
+        <source>Le message n&apos;est pas parti.</source>
+        <target>The message wasn't sent.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">93,94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.failed.one" datatype="html">
+        <source>Un champ est à corriger ci-dessous.</source>
+        <target>One field needs fixing below.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">97,98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.failed.many" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ invalidCount() }}"/> champs sont à corriger ci-dessous.</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ invalidCount() }}"/> fields need fixing below.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">101,102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.field.name" datatype="html">
+        <source>Nom</source>
+        <target>Name</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.field.company" datatype="html">
+        <source>Entreprise</source>
+        <target>Company</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">132,133</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.field.email" datatype="html">
+        <source>Adresse e-mail</source>
+        <target>Email address</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">150,151</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.field.email.placeholder" datatype="html">
+        <source>nom@domaine.fr</source>
+        <target>name@domain.com</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">163,164</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.field.subject" datatype="html">
+        <source>Objet</source>
+        <target>Subject</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">170,171</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.field.message" datatype="html">
+        <source>Message</source>
+        <target>Message</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">189</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.field.message.hint" datatype="html">
+        <source>Le contexte, le délai, le budget si vous l&apos;avez.</source>
+        <target>The context, the timeline, the budget if you have one.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">193,196</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.sending" datatype="html">
+        <source>Envoi en cours</source>
+        <target>Sending</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">235,236</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.send" datatype="html">
+        <source>Envoyer le message</source>
+        <target>Send the message</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">237,238</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.privacy" datatype="html">
+        <source> Vos informations servent uniquement à vous répondre ; le message est supprimé au bout de trois ans. </source>
+        <target> Your details are only used to reply to you; the message is deleted after three years. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">243,245</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.error.name" datatype="html">
+        <source>Indiquez votre nom.</source>
+        <target>Enter your name.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.error.company" datatype="html">
+        <source>Le nom de l&apos;entreprise est trop long.</source>
+        <target>The company name is too long.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.error.email" datatype="html">
+        <source>Indiquez une adresse e-mail valide, par exemple nom@domaine.fr.</source>
+        <target>Enter a valid email address, for example name@domain.com.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.error.subject" datatype="html">
+        <source>Choisissez un objet.</source>
+        <target>Choose a subject.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.error.message" datatype="html">
+        <source>Écrivez entre 20 et 2000 caractères pour décrire votre demande.</source>
+        <target>Write between 20 and 2000 characters to describe your request.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.subject.project" datatype="html">
+        <source>Un projet à construire</source>
+        <target>A project to build</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.subject.job" datatype="html">
+        <source>Une offre de poste</source>
+        <target>A job offer</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.ts</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.subject.other" datatype="html">
+        <source>Autre chose</source>
+        <target>Something else</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.ts</context>
+          <context context-type="linenumber">112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="http.unexpected" datatype="html">
+        <source>Une erreur inattendue est survenue.</source>
+        <target>An unexpected error occurred.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/http/src/lib/errors/store-error.ts</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="http.offline" datatype="html">
+        <source>La connexion est indisponible. Vérifiez votre réseau, puis réessayez.</source>
+        <target>The connection is unavailable. Check your network, then try again.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/http/src/lib/errors/store-error.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="http.rateLimited" datatype="html">
+        <source>Trop de tentatives. Réessayez dans un moment.</source>
+        <target>Too many attempts. Try again in a moment.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/http/src/lib/errors/store-error.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="http.server" datatype="html">
+        <source>Le service ne répond pas. Réessayez dans un moment.</source>
+        <target>The service is not responding. Try again in a moment.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/http/src/lib/errors/store-error.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="http.rejected" datatype="html">
+        <source>La demande a été refusée.</source>
+        <target>The request was refused.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/http/src/lib/errors/store-error.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nav.contact" datatype="html">
+        <source>Contact</source>
+        <target>Contact</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="contact.privacyLink" datatype="html">
+        <source>Politique de confidentialité</source>
+        <target>Privacy policy</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section.component.html</context>
+          <context context-type="linenumber">255,258</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="route.legalNotice" datatype="html">
+        <source>Mentions légales — Valentin Fortin</source>
+        <target>Legal notice — Valentin Fortin</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/legal.routes.ts</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="route.privacy" datatype="html">
+        <source>Politique de confidentialité — Valentin Fortin</source>
+        <target>Privacy policy — Valentin Fortin</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/legal.routes.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.notice.title" datatype="html">
+        <source>Mentions légales</source>
+        <target>Legal notice</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">12,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.updated" datatype="html">
+        <source>Dernière mise à jour : 2 novembre 2026</source>
+        <target>Last updated: 2 November 2026</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">13,15</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">12,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.publisher.title" datatype="html">
+        <source>Éditeur du site</source>
+        <target>Publisher</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">15,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.publisher.body" datatype="html">
+        <source> Le site valentin-fortin.pro est édité par Valentin Fortin, particulier. </source>
+        <target>The website valentin-fortin.pro is published by Valentin Fortin, a private individual.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">17,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.publisher.contact" datatype="html">
+        <source> Contact : <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:contact@valentin-fortin.pro&quot;&gt;"/>contact@valentin-fortin.pro<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/></source>
+        <target>Contact: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:contact@valentin-fortin.pro&quot;&gt;"/>contact@valentin-fortin.pro<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">20,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.publisher.address" datatype="html">
+        <source> Conformément à l&apos;article 6, III, 2 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l&apos;économie numérique, l&apos;éditeur, personne physique agissant à titre non professionnel, ne publie pas son adresse postale. Ses coordonnées complètes ont été communiquées à l&apos;hébergeur. </source>
+        <target>In accordance with article 6, III, 2 of French law no. 2004-575 of 21 June 2004 on confidence in the digital economy, the publisher, a private individual acting in a non-professional capacity, does not publish their postal address. Their full contact details have been given to the hosting provider.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">24,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.director.title" datatype="html">
+        <source>Directeur de la publication</source>
+        <target>Publication director</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.host.title" datatype="html">
+        <source>Hébergement</source>
+        <target>Hosting</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">33,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.host.name" datatype="html">
+        <source>Hébergeur</source>
+        <target>Host</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.host.address" datatype="html">
+        <source>Adresse</source>
+        <target>Address</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.host.phone" datatype="html">
+        <source>Téléphone</source>
+        <target>Phone</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.host.phoneValue" datatype="html">
+        <source>1007 (depuis la France)</source>
+        <target>1007 (from France)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">40,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.host.site" datatype="html">
+        <source>Site</source>
+        <target>Website</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">41,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.ip.title" datatype="html">
+        <source>Propriété intellectuelle</source>
+        <target>Intellectual property</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">45,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.ip.body" datatype="html">
+        <source> Les textes, les visuels et le code de ce site appartiennent à Valentin Fortin, sauf mention contraire. Leur reproduction sans autorisation écrite est interdite. </source>
+        <target>The texts, visuals and code of this website belong to Valentin Fortin unless stated otherwise. Reproducing them without written permission is prohibited.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">47,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.ip.brands" datatype="html">
+        <source> Les logos des technologies et les noms des entreprises cités appartiennent à leurs détenteurs respectifs. Ils servent uniquement à présenter les projets réalisés. </source>
+        <target>Technology logos and company names belong to their respective owners. They are only used to present the projects.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">51,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.links.title" datatype="html">
+        <source>Liens externes</source>
+        <target>External links</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.links.body" datatype="html">
+        <source> Le site renvoie vers des sites tiers, comme GitHub et LinkedIn. L&apos;éditeur n&apos;a aucun contrôle sur leur contenu et n&apos;en est pas responsable. </source>
+        <target>This website links to third-party sites such as GitHub and LinkedIn. The publisher has no control over their content and is not responsible for it.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">57,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.data.title" datatype="html">
+        <source>Données personnelles</source>
+        <target>Personal data</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">61,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.data.body" datatype="html">
+        <source> Le traitement des données envoyées par le formulaire de contact est décrit dans la <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/privacy&quot;&gt;"/>politique de confidentialité<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>. </source>
+        <target>How data sent through the contact form is processed is described in the <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/privacy&quot;&gt;"/>privacy policy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/legal-notice-page.component.ts</context>
+          <context context-type="linenumber">63,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.title" datatype="html">
+        <source>Politique de confidentialité</source>
+        <target>Privacy policy</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">11,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.controller.title" datatype="html">
+        <source>Responsable du traitement</source>
+        <target>Data controller</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.controller.body" datatype="html">
+        <source> Valentin Fortin, joignable à <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:contact@valentin-fortin.pro&quot;&gt;"/>contact@valentin-fortin.pro<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>. </source>
+        <target>Valentin Fortin, who can be reached at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:contact@valentin-fortin.pro&quot;&gt;"/>contact@valentin-fortin.pro<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">16,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.collected.title" datatype="html">
+        <source>Données collectées</source>
+        <target>Data collected</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.collected.body" datatype="html">
+        <source> Le site ne collecte des données que lorsque vous utilisez le formulaire de contact : votre nom, votre adresse e-mail, l&apos;objet et le contenu de votre message, et le nom de votre entreprise si vous l&apos;indiquez. Pour limiter les abus, une empreinte de votre adresse IP (jamais l&apos;adresse elle-même) est conservée une heure au plus. </source>
+        <target>The website only collects data when you use the contact form: your name, your email address, the subject and content of your message, and your company name if you give it. To prevent abuse, a fingerprint of your IP address (never the address itself) is kept for one hour at most.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">22,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.basis.title" datatype="html">
+        <source>Utilisation et base légale</source>
+        <target>Purpose and legal basis</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">28,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.basis.body" datatype="html">
+        <source> Ces données servent uniquement à répondre à votre message. Le traitement repose sur l&apos;intérêt légitime de l&apos;éditeur à répondre aux demandes qui lui sont adressées (article 6.1.f du RGPD). </source>
+        <target>This data is only used to reply to your message. The processing is based on the publisher's legitimate interest in answering the requests sent to them (article 6.1.f of the GDPR).</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">30,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.recipients.title" datatype="html">
+        <source>Destinataires</source>
+        <target>Recipients</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.recipients.body" datatype="html">
+        <source> Seul l&apos;éditeur lit vos messages. Ils transitent par l&apos;hébergeur, OVH SAS, en France, qui assure aussi l&apos;envoi de l&apos;e-mail de notification. Vos données ne sont ni vendues ni cédées. </source>
+        <target>Only the publisher reads your messages. They pass through the hosting provider, OVH SAS, in France, which also sends the notification email. Your data is neither sold nor transferred.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">37,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.retention.title" datatype="html">
+        <source>Durée de conservation</source>
+        <target>Retention period</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">41,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.retention.body" datatype="html">
+        <source> Les messages sont supprimés automatiquement trois ans après leur réception, ou plus tôt sur simple demande. </source>
+        <target>Messages are deleted automatically three years after they are received, or earlier on request.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">43,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.cookies.title" datatype="html">
+        <source>Cookies</source>
+        <target>Cookies</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">47,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.cookies.body" datatype="html">
+        <source> Le site ne dépose aucun cookie chez ses visiteurs et n&apos;utilise aucun outil de mesure d&apos;audience. Seul l&apos;espace d&apos;administration, réservé à l&apos;éditeur, utilise un cookie de session indispensable à la connexion. </source>
+        <target>The website sets no cookies for its visitors and uses no audience measurement tool. Only the administration area, reserved for the publisher, uses a session cookie required to sign in.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">49,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.rights.title" datatype="html">
+        <source>Vos droits</source>
+        <target>Your rights</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">54,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.rights.body" datatype="html">
+        <source> Vous pouvez accéder à vos données, les faire rectifier ou effacer, en limiter le traitement, vous y opposer et en demander la portabilité en écrivant à <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:contact@valentin-fortin.pro&quot;&gt;"/>contact@valentin-fortin.pro<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>. </source>
+        <target>You can access your data, have it corrected or erased, restrict its processing, object to it and ask for its portability by writing to <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:contact@valentin-fortin.pro&quot;&gt;"/>contact@valentin-fortin.pro<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">56,60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.rights.cnil" datatype="html">
+        <source> Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL sur <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://www.cnil.fr&quot;&gt;"/>cnil.fr<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>. </source>
+        <target>If you believe your rights are not respected, you can lodge a complaint with the CNIL, the French data protection authority, at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://www.cnil.fr&quot;&gt;"/>cnil.fr<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/legal/feature/src/lib/ui/pages/privacy-page.component.ts</context>
+          <context context-type="linenumber">61,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.legal" datatype="html">
+        <source>Mentions légales</source>
+        <target>Legal notice</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.html</context>
+          <context context-type="linenumber">72,74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.privacy" datatype="html">
+        <source>Confidentialité</source>
+        <target>Privacy</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.html</context>
+          <context context-type="linenumber">75,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="meta.description" datatype="html">
+        <source>Valentin Fortin, développeur web fullstack à Blois : projets, parcours et compétences, d&apos;Angular à Django.</source>
+        <target>Valentin Fortin, full-stack web developer in Blois, France: projects, background and skills, from Angular to Django.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout.component.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.404.title" datatype="html">
+        <source>Page introuvable</source>
+        <target>Page not found</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.404.text" datatype="html">
+        <source>Cette page n&apos;existe pas, ou elle a changé d&apos;adresse. Le reste du site est toujours là.</source>
+        <target>This page doesn't exist, or its address has changed. The rest of the site is still here.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.403.title" datatype="html">
+        <source>Accès refusé</source>
+        <target>Access denied</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.403.text" datatype="html">
+        <source>Vous n&apos;avez pas l&apos;autorisation d&apos;ouvrir cette page.</source>
+        <target>You are not allowed to open this page.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.500.title" datatype="html">
+        <source>Erreur du serveur</source>
+        <target>Server error</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.500.text" datatype="html">
+        <source>Quelque chose s&apos;est mal passé de mon côté. Réessayez dans quelques instants ; si ça continue, écrivez-moi.</source>
+        <target>Something went wrong on my side. Try again in a few moments; if it keeps happening, write to me.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.503.title" datatype="html">
+        <source>Site en maintenance</source>
+        <target>Under maintenance</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.503.text" datatype="html">
+        <source>Le site est en cours de mise à jour. Il revient dans quelques minutes.</source>
+        <target>The site is being updated. It will be back in a few minutes.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.label" datatype="html">
+        <source>Erreur <x id="INTERPOLATION" equiv-text="{{ code() }}"/> : </source>
+        <target>Error <x id="INTERPOLATION" equiv-text="{{ code() }}"/>: </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.retry" datatype="html">
+        <source>Réessayer</source>
+        <target>Try again</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">73,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.home" datatype="html">
+        <source>Retour à l&apos;accueil</source>
+        <target>Back to home</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">80,82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="error.contact" datatype="html">
+        <source>Me contacter</source>
+        <target>Contact me</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page.component.ts</context>
+          <context context-type="linenumber">87,89</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,30 @@
+{
+  "name": "backend-persistence",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/platform/persistence/src",
+  "projectType": "library",
+  "tags": ["scope:platform", "platform:server", "layer:platform"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/backend/platform/persistence/tsconfig.lib.json --noEmit"
+      },
+      "dependsOn": ["typecheck-spec"]
+    },
+    "typecheck-spec": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": ["typescript"]
+        }
+      ],
+      "options": {
+        "command": "tsc -p libs/backend/platform/persistence/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

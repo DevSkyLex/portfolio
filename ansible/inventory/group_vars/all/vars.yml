@@ -1,0 +1,18 @@
+# Non-secret variables. Secrets live in vault.yml (encrypted with ansible-vault); template: vault.example.yml.
+# Extra variables given per run: `tag` (deploy.yml, commit SHA of the images), `release` (publish-site.yml).
+domain: "{{ lookup('ansible.builtin.env', 'APP_HOST') | default('valentin-fortin.pro', true) }}"
+
+deploy_user: deploy
+# Public SSH keys authorized for the deployment account (personal machine, CI). Exclusive: a key removed
+# here is revoked on the next provisioning. Provisioning refuses an empty list.
+deploy_authorized_keys: []
+
+app_root: "{{ lookup('ansible.builtin.env', 'VPS_APP_DIR') | default('/srv/portfolio', true) }}"
+site_root: /srv/site
+backup_root: /srv/backups
+
+registry: ghcr.io/devskylex
+site_build_repository: DevSkyLex/portfolio
+identity_signing_kid: k1
+# UID of the `node` user in the images: owner of the signing keys mounted into identity-service.
+service_uid: 1000

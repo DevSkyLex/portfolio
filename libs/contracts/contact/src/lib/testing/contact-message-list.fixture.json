@@ -1,0 +1,19 @@
+{
+  "member": [
+    {
+      "id": "6f1c0e52-2a6b-4d1e-9f57-0d3c2b1a9e11",
+      "name": "Camille Martin",
+      "company": "Atelier Nord",
+      "email": "camille@exemple.fr",
+      "subject": "job",
+      "message": "Bonjour, nous recrutons un développeur Angular à Tours.",
+      "locale": "fr",
+      "status": "received",
+      "receivedAt": "2026-11-02T10:00:00.000Z",
+      "purgeAt": "2029-11-02T10:00:00.000Z",
+      "version": 1
+    }
+  ],
+  "totalItems": 1,
+  "view": { "page": 1, "pageSize": 20 }
+}

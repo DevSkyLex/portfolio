@@ -1,0 +1,77 @@
+# Docker Engine and the Compose plugin, from Docker's official repository.
+- name: APT keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Docker repository key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Python library for deb822 sources
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+
+- name: Docker repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: [deb]
+    uris: https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}
+    suites: ['{{ ansible_facts["distribution_release"] }}']
+    components: [stable]
+    architectures: ["{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"]
+    signed_by: /etc/apt/keyrings/docker.asc
+    state: present
+
+- name: Docker Engine and Compose
+  ansible.builtin.apt:
+    name: [docker-ce, docker-ce-cli, containerd.io, docker-compose-plugin]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Docker configuration directory
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+# Default for every container: rotated logs, no privilege escalation; containers keep running while the
+# daemon restarts (upgrades).
+- name: Docker daemon settings
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: "{{ docker_daemon_settings | to_nice_json }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+    validate: dockerd --validate --config-file %s
+  vars:
+    docker_daemon_settings:
+      log-driver: local
+      log-opts: { max-size: 10m, max-file: '5' }
+      live-restore: true
+      no-new-privileges: true
+  notify: Restart Docker
+
+- name: Deployment account can drive Docker (root-equivalent)
+  ansible.builtin.user:
+    name: '{{ deploy_user }}'
+    groups: [docker]
+    append: true
+
+- name: Docker started at boot
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true

@@ -1,0 +1,54 @@
+{
+  "locale": "fr",
+  "revision": 1,
+  "profile": {
+    "heroIntro": "Développeur web fullstack à Blois.",
+    "aboutStatement": "J'aime concevoir des applications qui répondent à des besoins concrets.",
+    "aboutLead": "Après un BTS SIO et un bachelor, j'ai suivi le mastère de YNOV.",
+    "facts": [{ "label": "Basé à", "value": "Blois, Loir-et-Cher" }]
+  },
+  "projects": [
+    {
+      "slug": "movah",
+      "title": "Movah",
+      "summary": "Une application mobile pour suivre ses séries.",
+      "lead": "Flutter sur Android et iOS, avec Supabase.",
+      "periodLabel": "Depuis juillet 2026",
+      "client": "Projet personnel",
+      "role": "Conception et développement",
+      "place": "Android et iOS",
+      "siteUrl": null,
+      "techs": ["flutter", "dart", "supabase"],
+      "featured": true,
+      "article": {
+        "context": ["Contexte."],
+        "work": ["Travail."],
+        "workList": ["Point."],
+        "choices": ["Choix."],
+        "result": ["Résultat."],
+        "lessons": ["Leçon."],
+        "captions": ["Capture 1.", "Capture 2."]
+      }
+    }
+  ],
+  "timeline": [
+    {
+      "id": "bts-sio",
+      "kind": "education",
+      "title": "BTS SIO, option SLAM",
+      "place": "Chambray-lès-Tours",
+      "description": "Lycée Sainte-Marguerite.",
+      "start": { "year": 2021, "month": 9 },
+      "end": { "year": 2023, "month": 6 },
+      "techs": []
+    }
+  ],
+  "skills": [
+    {
+      "id": "front-end",
+      "domain": "Front-end",
+      "techs": [{ "key": "angular", "language": null }],
+      "usage": "Interfaces de supervision."
+    }
+  ]
+}

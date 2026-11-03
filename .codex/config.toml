@@ -1,0 +1,32 @@
+[mcp_servers.nx-mcp]
+command = "npx"
+args = [ "nx", "mcp", "--minimal" ]
+
+# Optional servers of the portfolio tooling (.codex/README.md). Portable: no machine path, no model,
+# approval, sandbox or trust policy; personal settings stay in user-level configuration.
+[mcp_servers.playwright]
+command = "npx"
+args = [ "-y", "@playwright/mcp" ]
+startup_timeout_sec = 60
+
+[mcp_servers.context7]
+command = "npx"
+args = [ "-y", "@upstash/context7-mcp" ]
+startup_timeout_sec = 60
+
+# Angular documentation tools; project discovery, generators and task execution remain owned by Nx.
+[mcp_servers.angular]
+command = "npx"
+args = [ "-y", "@angular/cli@22.2.5", "mcp", "--read-only", "--root", "." ]
+startup_timeout_sec = 120
+
+[mcp_servers.angular.env]
+NG_CLI_ANALYTICS = "false"
+
+[features]
+multi_agent = true
+
+# Native pf-* roles are discovered from .codex/agents/; only the Nx-managed role is declared here.
+[agents.ci-monitor-subagent]
+description = "CI helper for /monitor-ci. Fetches CI status, retrieves fix details, or updates self-healing fixes. Executes one MCP tool call and returns the result."
+config_file = "agents/ci-monitor-subagent.toml"

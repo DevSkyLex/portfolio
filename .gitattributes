@@ -1,0 +1,8 @@
+# LF everywhere: Prettier (endOfLine: lf) and the VPS/containers expect it, whatever core.autocrlf says.
+* text=auto eol=lf
+
+*.ico binary
+*.png binary
+*.jpg binary
+*.webp binary
+*.woff2 binary

@@ -1,0 +1,5 @@
+{
+  "/api/auth": { "target": "http://localhost:3103", "secure": false },
+  "/api/content": { "target": "http://localhost:3101", "secure": false },
+  "/api/contact": { "target": "http://localhost:3102", "secure": false }
+}
