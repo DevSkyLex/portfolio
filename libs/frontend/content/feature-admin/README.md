@@ -29,6 +29,11 @@ make a reused route input static.
 - Form values, labels and rules are feature-owned; data access converts them to requests.
 - Writes retain the observed version; conflicts offer deliberate reload instead of silent overwrite.
 - Publication changes are deliberate and destructive actions use accessible catalogue confirmation.
+- A request's outcome is a toast through the admin layout's single toaster; a version conflict stays an
+  inline alert offering to reload, and field errors stay on their fields.
+- The editor shows one language per tab; settings shared by both languages sit outside the tabs.
+- A published project stays complete in both languages: the form flags what the API would refuse
+  (`content.project-incomplete`) before sending; a draft may leave English empty.
 - Administration is French only and client-rendered (D18).
 
 ## Validation

@@ -15,6 +15,7 @@ import {
   AvatarFallbackDirective,
   BadgeDirective,
   ButtonDirective,
+  TooltipDirective,
 } from '@vfortin/ui';
 import { MESSAGE_STATUS_TAGS } from '@internal/contact-web-feature-admin/lib/constants/message-status-tags.constants';
 import { MESSAGE_SUBJECTS } from '@internal/contact-web-feature-admin/lib/constants/message-subjects.constants';
@@ -38,6 +39,7 @@ import { initials } from '@internal/contact-web-feature-admin/lib/utils/initials
     ButtonDirective,
     DatePipe,
     NgIcon,
+    TooltipDirective,
   ],
   templateUrl: './message-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -10,6 +10,7 @@ import {
   Directive,
   ElementRef,
   Injector,
+  type OnInit,
   computed,
   contentChildren,
   forwardRef,
@@ -145,11 +146,15 @@ export class TabsDirective {
    *
    * @description
    * Tab receiving the single tab stop: focused tab when valid, otherwise selected or first enabled.
+   * Only initialised triggers count: the query already lists triggers of `@for` views whose required
+   * value is not bound yet, and reading it would throw NG0950.
    *
    * @type {Signal<string | null>}
    */
   public readonly tabStop: Signal<string | null> = computed<string | null>((): string | null => {
-    const triggers: TabsTriggerDirective[] = this.ownTriggers();
+    const triggers: TabsTriggerDirective[] = this.ownTriggers().filter(
+      (trigger: TabsTriggerDirective): boolean => trigger.initialized(),
+    );
     const has = (value: string | null): boolean =>
       triggers.some(
         (trigger: TabsTriggerDirective): boolean => trigger.value() === value && !trigger.disabled,
@@ -341,7 +346,7 @@ export class TabsListDirective {
     '(keydown)': 'tabs.onTriggerKeydown(this, $event)',
   },
 })
-export class TabsTriggerDirective implements FocusableOption {
+export class TabsTriggerDirective implements FocusableOption, OnInit {
   // #region Properties
   /**
    * Property tabs
@@ -364,6 +369,17 @@ export class TabsTriggerDirective implements FocusableOption {
    * @type {InputSignal<string>}
    */
   public readonly value: InputSignal<string> = input.required<string>({ alias: 'uiTabsTrigger' });
+
+  /**
+   * Property initialized
+   * @readonly
+   *
+   * @description
+   * Whether the inputs are bound, so the owning tab set may read `value()` (set in `ngOnInit`).
+   *
+   * @type {WritableSignal<boolean>}
+   */
+  public readonly initialized: WritableSignal<boolean> = signal<boolean>(false);
 
   /**
    * Property disabledInput
@@ -432,6 +448,21 @@ export class TabsTriggerDirective implements FocusableOption {
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(tabsTriggerVariants({ orientation: this.tabs.orientation() }), this.class()),
   );
+  // #endregion
+
+  // #region Lifecycle
+  /**
+   * Method ngOnInit
+   * @method ngOnInit
+   *
+   * @description
+   * Marks the trigger as readable by the tab set once Angular has bound its inputs.
+   *
+   * @returns {void}
+   */
+  public ngOnInit(): void {
+    this.initialized.set(true);
+  }
   // #endregion
 
   // #region Methods

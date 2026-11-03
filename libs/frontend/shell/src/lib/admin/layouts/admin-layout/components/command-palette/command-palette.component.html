@@ -39,6 +39,10 @@
           <ng-icon class="text-star-muted" [svg]="icons.site" size="16" aria-hidden="true" />
           Voir le site
         </div>
+        <div uiCommandItem class="gap-2.5" (selected)="chooseShortcuts()">
+          <ng-icon class="text-star-muted" [svg]="icons.keyboard" size="16" aria-hidden="true" />
+          Raccourcis clavier
+        </div>
         <div uiCommandItem class="gap-2.5" (selected)="chooseLogout()">
           <ng-icon class="text-star-muted" [svg]="icons.logout" size="16" aria-hidden="true" />
           Se déconnecter

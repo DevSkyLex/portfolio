@@ -315,6 +315,22 @@
           <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="ui.sonner.region" datatype="html">
+        <source>Notifications</source>
+        <target>Notifications</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/sonner/components/toaster/toaster.component.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.sonner.close" datatype="html">
+        <source>Fermer la notification</source>
+        <target>Close notification</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/sonner/components/toaster/toaster.component.ts</context>
+          <context context-type="linenumber">100</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="ui.dialog.close" datatype="html">
         <source>Fermer</source>
         <target>Close</target>

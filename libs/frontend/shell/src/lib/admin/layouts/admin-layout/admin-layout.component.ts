@@ -1,5 +1,14 @@
 import { DOCUMENT } from '@angular/common';
-import { type Signal, ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
+import {
+  type Signal,
+  type WritableSignal,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -8,9 +17,18 @@ import { lucideExternalLink, lucideLogOut, lucideSearch } from '@ng-icons/lucide
 import { AdminInboxSummaryPort } from '@vfortin/contact-web-data-access/summary';
 import { AdminProjectNavigationPort } from '@vfortin/content-web-data-access/navigation';
 import { AdminSessionPort } from '@vfortin/identity-web-data-access/session';
-import { BadgeDirective, GlyphComponent, KbdDirective } from '@vfortin/ui';
+import {
+  BadgeDirective,
+  GlyphComponent,
+  KbdDirective,
+  ToastService,
+  ToasterComponent,
+  TooltipDirective,
+} from '@vfortin/ui';
 import { filter, startWith } from 'rxjs';
 import { CommandPaletteComponent } from '@internal/web-shell/lib/admin/layouts/admin-layout/components/command-palette/command-palette.component';
+import { ShortcutsDialogComponent } from '@internal/web-shell/lib/admin/layouts/admin-layout/components/shortcuts-dialog/shortcuts-dialog.component';
+import { ADMIN_NARROW_QUERY } from '@internal/web-shell/lib/admin/layouts/admin-layout/constants/admin-breakpoint.constants';
 import {
   ADMIN_LINKS,
   ADMIN_MESSAGES_PATH,
@@ -23,7 +41,9 @@ import { SIDEBAR_ITEM } from '@internal/web-shell/lib/admin/layouts/admin-layout
  *
  * @description
  * Hosts authenticated administration routes in the client-rendered, noindex area: sidebar navigation
- * with the unread message count, logout, and a command palette on Ctrl/Cmd+K (D36).
+ * with the unread message count, logout, a command palette on Ctrl/Cmd+K, the keyboard shortcuts
+ * help on `?` (D36) and the single toaster of the administration, which features fill through
+ * `ToastService`.
  */
 @Component({
   selector: 'app-admin-layout',
@@ -36,6 +56,9 @@ import { SIDEBAR_ITEM } from '@internal/web-shell/lib/admin/layouts/admin-layout
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
+    ShortcutsDialogComponent,
+    ToasterComponent,
+    TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Page container: the wrap utility steps on its width.
@@ -64,6 +87,9 @@ import { SIDEBAR_ITEM } from '@internal/web-shell/lib/admin/layouts/admin-layout
           class="${SIDEBAR_ITEM} mb-2 cursor-pointer border border-line-field hover:border-line-hover @max-[1024px]:mb-0"
           type="button"
           aria-keyshortcuts="Control+K Meta+K"
+          uiTooltip="Rechercher (Ctrl K)"
+          tooltipPosition="bottom"
+          [tooltipDisabled]="!narrow()"
           (click)="openPalette()"
         >
           <ng-icon [svg]="icons.search" size="16" aria-hidden="true" />
@@ -104,18 +130,28 @@ import { SIDEBAR_ITEM } from '@internal/web-shell/lib/admin/layouts/admin-layout
             Réessayer les projets
           </button>
         }
-        @if (session.logoutCallState().error) {
-          <p role="alert" class="text-xs text-danger-ink">
-            La déconnexion n’a pas été confirmée. Réessayez.
-          </p>
-        }
 
         <div class="flex flex-col gap-px @max-[1024px]:flex-row">
-          <a class="${SIDEBAR_ITEM}" href="/" target="_blank" rel="noopener">
+          <a
+            class="${SIDEBAR_ITEM}"
+            href="/"
+            target="_blank"
+            rel="noopener"
+            uiTooltip="Voir le site"
+            tooltipPosition="bottom"
+            [tooltipDisabled]="!narrow()"
+          >
             <ng-icon [svg]="icons.site" size="16" aria-hidden="true" />
             <span class="@max-[1024px]:sr-only">Voir le site</span>
           </a>
-          <button class="${SIDEBAR_ITEM} cursor-pointer" type="button" (click)="logout()">
+          <button
+            class="${SIDEBAR_ITEM} cursor-pointer"
+            type="button"
+            uiTooltip="Se déconnecter"
+            tooltipPosition="bottom"
+            [tooltipDisabled]="!narrow()"
+            (click)="logout()"
+          >
             <ng-icon [svg]="icons.logout" size="16" aria-hidden="true" />
             <span class="@max-[1024px]:sr-only">Se déconnecter</span>
           </button>
@@ -134,7 +170,11 @@ import { SIDEBAR_ITEM } from '@internal/web-shell/lib/admin/layouts/admin-layout
       (pageSelected)="go($event)"
       (siteSelected)="openSite()"
       (logoutSelected)="logout()"
+      (shortcutsSelected)="openShortcuts()"
     />
+    <app-shortcuts-dialog />
+    <!-- Bottom right: clear of the sidebar and of the top bar it becomes on narrow screens. -->
+    <ui-toaster position="bottom-right" label="Notifications" closeLabel="Fermer la notification" />
   `,
 })
 export class AdminLayoutComponent {
@@ -148,7 +188,18 @@ export class AdminLayoutComponent {
    *
    * @type {AdminSessionPort}
    */
-  protected readonly session: AdminSessionPort = inject<AdminSessionPort>(AdminSessionPort);
+  private readonly session: AdminSessionPort = inject<AdminSessionPort>(AdminSessionPort);
+
+  /**
+   * Property toasts
+   * @readonly
+   *
+   * @description
+   * Application-wide toasts shown by the layout's toaster; reports a logout that was not confirmed.
+   *
+   * @type {ToastService}
+   */
+  private readonly toasts: ToastService = inject<ToastService>(ToastService);
 
   /**
    * Property router
@@ -202,6 +253,28 @@ export class AdminLayoutComponent {
    */
   private readonly palette: Signal<CommandPaletteComponent> =
     viewChild.required<CommandPaletteComponent>(CommandPaletteComponent);
+
+  /**
+   * Property shortcuts
+   * @readonly
+   *
+   * @description
+   * Keyboard shortcuts help, opened by `?` and from the palette.
+   */
+  private readonly shortcuts: Signal<ShortcutsDialogComponent> =
+    viewChild.required<ShortcutsDialogComponent>(ShortcutsDialogComponent);
+
+  /**
+   * Property narrow
+   * @readonly
+   *
+   * @description
+   * Whether the sidebar is the narrow top bar, whose secondary entries show their icon only and then
+   * carry a tooltip; `false` where `matchMedia` is unavailable.
+   *
+   * @type {WritableSignal<boolean>}
+   */
+  protected readonly narrow: WritableSignal<boolean> = signal<boolean>(false);
 
   /**
    * Property links
@@ -259,6 +332,7 @@ export class AdminLayoutComponent {
       .subscribe(() => {
         void this.inboxSummary.refresh();
       });
+    this.watchWidth(inject<DestroyRef>(DestroyRef));
   }
   // #endregion
 
@@ -272,6 +346,17 @@ export class AdminLayoutComponent {
    */
   protected openPalette(): void {
     this.palette().open();
+  }
+
+  /**
+   * Method openShortcuts
+   * @method openShortcuts
+   *
+   * @description
+   * Opens the keyboard shortcuts help chosen in the palette.
+   */
+  protected openShortcuts(): void {
+    this.shortcuts().open();
   }
 
   /**
@@ -316,14 +401,40 @@ export class AdminLayoutComponent {
    * @method logout
    *
    * @description
-   * Revokes the session before navigating to login. A failed revoke remains visible and can be retried.
+   * Revokes the session before navigating to login. A failed revoke is reported in an error toast and
+   * the administrator stays on the page to retry.
    *
    * @returns {Promise<void>} Resolves after the login navigation completes.
    */
   protected async logout(): Promise<void> {
     if (await this.session.logout()) {
       await this.router.navigateByUrl('/admin/login');
+    } else {
+      this.toasts.error('La déconnexion n’a pas été confirmée. Réessayez.');
     }
+  }
+
+  /**
+   * Method watchWidth
+   * @method watchWidth
+   *
+   * @description
+   * Follows the narrow layout query until the layout is destroyed. The admin renders in the browser
+   * only (D18); the optional calls cover environments without `matchMedia`.
+   *
+   * @param {DestroyRef} destroyRef - Lifetime of the layout, which removes the listener.
+   */
+  private watchWidth(destroyRef: DestroyRef): void {
+    const query: MediaQueryList | undefined =
+      this.document.defaultView?.matchMedia?.(ADMIN_NARROW_QUERY);
+    if (!query) {
+      return;
+    }
+    this.narrow.set(query.matches);
+    const listener: (event: MediaQueryListEvent) => void = (event: MediaQueryListEvent): void =>
+      this.narrow.set(event.matches);
+    query.addEventListener('change', listener);
+    destroyRef.onDestroy(() => query.removeEventListener('change', listener));
   }
   // #endregion
 }

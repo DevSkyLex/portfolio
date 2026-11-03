@@ -32,37 +32,62 @@ import {
 import {
   AlertDirective,
   AlertTitleDirective,
+  BadgeDirective,
   ButtonDirective,
   CheckboxComponent,
+  FieldComponent,
+  FieldDescriptionDirective,
+  FieldLegendDirective,
+  FieldSetDirective,
   InputDirective,
   KbdDirective,
+  TabsContentDirective,
+  TabsDirective,
+  TabsListDirective,
+  TabsTriggerDirective,
 } from '@vfortin/ui';
 import { ARTICLE_SECTION_LABELS } from '@internal/content-web-feature-admin/lib/constants/article-section-labels.constants';
+import { CONTENT_LOCALE_LABELS } from '@internal/content-web-feature-admin/lib/constants/content-locale-labels.constants';
 import { EMPTY_PROJECT_DRAFT } from '@internal/content-web-feature-admin/lib/constants/empty-project-draft.constants';
 import { PROJECT_SHORT_FIELDS } from '@internal/content-web-feature-admin/lib/constants/project-short-fields.constants';
+import type { ContentLocale } from '@internal/content-web-feature-admin/lib/models/content-locale/content-locale.type';
 import type { ProjectShortFieldKey } from '@internal/content-web-feature-admin/lib/models/project-short-field/project-short-field-key.type';
 import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/project-form-values.model';
+import { incompleteFields } from '@internal/content-web-feature-admin/lib/utils/incomplete-fields/incomplete-fields.utils';
+import { INCOMPLETE_ERROR } from '@internal/content-web-feature-admin/lib/constants/incomplete-error.constants';
 
 /**
  * Component ProjectFormComponent
  * @class ProjectFormComponent
  *
  * @description
- * Bilingual project editor (presentation fields, case-study sections, sticky save bar). It owns its
- * Signal Form: French short fields are required and translated article sections must keep the French
- * paragraph count; valid values leave through `submitted`, the page saves them.
+ * Bilingual project editor: one tab per language holds that language's presentation fields and
+ * case-study sections, each trigger counting the fields still to complete; the shared settings (site,
+ * technologies, home-page feature) sit outside the tabs, above a sticky save bar. It owns its Signal
+ * Form: French short fields are required, translated article sections must keep the French
+ * paragraph count and, for a published project (`complete`), both languages must stay complete as the
+ * API requires; valid values leave through `submitted`, the page saves them.
  */
 @Component({
   selector: 'content-project-form',
   imports: [
     AlertDirective,
     AlertTitleDirective,
+    BadgeDirective,
     ButtonDirective,
     CheckboxComponent,
+    FieldComponent,
+    FieldDescriptionDirective,
+    FieldLegendDirective,
+    FieldSetDirective,
     FormField,
     InputDirective,
     KbdDirective,
     NgIcon,
+    TabsContentDirective,
+    TabsDirective,
+    TabsListDirective,
+    TabsTriggerDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './project-form.component.html',
@@ -95,6 +120,21 @@ export class ProjectFormComponent {
     {
       transform: booleanAttribute,
     },
+  );
+
+  /**
+   * Property complete
+   * @readonly
+   *
+   * @description
+   * Whether the project is published: the API then refuses a save that leaves a language incomplete
+   * (`content.project-incomplete`), so the form flags those fields before sending.
+   *
+   * @type {InputSignalWithTransform<boolean, unknown>}
+   */
+  public readonly complete: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
+    false,
+    { transform: booleanAttribute },
   );
 
   /**
@@ -153,20 +193,41 @@ export class ProjectFormComponent {
    * @description
    * Article section keys paired with their French labels, in serialization order.
    */
-  protected readonly sections: {
-    key: 'choices' | 'result' | 'work' | 'context' | 'workList' | 'lessons' | 'captions';
-    label: string;
-  }[] = ARTICLE_SECTIONS.map(
-    (
-      key: 'choices' | 'result' | 'work' | 'context' | 'workList' | 'lessons' | 'captions',
-    ): {
-      key: 'choices' | 'result' | 'work' | 'context' | 'workList' | 'lessons' | 'captions';
-      label: string;
-    } => ({
+  protected readonly sections: { key: ArticleSection; label: string }[] = ARTICLE_SECTIONS.map(
+    (key: ArticleSection): { key: ArticleSection; label: string } => ({
       key,
       label: ARTICLE_SECTION_LABELS[key],
     }),
   );
+
+  /**
+   * Property locales
+   * @readonly
+   *
+   * @description
+   * Languages of the tab panels, French source first.
+   */
+  protected readonly locales: readonly ContentLocale[] = ['fr', 'en'];
+
+  /**
+   * Property localeLabels
+   * @readonly
+   *
+   * @description
+   * Tab names of the languages.
+   */
+  protected readonly localeLabels: Readonly<Record<ContentLocale, string>> = CONTENT_LOCALE_LABELS;
+
+  /**
+   * Property locale
+   * @readonly
+   *
+   * @description
+   * Language tab on display; it survives saves, so a translator stays on the English tab.
+   *
+   * @type {WritableSignal<string | null>}
+   */
+  protected readonly locale: WritableSignal<string | null> = signal<string | null>('fr');
 
   /**
    * Property untranslated
@@ -202,6 +263,25 @@ export class ProjectFormComponent {
     signal<ProjectFormValues>(EMPTY_PROJECT_DRAFT);
 
   /**
+   * Property gaps
+   * @readonly
+   *
+   * @description
+   * Paths the API would report as incomplete for a published project, empty for a draft.
+   *
+   * @type {Signal<ReadonlySet<string>>}
+   */
+  private readonly gaps: Signal<ReadonlySet<string>> = computed<ReadonlySet<string>>(
+    (): ReadonlySet<string> =>
+      this.complete()
+        ? new Set<string>([
+            ...incompleteFields(this.model(), 'fr'),
+            ...incompleteFields(this.model(), 'en'),
+          ])
+        : new Set<string>(),
+  );
+
+  /**
    * Property projectForm
    * @readonly
    *
@@ -224,6 +304,7 @@ export class ProjectFormComponent {
                 return { kind: 'maxLength', message: '4000 caractères maximum.' };
               if (locale === 'fr' && value().trim() === '')
                 return { kind: 'required', message: 'Le texte français est obligatoire.' };
+              if (this.gaps().has(`${field.key}.${locale}`)) return INCOMPLETE_ERROR;
               return this.serverError(`${field.key}.${locale}`, value());
             },
           );
@@ -256,6 +337,7 @@ export class ProjectFormComponent {
                     message: `Même nombre de paragraphes attendu en anglais : ${ARTICLE_SECTION_LABELS[section]}.`,
                   };
               }
+              if (this.gaps().has(`article.${section}.${locale}`)) return INCOMPLETE_ERROR;
               return this.serverError(`article.${section}.${locale}`, value());
             },
           );
@@ -310,7 +392,7 @@ export class ProjectFormComponent {
    *
    * @description
    * Validation message above the fields once the form is touched: missing French texts first, then the
-   * paragraph alignment; `null` while valid or untouched.
+   * completeness of a published project, then the paragraph alignment; `null` while valid or untouched.
    *
    * @type {Signal<string | null>}
    */
@@ -334,12 +416,33 @@ export class ProjectFormComponent {
         section: 'choices' | 'result' | 'work' | 'context' | 'workList' | 'lessons' | 'captions',
       ): ValidationError.WithFieldTree[] => this.projectForm.article[section].en().errors(),
     ).find((error: ValidationError.WithFieldTree): boolean => error.kind === 'misaligned');
+    if (this.gaps().size > 0) {
+      return 'Un projet publié doit rester complet en français et en anglais : complétez les champs signalés ou dépubliez-le.';
+    }
     return (
       frenchErrors[0]?.message ??
       articleError?.message ??
       (state.invalid() ? 'Corrigez les champs signalés avant d’enregistrer.' : null)
     );
   });
+
+  /**
+   * Property missing
+   * @readonly
+   *
+   * @description
+   * Number of localized fields still to complete or in error, per language, shown on the tab triggers:
+   * the API's completeness rule applied to the current values (`incompleteFields`), plus every field of
+   * that language whose validation fails, each field counted once.
+   *
+   * @type {Signal<Readonly<Record<ContentLocale, number>>>}
+   */
+  protected readonly missing: Signal<Readonly<Record<ContentLocale, number>>> = computed<
+    Readonly<Record<ContentLocale, number>>
+  >((): Readonly<Record<ContentLocale, number>> => ({
+    fr: this.missingPaths('fr').size,
+    en: this.missingPaths('en').size,
+  }));
   // #endregion
 
   // #region Constructor
@@ -377,6 +480,7 @@ export class ProjectFormComponent {
     const state: FieldState<ProjectFormValues, string | number> = this.projectForm();
     if (state.invalid()) {
       state.markAsTouched();
+      this.revealErrors();
       return;
     }
     this.sentValues.set(structuredClone(this.model()));
@@ -412,13 +516,15 @@ export class ProjectFormComponent {
    * @method fieldError
    *
    * @description
-   * First validation message of a French short field, once that field is touched.
+   * First validation message of a short field in one language, once that field is touched or the
+   * last submission returned field errors.
    *
-   * @param {ProjectShortFieldKey} key - Short field whose French value is inspected.
+   * @param {ProjectShortFieldKey} key - Short field inspected.
+   * @param {ContentLocale} [locale] - Language inspected, French by default.
    *
    * @returns {string | null} The message, or `null` before touch or when valid.
    */
-  protected fieldError(key: ProjectShortFieldKey, locale: 'fr' | 'en' = 'fr'): string | null {
+  protected fieldError(key: ProjectShortFieldKey, locale: ContentLocale = 'fr'): string | null {
     const state: FieldState<string, string> = this.projectForm[key][locale]();
     return state.touched() || this.serverErrors().length > 0
       ? (state.errors()[0]?.message ?? null)
@@ -443,11 +549,71 @@ export class ProjectFormComponent {
    * @description
    * Exposes paragraph validation and mapped server violations for a flattened article field.
    */
-  protected articleError(section: ArticleSection, locale: 'fr' | 'en'): string | null {
+  protected articleError(section: ArticleSection, locale: ContentLocale): string | null {
     const state: FieldState<string, string> = this.projectForm.article[section][locale]();
     return state.touched() || this.serverErrors().length > 0
       ? (state.errors()[0]?.message ?? null)
       : null;
+  }
+
+  /**
+   * Method describedBy
+   *
+   * @description
+   * Links a control to the error or hint that its `ui-field` renders (`<id>-error`, `<id>-hint`).
+   *
+   * @param {string} id - Control id given to the field.
+   * @param {string | null} error - Visible error, if any.
+   * @param {boolean} [hint] - Whether the field shows a hint while valid.
+   *
+   * @returns {string | null} The `aria-describedby` value, or `null` when nothing is shown.
+   */
+  protected describedBy(id: string, error: string | null, hint: boolean = false): string | null {
+    if (error) return `${id}-error`;
+    return hint ? `${id}-hint` : null;
+  }
+
+  /**
+   * Method missingPaths
+   *
+   * @description
+   * Paths of one language's localized fields that are incomplete or invalid.
+   *
+   * @param {ContentLocale} locale - Language inspected.
+   *
+   * @returns {Set<string>} Field paths such as `title.en` or `article.context.en`.
+   */
+  private missingPaths(locale: ContentLocale): Set<string> {
+    const paths: Set<string> = new Set<string>(incompleteFields(this.model(), locale));
+    for (const field of PROJECT_SHORT_FIELDS) {
+      if (this.projectForm[field.key][locale]().invalid()) paths.add(`${field.key}.${locale}`);
+    }
+    for (const section of ARTICLE_SECTIONS) {
+      if (this.projectForm.article[section][locale]().invalid())
+        paths.add(`article.${section}.${locale}`);
+    }
+    return paths;
+  }
+
+  /**
+   * Method revealErrors
+   *
+   * @description
+   * After a refused submission, shows the language tab holding an invalid field when the tab on display
+   * has none, French first, so that no error stays hidden in the other tab.
+   */
+  private revealErrors(): void {
+    const invalid: (locale: ContentLocale) => boolean = (locale: ContentLocale): boolean =>
+      PROJECT_SHORT_FIELDS.some((field): boolean =>
+        this.projectForm[field.key][locale]().invalid(),
+      ) ||
+      ARTICLE_SECTIONS.some((section: ArticleSection): boolean =>
+        this.projectForm.article[section][locale]().invalid(),
+      );
+    const current: string | null = this.locale();
+    if ((current === 'fr' || current === 'en') && invalid(current)) return;
+    const target: ContentLocale | undefined = (['fr', 'en'] as const).find(invalid);
+    if (target) this.locale.set(target);
   }
 
   /**

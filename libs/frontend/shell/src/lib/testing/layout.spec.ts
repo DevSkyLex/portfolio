@@ -430,7 +430,7 @@ describe('admin area', () => {
     open.mockRestore();
   });
 
-  it('keeps logout failure visible and retries before navigating', async () => {
+  it('reports a logout failure in a toast and retries before navigating', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'admin/login', children: [] }]),
@@ -458,7 +458,9 @@ describe('admin area', () => {
     await flush();
     await fixture.whenStable();
     expect(TestBed.inject<Router>(Router).url).not.toBe('/admin/login');
-    expect(root.textContent).toContain('déconnexion n’a pas été confirmée');
+    expect(document.querySelector('[data-slot="toast"][data-type="error"]')?.textContent).toContain(
+      'La déconnexion n’a pas été confirmée. Réessayez.',
+    );
     button?.click();
     backend.expectOne('/api/auth/logout').flush(null, { status: 204, statusText: 'No Content' });
     await flush();

@@ -9,15 +9,15 @@ import { BadgeDirective } from '@vfortin/ui';
  * @class ProjectPropertiesPanelComponent
  *
  * @description
- * Properties panel beside the project editor (D36): publication status, version, public address,
- * home-page feature and translation completeness, with the D37 status colours.
+ * Properties of the edited project (D36): publication status, version, public address, home-page
+ * feature and translation completeness, with the D37 status colours. The page shows it in the column
+ * beside the editor on wide screens and in a right sheet below 1180 px.
  */
 @Component({
   selector: 'content-project-properties-panel',
   imports: [BadgeDirective, NgIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // The host stays out of the editor grid so that the aside itself is the sticky grid column.
-  host: { class: 'contents' },
+  host: { class: 'flex flex-col gap-6' },
   templateUrl: './project-properties-panel.component.html',
 })
 export class ProjectPropertiesPanelComponent {

@@ -10,20 +10,9 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
-import {
-  lucideCircleAlert,
-  lucideFolderOpen,
-  lucideInfo,
-  lucideTriangleAlert,
-} from '@ng-icons/lucide';
+import { lucideFolderOpen, lucideInfo } from '@ng-icons/lucide';
 import { type AdminProject, AdminProjectsStore } from '@vfortin/content-web-data-access/admin';
-import {
-  AlertDirective,
-  AlertTitleDirective,
-  ConfirmDialogService,
-  EMPTY_IMPORTS,
-  SkeletonDirective,
-} from '@vfortin/ui';
+import { ConfirmDialogService, EMPTY_IMPORTS, SkeletonDirective, ToastService } from '@vfortin/ui';
 import type { ProjectView } from '@internal/content-web-feature-admin/lib/models/project-view/project-view.type';
 import { ProjectListToolbarComponent } from '@internal/content-web-feature-admin/lib/ui/components/project-list-toolbar/project-list-toolbar.component';
 import { ProjectListDataviewComponent } from '@internal/content-web-feature-admin/lib/ui/dataviews/project-list-dataview/project-list-dataview.component';
@@ -35,13 +24,11 @@ import { groupProjects } from '@internal/content-web-feature-admin/lib/utils/gro
  *
  * @description
  * Project list route: loads the collection, filters it from the title bar, confirms unpublication and
- * reloads the list after a version conflict.
+ * toasts each request's outcome; after a version conflict it reloads the list and warns.
  */
 @Component({
   selector: 'content-admin-projects-page',
   imports: [
-    AlertDirective,
-    AlertTitleDirective,
     EMPTY_IMPORTS,
     NgIcon,
     ProjectListDataviewComponent,
@@ -100,17 +87,13 @@ export class AdminProjectsPageComponent {
    * @readonly
    *
    * @description
-   * Lucide icons of the rebuild note, the notices and the empty state.
+   * Lucide icons of the rebuild note and the empty state.
    */
   protected readonly icons: {
-    readonly conflict: typeof lucideTriangleAlert;
     readonly empty: typeof lucideFolderOpen;
-    readonly error: typeof lucideCircleAlert;
     readonly info: typeof lucideInfo;
   } = {
-    conflict: lucideTriangleAlert,
     empty: lucideFolderOpen,
-    error: lucideCircleAlert,
     info: lucideInfo,
   } as const;
 
@@ -125,6 +108,17 @@ export class AdminProjectsPageComponent {
    */
   private readonly confirmations: ConfirmDialogService =
     inject<ConfirmDialogService>(ConfirmDialogService);
+
+  /**
+   * Property toasts
+   * @readonly
+   *
+   * @description
+   * Announces each request's outcome through the toaster of the admin layout.
+   *
+   * @type {ToastService}
+   */
+  private readonly toasts: ToastService = inject<ToastService>(ToastService);
   // #endregion
 
   // #region Constructor
@@ -136,7 +130,7 @@ export class AdminProjectsPageComponent {
    * Starts loading the project collection when the route page is created.
    */
   public constructor() {
-    void this.store.load();
+    void this.load();
   }
   // #endregion
 
@@ -146,15 +140,19 @@ export class AdminProjectsPageComponent {
    * @method publish
    *
    * @description
-   * Publishes the project and reloads the collection after a version conflict.
+   * Publishes the project and toasts the outcome; a version conflict reloads the collection.
    *
    * @param {AdminProject} project - Row selected for publication.
    *
    * @returns {Promise<void>} Completion after the write and any conflict reload.
    */
   protected async publish(project: AdminProject): Promise<void> {
-    if (!(await this.store.publish(project)) && this.store.conflict()) {
-      await this.store.load();
+    if (await this.store.publish(project)) {
+      this.toasts.success(`« ${project.title.fr} » publié.`, {
+        description: 'Le site public sera reconstruit dans quelques minutes.',
+      });
+    } else {
+      await this.reportFailure();
     }
   }
 
@@ -163,7 +161,8 @@ export class AdminProjectsPageComponent {
    * @method unpublish
    *
    * @description
-   * Confirms (danger tone), unpublishes the project, then reloads the collection after a version conflict.
+   * Confirms (danger tone), unpublishes the project and toasts the outcome; a version conflict reloads
+   * the collection.
    *
    * @param {AdminProject} project - Row selected for unpublication.
    *
@@ -181,9 +180,46 @@ export class AdminProjectsPageComponent {
     if (!confirmed) {
       return;
     }
-    if (!(await this.store.unpublish(project)) && this.store.conflict()) {
-      await this.store.load();
+    if (await this.store.unpublish(project)) {
+      this.toasts.success(`« ${project.title.fr} » retiré du site public.`);
+    } else {
+      await this.reportFailure();
     }
+  }
+
+  /**
+   * Method load
+   *
+   * @description
+   * Loads the collection and toasts the readable message when the request fails.
+   *
+   * @returns {Promise<void>} Completion after the load attempt.
+   */
+  private async load(): Promise<void> {
+    await this.store.load();
+    const error: { readonly message: string } | null | undefined = this.store.loadCallState().error;
+    if (error) this.toasts.error(error.message);
+  }
+
+  /**
+   * Method reportFailure
+   *
+   * @description
+   * After a failed write, reloads the list and warns on a version conflict, otherwise toasts the
+   * readable error message.
+   *
+   * @returns {Promise<void>} Completion after the toast and any reload.
+   */
+  private async reportFailure(): Promise<void> {
+    if (this.store.conflict()) {
+      this.toasts.warning(
+        'Le projet a été modifié entre-temps : la liste a été rechargée, recommencez.',
+      );
+      await this.load();
+      return;
+    }
+    const error: { readonly message: string } | null | undefined = this.store.writeError();
+    if (error) this.toasts.error(error.message);
   }
   // #endregion
 }

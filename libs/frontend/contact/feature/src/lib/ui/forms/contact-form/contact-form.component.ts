@@ -14,6 +14,7 @@ import {
   effect,
   inject,
   input,
+  linkedSignal,
   output,
   signal,
 } from '@angular/core';
@@ -79,6 +80,11 @@ import { CONTACT_SUBJECT_OPTIONS } from '@internal/contact-web-feature/lib/ui/fo
     TextareaDirective,
   ],
   templateUrl: './contact-form.component.html',
+  host: {
+    '(pointerdown)': 'pressed.set(true)',
+    '(document:pointerup)': 'pressed.set(false)',
+    '(document:pointercancel)': 'pressed.set(false)',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContactFormComponent {
@@ -257,6 +263,44 @@ export class ContactFormComponent {
   private readonly attempted: WritableSignal<boolean> = signal<boolean>(false);
 
   /**
+   * Property pressed
+   * @readonly
+   *
+   * @description
+   * Whether a pointer is held down inside the form, from `pointerdown` until it is released anywhere.
+   *
+   * @type {WritableSignal<boolean>}
+   */
+  protected readonly pressed: WritableSignal<boolean> = signal<boolean>(false);
+
+  /**
+   * Property visibleErrors
+   * @readonly
+   *
+   * @description
+   * Visible first error of each field, frozen while a pointer is held inside the form. Pressing the
+   * submit button blurs the last field, which reveals its error and grows the form above the button;
+   * rendered before the release, that shift moves the button away from the pointer and the click lands
+   * on the form instead, so nothing is submitted. The errors catch up on release, before the click.
+   *
+   * @type {Signal<Readonly<Record<ContactFormFieldName, string | null>>>}
+   */
+  private readonly visibleErrors: Signal<Readonly<Record<ContactFormFieldName, string | null>>> =
+    linkedSignal<
+      { pressed: boolean; errors: Readonly<Record<ContactFormFieldName, string | null>> },
+      Readonly<Record<ContactFormFieldName, string | null>>
+    >({
+      source: () => ({
+        pressed: this.pressed(),
+        errors: Object.fromEntries(
+          CONTACT_FORM_FIELDS.map((name) => [name, this.fieldError(name)]),
+        ) as Record<ContactFormFieldName, string | null>,
+      }),
+      computation: ({ pressed, errors }, previous) =>
+        pressed && previous ? previous.value : errors,
+    });
+
+  /**
    * Property invalidCount
    * @readonly
    *
@@ -304,13 +348,28 @@ export class ContactFormComponent {
    * @method error
    *
    * @description
-   * Returns the first validation message only after a submission attempt or field interaction.
+   * Returns the field's visible error, held unchanged while a pointer is pressed in the form.
    *
    * @param {ContactFormFieldName} name - Contact form field whose validation state is queried.
    *
    * @returns {string | null} Visible first error, or `null` while the field should remain quiet.
    */
   protected error(name: ContactFormFieldName): string | null {
+    return this.visibleErrors()[name];
+  }
+
+  /**
+   * Method fieldError
+   * @method fieldError
+   *
+   * @description
+   * Returns the first validation message only after a submission attempt or field interaction.
+   *
+   * @param {ContactFormFieldName} name - Contact form field whose validation state is queried.
+   *
+   * @returns {string | null} First error, or `null` while the field should remain quiet.
+   */
+  private fieldError(name: ContactFormFieldName): string | null {
     const state: FieldState<string, string> = this.contactForm[name]();
     if (!this.attempted() && !state.touched()) {
       return null;

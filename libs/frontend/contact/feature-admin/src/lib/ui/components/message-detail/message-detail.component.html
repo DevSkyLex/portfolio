@@ -25,7 +25,7 @@
         type="button"
         [disabled]="writing()"
         aria-keyshortcuts="R"
-        title="Marquer comme lu (R)"
+        uiTooltip="Raccourci : R"
         (click)="readRequested.emit(current)"
       >
         <ng-icon class="text-success-ink" [svg]="icons.read" size="14" aria-hidden="true" />
@@ -41,7 +41,7 @@
         type="button"
         [disabled]="writing()"
         aria-keyshortcuts="E"
-        title="Archiver (E)"
+        uiTooltip="Raccourci : E"
         (click)="archiveRequested.emit(current)"
       >
         <ng-icon [svg]="icons.archive" size="14" aria-hidden="true" />

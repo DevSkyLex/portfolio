@@ -62,44 +62,67 @@
               Complet en français et en anglais
             </span>
           }
-          <span class="flex items-center gap-1">
-            <a
-              uiBtn
-              variant="ghost"
-              size="sm"
-              class="h-7 px-2.5 text-[13px]"
-              [routerLink]="[project.id]"
-            >
-              Modifier
-            </a>
-            @if (project.status === 'published') {
-              <button
-                uiBtn
-                variant="secondary"
-                size="sm"
-                class="h-7 px-2.5 text-[13px]"
-                type="button"
-                [disabled]="writing()"
-                (click)="unpublishRequested.emit(project)"
-              >
-                Dépublier
-              </button>
-            } @else {
-              <button
-                uiBtn
-                size="sm"
-                class="h-7 px-2.5 text-[13px]"
-                type="button"
-                [disabled]="writing() || project.missing.length > 0"
-                [title]="
-                  project.missing.length > 0 ? 'Complétez les champs manquants pour publier.' : ''
-                "
-                (click)="publishRequested.emit(project)"
-              >
-                Publier
-              </button>
-            }
-          </span>
+          <button
+            uiBtn
+            variant="ghost"
+            size="sm"
+            class="size-7 px-0"
+            type="button"
+            uiTooltip="Actions"
+            [attr.aria-label]="'Actions pour « ' + project.title.fr + ' »'"
+            [uiDropdownMenuTrigger]="actions"
+            align="end"
+          >
+            <ng-icon [svg]="icons.more" size="16" aria-hidden="true" />
+          </button>
+          <ng-template #actions>
+            <div uiDropdownMenuContent class="min-w-44">
+              <a uiDropdownMenuItem class="min-h-8 text-[13px]" [routerLink]="[project.id]">
+                <ng-icon [svg]="icons.edit" size="14" aria-hidden="true" />
+                Modifier
+              </a>
+              @if (project.status === 'published') {
+                <a
+                  uiDropdownMenuItem
+                  class="min-h-8 text-[13px]"
+                  [href]="'/projects/' + project.slug"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <ng-icon [svg]="icons.open" size="14" aria-hidden="true" />
+                  Voir la page
+                </a>
+                <div uiDropdownMenuSeparator></div>
+                <button
+                  uiDropdownMenuItem
+                  class="min-h-8 text-[13px]"
+                  type="button"
+                  [disabled]="writing()"
+                  (triggered)="unpublishRequested.emit(project)"
+                >
+                  <ng-icon
+                    class="text-danger-ink"
+                    [svg]="icons.unpublish"
+                    size="14"
+                    aria-hidden="true"
+                  />
+                  Dépublier
+                </button>
+              } @else {
+                <div uiDropdownMenuSeparator></div>
+                <button
+                  uiDropdownMenuItem
+                  class="min-h-8 text-[13px]"
+                  type="button"
+                  [disabled]="writing() || project.missing.length > 0"
+                  (triggered)="publishRequested.emit(project)"
+                >
+                  <ng-icon [svg]="icons.publish" size="14" aria-hidden="true" />
+                  Publier
+                </button>
+              }
+            </div>
+          </ng-template>
         </li>
       }
     </ul>

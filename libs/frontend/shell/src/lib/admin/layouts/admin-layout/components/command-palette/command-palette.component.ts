@@ -15,6 +15,7 @@ import {
   lucideCircleCheckBig,
   lucideCircleDashed,
   lucideExternalLink,
+  lucideKeyboard,
   lucideLogOut,
 } from '@ng-icons/lucide';
 import type { AdminProjectNavigationItem } from '@vfortin/content-web-data-access/navigation';
@@ -111,6 +112,17 @@ export class CommandPaletteComponent {
   public readonly logoutSelected: OutputEmitterRef<void> = output<void>();
 
   /**
+   * Property shortcutsSelected
+   * @readonly
+   *
+   * @description
+   * Emits when "Raccourcis clavier" is chosen, once the palette is closed.
+   *
+   * @type {OutputEmitterRef<void>}
+   */
+  public readonly shortcutsSelected: OutputEmitterRef<void> = output<void>();
+
+  /**
    * Property icons
    * @readonly
    *
@@ -119,11 +131,13 @@ export class CommandPaletteComponent {
    */
   protected readonly icons: {
     readonly draft: typeof lucideCircleDashed;
+    readonly keyboard: typeof lucideKeyboard;
     readonly logout: typeof lucideLogOut;
     readonly published: typeof lucideCircleCheckBig;
     readonly site: typeof lucideExternalLink;
   } = {
     draft: lucideCircleDashed,
+    keyboard: lucideKeyboard,
     logout: lucideLogOut,
     published: lucideCircleCheckBig,
     site: lucideExternalLink,
@@ -221,6 +235,18 @@ export class CommandPaletteComponent {
   protected chooseSite(): void {
     this.ref?.close();
     this.siteSelected.emit();
+  }
+
+  /**
+   * Method chooseShortcuts
+   * @method chooseShortcuts
+   *
+   * @description
+   * Closes the palette and reports "Raccourcis clavier".
+   */
+  protected chooseShortcuts(): void {
+    this.ref?.close();
+    this.shortcutsSelected.emit();
   }
 
   /**

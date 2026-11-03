@@ -73,6 +73,53 @@ class HostComponent {
 }
 
 /**
+ * Component LoopHostComponent
+ * @class LoopHostComponent
+ *
+ * @description
+ * Renders triggers and panels from `@for`, whose later views receive their inputs after the first
+ * trigger's host bindings run.
+ */
+@Component({
+  imports: [TabsDirective, TabsListDirective, TabsTriggerDirective, TabsContentDirective],
+  template: `<div uiTabs [(value)]="value">
+    <div uiTabsList aria-label="Langues">
+      @for (tab of tabs; track tab) {
+        <button [uiTabsTrigger]="tab">{{ tab }}</button>
+      }
+    </div>
+    @for (tab of tabs; track tab) {
+      <div [uiTabsContent]="tab">{{ tab }}</div>
+    }
+  </div>`,
+})
+class LoopHostComponent {
+  // #region Properties
+  /**
+   * Property tabs
+   * @readonly
+   *
+   * @description
+   * Tab values rendered by the loops.
+   *
+   * @type {readonly string[]}
+   */
+  protected readonly tabs: readonly string[] = ['fr', 'en', 'de'];
+
+  /**
+   * Property value
+   * @readonly
+   *
+   * @description
+   * Selected tab value; the second tab proves the tab stop follows a selection past the first view.
+   *
+   * @type {WritableSignal<string | null>}
+   */
+  public readonly value: WritableSignal<string | null> = signal<string | null>('en');
+  // #endregion
+}
+
+/**
  * Constant KEY_CODES
  *
  * @description
@@ -188,5 +235,22 @@ describe('Tabs', (): void => {
     press(tabs[0], 'ArrowDown');
     await fixture.whenStable();
     expect(host.value()).toBe('three');
+  });
+
+  it('renders triggers from @for and keeps the tab stop on the selection', async (): Promise<void> => {
+    const fixture: ComponentFixture<LoopHostComponent> = TestBed.createComponent(LoopHostComponent);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const tabs: HTMLButtonElement[] = Array.from(
+      element.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    );
+    expect(tabs.map((tab: HTMLButtonElement): number => tab.tabIndex)).toEqual([-1, 0, -1]);
+    expect(element.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])')?.textContent).toBe(
+      'en',
+    );
+    tabs[2]?.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.value()).toBe('de');
+    expect(tabs[2]?.tabIndex).toBe(0);
   });
 });

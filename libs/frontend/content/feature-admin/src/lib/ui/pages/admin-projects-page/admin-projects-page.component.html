@@ -7,22 +7,6 @@
   Une modification d'un projet publié reconstruit le site public (quelques minutes).
 </p>
 
-@if (store.writeError(); as error) {
-  @if (store.conflict()) {
-    <div uiAlert variant="warning" class="mx-6 mt-4 w-auto @max-[640px]:mx-4">
-      <ng-icon [svg]="icons.conflict" size="16" aria-hidden="true" />
-      <p uiAlertTitle class="text-[13px]/5">
-        Le projet a été modifié entre-temps : la liste a été rechargée, recommencez.
-      </p>
-    </div>
-  } @else {
-    <div uiAlert variant="danger" class="mx-6 mt-4 w-auto @max-[640px]:mx-4">
-      <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
-      <p uiAlertTitle class="text-[13px]/5">{{ error.message }}</p>
-    </div>
-  }
-}
-
 @if (store.loading() && store.projects().length === 0) {
   <div class="flex flex-col" role="status">
     <span class="sr-only">Chargement…</span>

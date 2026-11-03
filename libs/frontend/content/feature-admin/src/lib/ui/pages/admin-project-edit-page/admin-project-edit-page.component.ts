@@ -19,8 +19,8 @@ import {
   lucideArrowLeft,
   lucideChevronRight,
   lucideCircleAlert,
-  lucideCircleCheck,
   lucideExternalLink,
+  lucidePanelRight,
   lucideTriangleAlert,
 } from '@ng-icons/lucide';
 import {
@@ -36,7 +36,12 @@ import {
   BadgeDirective,
   ButtonDirective,
   ConfirmDialogService,
+  SheetContentDirective,
+  SheetHeaderDirective,
+  SheetTitleDirective,
+  SheetTriggerDirective,
   SkeletonDirective,
+  ToastService,
 } from '@vfortin/ui';
 import { ProjectPropertiesPanelComponent } from '@internal/content-web-feature-admin/lib/ui/components/project-properties-panel/project-properties-panel.component';
 import { ProjectFormComponent } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/project-form.component';
@@ -48,7 +53,9 @@ import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/
  *
  * @description
  * Project editor route: loads the project, saves the form's values with `If-Match`, toggles the
- * publication of a clean form, offers to reload after a version conflict and saves on Ctrl/Cmd+S (D36).
+ * publication of a clean form and saves on Ctrl/Cmd+S (D36). Each request's outcome is a toast; a
+ * version conflict stays an inline alert offering to reload. The properties panel sits beside the form,
+ * or in a right sheet opened from the title bar below 1180 px.
  */
 @Component({
   selector: 'content-admin-project-edit-page',
@@ -62,6 +69,10 @@ import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/
     ProjectFormComponent,
     ProjectPropertiesPanelComponent,
     RouterLink,
+    SheetContentDirective,
+    SheetHeaderDirective,
+    SheetTitleDirective,
+    SheetTriggerDirective,
     SkeletonDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -112,6 +123,17 @@ export class AdminProjectEditPageComponent {
     inject<ConfirmDialogService>(ConfirmDialogService);
 
   /**
+   * Property toasts
+   * @readonly
+   *
+   * @description
+   * Announces each request's outcome through the toaster of the admin layout.
+   *
+   * @type {ToastService}
+   */
+  private readonly toasts: ToastService = inject<ToastService>(ToastService);
+
+  /**
    * Property project
    * @readonly
    *
@@ -141,17 +163,6 @@ export class AdminProjectEditPageComponent {
   );
 
   /**
-   * Property notice
-   * @readonly
-   *
-   * @description
-   * Success message after a save or a publication change.
-   *
-   * @type {WritableSignal<string | null>}
-   */
-  protected readonly notice: WritableSignal<string | null> = signal<string | null>(null);
-
-  /**
    * Property dirty
    * @readonly
    *
@@ -169,7 +180,7 @@ export class AdminProjectEditPageComponent {
    * @readonly
    *
    * @description
-   * Lucide icons of the title bar and the notices.
+   * Lucide icons of the title bar and the inline alerts.
    */
   protected readonly icons: {
     readonly back: typeof lucideArrowLeft;
@@ -177,14 +188,14 @@ export class AdminProjectEditPageComponent {
     readonly conflict: typeof lucideTriangleAlert;
     readonly error: typeof lucideCircleAlert;
     readonly open: typeof lucideExternalLink;
-    readonly saved: typeof lucideCircleCheck;
+    readonly properties: typeof lucidePanelRight;
   } = {
     back: lucideArrowLeft,
     chevron: lucideChevronRight,
     conflict: lucideTriangleAlert,
     error: lucideCircleAlert,
     open: lucideExternalLink,
-    saved: lucideCircleCheck,
+    properties: lucidePanelRight,
   } as const;
 
   /**
@@ -218,7 +229,6 @@ export class AdminProjectEditPageComponent {
       });
       untracked((): void => {
         this.project.set(null);
-        this.notice.set(null);
         this.store.resetWriteState();
         void this.store.loadOne(id).then((project: AdminProject | null): void => {
           if (active && project) this.project.set(project);
@@ -271,7 +281,7 @@ export class AdminProjectEditPageComponent {
    * @method reload
    *
    * @description
-   * Loads the project; a successful answer resets the form and clears the notice.
+   * Loads the project; a successful answer resets the form and clears the conflict.
    *
    * @returns {Promise<void>} Completion after the load attempt.
    */
@@ -282,7 +292,6 @@ export class AdminProjectEditPageComponent {
     if (project && id === this.id()) {
       this.store.resetWriteState();
       this.project.set(project);
-      this.notice.set(null);
     }
   }
 
@@ -308,7 +317,8 @@ export class AdminProjectEditPageComponent {
    * @method save
    *
    * @description
-   * Saves validated form values; the answer replaces the project, which resets the form to it.
+   * Saves validated form values; the answer replaces the project, which resets the form to it, and a
+   * toast confirms the save or reports its failure.
    *
    * @param {ProjectFormValues} values - Values emitted by the form.
    *
@@ -320,15 +330,16 @@ export class AdminProjectEditPageComponent {
     if (!project || this.store.writing()) {
       return;
     }
-    this.notice.set(null);
     const saved: AdminProject | null = await this.store.save(project, values);
     if (saved) {
       this.project.set(saved);
-      this.notice.set(
+      this.toasts.success(
         saved.status === 'published'
           ? 'Enregistré. Le site public sera reconstruit dans quelques minutes.'
           : 'Enregistré (brouillon).',
       );
+    } else {
+      this.reportFailure();
     }
   }
 
@@ -337,7 +348,7 @@ export class AdminProjectEditPageComponent {
    * @method togglePublication
    *
    * @description
-   * Publishes the project, or unpublishes it once confirmed, while the form is clean, then shows the
+   * Publishes the project, or unpublishes it once confirmed, while the form is clean, then toasts the
    * outcome.
    *
    * @returns {Promise<void>} Completion after the publication request.
@@ -366,12 +377,36 @@ export class AdminProjectEditPageComponent {
         : await this.store.publish(project);
     if (updated) {
       this.project.set(updated);
-      this.notice.set(
+      this.toasts.success(
         updated.status === 'published'
           ? 'Publié. Le site public sera reconstruit dans quelques minutes.'
           : 'Retiré du site public.',
       );
+    } else {
+      this.reportFailure();
     }
+  }
+
+  /**
+   * Method reportFailure
+   *
+   * @description
+   * Toasts the readable message of a failed write; a version conflict is left to the inline alert,
+   * which offers to reload. An incomplete published project, which the form normally catches first,
+   * gets its own explanation instead of the generic rejection.
+   */
+  private reportFailure(): void {
+    const error: { readonly message: string; readonly code: string | null } | null | undefined =
+      this.store.writeError();
+    if (!error || this.store.conflict()) return;
+    // CONTENT_ADMIN_ERROR_CODES.incomplete: the browser imports no value from the contracts (D10).
+    if (error.code === 'content.project-incomplete') {
+      this.toasts.error('Un projet publié doit rester complet.', {
+        description: 'Complétez les deux langues ou dépubliez le projet avant de retirer un texte.',
+      });
+      return;
+    }
+    this.toasts.error(error.message);
   }
   // #endregion
 }

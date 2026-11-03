@@ -86,6 +86,24 @@ describe('ContactFormComponent', () => {
     );
   });
 
+  it('holds back the error of a field blurred by a press until the pointer is released', async () => {
+    const { fixture, root, type }: Awaited<ReturnType<typeof setup>> = await setup();
+    await type('contact-email', 'camille@');
+    root
+      .querySelector('button[type="submit"]')
+      ?.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    root.querySelector('#contact-email')?.dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    expect(root.querySelector('#contact-email-error')).toBeNull();
+    expect(root.querySelector('[data-slot="alert"]')).toBeNull();
+    document.dispatchEvent(new Event('pointerup'));
+    await fixture.whenStable();
+    expect(root.querySelector('#contact-email')?.getAttribute('aria-invalid')).toBe('true');
+    expect(root.querySelector('[data-slot="alert"]')?.textContent).toContain(
+      'Un champ est à corriger ci-dessous.',
+    );
+  });
+
   it('keeps a server error on its field until the value changes', async () => {
     const { fixture, root, type, submit, fill }: Awaited<ReturnType<typeof setup>> = await setup();
     await fill();

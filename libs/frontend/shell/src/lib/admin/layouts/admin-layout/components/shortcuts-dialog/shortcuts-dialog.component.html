@@ -1,0 +1,35 @@
+<ng-template #help>
+  <div uiDialogHeader class="gap-1">
+    <h2 uiDialogTitle class="font-sans text-[15px]/6 font-semibold">Raccourcis clavier</h2>
+    <p uiDialogDescription class="text-[13px]">
+      Les touches à une lettre agissent hors des champs de saisie.
+    </p>
+  </div>
+  @for (group of groups; track group.label) {
+    <section class="flex flex-col gap-1">
+      <h3 class="text-[12px] font-medium text-star-faint">{{ group.label }}</h3>
+      <dl class="flex flex-col">
+        @for (shortcut of group.shortcuts; track shortcut.label) {
+          <div
+            class="flex min-h-8 items-center gap-3 border-line py-1 text-[13px] not-last:border-b"
+          >
+            <dt class="text-star">{{ shortcut.label }}</dt>
+            <dd class="ml-auto flex shrink-0 items-center gap-1.5">
+              <span class="sr-only">{{ shortcut.spoken }}</span>
+              @for (combo of shortcut.combos; track $index) {
+                @if (!$first) {
+                  <span class="text-[12px] text-star-faint" aria-hidden="true">/</span>
+                }
+                <span uiKbdGroup aria-hidden="true">
+                  @for (key of combo; track $index) {
+                    <kbd uiKbd>{{ key }}</kbd>
+                  }
+                </span>
+              }
+            </dd>
+          </div>
+        }
+      </dl>
+    </section>
+  }
+</ng-template>

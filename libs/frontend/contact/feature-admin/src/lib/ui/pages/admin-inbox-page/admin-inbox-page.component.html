@@ -23,20 +23,27 @@
   </div>
 </header>
 
-@if (store.error(); as error) {
+@if (store.loadCallState().error; as error) {
   <div
     uiAlert
+    variant="danger"
     class="mx-6 mt-4 w-auto px-3 py-2.5 text-[13px]/5 @max-[640px]:mx-4"
-    [variant]="store.conflict() ? 'warning' : 'danger'"
   >
-    <ng-icon [svg]="store.conflict() ? icons.conflict : icons.error" size="14" aria-hidden="true" />
-    <p class="col-start-2">
-      {{
-        store.conflict()
-          ? 'Ce message a changé entre-temps ; la liste a été rechargée.'
-          : error.message
-      }}
-    </p>
+    <ng-icon [svg]="icons.error" size="14" aria-hidden="true" />
+    <p class="col-start-2">{{ error.message }}</p>
+    <div class="col-start-2 mt-1.5">
+      <button
+        uiBtn
+        size="sm"
+        variant="secondary"
+        class="h-7 px-2.5 text-[13px]"
+        type="button"
+        [disabled]="store.loading()"
+        (click)="store.load()"
+      >
+        Réessayer
+      </button>
+    </div>
   </div>
 }
 
@@ -75,14 +82,45 @@
       (opened)="select($event)"
       (pageChange)="store.goTo($event)"
     />
-    @if (selected(); as message) {
-      <contact-message-detail
-        [message]="message"
-        [writing]="store.writing()"
-        (readRequested)="store.markRead($event)"
-        (archiveRequested)="store.archive($event)"
-        (removeRequested)="remove($event)"
-      />
+    @if (!narrow()) {
+      @if (selected(); as message) {
+        <contact-message-detail
+          [message]="message"
+          [writing]="store.writing()"
+          (readRequested)="markRead($event)"
+          (archiveRequested)="archive($event)"
+          (removeRequested)="remove($event)"
+        />
+      }
     }
   </div>
 }
+
+<ng-template #reading>
+  @if (selected(); as message) {
+    <div class="flex h-12 shrink-0 items-center gap-2 border-b border-line pr-2 pl-4">
+      <h2 uiSheetTitle class="min-w-0 truncate font-sans text-[14px]/5 font-semibold">
+        Message de {{ message.name }}
+      </h2>
+      <button
+        uiBtn
+        uiSheetClose
+        size="sm"
+        variant="ghost"
+        class="ml-auto size-8 shrink-0 px-0"
+        aria-label="Fermer"
+        uiTooltip="Fermer (Échap)"
+        tooltipPosition="left"
+      >
+        <ng-icon [svg]="icons.close" size="16" aria-hidden="true" />
+      </button>
+    </div>
+    <contact-message-detail
+      [message]="message"
+      [writing]="store.writing()"
+      (readRequested)="markRead($event)"
+      (archiveRequested)="archive($event)"
+      (removeRequested)="remove($event)"
+    />
+  }
+</ng-template>
