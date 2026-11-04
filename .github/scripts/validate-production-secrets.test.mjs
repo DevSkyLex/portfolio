@@ -132,13 +132,15 @@ test('the deployment workflow passes each application credential to the validato
     'SITE_BUILD_TOKEN',
     'IDENTITY_SIGNING_KEY_K1',
     'IDENTITY_SIGNING_KEY_K2',
-    'GHCR_TOKEN',
     'SEO_GOOGLE_CREDENTIALS',
     'SEO_PAGESPEED_API_KEY',
   ]) {
     assert.ok(workflow.includes(`${name}: \${{ secrets.${name} }}`), `workflow: ${name}`);
     assert.ok((role + tasks).includes(`'${name}'`), `Ansible: ${name}`);
   }
+  assert.ok(workflow.includes('GHCR_TOKEN: ${{ secrets.GHCR_TOKEN || github.token }}'));
+  assert.ok(workflow.includes('GHCR_USERNAME: ${{ vars.GHCR_USERNAME || github.actor }}'));
+  assert.ok((role + tasks).includes("'GHCR_TOKEN'"));
   assert.ok(
     workflow.indexOf('node ../.github/scripts/validate-production-secrets.mjs') <
       workflow.indexOf('ansible-playbook playbooks/deploy.yml'),

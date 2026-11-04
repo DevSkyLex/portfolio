@@ -95,11 +95,11 @@ An old local `ansible/inventory/group_vars/all/vault.yml`, if present, is still 
 | `CONTACT_CLIENT_KEY_SECRET`                           | Contact fingerprint HMAC key, at least 32 characters.                                     |
 | `SITE_BUILD_TOKEN`                                    | Fine-grained token with Actions write access to this repository for publication dispatch. |
 | `IDENTITY_SIGNING_KEY_K1`                             | Unencrypted Ed25519 PKCS#8 private key, including PEM delimiters and newlines.            |
-| `GHCR_TOKEN`                                          | Classic personal access token with read:packages and access to the service images.        |
+| `GHCR_TOKEN`                                          | Optional classic token with read:packages and access to the service images.               |
 | `IDENTITY_SIGNING_KEY_K2`                             | Optional second Ed25519 key for rotation.                                                 |
 | `SEO_GOOGLE_CREDENTIALS`, `SEO_PAGESPEED_API_KEY`     | Optional SEO dashboard credentials.                                                       |
 
-All seven Postgres passwords must be distinct, alphanumeric and at least 24 characters; generate each independently, for example with `openssl rand -hex 24`. Generate the HMAC key with `openssl rand -hex 32`. Generate the signing key in a trusted environment and provide its entire PKCS#8 PEM as the GitHub secret; do not commit it. The active slot is selected by `IDENTITY_SIGNING_KID` (`k1` by default); the active key must be present. `GHCR_USERNAME` defaults to the repository owner and can be overridden by a GitHub variable. The SSH secrets are listed in [GitHub](#github). Do not put secret values in tickets or chat.
+All seven Postgres passwords must be distinct, alphanumeric and at least 24 characters; generate each independently, for example with `openssl rand -hex 24`. Generate the HMAC key with `openssl rand -hex 32`. Generate the signing key in a trusted environment and provide its entire PKCS#8 PEM as the GitHub secret; do not commit it. The active slot is selected by `IDENTITY_SIGNING_KID` (`k1` by default); the active key must be present. The workflow defaults `GHCR_TOKEN` to the job's temporary GitHub token and `GHCR_USERNAME` to the GitHub actor, as in Fireguard. An optional `GHCR_TOKEN` secret and `GHCR_USERNAME` variable can select a dedicated account with access to the service images; manual Ansible runs must supply both. The SSH secrets are listed in [GitHub](#github). Do not put secret values in tickets or chat.
 
 ## Brevo email delivery
 

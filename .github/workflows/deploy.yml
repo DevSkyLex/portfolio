@@ -145,7 +145,7 @@ jobs:
       SEO_GA4_PROPERTY_ID: ${{ vars.SEO_GA4_PROPERTY_ID }}
       SEO_WEB_VITALS_URLS: ${{ vars.SEO_WEB_VITALS_URLS }}
       IDENTITY_SIGNING_KID: ${{ vars.IDENTITY_SIGNING_KID || 'k1' }}
-      GHCR_USERNAME: ${{ vars.GHCR_USERNAME || github.repository_owner }}
+      GHCR_USERNAME: ${{ vars.GHCR_USERNAME || github.actor }}
     steps:
       # Images take minutes: a newer commit may have reached main meanwhile, and its own run deploys it.
       - name: Still the head of main
@@ -193,7 +193,7 @@ jobs:
           SITE_BUILD_TOKEN: ${{ secrets.SITE_BUILD_TOKEN }}
           IDENTITY_SIGNING_KEY_K1: ${{ secrets.IDENTITY_SIGNING_KEY_K1 }}
           IDENTITY_SIGNING_KEY_K2: ${{ secrets.IDENTITY_SIGNING_KEY_K2 }}
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN || github.token }}
           SEO_GOOGLE_CREDENTIALS: ${{ secrets.SEO_GOOGLE_CREDENTIALS }}
           SEO_PAGESPEED_API_KEY: ${{ secrets.SEO_PAGESPEED_API_KEY }}
         run: |
