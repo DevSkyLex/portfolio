@@ -249,10 +249,11 @@ test.describe('isolated stack acceptance @stack', (): void => {
     );
     await page.getByRole('button', { name: 'Publier', exact: true }).click();
     expect((await publication).status()).toBe(200);
-    await expect(page.getByText('Publié.', { exact: true })).toBeVisible();
-    await expect(
-      page.getByText('Le site public sera mis à jour dans quelques minutes.', { exact: true }),
-    ).toBeVisible();
+    const publishedNotice: Locator = page.getByRole('status').filter({ hasText: 'Publié.' });
+    await expect(publishedNotice).toBeVisible();
+    await expect(publishedNotice).toContainText(
+      'Le site public sera mis à jour dans quelques minutes.',
+    );
 
     const content: string = `Acceptance message ${Date.now()}: please verify delivery to the local inbox.`;
     await page.goto('/#contact');
