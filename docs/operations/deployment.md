@@ -1,6 +1,6 @@
 # Deployment and operations
 
-Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing shared Traefik edge, a private Nginx origin and Postgres 17. The public site is a set of static pages published per release; the three services (identity, content, contact) are images published to GHCR. Ansible provisions the server and deploys; the GitHub workflows call it. Traefik is managed separately, using the same network and deployment conventions as Dentalstock and Fireguard.
+Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing shared Traefik edge, a private Nginx origin and Postgres 17. The public site is a set of static pages published per release; the three services (identity, content, contact) are images published to GHCR. Ansible prepares and deploys the portfolio on an existing shared VPS; the GitHub workflows call it. Host provisioning, SSH access and Docker are managed separately. Traefik is managed separately, using the same network and deployment conventions as Dentalstock and Fireguard.
 
 | Item                    | Where                                                                                                                                                            |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -82,7 +82,7 @@ For an existing installation using the former `/srv/portfolio`, `/srv/site` or `
 ## First installation
 
 1. **Shared edge and DNS**: the existing Traefik must expose `web` / `websecure`, have the `letsencrypt` resolver and join external `traefik_proxy`. Point `APP_HOST` and `www.APP_HOST` to that edge. Record its reviewed address in `TRUSTED_PROXIES`.
-2. **Inventory**: address in `ansible/inventory/production.yml` or `VPS_HOST`, optional `VPS_USER` and `VPS_PORT`, public SSH keys in `deploy_authorized_keys` (`ansible/inventory/group_vars/all/vars.yml`; provisioning refuses an empty list, and the list is exclusive: a removed key is revoked).
+2. **Existing access**: configure `VPS_HOST`, optional `VPS_USER` and `VPS_PORT`, and authorize the deployment public key on the VPS through its existing administration process. The SSH account defaults to `deploy`; it must already exist, have passwordless sudo and Docker access, and have a primary group with the same name. The repository does not manage `authorized_keys`, SSH, the firewall or Docker on the host.
 3. **Secrets**: copy `vault.example.yml` to `vault.yml`, fill it in, then encrypt it. The roles check that nothing is left at `CHANGE_ME` and that the Postgres passwords are alphanumeric (they go into URLs). The two SEO dashboard secrets (`vault_seo_google_credentials`, `vault_seo_pagespeed_api_key`) are optional: left empty, Ansible writes empty secret files and the sections answer `not-configured` (see « SEO dashboard and audience measurement » below).
 
    ```bash
@@ -91,14 +91,14 @@ For an existing installation using the former `/srv/portfolio`, `/srv/site` or `
    ansible-vault encrypt ansible/inventory/group_vars/all/vault.yml
    ```
 
-4. **Provisioning** (initial account provided by OVH, here `ubuntu`):
+4. **Prepare the portfolio** using the existing deployment account:
 
    ```bash
    cd ansible && ansible-galaxy collection install -r requirements.yml -p .collections
-   ansible-playbook playbooks/provision.yml -e ansible_user=ubuntu --ask-vault-pass
+   ansible-playbook playbooks/provision.yml --ask-vault-pass
    ```
 
-   Packages upgraded, unattended security updates with automatic reboot at 04:30 when needed, firewall (SSH rate-limited, 80, 443 for the shared edge), fail2ban (SSH, bans through UFW), key-only SSH without root or forwarding, kernel network hardening, Docker (daemon defaults: rotated logs, `no-new-privileges`, `live-restore`), files, secrets and backup timers in place. The portfolio installs no Certbot or TLS role.
+   The playbook prepares portfolio files, secrets and backup timers. It does not install Docker, provision users, modify SSH keys or change shared host security settings. The existing shared Traefik handles TLS.
 
 5. **First deployment** (images already published by the `deploy` workflow):
 
@@ -293,7 +293,7 @@ bash docker/scripts/check-ops.sh nginx compose   # some: shellcheck hadolint com
 - `csp`: production and development send the same Content-Security-Policy;
 - `ansible`: collections installed from `requirements.yml`, `ansible-playbook --syntax-check` on every playbook, `ansible-lint` with the `production` profile (`ansible/.ansible-lint`).
 
-No Molecule scenario: the roles manage sshd, UFW, fail2ban, systemd timers and the Docker daemon, which a container scenario cannot exercise faithfully; a disposable VM (same Ubuntu release as the VPS) is the right target if role tests become worth it. The full stack is exercised locally with `docker/compose.dev.yml`, which uses the same hardening, roles script and Nginx configuration as production.
+No Molecule scenario: the portfolio role manages systemd timers and host files, which a container scenario cannot exercise faithfully; a disposable VM (same Ubuntu release as the VPS) is the right target if role tests become worth it. The full stack is exercised locally with `docker/compose.dev.yml`, which uses the same hardening, roles script and Nginx configuration as production.
 
 ## Locally
 

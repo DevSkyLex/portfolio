@@ -96,7 +96,7 @@
     group: '{{ service_uid }}'
     mode: '0755'
 
-# Copied as root (the first run connects with the provider's account), owned by the deployment account.
+# Copied as root and owned by the existing deployment account.
 - name: Deployment files
   ansible.posix.synchronize:
     src: '{{ playbook_dir }}/../../docker/{{ item }}'

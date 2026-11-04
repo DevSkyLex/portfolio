@@ -2,10 +2,8 @@
 # Extra variables given per run: `tag` (deploy.yml, commit SHA of the images), `release` (publish-site.yml).
 domain: "{{ lookup('ansible.builtin.env', 'APP_HOST') | default('valentin-fortin.pro', true) }}"
 
-deploy_user: deploy
-# Public SSH keys authorized for the deployment account (personal machine, CI). Exclusive: a key removed
-# here is revoked on the next provisioning. Provisioning refuses an empty list.
-deploy_authorized_keys: []
+# The existing SSH account owns application files and runs the portfolio timers and Docker commands.
+deploy_user: "{{ lookup('ansible.builtin.env', 'VPS_USER') | default('deploy', true) }}"
 
 app_root: "{{ lookup('ansible.builtin.env', 'VPS_APP_DIR') | default('/srv/apps/portfolio/production', true) }}"
 site_root: '{{ app_root }}/site'

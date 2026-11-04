@@ -1,5 +1,4 @@
-# OVH VPS. Fill in the address and account (the `deploy` account is created by provision.yml; first connection as
-# root or with the account provided by OVH: -e ansible_user=ubuntu).
+# Existing shared VPS: SSH access and the deployment account are managed outside this repository.
 all:
   hosts:
     vps:

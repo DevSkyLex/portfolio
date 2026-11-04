@@ -1,8 +1,0 @@
-# Upgrade every package on each provisioning run (security updates also run daily, unattended).
-base_upgrade_packages: true
-# Automatic reboot after updates that need one (kernel, libc), at a quiet time (server time zone).
-base_reboot_time: '04:30'
-# fail2ban: bans through UFW after `base_fail2ban_maxretry` failures within `base_fail2ban_findtime`.
-base_fail2ban_bantime: 1h
-base_fail2ban_findtime: 10m
-base_fail2ban_maxretry: 5

@@ -111,7 +111,7 @@ Each service has its schema, owned by `<ctx>_migrator` (DDL, used only by migrat
 
 ## D24 — Ansible for the server, Compose for the containers
 
-Ansible provisions the server (hardening and Docker) and puts the files and secrets in place (Ansible Vault); the deployment steps stay in `docker/scripts/*.sh`, run by Ansible, so they can be run by hand. The existing shared Traefik owns TLS (D33). No Swarm or Kubernetes for a single server.
+Ansible prepares portfolio files and secrets (Ansible Vault) on an existing shared VPS; host provisioning, SSH access and Docker are managed separately. Deployment steps stay in `docker/scripts/*.sh`, run by Ansible, so they can be run by hand. The existing shared Traefik owns TLS (D33). No Swarm or Kubernetes for a single server.
 
 ## D25 — E2E on the built site
 
