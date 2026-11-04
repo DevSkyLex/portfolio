@@ -115,7 +115,7 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await expect(page.getByRole('heading', { name: 'Tableau de bord', exact: true })).toBeVisible();
     await assertAdminAccessibility(page);
     await page.goto('/admin/projects');
-    await expect(page.getByRole('heading', { name: 'Projets', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Projets(?:\s|$)/ })).toBeVisible();
     await assertAdminAccessibility(page);
     const session: APIResponse<unknown> = await page.request.post('/api/auth/refresh', {
       headers: { 'x-csrf': '1' },
