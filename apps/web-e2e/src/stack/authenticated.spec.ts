@@ -126,6 +126,12 @@ test.describe('isolated stack acceptance @stack', (): void => {
       authorization: `Bearer ${token}`,
       'x-csrf': '1',
     };
+    const redirect: APIResponse<unknown> = await page.request.get('/api/content/admin/projects', {
+      headers,
+      maxRedirects: 0,
+    });
+    expect(redirect.status()).toBe(301);
+    expect(redirect.headers()['location']).toBe('/api/content/admin/projects/');
     const listed: APIResponse<unknown> = await page.request.get('/api/content/admin/projects', {
       headers,
     });
