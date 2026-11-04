@@ -209,6 +209,8 @@ test.describe('isolated stack acceptance @stack', (): void => {
       'techs',
       'featured',
       'article',
+      'cover',
+      'seo',
     ];
     const revision: Record<string, unknown> = Object.fromEntries(
       fields.map((field: string): [string, unknown] => [field, project[field]]),
