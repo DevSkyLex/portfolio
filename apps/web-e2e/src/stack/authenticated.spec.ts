@@ -257,6 +257,8 @@ test.describe('isolated stack acceptance @stack', (): void => {
 
     const content: string = `Acceptance message ${Date.now()}: please verify delivery to the local inbox.`;
     await page.goto('/#contact');
+    // The contact section is deferred until its placeholder approaches the viewport.
+    await page.locator('#contact').scrollIntoViewIfNeeded();
     const contact: Locator = page.getByRole('form', { name: 'Formulaire de contact' });
     await contact.getByRole('textbox', { name: 'Nom', exact: false }).fill('Acceptance sender');
     await contact
