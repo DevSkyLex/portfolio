@@ -153,7 +153,10 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await expect(page).toHaveURL(new RegExp(`/admin/projects/${second.id}$`));
     await expect(page.getByRole('heading', { name: second.title.fr, exact: true })).toBeVisible();
 
-    const titleField: Locator = page.getByLabel(/Titre.*FR/);
+    const titleField: Locator = page.getByRole('textbox', {
+      name: 'Titre en français',
+      exact: true,
+    });
     await titleField.fill(`${second.title.fr} draft`);
     await page.getByRole('link', { name: 'Tous les projets', exact: true }).click();
     const discard: Locator = page.getByRole('alertdialog', { name: 'Quitter sans enregistrer ?' });
@@ -165,10 +168,13 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await expect(page).toHaveURL(/\/admin\/projects$/);
 
     await page.goto(`/admin/projects/${first.id}`);
-    const editorTitle: Locator = page.getByLabel(/Titre.*FR/);
+    const editorTitle: Locator = page.getByRole('textbox', {
+      name: 'Titre en français',
+      exact: true,
+    });
     await expect(editorTitle).toHaveValue(first.title.fr);
     await assertAdminAccessibility(page);
-    const siteUrl: Locator = page.getByPlaceholder('https://', { exact: true });
+    const siteUrl: Locator = page.getByRole('textbox', { name: 'Site', exact: true });
     const initialUrl: string = await siteUrl.inputValue();
     await siteUrl.fill('http://invalid.example');
     await page.getByRole('button', { name: 'Enregistrer', exact: false }).click();
