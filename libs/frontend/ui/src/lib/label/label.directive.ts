@@ -36,7 +36,7 @@ export class LabelDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'flex items-baseline gap-2 text-control text-star select-none',
+      'flex items-baseline gap-2 text-control text-fg select-none',
       'peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
       'group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50',
       this.class(),

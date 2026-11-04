@@ -1,4 +1,12 @@
-import { type WritableSignal, ApplicationRef, Component, signal } from '@angular/core';
+import {
+  type Signal,
+  type TemplateRef,
+  type WritableSignal,
+  ApplicationRef,
+  Component,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { DialogService } from '@internal/ui/lib/dialog/dialog.service';
 import { SheetService } from '@internal/ui/lib/sheet/sheet.service';
@@ -151,10 +159,89 @@ describe('Sheet', (): void => {
     });
     await TestBed.inject<ApplicationRef>(ApplicationRef).whenStable();
     const sheet: HTMLElement | null = panel();
-    expect(sheet?.className).toContain('bg-void');
+    expect(sheet?.className).toContain('bg-surface');
     expect(sheet?.className).toContain('animate-fade-up');
     const pane: HTMLElement | null | undefined = sheet?.closest<HTMLElement>('.cdk-overlay-pane');
     expect(pane?.style.width).toBe('100%');
     expect(pane?.style.height).toBe('100%');
+  });
+});
+
+/**
+ * Component ConditionalTitleHostComponent
+ * @class ConditionalTitleHostComponent
+ *
+ * @description
+ * Holds a sheet template whose title renders only once a record is chosen, as a reading sheet does.
+ */
+@Component({
+  imports: [SheetTitleDirective],
+  template: `
+    <ng-template #reading>
+      @if (shown()) {
+        <h2 uiSheetTitle>Message de Ada</h2>
+      }
+    </ng-template>
+  `,
+})
+class ConditionalTitleHostComponent {
+  // #region Properties
+  /**
+   * Property shown
+   * @readonly
+   *
+   * @description
+   * Whether the title renders inside the sheet.
+   *
+   * @type {WritableSignal<boolean>}
+   */
+  public readonly shown: WritableSignal<boolean> = signal<boolean>(false);
+
+  /**
+   * Property reading
+   * @readonly
+   *
+   * @description
+   * Sheet content opened through the service.
+   *
+   * @type {Signal<TemplateRef<unknown>>}
+   */
+  public readonly reading: Signal<TemplateRef<unknown>> =
+    viewChild.required<TemplateRef<unknown>>('reading');
+  // #endregion
+}
+
+describe('SheetService', (): void => {
+  afterEach((): void => TestBed.inject<DialogService>(DialogService).closeAll());
+
+  it('names the sheet by a title rendered after it opened', async (): Promise<void> => {
+    const fixture: ComponentFixture<ConditionalTitleHostComponent> = TestBed.createComponent(
+      ConditionalTitleHostComponent,
+    );
+    await fixture.whenStable();
+    TestBed.inject<SheetService>(SheetService).open(fixture.componentInstance.reading());
+    await TestBed.inject<ApplicationRef>(ApplicationRef).whenStable();
+    expect(panel()?.hasAttribute('aria-labelledby')).toBe(false);
+
+    fixture.componentInstance.shown.set(true);
+    await TestBed.inject<ApplicationRef>(ApplicationRef).whenStable();
+    const sheet: HTMLElement | null = panel();
+    expect(sheet?.getAttribute('aria-labelledby')).toBe(
+      sheet?.querySelector('[data-slot="sheet-title"]')?.id,
+    );
+  });
+
+  it('takes a fixed accessible name from the ariaLabel option', async (): Promise<void> => {
+    const fixture: ComponentFixture<ConditionalTitleHostComponent> = TestBed.createComponent(
+      ConditionalTitleHostComponent,
+    );
+    fixture.componentInstance.shown.set(true);
+    await fixture.whenStable();
+    TestBed.inject<SheetService>(SheetService).open(fixture.componentInstance.reading(), {
+      ariaLabel: 'Lecture du message',
+    });
+    await TestBed.inject<ApplicationRef>(ApplicationRef).whenStable();
+    expect(panel()?.getAttribute('aria-label')).toBe('Lecture du message');
+    expect(panel()?.hasAttribute('aria-labelledby')).toBe(false);
   });
 });

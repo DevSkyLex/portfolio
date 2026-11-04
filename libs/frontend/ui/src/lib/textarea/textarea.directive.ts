@@ -10,6 +10,7 @@ import {
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import { type InputSize, inputVariants } from '@internal/ui/lib/input/constants/input.variants';
 import { textareaVariants } from '@internal/ui/lib/textarea/constants/textarea.variants';
+import { reflectFieldInvalid } from '@internal/ui/lib/field/utils/field-invalid/field-invalid.utils';
 
 /**
  * Directive TextareaDirective
@@ -78,5 +79,18 @@ export class TextareaDirective {
       this.class(),
     ),
   );
+  // #endregion
+
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Exposes the enclosing `ui-field`'s error as `aria-invalid` on the control.
+   */
+  public constructor() {
+    reflectFieldInvalid();
+  }
   // #endregion
 }

@@ -96,7 +96,7 @@ export class ButtonGroupTextDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'flex items-center gap-2 rounded-field border border-line bg-void-raised px-4 text-control text-star-muted',
+      'flex items-center gap-2 rounded-md border border-border bg-surface-raised px-4 text-control text-fg-muted',
       this.class(),
     ),
   );
@@ -155,7 +155,7 @@ export class ButtonGroupSeparatorDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'relative z-20 shrink-0 self-stretch bg-line-field',
+      'relative z-20 shrink-0 self-stretch bg-border-field',
       this.orientation() === 'vertical' ? 'w-px' : 'h-px',
       this.class(),
     ),

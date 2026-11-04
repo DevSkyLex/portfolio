@@ -18,7 +18,13 @@ import {
   template: `
     <button type="button" [uiPopoverTrigger]="info" side="top" align="start">Details</button>
     <button type="button" id="elsewhere">Elsewhere</button>
-    <ng-template uiPopoverContent #info="uiPopoverContent" ariaLabel="Details" let-close="close">
+    <ng-template
+      uiPopoverContent
+      #info="uiPopoverContent"
+      [class]="'w-60 gap-0 p-[3px]'"
+      ariaLabel="Details"
+      let-close="close"
+    >
       <p>Built with Angular.</p>
       <button type="button" id="inner" (click)="close()">Got it</button>
     </ng-template>
@@ -58,6 +64,17 @@ async function setup(): Promise<{
 }
 
 describe('PopoverTriggerDirective', (): void => {
+  it('merges the classes written on the template into the panel', async (): Promise<void> => {
+    const { fixture, trigger } = await setup();
+    trigger.click();
+    await fixture.whenStable();
+    const classes: DOMTokenList | undefined = panel()?.classList;
+    expect(classes).toContain('p-[3px]');
+    expect(classes).toContain('w-60');
+    expect(classes).not.toContain('p-4');
+    expect(classes).not.toContain('w-72');
+  });
+
   it('toggles a labelled panel linked to the trigger, with focus inside', async (): Promise<void> => {
     const { fixture, trigger } = await setup();
     expect(trigger.getAttribute('aria-expanded')).toBe('false');

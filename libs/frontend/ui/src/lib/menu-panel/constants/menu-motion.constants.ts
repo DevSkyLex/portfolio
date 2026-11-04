@@ -2,9 +2,18 @@
  * Constant RADIUS
  *
  * @description
- * Corner radius in pixels shared by the floating list and its trigger.
+ * Corner radius in pixels of the floating list (`--radius-lg`, D43).
  */
 export const RADIUS: number = 10;
+
+/**
+ * Constant TRIGGER_RADIUS
+ *
+ * @description
+ * Corner radius in pixels of the select triggers (`--radius-md`, D43), flattened on the edge facing
+ * the list while they touch.
+ */
+export const TRIGGER_RADIUS: number = 8;
 
 /**
  * Constant GAP

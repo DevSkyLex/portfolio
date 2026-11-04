@@ -1,68 +1,46 @@
 @let current = message();
-<article
-  class="flex min-h-0 flex-col overflow-y-auto"
-  [attr.aria-label]="'Message de ' + current.name"
->
+<article class="flex min-h-0 min-w-0 flex-col overflow-y-auto" [attr.aria-label]="label()">
   <div
-    class="flex min-h-12 shrink-0 flex-wrap items-center gap-1.5 border-b border-line px-6 py-2 @max-[640px]:px-4"
+    class="sticky top-0 z-10 flex min-h-12 shrink-0 flex-wrap items-center gap-1.5 border-b border-border px-6 py-2 @max-[640px]:px-4"
+    [class.bg-surface]="surface() === 'page'"
+    [class.bg-surface-raised]="surface() === 'raised'"
   >
-    <a
-      uiBtn
-      size="sm"
-      variant="secondary"
-      class="h-7 px-2.5 text-[13px]"
-      [href]="'mailto:' + current.email"
-    >
+    <a uiBtn size="xs" variant="secondary" [href]="'mailto:' + current.email">
       <ng-icon [svg]="icons.reply" size="14" aria-hidden="true" />
-      Répondre
+      <ng-container i18n="@@admin.inbox.detail.reply">Répondre</ng-container>
     </a>
-    @if (current.status === 'received') {
-      <button
-        uiBtn
-        size="sm"
-        variant="ghost"
-        class="h-7 px-2.5 text-[13px]"
-        type="button"
-        [disabled]="writing()"
-        aria-keyshortcuts="R"
-        uiTooltip="Raccourci : R"
-        (click)="readRequested.emit(current)"
-      >
-        <ng-icon class="text-success-ink" [svg]="icons.read" size="14" aria-hidden="true" />
-        Marquer comme lu
-      </button>
-    }
     @if (current.status !== 'archived') {
       <button
         uiBtn
-        size="sm"
+        size="xs"
         variant="ghost"
-        class="h-7 px-2.5 text-[13px]"
         type="button"
         [disabled]="writing()"
         aria-keyshortcuts="E"
-        uiTooltip="Raccourci : E"
+        uiTooltip="Raccourci"
+        i18n-uiTooltip="@@admin.inbox.detail.shortcut"
+        [tooltipShortcut]="['E']"
         (click)="archiveRequested.emit(current)"
       >
         <ng-icon [svg]="icons.archive" size="14" aria-hidden="true" />
-        Archiver
+        <ng-container i18n="@@admin.inbox.detail.archive">Archiver</ng-container>
       </button>
     }
     <button
       uiBtn
-      size="sm"
+      size="xs"
       variant="ghost"
-      class="ml-auto h-7 px-2.5 text-[13px]"
+      class="ml-auto"
       type="button"
       [disabled]="writing()"
       (click)="removeRequested.emit(current)"
     >
       <ng-icon class="text-danger-ink" [svg]="icons.remove" size="14" aria-hidden="true" />
-      Supprimer
+      <ng-container i18n="@@admin.inbox.detail.delete">Supprimer</ng-container>
     </button>
   </div>
-  <div class="flex max-w-[760px] flex-col gap-6 px-8 py-8 @max-[640px]:px-4 @max-[640px]:py-6">
-    <div class="flex items-start gap-3">
+  <div class="flex flex-col gap-6 px-6 py-6 @max-[640px]:px-4">
+    <header class="flex items-start gap-3">
       <span
         uiAvatar
         size="md"
@@ -71,38 +49,47 @@
       >
         <span uiAvatarFallback>{{ initials(current.name) }}</span>
       </span>
-      <div class="flex min-w-0 flex-col gap-0.5">
-        <h2 class="text-[16px]/6 font-semibold text-star">
-          {{ current.name }}
+      <div class="flex min-w-0 flex-1 flex-col gap-1">
+        <h2 class="text-[16px]/6 font-semibold text-fg">{{ subjects[current.subject] }}</h2>
+        <p class="flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-[13px]/5 text-fg-muted">
+          <span class="font-medium text-fg">{{ current.name }}</span>
           @if (current.company) {
-            <span class="font-normal text-star-muted">· {{ current.company }}</span>
+            <span>· {{ current.company }}</span>
           }
-        </h2>
-        <a
-          class="w-fit truncate text-[13px] text-star-muted underline decoration-line-hover underline-offset-4 transition-colors duration-(--dur-pop) ease-orbit hover:text-star hover:decoration-current"
-          [href]="'mailto:' + current.email"
-          >{{ current.email }}</a
-        >
+          <span aria-hidden="true">·</span>
+          <a
+            class="min-w-0 truncate underline decoration-border-hover underline-offset-4 transition-colors duration-(--dur-pop) ease-orbit hover:text-fg hover:decoration-current"
+            [href]="'mailto:' + current.email"
+            >{{ current.email }}</a
+          >
+        </p>
       </div>
-    </div>
-    <dl class="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-x-3 gap-y-2 text-[13px]">
-      <dt class="text-star-faint">Statut</dt>
+    </header>
+    <dl
+      class="grid grid-cols-[max-content_minmax(0,1fr)] items-center gap-x-6 gap-y-2 border-y border-border py-4 text-[13px]/5"
+    >
+      <dt class="font-medium text-fg-muted" i18n="@@admin.inbox.detail.status">Statut</dt>
       <dd>
-        <span uiBadge dot [variant]="statuses[current.status].variant">{{
-          statuses[current.status].label
-        }}</span>
+        <span
+          uiBadge
+          dot
+          appearance="ghost"
+          class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
+          [variant]="statuses[current.status].variant"
+          >{{ statuses[current.status].label }}</span
+        >
       </dd>
-      <dt class="text-star-faint">Objet</dt>
-      <dd class="text-star">{{ subjects[current.subject] }}</dd>
-      <dt class="text-star-faint">Reçu le</dt>
-      <dd class="text-star">{{ current.receivedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
-      <dt class="text-star-faint">Langue</dt>
-      <dd class="text-star">{{ current.locale.toUpperCase() }}</dd>
-      <dt class="text-star-faint">Suppression</dt>
-      <dd class="text-star-muted">{{ current.purgeAt | date: 'dd/MM/yyyy' }}</dd>
+      <dt class="font-medium text-fg-muted" i18n="@@admin.inbox.detail.receivedAt">Reçu le</dt>
+      <dd class="text-fg tabular-nums">{{ current.receivedAt | date: 'short' }}</dd>
+      <dt class="font-medium text-fg-muted" i18n="@@admin.inbox.detail.locale">Langue</dt>
+      <dd class="text-fg">{{ locales[current.locale] }}</dd>
+      <dt class="font-medium text-fg-muted" i18n="@@admin.inbox.detail.purgeAt">
+        Suppression auto le
+      </dt>
+      <dd class="text-fg-muted tabular-nums">{{ current.purgeAt | date: 'shortDate' }}</dd>
     </dl>
     <p
-      class="border-t border-line pt-6 text-[15px]/7 whitespace-pre-line text-star"
+      class="max-w-[75ch] text-[14px]/6 whitespace-pre-line text-fg"
       [textContent]="current.message"
     ></p>
   </div>

@@ -14,8 +14,10 @@ import {
 import { AdminOnly } from '@vfortin/backend-auth';
 import { IfMatchVersion, ZodValidationPipe, versionEtag } from '@vfortin/backend-http';
 import {
+  type AdminProjectView,
   GetAdminProject,
   ListAdminProjects,
+  type MediaRecord,
   PublishProject,
   type ProjectChangeResult,
   ReviseProject,
@@ -81,7 +83,7 @@ export class AdminContentController {
   @Header('Cache-Control', 'no-store')
   public async list(): Promise<AdminProjectList> {
     const member: AdminProjectDto[] = (await this.listProjects.execute()).map(
-      (project: Project): AdminProjectDto => toAdminProjectDto(project),
+      (view: AdminProjectView): AdminProjectDto => toAdminProjectDto(view.project, view.media),
     );
     return { member, totalItems: member.length };
   }
@@ -103,7 +105,8 @@ export class AdminContentController {
     @Param('id') id: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AdminProjectDto> {
-    return this.respond(response, await this.getProject.execute(id));
+    const view: AdminProjectView = await this.getProject.execute(id);
+    return this.respond(response, view.project, view.media);
   }
 
   /**
@@ -131,7 +134,7 @@ export class AdminContentController {
       expectedVersion,
       toProjectRevision(body),
     );
-    return this.respond(response, result.project, result.version);
+    return this.respond(response, result.project, result.media, result.version);
   }
 
   /**
@@ -154,7 +157,7 @@ export class AdminContentController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<AdminProjectDto> {
     const result: ProjectChangeResult = await this.publishProject.execute(id, expectedVersion);
-    return this.respond(response, result.project, result.version);
+    return this.respond(response, result.project, result.media, result.version);
   }
 
   /**
@@ -177,7 +180,7 @@ export class AdminContentController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<AdminProjectDto> {
     const result: ProjectChangeResult = await this.unpublishProject.execute(id, expectedVersion);
-    return this.respond(response, result.project, result.version);
+    return this.respond(response, result.project, result.media, result.version);
   }
 
   /**
@@ -185,20 +188,23 @@ export class AdminContentController {
    * @method respond
    *
    * @description
-   * Sets the project version ETag and converts the aggregate into its administration DTO.
+   * Sets the project version ETag and converts the aggregate and its media into the administration
+   * DTO.
    *
    * @param {Response} response - Express response to update.
    * @param {Project} project - Aggregate returned by the command or query.
+   * @param {readonly MediaRecord[]} media - Stored media the project references.
    * @param {number} version - Version to publish; defaults to the aggregate version.
    * @returns {AdminProjectDto} Project representation with missing publication fields.
    */
   private respond(
     response: Response,
     project: Project,
+    media: readonly MediaRecord[],
     version: number = project.version,
   ): AdminProjectDto {
     response.setHeader('ETag', versionEtag(version));
-    return toAdminProjectDto(project, version);
+    return toAdminProjectDto(project, media, version);
   }
   // #endregion
 }

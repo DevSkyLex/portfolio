@@ -12,17 +12,31 @@
   uiReveal
 >
   <div
-    class="relative grid place-items-center overflow-hidden rounded-card bg-void-raised [clip-path:inset(calc((1-var(--e,1))*9%)_round_16px)]"
+    class="relative grid place-items-center overflow-hidden rounded-xl bg-surface-raised [clip-path:inset(calc((1-var(--e,1))*9%)_round_12px)]"
     [class]="
       wide ? 'col-start-1 row-[1/-1] aspect-video @max-[960px]:row-auto' : 'mb-2 aspect-[4/3]'
     "
     uiScrollProgress
     aria-hidden="true"
   >
-    <div
-      class="absolute inset-0 [transform:scale(calc(1+(1-var(--e,1))*0.25))] transition-[scale] duration-(--dur-reveal) ease-orbit group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none"
-      [class]="tintClass()"
-    ></div>
+    @if (item.cover; as cover) {
+      <img
+        class="absolute inset-0 size-full [transform:scale(calc(1+(1-var(--e,1))*0.25))] object-cover transition-[scale] duration-(--dur-reveal) ease-orbit group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none"
+        [src]="cover.src"
+        [attr.srcset]="srcset(cover)"
+        [attr.sizes]="cover.small === null ? null : wide ? sizes.featured : sizes.regular"
+        [width]="cover.width"
+        [height]="cover.height"
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    } @else {
+      <div
+        class="absolute inset-0 [transform:scale(calc(1+(1-var(--e,1))*0.25))] transition-[scale] duration-(--dur-reveal) ease-orbit group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none"
+        [class]="tintClass()"
+      ></div>
+    }
   </div>
   <div
     class="flex justify-between"
@@ -45,10 +59,10 @@
         >{{ item.title }}</span
       >
     </h3>
-    <p class="font-mono text-data text-star-faint">{{ years() }}</p>
+    <p class="font-mono text-data text-fg-faint">{{ years() }}</p>
   </div>
   <p
-    class="max-w-[52ch] text-star-muted"
+    class="max-w-[52ch] text-fg-muted"
     [class]="
       wide
         ? 'col-start-2 row-start-3 text-[17px] leading-[27px] @max-[960px]:col-start-1 @max-[960px]:row-auto'

@@ -214,13 +214,15 @@ describe.each(TARGETS)('Identity persistence (%s)', (_target: string, url: strin
     tokens = new DrizzleRefreshTokenRepository(handle.db);
     challenges = new DrizzleLoginChallengeRepository(handle.db);
     devices = new DrizzleTrustedDeviceRepository(handle.db);
+    // Enrolled: the concurrency cases go through the one-time-code step.
     await accounts.add(
       AdminAccount.create({
         id: 'a1',
         email: 'moi@exemple.fr',
         passwordHash: 'h:a-strong-password',
-        totpSecret: 'S',
-      }),
+      })
+        .startTwoFactorSetup('S')
+        .enableTwoFactor(1),
     );
   });
 
@@ -276,6 +278,29 @@ describe.each(TARGETS)('Identity persistence (%s)', (_target: string, url: strin
     await expect(accounts.lockById('absent')).resolves.toBeNull();
     await expect(accounts.findById('absent')).resolves.toBeNull();
     await expect(accounts.count()).resolves.toBe(1);
+  });
+
+  it('stores an account without a second factor, then its enrollment and removal', async (): Promise<void> => {
+    await accounts.add(
+      AdminAccount.create({ id: 'a2', email: 'autre@exemple.fr', passwordHash: 'h:x' }),
+    );
+    const created: AdminAccount | null = await accounts.findById('a2');
+    expect(created?.snapshot()).toMatchObject({ totpSecret: null, pendingTotpSecret: null });
+    if (!created) throw new Error('account missing');
+    await accounts.save(created.startTwoFactorSetup('PENDING'));
+    expect((await accounts.lockById('a2'))?.snapshot()).toMatchObject({
+      totpSecret: null,
+      pendingTotpSecret: 'PENDING',
+    });
+    const enabled: AdminAccount = created.startTwoFactorSetup('PENDING').enableTwoFactor(9);
+    await accounts.save(enabled);
+    expect((await accounts.findById('a2'))?.snapshot()).toEqual(enabled.snapshot());
+    await accounts.save(enabled.disableTwoFactor());
+    expect((await accounts.findById('a2'))?.snapshot()).toMatchObject({
+      totpSecret: null,
+      pendingTotpSecret: null,
+      lastTotpStep: 0,
+    });
   });
 
   it('keeps the creation time and the persistence of a family', async (): Promise<void> => {
@@ -395,6 +420,22 @@ describe.each(TARGETS)('Identity persistence (%s)', (_target: string, url: strin
     await devices.save(TrustedDevice.rehydrate({ ...used.snapshot(), revokedAt: now }));
     expect((await devices.findByHash('hash-d1'))?.isTrustedFor('a1', now)).toBe(false);
     await expect(devices.findByHash('unknown')).resolves.toBeNull();
+  });
+
+  it('forgets every device of one account only', async (): Promise<void> => {
+    await accounts.add(
+      AdminAccount.create({ id: 'a2', email: 'autre@exemple.fr', passwordHash: 'h:x' }),
+    );
+    await devices.add(TrustedDevice.trust({ id: 'd1', accountId: 'a1', tokenHash: 'h-1' }, now));
+    const revoked: TrustedDevice = TrustedDevice.trust(
+      { id: 'd2', accountId: 'a1', tokenHash: 'h-2' },
+      now,
+    );
+    await devices.add(TrustedDevice.rehydrate({ ...revoked.snapshot(), revokedAt: now }));
+    await devices.add(TrustedDevice.trust({ id: 'd3', accountId: 'a2', tokenHash: 'h-3' }, now));
+    await expect(devices.deleteByAccount('a1')).resolves.toBe(2);
+    await expect(devices.findByHash('h-1')).resolves.toBeNull();
+    expect((await devices.findByHash('h-3'))?.id).toBe('d3');
   });
 
   it('forgets the expired devices only', async (): Promise<void> => {

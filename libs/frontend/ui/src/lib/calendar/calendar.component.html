@@ -11,7 +11,7 @@
   >
     <ng-icon class="rtl:-scale-x-100" [svg]="icons.previous" size="16" aria-hidden="true" />
   </button>
-  <div class="text-control text-star first-letter:uppercase" aria-live="polite" [id]="headingId">
+  <div class="text-control text-fg first-letter:uppercase" aria-live="polite" [id]="headingId">
     {{ monthLabel() }}
   </div>
   <button
@@ -34,12 +34,13 @@
   role="grid"
   [attr.aria-labelledby]="headingId"
   (keydown)="onKeydown($event)"
+  (pointerleave)="hovered.set(null)"
 >
   <thead>
     <tr>
       @for (weekday of weekdays(); track weekday.long) {
         <th
-          class="size-9 p-0 text-center text-label font-normal text-star-faint"
+          class="size-9 p-0 text-center text-label font-normal text-fg-faint"
           scope="col"
           [attr.abbr]="weekday.long"
         >
@@ -51,17 +52,22 @@
   <tbody>
     @for (week of weeks(); track week[0]?.key) {
       <tr>
-        @for (day of week; track day.key) {
-          <td class="p-0.5 text-center" [attr.aria-selected]="day.selected || null">
+        @for (day of week; track day.key; let first = $first, last = $last) {
+          <td
+            class="p-0.5 text-center"
+            [class]="cellClasses(day, first, last)"
+            [attr.aria-selected]="day.selected || day.inRange || null"
+          >
             <button
               type="button"
-              [class]="dayClasses(day)"
+              [class]="dayClasses(day, first, last)"
               [attr.data-date]="day.key"
               [attr.tabindex]="day.focused ? 0 : -1"
               [attr.aria-label]="day.label"
               [attr.aria-current]="day.today ? 'date' : null"
               [attr.aria-disabled]="day.disabled || null"
               (click)="pick(day.date)"
+              (pointerenter)="hovered.set(day.date)"
             >
               {{ day.number }}
             </button>

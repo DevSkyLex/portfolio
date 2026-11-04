@@ -86,6 +86,16 @@
     - '{{ site_root }}'
     - '{{ site_root }}/releases'
 
+# Uploaded images (D40): written by content-service (container user), read by the Nginx workers (UID 101)
+# and by the backup script (deployment account). Not part of the synchronized deployment files.
+- name: Media directory
+  ansible.builtin.file:
+    path: '{{ portfolio_media_root }}'
+    state: directory
+    owner: '{{ service_uid }}'
+    group: '{{ service_uid }}'
+    mode: '0755'
+
 # Copied as root (the first run connects with the provider's account), owned by the deployment account.
 - name: Deployment files
   ansible.posix.synchronize:
@@ -119,6 +129,7 @@
     - { key: TRAEFIK_SECURE_MIDDLEWARES, value: '{{ portfolio_traefik_secure_middlewares }}' }
     - { key: TRUSTED_PROXIES, value: '{{ portfolio_trusted_proxies }}' }
     - { key: SITE_ROOT, value: '{{ site_root }}' }
+    - { key: MEDIA_ROOT, value: '{{ portfolio_media_root }}' }
     - { key: LOG_LEVEL, value: '{{ portfolio_log_level }}' }
     - { key: CONTACT_MAIL_FROM, value: '{{ portfolio_contact_mail_from }}' }
     - { key: CONTACT_NOTIFY_TO, value: '{{ portfolio_contact_notify_to }}' }
@@ -129,6 +140,9 @@
     - { key: REGISTRY, value: '{{ registry }}' }
     - { key: IDENTITY_SIGNING_KID, value: '{{ identity_signing_kid }}' }
     - { key: SITE_BUILD_REPOSITORY, value: '{{ site_build_repository }}' }
+    - { key: SEO_SEARCH_CONSOLE_PROPERTY, value: '{{ portfolio_seo_search_console_property }}' }
+    - { key: SEO_GA4_PROPERTY_ID, value: '{{ portfolio_seo_ga4_property_id }}' }
+    - { key: SEO_WEB_VITALS_URLS, value: '{{ portfolio_seo_web_vitals_urls }}' }
   loop_control:
     label: '{{ item.key }}'
 
@@ -137,6 +151,7 @@
     dest: '{{ app_root }}/backup.env'
     content: |
       BACKUP_DIR='{{ backup_root }}'
+      BACKUP_MEDIA_DIR='{{ portfolio_media_root }}'
       BACKUP_RETENTION_DAYS='{{ portfolio_backup_retention_days | int }}'
       BACKUP_AGE_RECIPIENT='{{ portfolio_backup_age_recipient }}'
     owner: '{{ deploy_user }}'
@@ -197,6 +212,14 @@
     - { name: contact_smtp_url, value: '{{ vault_contact_smtp_url }}' }
     - { name: contact_client_key_secret, value: '{{ vault_contact_client_key_secret }}' }
     - { name: site_build_token, value: '{{ vault_site_build_token }}' }
+    # SEO dashboard (D47): optional, written empty when absent from the vault (the section then
+    # answers "not-configured"). A key pasted as a YAML mapping is written back as JSON.
+    - name: seo_google_credentials
+      value: >-
+        {{ vault_seo_google_credentials | default('')
+           if vault_seo_google_credentials | default('') is string
+           else vault_seo_google_credentials | to_json }}
+    - { name: seo_pagespeed_api_key, value: "{{ vault_seo_pagespeed_api_key | default('') }}" }
   loop_control:
     label: '{{ item.name }}'
   no_log: true

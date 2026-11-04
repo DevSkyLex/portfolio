@@ -18,6 +18,23 @@
         "label": "Outside of code",
         "value": "Hardware, video games, 3D printing and modelling"
       }
+    ],
+    "links": [
+      {
+        "kind": "email",
+        "url": "mailto:contact@valentin-fortin.pro",
+        "label": null
+      },
+      {
+        "kind": "github",
+        "url": "https://github.com/DevSkyLex",
+        "label": null
+      },
+      {
+        "kind": "linkedin",
+        "url": "https://www.linkedin.com/in/valentin-fortin",
+        "label": null
+      }
     ]
   },
   "projects": [
@@ -38,35 +55,217 @@
       ],
       "featured": true,
       "article": {
-        "context": [
-          "With so many streaming platforms, it is easy to forget where you are in a series or when the next episode comes out. Movah brings together what you are watching, what you want to watch and what is coming soon.",
-          "A personal project, taken from mockup to app, to see a complete mobile product through: accounts, data, sync and release on two platforms."
-        ],
-        "work": [
-          "I designed the high-fidelity mockup, then built the Flutter app and its Supabase backend."
-        ],
-        "workList": [
-          "Tracking series, films and anime, episode by episode.",
-          "The catalogue and search, powered by the TMDB API.",
-          "The upcoming release calendar, lists and statistics.",
-          "Sign-in with email, Google or Apple, in French and English."
-        ],
-        "choices": [
-          "The app never calls TMDB directly: Supabase Edge Functions sit in between, with a cache in Postgres. The API key stays on the server, and screens keep showing the last known data if TMDB does not respond.",
-          "The code is organised by feature, in data, domain and presentation layers. Domain entities depend on neither Flutter nor Supabase, which keeps them easy to test; app state goes through Riverpod."
-        ],
-        "result": [
-          "The app runs on Android and iOS, with light and dark themes true to the mockup.",
-          "Every change goes through GitHub Actions continuous integration: formatting, code analysis, tests, then the app build."
-        ],
-        "lessons": [
-          "Starting from a complete mockup before writing the first line saved a lot of back-and-forth: every screen already had its states, colours and copy.",
-          "Moving from Angular to Flutter showed me that the same ideas carry over between frameworks: small components and data that flows in one direction."
-        ],
-        "captions": [
-          "Following a series, episode by episode.",
-          "The calendar of upcoming releases."
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Context"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "With so many streaming platforms, it is easy to forget where you are in a series or when the next episode comes out. Movah brings together what you are watching, what you want to watch and what is coming soon."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A personal project, taken from mockup to app, to see a complete mobile product through: accounts, data, sync and release on two platforms."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "What I did"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "I designed the high-fidelity mockup, then built the Flutter app and its Supabase backend."
+              }
+            ]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Tracking series, films and anime, episode by episode."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "The catalogue and search, powered by the TMDB API."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "The upcoming release calendar, lists and statistics."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Sign-in with email, Google or Apple, in French and English."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Technical choices"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The app never calls TMDB directly: Supabase Edge Functions sit in between, with a cache in Postgres. The API key stays on the server, and screens keep showing the last known data if TMDB does not respond."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The code is organised by feature, in data, domain and presentation layers. Domain entities depend on neither Flutter nor Supabase, which keeps them easy to test; app state goes through Riverpod."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Outcome"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The app runs on Android and iOS, with light and dark themes true to the mockup."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Every change goes through GitHub Actions continuous integration: formatting, code analysis, tests, then the app build."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "What I learned"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Starting from a complete mockup before writing the first line saved a lot of back-and-forth: every screen already had its states, colours and copy."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Moving from Angular to Flutter showed me that the same ideas carry over between frameworks: small components and data that flows in one direction."
+              }
+            ]
+          }
         ]
+      },
+      "cover": null,
+      "seo": {
+        "title": null,
+        "description": null,
+        "keywords": []
       }
     },
     {
@@ -86,35 +285,217 @@
       ],
       "featured": false,
       "article": {
-        "context": [
-          "RDI Manager is the internal tool that tracks R&D activity at Object as a Service: time spent on each project, the team's schedule and the metrics used to follow research projects.",
-          "The application pairs a Symfony back end with a Vue.js interface. It had been running for years on an old Symfony version. Every change took longer, and nobody dared touch the metrics calculation."
-        ],
-        "work": [
-          "I took over maintenance of the tool, then its modernisation, without interrupting the team using it."
-        ],
-        "workList": [
-          "Upgrading PHP, Symfony and dependencies, step by step.",
-          "Tests on the metrics calculation before any change.",
-          "Rewriting the most fragile parts: time entry and calculations.",
-          "Fixes and features requested by the R&D team, on both the Symfony and Vue.js sides."
-        ],
-        "choices": [
-          "A full rewrite would have frozen the tool for months. I chose a gradual migration: each step left the application usable, and tests checked that metrics stayed identical before and after.",
-          "The trade-off: a few older parts still live alongside the modernised code. They are isolated behind clear, documented interfaces so they can be replaced later."
-        ],
-        "result": [
-          "The tool runs on a maintained Symfony version, and changes no longer risk breaking the metrics calculation.",
-          "The R&D team kept entering time and following its projects throughout the modernisation."
-        ],
-        "lessons": [
-          "Starting with tests was the best investment of the project: without them, every upgrade would have been a gamble.",
-          "Taking over someone else's code taught me to read before judging. Several oddities had a business reason that needed understanding before fixing them."
-        ],
-        "captions": [
-          "Time entry.",
-          "The metrics dashboard."
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Context"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "RDI Manager is the internal tool that tracks R&D activity at Object as a Service: time spent on each project, the team's schedule and the metrics used to follow research projects."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The application pairs a Symfony back end with a Vue.js interface. It had been running for years on an old Symfony version. Every change took longer, and nobody dared touch the metrics calculation."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "What I did"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "I took over maintenance of the tool, then its modernisation, without interrupting the team using it."
+              }
+            ]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Upgrading PHP, Symfony and dependencies, step by step."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Tests on the metrics calculation before any change."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Rewriting the most fragile parts: time entry and calculations."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Fixes and features requested by the R&D team, on both the Symfony and Vue.js sides."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Technical choices"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A full rewrite would have frozen the tool for months. I chose a gradual migration: each step left the application usable, and tests checked that metrics stayed identical before and after."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The trade-off: a few older parts still live alongside the modernised code. They are isolated behind clear, documented interfaces so they can be replaced later."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Outcome"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The tool runs on a maintained Symfony version, and changes no longer risk breaking the metrics calculation."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The R&D team kept entering time and following its projects throughout the modernisation."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "What I learned"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Starting with tests was the best investment of the project: without them, every upgrade would have been a gamble."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Taking over someone else's code taught me to read before judging. Several oddities had a business reason that needed understanding before fixing them."
+              }
+            ]
+          }
         ]
+      },
+      "cover": null,
+      "seo": {
+        "title": null,
+        "description": null,
+        "keywords": []
       }
     },
     {
@@ -133,35 +514,217 @@
       ],
       "featured": false,
       "article": {
-        "context": [
-          "Kodoka tracked its clients and sales conversations in separate files. Information was scattered and hard to share across the team.",
-          "The company wanted a simple CRM that fit the way it works, rather than a general-purpose tool that takes weeks to configure."
-        ],
-        "work": [
-          "In two months, I designed and built the CRM with CodeIgniter 4, from the database to the screens."
-        ],
-        "workList": [
-          "Client and contact records, with the history of exchanges.",
-          "Tracking sales opportunities, stage by stage.",
-          "Business rules: statuses, follow-ups and role-based permissions.",
-          "Importing existing data from the old files."
-        ],
-        "choices": [
-          "CodeIgniter 4 was lightweight and already known to the team who would take the tool over after me. For a two-month project, that mattered more than a fuller framework.",
-          "I kept a plain, server-rendered interface to deliver on time. Only the most used screens got a little JavaScript, to avoid page reloads."
-        ],
-        "result": [
-          "The team finds clients, their contacts and the history of exchanges in one place, instead of separate files.",
-          "The code was handed over with setup and onboarding documentation, so the team could keep developing it."
-        ],
-        "lessons": [
-          "I would have spent more time with users before modelling the data: two fields added at the end of the project would have been obvious after a morning of observation.",
-          "Delivering a whole project in two months taught me to split work into usable versions, rather than finishing everything at once."
-        ],
-        "captions": [
-          "A client record.",
-          "Tracking opportunities."
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Context"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Kodoka tracked its clients and sales conversations in separate files. Information was scattered and hard to share across the team."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The company wanted a simple CRM that fit the way it works, rather than a general-purpose tool that takes weeks to configure."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "What I did"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "In two months, I designed and built the CRM with CodeIgniter 4, from the database to the screens."
+              }
+            ]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Client and contact records, with the history of exchanges."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Tracking sales opportunities, stage by stage."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Business rules: statuses, follow-ups and role-based permissions."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Importing existing data from the old files."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Technical choices"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "CodeIgniter 4 was lightweight and already known to the team who would take the tool over after me. For a two-month project, that mattered more than a fuller framework."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "I kept a plain, server-rendered interface to deliver on time. Only the most used screens got a little JavaScript, to avoid page reloads."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Outcome"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The team finds clients, their contacts and the history of exchanges in one place, instead of separate files."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The code was handed over with setup and onboarding documentation, so the team could keep developing it."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "What I learned"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "I would have spent more time with users before modelling the data: two fields added at the end of the project would have been obvious after a morning of observation."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Delivering a whole project in two months taught me to split work into usable versions, rather than finishing everything at once."
+              }
+            ]
+          }
         ]
+      },
+      "cover": null,
+      "seo": {
+        "title": null,
+        "description": null,
+        "keywords": []
       }
     },
     {
@@ -181,35 +744,217 @@
       ],
       "featured": false,
       "article": {
-        "context": [
-          "IOTPlatform lets industrial operators, network managers and local authorities monitor and control their equipment remotely: level, flow or temperature sensors, and actuators, on the Orange LoRa and The Things Network networks.",
-          "The platform collects and decodes the frames sent by devices, triggers alerts by email or SMS, and sends commands to actuators."
-        ],
-        "work": [
-          "I owned the whole Angular front end: designing pages and components, API calls and state management with NgRx.",
-          "On the Django back end, I improved the existing code and added several features."
-        ],
-        "workList": [
-          "Monitoring dashboards across several sites.",
-          "Sending commands to actuators, with their history.",
-          "Configuring email and SMS alerts.",
-          "Time-series charts and CSV data export."
-        ],
-        "choices": [
-          "Data comes from many devices and changes often. I centralised application state with NgRx: screens read the same store, API calls go through effects, and updated data is updated everywhere at once.",
-          "I split the interface into reusable components (tables, charts, forms) shared between screens. The interface stays consistent as features are added."
-        ],
-        "result": [
-          "The Angular front end is the clients' entry point for monitoring, commands and alerts."
-        ],
-        "lessons": [
-          "Working on a live product taught me to evolve existing code without breaking what clients use every day.",
-          "NgRx takes more code up front, but it keeps application behaviour predictable as screens multiply."
-        ],
-        "captions": [
-          "The monitoring dashboard.",
-          "Sending a command to an actuator."
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Context"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "IOTPlatform lets industrial operators, network managers and local authorities monitor and control their equipment remotely: level, flow or temperature sensors, and actuators, on the Orange LoRa and The Things Network networks."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The platform collects and decodes the frames sent by devices, triggers alerts by email or SMS, and sends commands to actuators."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "What I did"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "I owned the whole Angular front end: designing pages and components, API calls and state management with NgRx."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "On the Django back end, I improved the existing code and added several features."
+              }
+            ]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Monitoring dashboards across several sites."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Sending commands to actuators, with their history."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Configuring email and SMS alerts."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Time-series charts and CSV data export."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Technical choices"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Data comes from many devices and changes often. I centralised application state with NgRx: screens read the same store, API calls go through effects, and updated data is updated everywhere at once."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "I split the interface into reusable components (tables, charts, forms) shared between screens. The interface stays consistent as features are added."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Outcome"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The Angular front end is the clients' entry point for monitoring, commands and alerts."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "What I learned"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Working on a live product taught me to evolve existing code without breaking what clients use every day."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "NgRx takes more code up front, but it keeps application behaviour predictable as screens multiply."
+              }
+            ]
+          }
         ]
+      },
+      "cover": null,
+      "seo": {
+        "title": null,
+        "description": null,
+        "keywords": []
       }
     }
   ],
@@ -226,6 +971,38 @@
       },
       "end": {
         "year": 2023,
+        "month": 6
+      },
+      "techs": []
+    },
+    {
+      "id": "bachelor-cefii",
+      "kind": "education",
+      "title": "Bachelor in Application Development, CEFii",
+      "place": "Avrillé",
+      "description": "Three-year degree, web and mobile applications.",
+      "start": {
+        "year": 2023,
+        "month": 9
+      },
+      "end": {
+        "year": 2024,
+        "month": 6
+      },
+      "techs": []
+    },
+    {
+      "id": "mastere-ynov",
+      "kind": "education",
+      "title": "Master's in Software Development, YNOV",
+      "place": "Paris",
+      "description": "Five-year degree: software architecture, security, testing and CI/CD.",
+      "start": {
+        "year": 2024,
+        "month": 9
+      },
+      "end": {
+        "year": 2026,
         "month": 6
       },
       "techs": []
@@ -269,22 +1046,6 @@
       ]
     },
     {
-      "id": "bachelor-cefii",
-      "kind": "education",
-      "title": "Bachelor in Application Development, CEFii",
-      "place": "Avrillé",
-      "description": "Three-year degree, web and mobile applications.",
-      "start": {
-        "year": 2023,
-        "month": 9
-      },
-      "end": {
-        "year": 2024,
-        "month": 6
-      },
-      "techs": []
-    },
-    {
       "id": "object-as-a-service",
       "kind": "experience",
       "title": "Full-stack web developer, Object as a Service",
@@ -305,22 +1066,6 @@
         "vue",
         "php"
       ]
-    },
-    {
-      "id": "mastere-ynov",
-      "kind": "education",
-      "title": "Master's in Software Development, YNOV",
-      "place": "Paris",
-      "description": "Five-year degree: software architecture, security, testing and CI/CD.",
-      "start": {
-        "year": 2024,
-        "month": 9
-      },
-      "end": {
-        "year": 2026,
-        "month": 6
-      },
-      "techs": []
     }
   ],
   "skills": [
@@ -388,5 +1133,492 @@
       ],
       "usage": "Version control, code reviews, automated deployments."
     }
-  ]
+  ],
+  "legal": {
+    "notice": {
+      "updatedOn": "2026-11-02",
+      "document": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Publisher"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The website valentin-fortin.pro is published by Valentin Fortin, a private individual."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Contact: "
+              },
+              {
+                "type": "text",
+                "text": "contact@valentin-fortin.pro",
+                "marks": [
+                  {
+                    "type": "link",
+                    "attrs": {
+                      "href": "mailto:contact@valentin-fortin.pro"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "In accordance with article 6, III, 2 of French law no. 2004-575 of 21 June 2004 on confidence in the digital economy, the publisher, a private individual acting in a non-professional capacity, does not publish their postal address. Their full contact details have been given to the hosting provider."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Publication director"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Valentin Fortin."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Hosting"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Host",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": ": OVH SAS, SAS au capital de 50 000 000 €, RCS Lille Métropole 424 761 419 00045"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Address",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": ": 2 rue Kellermann, 59100 Roubaix, France"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Phone",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": ": 1007 (from France)"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Website",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": ": "
+              },
+              {
+                "type": "text",
+                "text": "ovhcloud.com",
+                "marks": [
+                  {
+                    "type": "link",
+                    "attrs": {
+                      "href": "https://www.ovhcloud.com"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Intellectual property"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The texts, visuals and code of this website belong to Valentin Fortin unless stated otherwise. Reproducing them without written permission is prohibited."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Technology logos and company names belong to their respective owners. They are only used to present the projects."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "External links"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "This website links to third-party sites such as GitHub and LinkedIn. The publisher has no control over their content and is not responsible for it."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Personal data"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "How data sent through the contact form is processed is described in the "
+              },
+              {
+                "type": "text",
+                "text": "privacy policy",
+                "marks": [
+                  {
+                    "type": "link",
+                    "attrs": {
+                      "href": "https://valentin-fortin.pro/en/privacy"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "privacy": {
+      "updatedOn": "2026-11-02",
+      "document": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Data controller"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Valentin Fortin, who can be reached at "
+              },
+              {
+                "type": "text",
+                "text": "contact@valentin-fortin.pro",
+                "marks": [
+                  {
+                    "type": "link",
+                    "attrs": {
+                      "href": "mailto:contact@valentin-fortin.pro"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Data collected"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The website only collects data when you use the contact form: your name, your email address, the subject and content of your message, and your company name if you give it. To prevent abuse, a fingerprint of your IP address (never the address itself) is kept for one hour at most."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Purpose and legal basis"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "This data is only used to reply to your message. The processing is based on the publisher's legitimate interest in answering the requests sent to them (article 6.1.f of the GDPR)."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Recipients"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Only the publisher reads your messages. They pass through the hosting provider, OVH SAS, in France, which also sends the notification email. Your data is neither sold nor transferred."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Retention period"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Messages are deleted automatically three years after they are received, or earlier on request."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Cookies"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The website sets no cookies for its visitors and uses no audience measurement tool. Only the administration area, reserved for the publisher, uses a session cookie required to sign in."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Your theme choice is saved in your browser's local storage; it never leaves it."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Your rights"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "You can access your data, have it corrected or erased, restrict its processing, object to it and ask for its portability by writing to "
+              },
+              {
+                "type": "text",
+                "text": "contact@valentin-fortin.pro",
+                "marks": [
+                  {
+                    "type": "link",
+                    "attrs": {
+                      "href": "mailto:contact@valentin-fortin.pro"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "If you believe your rights are not respected, you can lodge a complaint with the CNIL, the French data protection authority, at "
+              },
+              {
+                "type": "text",
+                "text": "cnil.fr",
+                "marks": [
+                  {
+                    "type": "link",
+                    "attrs": {
+                      "href": "https://www.cnil.fr"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
 }

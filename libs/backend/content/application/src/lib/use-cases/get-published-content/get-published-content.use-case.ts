@@ -1,7 +1,15 @@
-import type { Profile, Project, SkillGroup, TimelineEntry } from '@vfortin/content-domain';
+import {
+  type LegalDocument,
+  type LegalDocumentKind,
+  type Profile,
+  type Project,
+  type SkillGroup,
+  TimelineEntry,
+} from '@vfortin/content-domain';
 import type {
   ContentRepository,
   ContentSnapshotReader,
+  MediaRecord,
 } from '@internal/content-application/lib/ports/content/content.ports';
 
 /**
@@ -45,7 +53,8 @@ export interface PublishedContent {
    * @readonly
    *
    * @description
-   * Timeline entries ordered by period start and end.
+   * Timeline entries by date: education, then experience, each in chronological order
+   * (`TimelineEntry.compare`, positions left out); the public timeline places them on its year axis.
    */
   readonly timeline: readonly TimelineEntry[];
 
@@ -57,6 +66,25 @@ export interface PublishedContent {
    * Skill groups ordered by their stored display position.
    */
   readonly skills: readonly SkillGroup[];
+
+  /**
+   * Property media
+   * @readonly
+   *
+   * @description
+   * Stored media referenced by the published projects, by identifier, to resolve their covers and
+   * figures.
+   */
+  readonly media: ReadonlyMap<string, MediaRecord>;
+
+  /**
+   * Property legal
+   * @readonly
+   *
+   * @description
+   * Legal notice and privacy policy, read from the same snapshot.
+   */
+  readonly legal: Readonly<Record<LegalDocumentKind, LegalDocument>>;
   // #endregion
 }
 
@@ -98,7 +126,8 @@ export class GetPublishedContent {
    *
    * @description
    * Returns cached content when the revision is unchanged; otherwise reads and sorts all public
-   * collections in one transaction before replacing the cache.
+   * collections, then the media of the published projects, in one transaction before replacing the
+   * cache.
    *
    * @returns {Promise<PublishedContent>} Consistent public content for the current revision.
    */
@@ -109,24 +138,31 @@ export class GetPublishedContent {
         if (this.cached?.revision === revision) {
           return this.cached;
         }
-        const [profile, projects, timeline, skills] = await Promise.all([
+        const [profile, projects, timeline, skills, legal] = await Promise.all([
           repository.loadProfile(),
           repository.listProjects(),
           repository.listTimeline(),
           repository.listSkillGroups(),
+          repository.loadLegalDocuments(),
+        ]);
+        const published: Project[] = projects
+          .filter((p: Project): boolean => p.isPublished())
+          .sort((a: Project, b: Project): number => a.position - b.position);
+        const media: MediaRecord[] = await repository.loadMedia([
+          ...new Set(published.flatMap((p: Project): string[] => p.mediaIds())),
         ]);
         return {
           revision,
           profile,
-          projects: projects
-            .filter((p: Project): boolean => p.isPublished())
-            .sort((a: Project, b: Project): number => a.position - b.position),
-          timeline: [...timeline].sort((a: TimelineEntry, b: TimelineEntry): number =>
-            a.period.compareTo(b.period),
-          ),
+          projects: published,
+          timeline: [...timeline].sort(TimelineEntry.compare),
           skills: [...skills].sort(
             (a: SkillGroup, b: SkillGroup): number => a.position - b.position,
           ),
+          media: new Map(
+            media.map((record: MediaRecord): [string, MediaRecord] => [record.id, record]),
+          ),
+          legal,
         };
       },
     );

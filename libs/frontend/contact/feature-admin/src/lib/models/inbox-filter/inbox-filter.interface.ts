@@ -15,7 +15,7 @@ export interface InboxFilter {
    * @readonly
    *
    * @description
-   * Toggle group value of the filter.
+   * Tab value of the filter.
    *
    * @type {InboxFilterKey}
    */
@@ -26,7 +26,7 @@ export interface InboxFilter {
    * @readonly
    *
    * @description
-   * French label of the filter.
+   * Localized label of the filter.
    *
    * @type {string}
    */
@@ -42,5 +42,50 @@ export interface InboxFilter {
    * @type {AdminMessageStatus | null}
    */
   readonly status: AdminMessageStatus | null;
+
+  /**
+   * Property empty
+   * @readonly
+   *
+   * @description
+   * Localized title of the empty state shown when the filter matches no message.
+   *
+   * @type {string}
+   */
+  readonly empty: string;
+
+  /**
+   * Property emptyHint
+   * @readonly
+   *
+   * @description
+   * Localized description of that empty state: where messages come from, or how one reaches the tab.
+   *
+   * @type {string}
+   */
+  readonly emptyHint: string;
+
+  /**
+   * Property listLabel
+   * @readonly
+   *
+   * @description
+   * Localized accessible name of the message list while the filter is selected.
+   *
+   * @type {string}
+   */
+  readonly listLabel: string;
+
+  /**
+   * Property icon
+   * @readonly
+   *
+   * @description
+   * ng-icons glyph shown before the tab label; one already bundled elsewhere, since every lucide
+   * icon lands in the initial bundle (D31).
+   *
+   * @type {string}
+   */
+  readonly icon: string;
   // #endregion
 }

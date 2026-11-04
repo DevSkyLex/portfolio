@@ -5,7 +5,9 @@ import {
   type WritableSignal,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
+  inject,
   input,
   linkedSignal,
   output,
@@ -30,8 +32,8 @@ import type { CredentialsFormValues } from '@internal/identity-web-feature/lib/u
  *
  * @description
  * First login screen (D17, D36): e-mail, password with a reveal toggle and "Se souvenir de moi". It
- * owns its Signal Form, emits the values once they are valid, and shows the page's failure or its own
- * validation message above the fields.
+ * owns its Signal Form, emits the values once they are valid, shows each validation error under its
+ * field and the page's failure above the fields.
  */
 @Component({
   selector: 'identity-credentials-form',
@@ -79,7 +81,7 @@ export class CredentialsFormComponent {
    * @readonly
    *
    * @description
-   * French rejection of the last attempt, or `null` when there is none.
+   * Localized rejection of the last attempt, or `null` when there is none.
    *
    * @type {InputSignal<string | null>}
    */
@@ -126,28 +128,30 @@ export class CredentialsFormComponent {
   protected readonly revealed: WritableSignal<boolean> = signal<boolean>(false);
 
   /**
-   * Property invalid
+   * Property revealLabel
    * @readonly
    *
    * @description
-   * Message of the last submission refused by the schema; cleared by a valid submission.
+   * Accessible name of the password toggle, following its state.
    *
-   * @type {WritableSignal<string | null>}
+   * @type {Signal<string>}
    */
-  private readonly invalid: WritableSignal<string | null> = signal<string | null>(null);
+  protected readonly revealLabel: Signal<string> = computed<string>(() =>
+    this.revealed()
+      ? $localize`:@@admin.login.password.hide:Masquer la saisie`
+      : $localize`:@@admin.login.password.show:Afficher la saisie`,
+  );
 
   /**
-   * Property message
+   * Property host
    * @readonly
    *
    * @description
-   * Notice shown above the fields: the validation message first, then the page's failure.
+   * Form host, searched for the first invalid field after a refused submission.
    *
-   * @type {Signal<string | null>}
+   * @type {HTMLElement}
    */
-  protected readonly message: Signal<string | null> = computed<string | null>(
-    () => this.invalid() ?? this.failure(),
-  );
+  private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   /**
    * Property model
@@ -175,15 +179,28 @@ export class CredentialsFormComponent {
     string | number,
     'writable'
   > = form(this.model, (path) => {
-    required(path.email, { message: 'Renseignez votre adresse e-mail.' });
-    email(path.email, { message: 'Saisissez une adresse e-mail valide.' });
-    required(path.password);
+    required(path.email, {
+      message: $localize`:@@admin.login.validation.emailRequired:Renseignez votre adresse e-mail.`,
+    });
+    email(path.email, {
+      message: $localize`:@@admin.login.validation.emailInvalid:Saisissez une adresse e-mail valide.`,
+    });
+    required(path.password, {
+      message: $localize`:@@admin.login.validation.passwordRequired:Renseignez votre mot de passe.`,
+    });
   });
 
   /** Email schema errors are attached to the control once it has been touched or submitted. */
   protected readonly emailError: Signal<string | null> = computed<string | null>(() =>
     this.credentialsForm.email().touched()
       ? (this.credentialsForm.email().errors()[0]?.message ?? null)
+      : null,
+  );
+
+  /** Password schema errors, shown under the field like the e-mail ones (no summary above). */
+  protected readonly passwordError: Signal<string | null> = computed<string | null>(() =>
+    this.credentialsForm.password().touched()
+      ? (this.credentialsForm.password().errors()[0]?.message ?? null)
       : null,
   );
   // #endregion
@@ -194,7 +211,7 @@ export class CredentialsFormComponent {
    * @method submit
    *
    * @description
-   * Validates the form and emits its values, or shows what to fill in.
+   * Validates the form and emits its values, or shows each field's error and focuses the first one.
    *
    * @param {Event} event - Native submit event of the form.
    *
@@ -204,11 +221,28 @@ export class CredentialsFormComponent {
     event.preventDefault();
     await submit(this.credentialsForm, {
       action: async () => {
-        this.invalid.set(null);
         this.submitted.emit(this.model());
       },
-      onInvalid: () => this.invalid.set('Renseignez l’adresse e-mail et le mot de passe.'),
+      onInvalid: () => this.focusFirstError(),
     });
+  }
+
+  /**
+   * Method focusFirstError
+   * @method focusFirstError
+   *
+   * @description
+   * Focuses the first field the schema refused, once its error state is rendered.
+   *
+   * @returns {void} Leaves the focus alone when no field reports an error.
+   */
+  private focusFirstError(): void {
+    const id: string | null = this.emailError()
+      ? 'login-email'
+      : this.passwordError()
+        ? 'login-password'
+        : null;
+    if (id) this.host.querySelector<HTMLElement>(`#${id}`)?.focus();
   }
   // #endregion
 }

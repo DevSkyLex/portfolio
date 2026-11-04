@@ -12,7 +12,7 @@ import { TYPOGRAPHY_IMPORTS } from '@internal/ui/lib/typography/constants/typogr
 @Component({
   imports: [TYPOGRAPHY_IMPORTS],
   template: `<h1 uiH1>Titre</h1>
-    <h2 uiH3 class="text-star-muted">Niveau 2, style 3</h2>
+    <h2 uiH3 class="text-fg-muted">Niveau 2, style 3</h2>
     <p uiLead>Chapeau</p>
     <p uiP>Paragraphe avec <code uiInlineCode>nx affected</code>.</p>
     <ul uiList>
@@ -34,7 +34,7 @@ describe('Typography', (): void => {
     expect(root.querySelector('h1')?.className).toContain('font-display');
     const h2: HTMLHeadingElement | null = root.querySelector('h2');
     expect(h2?.dataset['slot']).toBe('h3');
-    expect(h2?.className).toContain('text-star-muted');
+    expect(h2?.className).toContain('text-fg-muted');
     expect(root.querySelector('code')?.className).toContain('font-mono');
     expect(root.querySelector('[data-slot="overline"]')?.className).toContain('uppercase');
   });

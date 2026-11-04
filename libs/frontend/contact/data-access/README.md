@@ -11,11 +11,9 @@ shell responsible for message queries.
 | Entry point                                | Consumers                                          |
 | ------------------------------------------ | -------------------------------------------------- |
 | `@vfortin/contact-web-data-access`         | `contact-web-feature`, `contact-web-feature-admin` |
-| `@vfortin/contact-web-data-access/links`   | `web-shell`                                        |
 | `@vfortin/contact-web-data-access/summary` | `web-shell`                                        |
 
-The root exposes feature APIs, view models, adapters and stores. `/links` contains public contact
-details without loading stores. `/summary` publishes `AdminInboxSummaryPort` and its owner provider,
+The root exposes feature APIs, view models, adapters and stores. `/summary` publishes `AdminInboxSummaryPort` and its owner provider,
 rather than concrete inbox transport to the layout.
 
 ## Provider scope
@@ -32,7 +30,8 @@ HTTP services remain stateless root services.
 - Successful read/archive/delete invalidates the owner summary immediately.
 - A failed count remains unknown/failed rather than becoming zero unread.
 - Presentation models are independent of DTO declarations.
-- Public `/links` never re-exports inbox/authentication/schema-validation implementations.
+- The public e-mail and profile links are content (`profile.links` of the snapshot, edited on the
+  « Informations » page): the shell passes them to the contact section, this library holds none.
 
 ## Validation
 

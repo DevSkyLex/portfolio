@@ -59,13 +59,11 @@ import { codeCells } from '@internal/web-shell/lib/pages/error-page/utils/code-c
         }
       </div>
       <div class="order-first @max-[1024px]:order-none">
-        <h1 class="mb-4 font-display text-d1 text-star @max-[768px]:text-d1-sm">
+        <h1 class="mb-4 font-display text-d1 text-fg @max-[768px]:text-d1-sm">
           <span class="sr-only" i18n="@@error.label">Erreur {{ known() }} : </span
           >{{ copy().title }}
         </h1>
-        <p
-          class="max-w-[460px] text-[20px]/8 text-pretty text-star-muted @max-[768px]:text-[18px]/7"
-        >
+        <p class="max-w-[460px] text-[20px]/8 text-pretty text-fg-muted @max-[768px]:text-[18px]/7">
           {{ copy().text }}
         </p>
         <div

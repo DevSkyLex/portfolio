@@ -5,8 +5,8 @@ import type { StoreError } from '@vfortin/web-http';
  * @type LoginStep
  *
  * @description
- * Outcome of the first login step: the session is open (trusted device), the one-time code is
- * required with its challenge, or the credentials were refused.
+ * Outcome of the first login step: the session is open (second factor disabled or trusted device),
+ * the one-time code is required with its challenge, or the credentials were refused.
  */
 export type LoginStep =
   | { readonly kind: 'authenticated' }

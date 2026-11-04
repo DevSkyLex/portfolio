@@ -1,6 +1,5 @@
 import {
   RandomIdGenerator,
-  RfcTotpVerifier,
   ScryptPasswordHasher,
   generateSigningKey,
   migrateIdentityDatabase,
@@ -37,13 +36,13 @@ export async function migrateIdentity(
  * Function bootstrapAdmin
  *
  * @description
- * Creates the initial administrator through the application use case and returns the generated TOTP secret for authenticator enrollment. The database handle is closed even when setup rejects.
+ * Creates the initial administrator, password only, through the application use case; the one-time code is enrolled later from the admin "Sécurité" page (D17). The database handle is closed even when setup rejects.
  *
  * @param {string} databaseUrl - Connection URL for the identity database.
  * @param {string} email - Initial administrator address.
  * @param {string} password - Initial plain password validated and hashed by the use case.
  *
- * @returns {Promise<BootstrapResult>} Normalized email, enrollment secret and provisioning URI.
+ * @returns {Promise<BootstrapResult>} Normalized email.
  */
 export async function bootstrapAdmin(
   databaseUrl: string,
@@ -55,7 +54,6 @@ export async function bootstrapAdmin(
     return await new BootstrapAdmin(
       new DrizzleAdminAccountRepository(database.db),
       new ScryptPasswordHasher(),
-      new RfcTotpVerifier(),
       new RandomIdGenerator(),
     ).execute(email, password);
   } finally {

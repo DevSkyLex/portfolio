@@ -7,11 +7,12 @@ import {
   type Signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import type { ProjectSummary } from '@vfortin/content-web-model';
+import type { ProjectImage, ProjectSummary } from '@vfortin/content-web-model';
 import { RevealDirective, ScrollProgressDirective } from '@vfortin/ui';
 import { TechTagsComponent } from '@internal/content-web-ui/lib/tech/components/tech-tags/tech-tags.component';
 import { PROJECT_TINT_CLASSES } from '@internal/content-web-ui/lib/project-card/constants/project-tint-classes.constants';
 import type { ProjectTint } from '@internal/content-web-ui/lib/project-card/models/project-tint/project-tint.type';
+import { imageSrcset } from '@internal/content-web-ui/lib/article/utils/image-srcset/image-srcset.utils';
 import { periodYears } from '@internal/content-web-ui/lib/project-card/utils/period-years/period-years.utils';
 
 /**
@@ -113,5 +114,37 @@ export class ProjectCardComponent {
   protected readonly years: Signal<string> = computed<string>((): string =>
     periodYears(this.project().periodLabel),
   );
+
+  /**
+   * Property sizes
+   * @readonly
+   *
+   * @description
+   * Rendered width of the cover in the 1200 px page column: two thirds for the featured card, a third
+   * for a regular one, the full viewport where the grid collapses to one column.
+   *
+   * @type {{ readonly featured: string; readonly regular: string }}
+   */
+  protected readonly sizes: { readonly featured: string; readonly regular: string } = {
+    featured: '(min-width: 960px) 780px, 100vw',
+    regular: '(min-width: 960px) 380px, (min-width: 768px) 50vw, 100vw',
+  };
+  // #endregion
+
+  // #region Methods
+  /**
+   * Method srcset
+   * @method srcset
+   *
+   * @description
+   * Lists the renditions of the cover; the 960 px one serves the card on most screens.
+   *
+   * @param {ProjectImage} image - Project cover.
+   *
+   * @returns {string | null} `srcset` value, or `null` without a 960 px rendition.
+   */
+  protected srcset(image: ProjectImage): string | null {
+    return imageSrcset(image);
+  }
   // #endregion
 }

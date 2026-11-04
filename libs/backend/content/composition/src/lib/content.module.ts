@@ -12,32 +12,72 @@ import { READINESS_CHECKS, type ReadinessCheck } from '@vfortin/backend-observab
 import { databaseReadinessCheck } from '@vfortin/backend-persistence';
 import {
   AdminContentController,
+  AdminLegalController,
+  AdminMediaController,
+  AdminProfileController,
+  AdminSeoDashboardController,
+  AdminTimelineController,
   ContentController,
+  MediaPurgeJobs,
+  SeoDashboardJobs,
   SiteBuildJobs,
   contentProblemMapper,
 } from '@vfortin/content-adapters-in';
 import {
   type ContentDatabaseHandle,
+  DiskMediaStorage,
   DrizzleContentSnapshotReader,
   DrizzleContentUnitOfWork,
+  DrizzleLegalDocumentRepository,
+  DrizzleMediaRepository,
+  DrizzleProfileRepository,
   DrizzleProjectRepository,
+  DrizzleSeoReportStore,
   DrizzleSiteBuildRequestRepository,
+  DrizzleSiteTextsUnitOfWork,
+  DrizzleTimelineEntryRepository,
+  DrizzleTimelineListRepository,
+  DrizzleTimelineUnitOfWork,
   type GithubDispatchOptions,
   GithubSiteBuildDispatcher,
+  GoogleAnalyticsReader,
+  type GoogleAccessTokens,
+  GoogleSearchConsoleReader,
+  GoogleServiceAccountTokens,
   LogSiteBuildDispatcher,
+  PageSpeedWebVitalsReader,
+  RandomIdGenerator,
+  SharpImageProcessor,
   SystemClock,
   openContentDatabase,
 } from '@vfortin/content-adapters-out';
 import {
   type Clock,
+  CreateTimelineEntry,
+  DeleteTimelineEntry,
   DispatchSiteBuild,
+  GetAdminLegalDocument,
+  GetAdminProfile,
   GetAdminProject,
+  GetAdminTimelineEntry,
   GetPublishedContent,
+  GetSeoDashboard,
+  type ImageProcessor,
   ListAdminProjects,
+  ListAdminTimeline,
+  type MediaStorage,
   PublishProject,
+  PurgeMedia,
+  RefreshSeoDashboard,
+  ReorderTimeline,
+  ReviseLegalDocument,
+  ReviseProfile,
   ReviseProject,
+  ReviseTimelineEntry,
+  type SeoSources,
   type SiteBuildDispatcher,
   UnpublishProject,
+  UploadMedia,
 } from '@vfortin/content-application';
 
 /**
@@ -55,6 +95,161 @@ export const CONTENT_DATABASE: unique symbol = Symbol('CONTENT_DATABASE');
  * Private Nest injection token for the clock used by content commands and the rebuild worker.
  */
 const CLOCK: unique symbol = Symbol('CLOCK');
+
+/**
+ * Constant MEDIA_STORAGE
+ *
+ * @description
+ * Private Nest injection token for the media file storage shared by the upload and the purge.
+ */
+const MEDIA_STORAGE: unique symbol = Symbol('MEDIA_STORAGE');
+
+/**
+ * Constant SEO_SOURCES
+ *
+ * @description
+ * Private Nest injection token for the Google sources of the SEO dashboard (D47).
+ */
+const SEO_SOURCES: unique symbol = Symbol('SEO_SOURCES');
+
+/**
+ * Constant SEO_SETTINGS
+ *
+ * @description
+ * content-service environment variables of each SEO dashboard setting, named to the owner by a
+ * `not-configured` section.
+ */
+export const SEO_SETTINGS = {
+  credentials: 'SEO_GOOGLE_CREDENTIALS_PATH',
+  searchConsole: 'SEO_SEARCH_CONSOLE_PROPERTY',
+  analytics: 'SEO_GA4_PROPERTY_ID',
+  pageSpeed: 'SEO_PAGESPEED_API_KEY',
+} as const;
+
+/**
+ * Interface ContentSeoOptions
+ * @interface ContentSeoOptions
+ *
+ * @description
+ * Settings of the SEO dashboard (D47); every Google source is optional.
+ */
+export interface ContentSeoOptions {
+  // #region Properties
+  /**
+   * Property siteOrigin
+   * @readonly
+   *
+   * @description
+   * Public origin without a trailing slash, for the default Web Vitals URLs.
+   */
+  readonly siteOrigin: string;
+
+  /**
+   * Property credentialsPath
+   * @readonly
+   *
+   * @description
+   * Service account key file (a Docker secret), read by the token adapter on first use only;
+   * `null` leaves Search Console and GA4 unconfigured.
+   */
+  readonly credentialsPath: string | null;
+
+  /**
+   * Property searchConsoleProperty
+   * @readonly
+   *
+   * @description
+   * Search Console property (`sc-domain:…` or a URL prefix), or `null`.
+   */
+  readonly searchConsoleProperty: string | null;
+
+  /**
+   * Property analyticsPropertyId
+   * @readonly
+   *
+   * @description
+   * Numeric GA4 property identifier, or `null`.
+   */
+  readonly analyticsPropertyId: string | null;
+
+  /**
+   * Property pageSpeedApiKey
+   * @readonly
+   *
+   * @description
+   * PageSpeed Insights API key, or `null`.
+   */
+  readonly pageSpeedApiKey: string | null;
+
+  /**
+   * Property webVitalsUrls
+   * @readonly
+   *
+   * @description
+   * Key URLs measured by PageSpeed Insights; empty for the home pages and the first published
+   * project.
+   */
+  readonly webVitalsUrls: readonly string[];
+
+  /**
+   * Property sources
+   * @readonly
+   *
+   * @description
+   * Optional source override for tests (no Google call).
+   */
+  readonly sources?: SeoSources;
+  // #endregion
+}
+
+/**
+ * Constant UNCONFIGURED_SEO
+ *
+ * @description
+ * SEO settings of a module registered without them: no Google source, the production origin.
+ */
+const UNCONFIGURED_SEO: ContentSeoOptions = {
+  siteOrigin: 'https://valentin-fortin.pro',
+  credentialsPath: null,
+  searchConsoleProperty: null,
+  analyticsPropertyId: null,
+  pageSpeedApiKey: null,
+  webVitalsUrls: [],
+};
+
+/**
+ * Function seoSources
+ *
+ * @description
+ * Builds the Google sources from the settings: a source with all its settings gets its adapter,
+ * the others list what is missing. Search Console and GA4 share one service account token source.
+ *
+ * @param {ContentSeoOptions} seo - Settings.
+ * @returns {SeoSources} Sources.
+ */
+export function seoSources(seo: ContentSeoOptions): SeoSources {
+  if (seo.sources) return seo.sources;
+  const tokens: GoogleAccessTokens | null =
+    seo.credentialsPath === null ? null : new GoogleServiceAccountTokens(seo.credentialsPath);
+  const missing = (value: string | null, name: string): string[] => {
+    const names: string[] = tokens === null ? [SEO_SETTINGS.credentials] : [];
+    return value === null ? [...names, name] : names;
+  };
+  return {
+    searchConsole:
+      tokens !== null && seo.searchConsoleProperty !== null
+        ? { reader: new GoogleSearchConsoleReader({ property: seo.searchConsoleProperty, tokens }) }
+        : { missing: missing(seo.searchConsoleProperty, SEO_SETTINGS.searchConsole) },
+    analytics:
+      tokens !== null && seo.analyticsPropertyId !== null
+        ? { reader: new GoogleAnalyticsReader({ propertyId: seo.analyticsPropertyId, tokens }) }
+        : { missing: missing(seo.analyticsPropertyId, SEO_SETTINGS.analytics) },
+    webVitals:
+      seo.pageSpeedApiKey !== null
+        ? { reader: new PageSpeedWebVitalsReader({ apiKey: seo.pageSpeedApiKey }) }
+        : { missing: [SEO_SETTINGS.pageSpeed] },
+  };
+}
 
 /**
  * Interface ContentModuleOptions
@@ -93,6 +288,24 @@ export interface ContentModuleOptions {
   readonly workers: boolean;
 
   /**
+   * Property mediaDirectory
+   * @readonly
+   *
+   * @description
+   * Directory of the uploaded media files (`CONTENT_MEDIA_DIR`), served at `/media/` (D40).
+   */
+  readonly mediaDirectory: string;
+
+  /**
+   * Property imageProcessor
+   * @readonly
+   *
+   * @description
+   * Optional image processor override for tests; sharp otherwise.
+   */
+  readonly imageProcessor?: ImageProcessor;
+
+  /**
    * Property prepare
    * @readonly
    *
@@ -118,6 +331,15 @@ export interface ContentModuleOptions {
    * Optional clock override for deterministic tests.
    */
   readonly clock?: Clock;
+
+  /**
+   * Property seo
+   * @readonly
+   *
+   * @description
+   * SEO dashboard settings (D47); absent, no Google source is configured.
+   */
+  readonly seo?: ContentSeoOptions;
   // #endregion
 }
 
@@ -126,7 +348,8 @@ export interface ContentModuleOptions {
  * @class ContentModule
  *
  * @description
- * Wires content persistence, public queries, project administration and rebuild dispatch into Nest.
+ * Wires content persistence, public queries, project, timeline, profile, legal and media
+ * administration, rebuild dispatch, the media purge and the SEO dashboard into Nest.
  */
 @Module({})
 export class ContentModule implements OnApplicationShutdown {
@@ -160,10 +383,19 @@ export class ContentModule implements OnApplicationShutdown {
     const unitOfWork: (database: ContentDatabaseHandle) => DrizzleContentUnitOfWork = (
       database: ContentDatabaseHandle,
     ): DrizzleContentUnitOfWork => new DrizzleContentUnitOfWork(database.db);
+    const seo: ContentSeoOptions = options.seo ?? UNCONFIGURED_SEO;
     return {
       module: ContentModule,
       imports: options.workers ? [ScheduleModule.forRoot()] : [],
-      controllers: [ContentController, AdminContentController],
+      controllers: [
+        ContentController,
+        AdminContentController,
+        AdminTimelineController,
+        AdminProfileController,
+        AdminLegalController,
+        AdminMediaController,
+        AdminSeoDashboardController,
+      ],
       providers: [
         {
           provide: CONTENT_DATABASE,
@@ -175,6 +407,10 @@ export class ContentModule implements OnApplicationShutdown {
         },
         { provide: CLOCK, useFactory: (): Clock => options.clock ?? new SystemClock() },
         {
+          provide: MEDIA_STORAGE,
+          useFactory: (): MediaStorage => new DiskMediaStorage(options.mediaDirectory),
+        },
+        {
           provide: GetPublishedContent,
           inject: [CONTENT_DATABASE],
           useFactory: (database: ContentDatabaseHandle): GetPublishedContent =>
@@ -184,13 +420,19 @@ export class ContentModule implements OnApplicationShutdown {
           provide: ListAdminProjects,
           inject: [CONTENT_DATABASE],
           useFactory: (database: ContentDatabaseHandle): ListAdminProjects =>
-            new ListAdminProjects(new DrizzleProjectRepository(database.db)),
+            new ListAdminProjects(
+              new DrizzleProjectRepository(database.db),
+              new DrizzleMediaRepository(database.db),
+            ),
         },
         {
           provide: GetAdminProject,
           inject: [CONTENT_DATABASE],
           useFactory: (database: ContentDatabaseHandle): GetAdminProject =>
-            new GetAdminProject(new DrizzleProjectRepository(database.db)),
+            new GetAdminProject(
+              new DrizzleProjectRepository(database.db),
+              new DrizzleMediaRepository(database.db),
+            ),
         },
         {
           provide: ReviseProject,
@@ -211,6 +453,98 @@ export class ContentModule implements OnApplicationShutdown {
             new UnpublishProject(unitOfWork(database), clock),
         },
         {
+          provide: ListAdminTimeline,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): ListAdminTimeline =>
+            new ListAdminTimeline(
+              new DrizzleTimelineEntryRepository(database.db),
+              new DrizzleTimelineListRepository(database.db),
+            ),
+        },
+        {
+          provide: GetAdminTimelineEntry,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): GetAdminTimelineEntry =>
+            new GetAdminTimelineEntry(new DrizzleTimelineEntryRepository(database.db)),
+        },
+        {
+          provide: CreateTimelineEntry,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): CreateTimelineEntry =>
+            new CreateTimelineEntry(
+              new DrizzleTimelineUnitOfWork(database.db),
+              new RandomIdGenerator(),
+              clock,
+            ),
+        },
+        {
+          provide: ReviseTimelineEntry,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): ReviseTimelineEntry =>
+            new ReviseTimelineEntry(new DrizzleTimelineUnitOfWork(database.db), clock),
+        },
+        {
+          provide: DeleteTimelineEntry,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): DeleteTimelineEntry =>
+            new DeleteTimelineEntry(new DrizzleTimelineUnitOfWork(database.db), clock),
+        },
+        {
+          provide: ReorderTimeline,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): ReorderTimeline =>
+            new ReorderTimeline(new DrizzleTimelineUnitOfWork(database.db), clock),
+        },
+        {
+          provide: GetAdminProfile,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): GetAdminProfile =>
+            new GetAdminProfile(new DrizzleProfileRepository(database.db)),
+        },
+        {
+          provide: ReviseProfile,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): ReviseProfile =>
+            new ReviseProfile(new DrizzleSiteTextsUnitOfWork(database.db), clock),
+        },
+        {
+          provide: GetAdminLegalDocument,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): GetAdminLegalDocument =>
+            new GetAdminLegalDocument(new DrizzleLegalDocumentRepository(database.db)),
+        },
+        {
+          provide: ReviseLegalDocument,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): ReviseLegalDocument =>
+            new ReviseLegalDocument(new DrizzleSiteTextsUnitOfWork(database.db), clock),
+        },
+        {
+          provide: UploadMedia,
+          inject: [CONTENT_DATABASE, MEDIA_STORAGE, CLOCK],
+          useFactory: (
+            database: ContentDatabaseHandle,
+            storage: MediaStorage,
+            clock: Clock,
+          ): UploadMedia =>
+            new UploadMedia(
+              new DrizzleMediaRepository(database.db),
+              options.imageProcessor ?? new SharpImageProcessor(),
+              storage,
+              new RandomIdGenerator(),
+              clock,
+            ),
+        },
+        {
+          provide: PurgeMedia,
+          inject: [CONTENT_DATABASE, MEDIA_STORAGE, CLOCK],
+          useFactory: (
+            database: ContentDatabaseHandle,
+            storage: MediaStorage,
+            clock: Clock,
+          ): PurgeMedia => new PurgeMedia(new DrizzleMediaRepository(database.db), storage, clock),
+        },
+        {
           provide: DispatchSiteBuild,
           inject: [CONTENT_DATABASE, CLOCK],
           useFactory: (database: ContentDatabaseHandle, clock: Clock): DispatchSiteBuild => {
@@ -227,6 +561,38 @@ export class ContentModule implements OnApplicationShutdown {
             );
           },
         },
+        { provide: SEO_SOURCES, useFactory: (): SeoSources => seoSources(seo) },
+        {
+          provide: GetSeoDashboard,
+          inject: [CONTENT_DATABASE, SEO_SOURCES, CLOCK],
+          useFactory: (
+            database: ContentDatabaseHandle,
+            sources: SeoSources,
+            clock: Clock,
+          ): GetSeoDashboard =>
+            new GetSeoDashboard(
+              new DrizzleSeoReportStore(database.db),
+              sources,
+              new DrizzleProjectRepository(database.db),
+              clock,
+            ),
+        },
+        {
+          provide: RefreshSeoDashboard,
+          inject: [CONTENT_DATABASE, SEO_SOURCES, CLOCK],
+          useFactory: (
+            database: ContentDatabaseHandle,
+            sources: SeoSources,
+            clock: Clock,
+          ): RefreshSeoDashboard =>
+            new RefreshSeoDashboard(
+              new DrizzleSeoReportStore(database.db),
+              sources,
+              new DrizzleProjectRepository(database.db),
+              clock,
+              { siteOrigin: seo.siteOrigin, webVitalsUrls: seo.webVitalsUrls },
+            ),
+        },
         {
           provide: READINESS_CHECKS,
           inject: [CONTENT_DATABASE],
@@ -234,11 +600,11 @@ export class ContentModule implements OnApplicationShutdown {
             databaseReadinessCheck(database),
           ],
         },
-        ...(options.workers ? [SiteBuildJobs] : []),
+        ...(options.workers ? [SiteBuildJobs, MediaPurgeJobs, SeoDashboardJobs] : []),
         { provide: PROBLEM_MAPPER, useValue: contentProblemMapper },
         { provide: APP_FILTER, useClass: ProblemDetailsFilter },
       ],
-      exports: [READINESS_CHECKS, DispatchSiteBuild],
+      exports: [READINESS_CHECKS, DispatchSiteBuild, PurgeMedia],
     };
   }
 

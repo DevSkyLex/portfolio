@@ -10,10 +10,10 @@ import { cva, type VariantProps } from 'class-variance-authority';
  */
 export const toggleVariants = cva(
   [
-    'inline-flex items-center justify-center gap-2 rounded-field border border-transparent text-control whitespace-nowrap text-star-muted',
+    'inline-flex items-center justify-center gap-2 rounded-md border border-transparent text-control whitespace-nowrap text-fg-muted',
     'transition-[transform,background-color,border-color,color] duration-(--dur-pop) ease-orbit active:scale-98',
-    'hover:bg-star/5 hover:text-star aria-pressed:bg-star/8 aria-pressed:text-star',
-    'outline-4 outline-offset-0 outline-transparent focus-visible:border-star/55 focus-visible:outline-star/12',
+    'hover:bg-surface-hover hover:text-fg aria-pressed:bg-surface-selected aria-pressed:text-fg',
+    'outline-4 outline-offset-0 outline-transparent focus-visible:border-fg/55 focus-visible:outline-fg/12',
     'motion-reduce:transition-none motion-reduce:active:scale-100',
     'disabled:pointer-events-none disabled:opacity-50',
   ],
@@ -21,12 +21,12 @@ export const toggleVariants = cva(
     variants: {
       variant: {
         default: '',
-        outline: 'border-line-field hover:border-line-hover aria-pressed:border-line-hover',
+        outline: 'border-border-field hover:border-border-hover aria-pressed:border-border-hover',
       },
       size: {
         sm: 'h-9 min-w-9 px-2.5',
         md: 'h-11 min-w-11 px-3',
-        lg: 'h-14 min-w-14 px-4',
+        lg: 'h-14 min-w-14 rounded-lg px-4',
       },
     },
     defaultVariants: { variant: 'default', size: 'md' },

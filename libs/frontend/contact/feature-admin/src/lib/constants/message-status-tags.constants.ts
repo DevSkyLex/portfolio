@@ -6,12 +6,13 @@ import type { MessageStatusTag } from '@internal/contact-web-feature-admin/lib/m
  *
  * @description
  * Status badges of the reading pane, after the D37 families: unread is information, read is a
- * completed state, archived is neutral.
+ * completed state, archived is neutral (the outline badge: every status badge has the same hairline and
+ * no fill).
  *
  * @type {Readonly<Record<AdminMessageStatus, MessageStatusTag>>}
  */
 export const MESSAGE_STATUS_TAGS: Readonly<Record<AdminMessageStatus, MessageStatusTag>> = {
-  received: { label: 'Non lu', variant: 'info' },
-  read: { label: 'Lu', variant: 'success' },
-  archived: { label: 'Archivé', variant: 'default' },
+  received: { label: $localize`:@@admin.inbox.status.received:Non lu`, variant: 'info' },
+  read: { label: $localize`:@@admin.inbox.status.read:Lu`, variant: 'success' },
+  archived: { label: $localize`:@@admin.inbox.status.archived:Archivé`, variant: 'outline' },
 };

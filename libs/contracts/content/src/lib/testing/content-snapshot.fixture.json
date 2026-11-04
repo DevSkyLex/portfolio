@@ -5,7 +5,24 @@
     "heroIntro": "Développeur web fullstack à Blois.",
     "aboutStatement": "J'aime concevoir des applications qui répondent à des besoins concrets.",
     "aboutLead": "Après un BTS SIO et un bachelor, j'ai suivi le mastère de YNOV.",
-    "facts": [{ "label": "Basé à", "value": "Blois, Loir-et-Cher" }]
+    "facts": [
+      {
+        "label": "Basé à",
+        "value": "Blois, Loir-et-Cher"
+      }
+    ],
+    "links": [
+      {
+        "kind": "email",
+        "url": "mailto:contact@valentin-fortin.pro",
+        "label": null
+      },
+      {
+        "kind": "github",
+        "url": "https://github.com/DevSkyLex",
+        "label": null
+      }
+    ]
   },
   "projects": [
     {
@@ -21,13 +38,124 @@
       "techs": ["flutter", "dart", "supabase"],
       "featured": true,
       "article": {
-        "context": ["Contexte."],
-        "work": ["Travail."],
-        "workList": ["Point."],
-        "choices": ["Choix."],
-        "result": ["Résultat."],
-        "lessons": ["Leçon."],
-        "captions": ["Capture 1.", "Capture 2."]
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Introduction."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Contexte"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Contexte."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Ce que j’ai fait"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Travail."
+              }
+            ]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Point."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "figure",
+            "attrs": {
+              "src": "/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp",
+              "small": "/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90-960.webp",
+              "width": 1200,
+              "height": 900,
+              "alt": "Écran du calendrier",
+              "caption": "Capture 1."
+            }
+          },
+          {
+            "type": "codeBlock",
+            "attrs": {
+              "language": "bash"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "flutter run # Android"
+              }
+            ],
+            "tokens": [
+              {
+                "text": "flutter run ",
+                "kind": null
+              },
+              {
+                "text": "# Android",
+                "kind": "comment"
+              }
+            ]
+          }
+        ]
+      },
+      "cover": {
+        "src": "/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp",
+        "small": "/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp",
+        "width": 2400,
+        "height": 1350,
+        "alt": "Accueil de Movah"
+      },
+      "seo": {
+        "title": "Movah, suivi de séries en Flutter",
+        "description": null,
+        "keywords": ["Flutter", "suivi de séries"]
       }
     }
   ],
@@ -38,8 +166,14 @@
       "title": "BTS SIO, option SLAM",
       "place": "Chambray-lès-Tours",
       "description": "Lycée Sainte-Marguerite.",
-      "start": { "year": 2021, "month": 9 },
-      "end": { "year": 2023, "month": 6 },
+      "start": {
+        "year": 2021,
+        "month": 9
+      },
+      "end": {
+        "year": 2023,
+        "month": 6
+      },
       "techs": []
     }
   ],
@@ -47,8 +181,85 @@
     {
       "id": "front-end",
       "domain": "Front-end",
-      "techs": [{ "key": "angular", "language": null }],
+      "techs": [
+        {
+          "key": "angular",
+          "language": null
+        }
+      ],
       "usage": "Interfaces de supervision."
     }
-  ]
+  ],
+  "legal": {
+    "notice": {
+      "updatedOn": "2026-11-02",
+      "document": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Éditeur du site"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Contact : "
+              },
+              {
+                "type": "text",
+                "text": "contact@valentin-fortin.pro",
+                "marks": [
+                  {
+                    "type": "link",
+                    "attrs": {
+                      "href": "mailto:contact@valentin-fortin.pro"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "privacy": {
+      "updatedOn": "2026-11-02",
+      "document": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Durée de conservation"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Les messages sont supprimés trois ans après leur réception."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
 }

@@ -1,4 +1,11 @@
+export { AdminMediaController } from '@internal/content-adapters-in/lib/http/controllers/admin-media/admin-media.controller';
+export { AdminLegalController } from '@internal/content-adapters-in/lib/http/controllers/admin-legal/admin-legal.controller';
+export { AdminProfileController } from '@internal/content-adapters-in/lib/http/controllers/admin-profile/admin-profile.controller';
+export { AdminTimelineController } from '@internal/content-adapters-in/lib/http/controllers/admin-timeline/admin-timeline.controller';
 export { AdminContentController } from '@internal/content-adapters-in/lib/http/controllers/admin-content/admin-content.controller';
 export { ContentController } from '@internal/content-adapters-in/lib/http/controllers/content/content.controller';
 export { contentProblemMapper } from '@internal/content-adapters-in/lib/http/mappers/content-problem/content-problem.mapper';
+export { MediaPurgeJobs } from '@internal/content-adapters-in/lib/jobs/media-purge/media-purge.jobs';
 export { SiteBuildJobs } from '@internal/content-adapters-in/lib/jobs/site-build/site-build.jobs';
+export { AdminSeoDashboardController } from '@internal/content-adapters-in/lib/http/controllers/admin-seo-dashboard/admin-seo-dashboard.controller';
+export { SeoDashboardJobs } from '@internal/content-adapters-in/lib/jobs/seo-dashboard/seo-dashboard.jobs';

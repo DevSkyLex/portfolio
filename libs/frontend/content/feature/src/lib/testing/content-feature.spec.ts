@@ -2,42 +2,97 @@ import { LOCALE_ID } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
 import { provideRouter, type Route } from '@angular/router';
-import { provideContentSnapshots } from '@vfortin/content-web-data-access';
+import { provideContentSnapshots, provideSiteOrigin } from '@vfortin/content-web-data-access';
 import { CONTENT_ROUTES } from '@internal/content-web-feature/lib/content.routes';
 import { ProjectPageComponent } from '@internal/content-web-feature/lib/ui/pages/project-page/project-page.component';
 import { ContentSectionsComponent } from '@internal/content-web-feature/lib/ui/sections/content-sections/content-sections.component';
 
 /**
- * Constant article
+ * Function paragraph
  *
  * @description
- * Minimal case study sections reused by the project fixtures in this feature test suite.
- *
- * @type {{ context: string[]; work: string[]; workList: string[]; choices: string[]; result: string[]; lessons: string[]; captions: string[] }}
+ * Builds a contract paragraph made of one plain text node.
  */
-const article: {
-  context: string[];
-  work: string[];
-  workList: string[];
-  choices: string[];
-  result: string[];
-  lessons: string[];
-  captions: string[];
+const paragraph = (text: string): ArticleNodeFixture => ({
+  type: 'paragraph',
+  content: [{ type: 'text', text }],
+});
+
+/**
+ * Function heading
+ *
+ * @description
+ * Builds a contract level-2 heading, which opens a section.
+ */
+const heading = (text: string): ArticleNodeFixture => ({
+  type: 'heading',
+  attrs: { level: 2 },
+  content: [{ type: 'text', text }],
+});
+
+/**
+ * Constant ARTICLES
+ *
+ * @description
+ * Published documents of the fixture projects: `crm` has an introduction, four sections, a list and a
+ * figure; `movah` other sections; `solo` an introduction only.
+ */
+const ARTICLES: Readonly<Record<string, readonly ArticleNodeFixture[]>> = {
+  crm: [
+    paragraph('Intro article.'),
+    heading('Contexte'),
+    paragraph('Contexte.'),
+    heading('Ce que j’ai fait'),
+    paragraph('Travail.'),
+    {
+      type: 'bulletList',
+      content: [{ type: 'listItem', content: [paragraph('Point.')] }],
+    },
+    heading('Résultat'),
+    paragraph('Résultat.'),
+    {
+      type: 'figure',
+      attrs: {
+        src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp',
+        small: null,
+        width: 1200,
+        height: 900,
+        alt: 'Écran du tableau de bord',
+        caption: 'Capture.',
+      },
+    },
+    heading('Ce que je retiens'),
+    paragraph('Leçon.'),
+  ],
+  movah: [heading('Genèse'), paragraph('Idée.'), heading('Architecture'), paragraph('Supabase.')],
+  solo: [paragraph('Seulement une introduction.')],
+};
+
+/**
+ * Constant COVER
+ *
+ * @description
+ * Cover of the `movah` fixture, with a 960 px rendition.
+ */
+const COVER: {
+  src: string;
+  small: string;
+  width: number;
+  height: number;
+  alt: string;
 } = {
-  context: ['Contexte.'],
-  work: ['Travail.'],
-  workList: ['Point.'],
-  choices: ['Choix.'],
-  result: ['Résultat.'],
-  lessons: ['Leçon.'],
-  captions: ['Capture.'],
+  src: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
+  small: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp',
+  width: 2400,
+  height: 1350,
+  alt: 'Accueil de Movah',
 };
 
 /**
  * Function project
  *
  * @description
- * Creates a localized project fixture with stable case-study copy and a configurable slug and featured flag.
+ * Creates a localized project fixture with its article document; only `movah` has a cover.
  *
  * @param {string} slug - Identifier and visible title source for the fixture.
  * @param {boolean} featured - Whether the project belongs to the featured group.
@@ -56,14 +111,20 @@ const project = (slug: string, featured: boolean): ProjectSnapshotFixture => ({
   siteUrl: null,
   techs: ['angular'],
   featured,
-  article,
+  article: { type: 'doc', content: ARTICLES[slug] ?? [] },
+  cover: slug === 'movah' ? COVER : null,
+  seo: {
+    title: slug === 'solo' ? 'Solo, projet seul' : null,
+    description: null,
+    keywords: slug === 'solo' ? ['projet seul'] : [],
+  },
 });
 
 /**
  * Constant snapshot
  *
  * @description
- * French content fixture with one featured project, one regular project, and profile facts for home and article rendering assertions.
+ * French content fixture with one featured project, two regular projects, and profile facts for home and article rendering assertions.
  *
  * @type {import('@vfortin/content-contracts').ContentSnapshot}
  */
@@ -76,7 +137,7 @@ const snapshot = {
     aboutLead: 'Après un BTS.',
     facts: [{ label: 'Basé à', value: 'Blois' }],
   },
-  projects: [project('movah', true), project('crm', false)],
+  projects: [project('movah', true), project('crm', false), project('solo', false)],
   timeline: [],
   skills: [
     {
@@ -86,6 +147,16 @@ const snapshot = {
       usage: 'Interfaces.',
     },
   ],
+  legal: {
+    notice: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+    privacy: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+  },
 } as const;
 
 beforeEach((): void => {
@@ -94,9 +165,46 @@ beforeEach((): void => {
       provideRouter([]),
       { provide: LOCALE_ID, useValue: 'fr' },
       provideContentSnapshots({ fr: snapshot, en: { ...snapshot, locale: 'en' } }),
+      provideSiteOrigin(),
     ],
   });
 });
+
+/**
+ * Function renderPage
+ *
+ * @description
+ * Renders the project page for a slug.
+ */
+async function renderPage(slug: string): Promise<ComponentFixture<ProjectPageComponent>> {
+  const fixture: ComponentFixture<ProjectPageComponent> =
+    TestBed.createComponent(ProjectPageComponent);
+  fixture.componentRef.setInput('slug', slug);
+  await fixture.whenStable();
+  return fixture;
+}
+
+/**
+ * Function tocLinks
+ *
+ * @description
+ * Reads the table-of-contents links of a rendered page.
+ */
+function tocLinks(root: HTMLElement): HTMLAnchorElement[] {
+  return [...root.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Sommaire"] a')];
+}
+
+/**
+ * Function current
+ *
+ * @description
+ * Reads the link of the current section in the table of contents.
+ */
+function current(root: HTMLElement): string | null | undefined {
+  return root
+    .querySelector('nav[aria-label="Sommaire"] a[aria-current="true"]')
+    ?.getAttribute('href');
+}
 
 describe('ContentSectionsComponent', (): void => {
   it('shows the featured project then the others, and renders the anchored sections', async (): Promise<void> => {
@@ -108,182 +216,260 @@ describe('ContentSectionsComponent', (): void => {
       [...root.querySelectorAll('content-project-card h3')].map((h: Element): string =>
         h.textContent?.trim(),
       ),
-    ).toEqual(['MOVAH', 'CRM']);
+    ).toEqual(['MOVAH', 'CRM', 'SOLO']);
     expect(
       [...root.querySelectorAll(':scope > * > section')].map((s: Element): string => s.id),
     ).toEqual(['projects', 'journey', 'skills', 'about']);
     expect(root.querySelector('dl dt')?.textContent?.trim()).toBe('Basé à');
   });
+
+  it('shows the cover of a project on its card', async (): Promise<void> => {
+    const fixture: ComponentFixture<ContentSectionsComponent> =
+      TestBed.createComponent(ContentSectionsComponent);
+    await fixture.whenStable();
+    const images: HTMLImageElement[] = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLImageElement>(
+        'content-project-card img',
+      ),
+    ];
+    expect(
+      images.map((image: HTMLImageElement): string | null => image.getAttribute('src')),
+    ).toEqual([COVER.src]);
+  });
 });
 
 describe('ProjectPageComponent', (): void => {
   it('renders the case study, its neighbours and the document title', async (): Promise<void> => {
-    const fixture: ComponentFixture<ProjectPageComponent> =
-      TestBed.createComponent(ProjectPageComponent);
-    fixture.componentRef.setInput('slug', 'crm');
-    await fixture.whenStable();
-    const root: HTMLElement = fixture.nativeElement;
+    const root: HTMLElement = (await renderPage('crm')).nativeElement;
     expect(root.querySelector('h1')?.textContent?.trim()).toBe('CRM');
-    expect(root.querySelector('#result')?.parentElement?.textContent).toContain('Résultat.');
+    const article: HTMLElement | null = root.querySelector('article');
+    expect(article?.firstElementChild?.textContent).toBe('Intro article.');
+    expect(root.querySelector('#resultat')?.textContent).toContain('Résultat.');
+    expect(root.querySelector('#ce-que-j-ai-fait li')?.textContent).toBe('Point.');
+    expect(root.querySelector('#resultat figcaption')?.textContent).toBe('Capture.');
+    expect(root.querySelector('#resultat img')?.getAttribute('alt')).toBe(
+      'Écran du tableau de bord',
+    );
     expect(root.querySelector('nav a[href="/projects/movah"]')).not.toBeNull();
     expect(TestBed.inject<Title>(Title).getTitle()).toBe('CRM — Valentin Fortin');
   });
 
-  it('lists the sections in a table of contents, the first one current', async (): Promise<void> => {
-    const fixture: ComponentFixture<ProjectPageComponent> =
-      TestBed.createComponent(ProjectPageComponent);
-    fixture.componentRef.setInput('slug', 'crm');
+  it('writes the search metadata of the article and replaces them on the next one', async (): Promise<void> => {
+    const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('movah');
+    const head: HTMLHeadElement = document.head;
+    expect(head.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('Résumé.');
+    expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
+      'https://valentin-fortin.pro/projects/movah',
+    );
+    expect(head.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
+      `https://valentin-fortin.pro${COVER.src}`,
+    );
+
+    fixture.componentRef.setInput('slug', 'solo');
     await fixture.whenStable();
-    const root: HTMLElement = fixture.nativeElement;
-    const links: HTMLAnchorElement[] = [
-      ...root.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Sommaire"] a'),
-    ];
+    expect(TestBed.inject<Title>(Title).getTitle()).toBe('Solo, projet seul');
+    expect(head.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
+    expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
+      'https://valentin-fortin.pro/projects/solo',
+    );
+    expect(head.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(1);
+    expect(head.querySelector('meta[property="og:image"]')).toBeNull();
+
+    fixture.destroy();
+    expect(head.querySelector('[data-page-seo]')).toBeNull();
+    expect(head.querySelector('meta[property="og:title"]')).toBeNull();
+  });
+
+  it('opens one labelled section per level-2 heading and lists them in the table of contents', async (): Promise<void> => {
+    const root: HTMLElement = (await renderPage('crm')).nativeElement;
+    const sections: HTMLElement[] = [...root.querySelectorAll<HTMLElement>('article > section')];
+    expect(sections.map((section: HTMLElement): string => section.id)).toEqual([
+      'contexte',
+      'ce-que-j-ai-fait',
+      'resultat',
+      'ce-que-je-retiens',
+    ]);
+    for (const section of sections) {
+      expect(section.hasAttribute('data-spy')).toBe(true);
+      const title: HTMLElement | null = section.querySelector(':scope > h2');
+      expect(section.getAttribute('aria-labelledby')).toBe(title?.id);
+      expect(title?.id).toBe(`${section.id}-title`);
+    }
+    expect(sections[0]?.querySelector('h2')?.className).toContain('font-display');
+    const links: HTMLAnchorElement[] = tocLinks(root);
     expect(
       links.map((link: HTMLAnchorElement): string | null => link.getAttribute('href')),
-    ).toEqual(['/#context', '/#work', '/#choices', '/#result', '/#lessons']);
+    ).toEqual(['/#contexte', '/#ce-que-j-ai-fait', '/#resultat', '/#ce-que-je-retiens']);
+    expect(links.map((link: HTMLAnchorElement): string | null => link.textContent)).toEqual([
+      'Contexte',
+      'Ce que j’ai fait',
+      'Résultat',
+      'Ce que je retiens',
+    ]);
+    expect(
+      sections.map((section: HTMLElement): string | undefined =>
+        section.querySelector('h2')?.textContent?.trim(),
+      ),
+    ).toEqual(['Contexte', 'Ce que j’ai fait', 'Résultat', 'Ce que je retiens']);
     expect(
       links.map((link: HTMLAnchorElement): string | null => link.getAttribute('aria-current')),
-    ).toEqual(['true', null, null, null, null]);
-    expect(root.querySelector('#context-title')?.textContent?.trim()).toBe('Contexte');
+    ).toEqual(['true', null, null, null]);
+  });
+
+  it('keeps the tint without a cover and shows the cover first otherwise', async (): Promise<void> => {
+    const tinted: HTMLElement = (await renderPage('crm')).nativeElement;
+    const placeholder: Element | null | undefined = tinted
+      .querySelector('[uiScrollProgress]')
+      ?.querySelector(':scope > div');
+    expect(placeholder?.className).toContain('bg-[color-mix(');
+    expect(tinted.querySelector('[uiScrollProgress] img')).toBeNull();
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: LOCALE_ID, useValue: 'fr' },
+        provideContentSnapshots({ fr: snapshot, en: { ...snapshot, locale: 'en' } }),
+        provideSiteOrigin(),
+      ],
+    });
+    const root: HTMLElement = (await renderPage('movah')).nativeElement;
+    const cover: HTMLImageElement | null = root.querySelector('[uiScrollProgress] img');
+    expect(cover?.getAttribute('src')).toBe(COVER.src);
+    expect(cover?.getAttribute('srcset')).toBe(`${COVER.small} 960w, ${COVER.src} 2400w`);
+    expect(cover?.getAttribute('sizes')).toBe('(min-width: 1280px) 1200px, 100vw');
+    expect(cover?.getAttribute('alt')).toBe('Accueil de Movah');
+    expect(cover?.getAttribute('fetchpriority')).toBe('high');
+    expect(cover?.hasAttribute('loading')).toBe(false);
+    expect(cover?.getAttribute('width')).toBe('2400');
+    expect(cover?.getAttribute('height')).toBe('1350');
+  });
+
+  it('hides the table of contents of an article without sections', async (): Promise<void> => {
+    const root: HTMLElement = (await renderPage('solo')).nativeElement;
+    expect(root.querySelector('nav[aria-label="Sommaire"]')).toBeNull();
+    expect(root.querySelector('article')?.textContent).toBe('Seulement une introduction.');
   });
 
   it('renders nothing for an unknown project', async (): Promise<void> => {
-    const fixture: ComponentFixture<ProjectPageComponent> =
-      TestBed.createComponent(ProjectPageComponent);
-    fixture.componentRef.setInput('slug', 'unknown');
-    await fixture.whenStable();
+    const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('unknown');
     expect(fixture.nativeElement.querySelector('article')).toBeNull();
   });
 
-  it('makes the section crossing the reading band current once the page scrolls', async (): Promise<void> => {
+  describe('scrollspy', (): void => {
     let notify: IntersectionObserverCallback = (): undefined => undefined;
-    const observed: Element[] = [];
-    let spyStopped: boolean = false;
-    vi.stubGlobal(
-      'IntersectionObserver',
-      class {
-        private spy: boolean = false;
-        public constructor(private readonly callback: IntersectionObserverCallback) {}
-        public observe(element: Element): void {
-          if (!element.hasAttribute('data-spy')) return;
-          this.spy = true;
-          notify = this.callback;
-          observed.push(element);
-        }
-        public disconnect(): void {
-          if (this.spy) spyStopped = true;
-        }
-      },
-    );
-    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000);
-    try {
-      const fixture: ComponentFixture<ProjectPageComponent> =
-        TestBed.createComponent(ProjectPageComponent);
-      fixture.componentRef.setInput('slug', 'crm');
+    let observed: Element[] = [];
+    let stopped: Element[][] = [];
+
+    beforeEach((): void => {
+      notify = (): undefined => undefined;
+      observed = [];
+      stopped = [];
+      vi.stubGlobal(
+        'IntersectionObserver',
+        class {
+          private readonly watched: Element[] = [];
+          public constructor(private readonly callback: IntersectionObserverCallback) {}
+          public observe(element: Element): void {
+            if (!element.hasAttribute('data-spy')) return;
+            notify = this.callback;
+            this.watched.push(element);
+            observed.push(element);
+          }
+          public disconnect(): void {
+            if (this.watched.length > 0) stopped.push([...this.watched]);
+          }
+        },
+      );
+    });
+
+    afterEach((): void => {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    });
+
+    /**
+     * Function section
+     *
+     * @description
+     * Finds an observed section by identifier.
+     */
+    const section = (id: string): Element =>
+      observed.find((element: Element): boolean => element.id === id) as Element;
+
+    /**
+     * Function deliver
+     *
+     * @description
+     * Delivers observer entries to the scrollspy, then lets the page render.
+     */
+    async function deliver(
+      fixture: ComponentFixture<ProjectPageComponent>,
+      entries: { isIntersecting: boolean; target: Element }[],
+    ): Promise<void> {
+      notify(entries as unknown as IntersectionObserverEntry[], {} as IntersectionObserver);
       await fixture.whenStable();
-      expect(new Set(observed.map((section: Element): string => section.id))).toEqual(
-        new Set(['context', 'work', 'choices', 'result', 'lessons']),
-      );
-      const choices: Element = observed.find(
-        (section: Element): boolean => section.id === 'choices',
-      ) as Element;
-      notify(
-        [{ isIntersecting: true, target: choices } as unknown as IntersectionObserverEntry],
-        {} as IntersectionObserver,
-      );
-      await fixture.whenStable();
-      const root: HTMLElement = fixture.nativeElement;
-      const current: Element | null = root.querySelector(
-        'nav[aria-label="Sommaire"] a[aria-current="true"]',
-      );
-      expect(current?.getAttribute('href')).toBe('/#choices');
+    }
+
+    it('makes the section crossing the reading band current once the page scrolls', async (): Promise<void> => {
+      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000);
+      const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
+      expect(observed.map((element: Element): string => element.id)).toEqual([
+        'contexte',
+        'ce-que-j-ai-fait',
+        'resultat',
+        'ce-que-je-retiens',
+      ]);
+      await deliver(fixture, [{ isIntersecting: true, target: section('resultat') }]);
+      expect(current(fixture.nativeElement)).toBe('/#resultat');
       fixture.destroy();
-      expect(spyStopped).toBe(true);
-    } finally {
-      vi.unstubAllGlobals();
-      vi.restoreAllMocks();
-    }
-  });
+      expect(stopped).toHaveLength(1);
+    });
 
-  /**
-   * Function currentAfter
-   *
-   * @description
-   * Renders the `crm` article with a stubbed scrollspy, delivers entries derived from watched sections, and reads the current table-of-contents link.
-   *
-   * @param {number} scrollHeight - Document height controlling whether the page is considered scrollable.
-   * @param {(section: (id: string) => Element) => { isIntersecting: boolean; target: Element }[]} entries - Observer entries built from a section lookup.
-   *
-   * @returns {Promise<string | null | undefined>} Current section link; on a document too short to scroll, the first section remains current.
-   */
-  async function currentAfter(
-    scrollHeight: number,
-    entries: (section: (id: string) => Element) => { isIntersecting: boolean; target: Element }[],
-  ): Promise<string | null | undefined> {
-    let notify: IntersectionObserverCallback = (): undefined => undefined;
-    const observed: Element[] = [];
-    vi.stubGlobal(
-      'IntersectionObserver',
-      class {
-        public constructor(private readonly callback: IntersectionObserverCallback) {}
-        public observe(element: Element): void {
-          if (!element.hasAttribute('data-spy')) return;
-          notify = this.callback;
-          observed.push(element);
-        }
-        public disconnect(): void {
-          // Nothing to release.
-        }
-      },
-    );
-    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(scrollHeight);
-    try {
-      const fixture: ComponentFixture<ProjectPageComponent> =
-        TestBed.createComponent(ProjectPageComponent);
-      fixture.componentRef.setInput('slug', 'crm');
+    it('observes the sections of the next article after a navigation, from its first section', async (): Promise<void> => {
+      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000);
+      const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
+      await deliver(fixture, [{ isIntersecting: true, target: section('resultat') }]);
+      observed = [];
+      fixture.componentRef.setInput('slug', 'movah');
       await fixture.whenStable();
-      const section: (id: string) => Element = (id: string): Element =>
-        observed.find((element: Element): boolean => element.id === id) as Element;
-      notify(
-        entries(section) as unknown as IntersectionObserverEntry[],
-        {} as IntersectionObserver,
-      );
-      await fixture.whenStable();
+      expect(stopped.map((elements: Element[]): string[] => elements.map((e) => e.id))).toEqual([
+        ['contexte', 'ce-que-j-ai-fait', 'resultat', 'ce-que-je-retiens'],
+      ]);
+      expect(observed.map((element: Element): string => element.id)).toEqual([
+        'genese',
+        'architecture',
+      ]);
       const root: HTMLElement = fixture.nativeElement;
-      return root
-        .querySelector('nav[aria-label="Sommaire"] a[aria-current="true"]')
-        ?.getAttribute('href');
-    } finally {
-      vi.unstubAllGlobals();
-      vi.restoreAllMocks();
-    }
-  }
+      expect(
+        tocLinks(root).map((link: HTMLAnchorElement): string | null => link.getAttribute('href')),
+      ).toEqual(['/#genese', '/#architecture']);
+      expect(current(root)).toBe('/#genese');
+      await deliver(fixture, [{ isIntersecting: true, target: section('architecture') }]);
+      expect(current(root)).toBe('/#architecture');
+    });
 
-  it('keeps the first section current while the page does not scroll', async (): Promise<void> => {
-    await expect(
-      currentAfter(
-        window.innerHeight,
-        (section: (id: string) => Element): { isIntersecting: true; target: Element }[] => [
-          { isIntersecting: true, target: section('choices') },
-        ],
-      ),
-    ).resolves.toBe('/#context');
-  });
+    it('keeps the first section current while the page does not scroll', async (): Promise<void> => {
+      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(window.innerHeight);
+      const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
+      await deliver(fixture, [{ isIntersecting: true, target: section('resultat') }]);
+      expect(current(fixture.nativeElement)).toBe('/#contexte');
+    });
 
-  it('ignores the sections leaving the reading band', async (): Promise<void> => {
-    await expect(
-      currentAfter(
-        5000,
-        (
-          section: (id: string) => Element,
-        ): (
-          { isIntersecting: false; target: Element } | { isIntersecting: true; target: Element }
-        )[] => [
-          { isIntersecting: false, target: section('result') },
-          { isIntersecting: true, target: section('work') },
-        ],
-      ),
-    ).resolves.toBe('/#work');
+    it('ignores the sections leaving the reading band', async (): Promise<void> => {
+      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000);
+      const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
+      await deliver(fixture, [
+        { isIntersecting: false, target: section('resultat') },
+        { isIntersecting: true, target: section('ce-que-j-ai-fait') },
+      ]);
+      expect(current(fixture.nativeElement)).toBe('/#ce-que-j-ai-fait');
+    });
+
+    it('observes nothing for an article without sections', async (): Promise<void> => {
+      await renderPage('solo');
+      expect(observed).toEqual([]);
+    });
   });
 });
 
@@ -295,6 +481,14 @@ describe('CONTENT_ROUTES', (): void => {
     await expect(route?.loadComponent?.()).resolves.toBe(ProjectPageComponent);
   });
 });
+
+/** Node of an article document in the raw snapshot, as the contract defines it. */
+interface ArticleNodeFixture {
+  type: string;
+  attrs?: Record<string, unknown>;
+  text?: string;
+  content?: readonly ArticleNodeFixture[];
+}
 
 /** Raw localized project fields supplied to the snapshot provider in this feature test. */
 interface ProjectSnapshotFixture {
@@ -309,5 +503,7 @@ interface ProjectSnapshotFixture {
   siteUrl: string | null;
   techs: string[];
   featured: boolean;
-  article: typeof article;
+  article: { type: 'doc'; content: readonly ArticleNodeFixture[] };
+  cover: typeof COVER | null;
+  seo: { title: string | null; description: string | null; keywords: string[] };
 }

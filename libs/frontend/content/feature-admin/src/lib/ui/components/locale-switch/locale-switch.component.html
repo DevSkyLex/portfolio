@@ -1,0 +1,41 @@
+<div
+  uiToggleGroup
+  required
+  size="sm"
+  [class]="frameClasses()"
+  [attr.aria-label]="groupLabel()"
+  [value]="value()"
+  (valueChange)="select($event)"
+>
+  <span aria-hidden="true" [class]="thumbClasses()" [style.transform]="offset()"></span>
+  @for (locale of locales; track locale) {
+    @let state = states()[locale];
+    @let note = stateText(state);
+    <button
+      uiToggleGroupItem
+      type="button"
+      [value]="locale"
+      [class]="itemClasses()"
+      [uiTooltip]="tooltip(locale, note)"
+    >
+      <span
+        class="flex h-3 w-4 shrink-0 items-center overflow-hidden rounded-2xs"
+        aria-hidden="true"
+      >
+        <ng-icon [svg]="flags[locale]" size="16" />
+      </span>
+      <span class="sr-only" [attr.lang]="locale">{{ names[locale] }}</span>
+      @if (note) {
+        <span class="sr-only">, {{ note }}</span>
+        <span
+          aria-hidden="true"
+          [class]="
+            state === 'error'
+              ? 'absolute end-0.5 top-0.5 size-1.5 rounded-full bg-danger-ink'
+              : 'absolute end-0.5 top-0.5 size-1.5 rounded-full bg-warning-ink'
+          "
+        ></span>
+      }
+    </button>
+  }
+</div>

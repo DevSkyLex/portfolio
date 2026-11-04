@@ -1,0 +1,108 @@
+<!-- Below 1024 px the top bar already names the section: the bar would repeat the title. -->
+<header
+  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[1024px]:hidden"
+>
+  <ui-sidebar-trigger class="-ml-2" />
+  <span class="font-medium text-fg" aria-current="page" i18n="@@admin.legal.title">Légal</span>
+</header>
+
+<!-- One tab set: its triggers sit in the page header, its panels hold the document forms. -->
+<div uiTabs class="flex-1 gap-0" [(value)]="tab">
+  <ui-page-header>
+    <h1 uiPageHeaderTitle i18n="@@admin.legal.title">Légal</h1>
+    @if (current(); as document) {
+      <p uiPageHeaderMeta>
+        <span i18n="@@admin.legal.updated">Dernière mise à jour le {{ updated(document) }}</span>
+        <span class="text-fg-faint" aria-hidden="true">·</span>
+        <span i18n="@@admin.legal.version">Version {{ document.version }}</span>
+      </p>
+    } @else {
+      <p uiPageHeaderMeta i18n="@@admin.legal.meta">
+        Mentions légales et politique de confidentialité du site
+      </p>
+    }
+    <div uiPageHeaderTabs>
+      <div uiTabsList class="gap-5" i18n-aria-label="@@admin.legal.tabs" aria-label="Document">
+        @for (kind of kinds; track kind) {
+          <button class="h-10 text-[13px] font-medium" [uiTabsTrigger]="kind">
+            <ng-icon [svg]="icons[kind]" size="14" aria-hidden="true" />
+            {{ texts[kind].tab }}
+          </button>
+        }
+      </div>
+    </div>
+  </ui-page-header>
+
+  <!-- The project editor's centred 920 px column (D36 settings page revision). -->
+  <div
+    class="mx-auto flex w-full max-w-[920px] min-w-0 flex-1 flex-col px-6 py-8 @max-[640px]:px-4 @max-[640px]:py-6"
+  >
+    @if (values(); as initial) {
+      @for (kind of kinds; track kind) {
+        <div class="flex flex-1 flex-col gap-8" [uiTabsContent]="kind">
+          @if (store.conflict() === kind) {
+            <div uiAlert variant="warning">
+              <ng-icon [svg]="icons.conflict" size="16" aria-hidden="true" />
+              <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.legal.conflict.title">
+                « {{ texts[kind].tab }} » a été modifié ailleurs depuis son ouverture.
+              </p>
+              <div uiAlertDescription class="gap-2 text-[13px]/5">
+                <p i18n="@@admin.legal.conflict.description">
+                  Recharger remplace vos modifications de ce document.
+                </p>
+                <button
+                  uiBtn
+                  variant="secondary"
+                  size="xs"
+                  type="button"
+                  (click)="reload(kind)"
+                  i18n="@@admin.legal.conflict.reload"
+                >
+                  Recharger
+                </button>
+              </div>
+            </div>
+          }
+          <!-- Stretched to the page bottom, so the save bar sticks to the viewport. -->
+          <content-legal-document-form
+            class="flex-1"
+            [kind]="kind"
+            [texts]="texts[kind]"
+            [values]="initial[kind]"
+            [pending]="store.writing()"
+            [serverErrors]="fieldErrors(kind)"
+            (submitted)="save(kind, $event)"
+          />
+        </div>
+      }
+    } @else if (store.loadCallState().error; as failure) {
+      <div uiAlert variant="danger">
+        <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.legal.loadError">
+          Impossible de charger les documents légaux
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p>{{ failure.message }}</p>
+          <button
+            uiBtn
+            variant="secondary"
+            size="xs"
+            type="button"
+            (click)="retry()"
+            i18n="@@admin.legal.retry"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    } @else {
+      <span class="sr-only" role="status" i18n="@@admin.legal.loading"
+        >Chargement des documents légaux…</span
+      >
+      <div class="flex flex-col gap-6" aria-hidden="true">
+        <span uiSkeleton class="h-5 w-40"></span>
+        <span uiSkeleton class="h-64 w-full"></span>
+      </div>
+    }
+  </div>
+</div>

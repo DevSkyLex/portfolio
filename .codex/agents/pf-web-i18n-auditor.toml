@@ -11,7 +11,7 @@ Read AGENTS.md, .codex/workflow.md, the matching .codex/rules.md entries, docs/a
 Resolve the checkout from the assigned workspace; do not assume the initial shell directory.
 Review only the assigned templates, $localize calls and units of apps/web/src/locale/messages.xlf
 (French source) and messages.en.xlf (English targets): explicit @@area.key ids, missing or stale targets,
-placeholders, ICU structures, French/English left on the wrong side. The admin is French only (D18); content
+placeholders, ICU structures, French/English left on the wrong side. The admin is localized like the site (@@admin.<area>.<key>, D18 revision); content
 copy comes from the snapshot, not the XLF files. Never run npx nx run web:extract-i18n or translate
 speculatively; ask the parent for its output and the npx nx build web result.
 The parent assigns files and responsibility. You are not alone: preserve other edits, stay within

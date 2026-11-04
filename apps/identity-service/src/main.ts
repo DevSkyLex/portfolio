@@ -11,7 +11,7 @@ import {
  * Function bootstrap
  *
  * @description
- * Starts the identity HTTP service with a bounded JSON body, trusted local proxy settings and graceful shutdown.
+ * Starts the identity HTTP service with bounded JSON and form bodies, trusted local proxy settings and graceful shutdown.
  * Nx readiness is signalled only after the HTTP server is listening.
  *
  * @returns {Promise<void>} Completion after the service has started and readiness is announced.
@@ -27,6 +27,8 @@ async function bootstrap(): Promise<void> {
   app.useLogger(app.get<Logger>(Logger));
   app.set('trust proxy', 'loopback, uniquelocal');
   app.useBodyParser('json', { limit: '8kb' });
+  // OAuth token and revocation requests are form-encoded (D45); repeated keys become arrays.
+  app.useBodyParser('urlencoded', { limit: '8kb', extended: false });
   app.setGlobalPrefix('api', { exclude: ['health/live', 'health/ready'] });
   app.enableShutdownHooks();
   await app.listen(config.IDENTITY_PORT);

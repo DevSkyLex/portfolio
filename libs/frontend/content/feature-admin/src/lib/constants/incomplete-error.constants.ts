@@ -9,5 +9,5 @@
  */
 export const INCOMPLETE_ERROR: Readonly<{ kind: string; message: string }> = {
   kind: 'incomplete',
-  message: 'Obligatoire tant que le projet est publié.',
+  message: $localize`:@@admin.content.incomplete:Obligatoire tant que le projet est publié.`,
 };

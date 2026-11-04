@@ -18,7 +18,7 @@ import { techDefinition } from '@internal/content-web-ui/lib/tech/utils/tech-def
     <ul class="flex flex-wrap gap-2" role="list">
       @for (tech of techs(); track tech) {
         <li
-          class="inline-flex h-7 items-center gap-1.5 rounded-[999px] border border-line pr-3 pl-2.5 font-mono text-xs leading-4 text-star-muted"
+          class="inline-flex h-7 items-center gap-1.5 rounded-full border border-border pr-3 pl-2.5 font-mono text-xs leading-4 text-fg-muted"
         >
           <content-tech-icon class="size-3.5" [tech]="tech" />
           {{ label(tech) }}

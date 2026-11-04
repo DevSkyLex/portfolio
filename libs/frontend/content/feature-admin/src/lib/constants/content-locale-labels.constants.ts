@@ -4,7 +4,8 @@ import type { ContentLocale } from '@internal/content-web-feature-admin/lib/mode
  * Constant CONTENT_LOCALE_LABELS
  *
  * @description
- * Names of the content languages on the editor tabs, each written in its own language.
+ * Names of the content languages on the per-field language toggles, each written in its own
+ * language.
  *
  * @type {Readonly<Record<ContentLocale, string>>}
  */

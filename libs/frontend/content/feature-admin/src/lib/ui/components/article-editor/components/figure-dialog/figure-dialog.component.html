@@ -1,0 +1,75 @@
+<form class="flex flex-col gap-5" novalidate (submit)="onSubmit($event)">
+  <div uiDialogHeader variant="bar">
+    <h2
+      uiDialogTitle
+      i18n="@@admin.article.figureDialog.title"
+      class="font-sans text-[16px]/6 font-semibold"
+    >
+      Image de l’article
+    </h2>
+    <p uiDialogDescription i18n="@@admin.article.figureDialog.description" class="text-[13px]/5">
+      Le texte alternatif décrit l’image aux lecteurs d’écran ; il est obligatoire avant
+      publication.
+    </p>
+  </div>
+  @if (data.src; as src) {
+    <img class="aspect-video w-full rounded-xl bg-surface-sunk object-contain" alt="" [src]="src" />
+  }
+  @let altError = error('alt');
+  <ui-field
+    size="sm"
+    i18n-label="@@admin.article.figureDialog.alt"
+    label="Texte alternatif"
+    controlId="figure-alt"
+    [error]="altError"
+  >
+    <textarea
+      uiInput
+      size="sm"
+      multiline
+      rows="3"
+      class="text-[14px]"
+      id="figure-alt"
+      [attr.aria-describedby]="altError ? 'figure-alt-error' : null"
+      [attr.aria-invalid]="altError ? 'true' : null"
+      [formField]="texts.alt"
+    ></textarea>
+  </ui-field>
+  @let captionError = error('caption');
+  <ui-field
+    size="sm"
+    i18n-label="@@admin.article.figureDialog.caption"
+    label="Légende"
+    controlId="figure-caption"
+    i18n-hint="@@admin.article.figureDialog.captionHint"
+    hint="Facultative, affichée sous l’image."
+    [error]="captionError"
+  >
+    <input
+      uiInput
+      size="sm"
+      class="text-[14px]"
+      id="figure-caption"
+      [attr.aria-describedby]="captionError ? 'figure-caption-error' : 'figure-caption-hint'"
+      [attr.aria-invalid]="captionError ? 'true' : null"
+      [formField]="texts.caption"
+    />
+  </ui-field>
+  <div uiDialogFooter variant="bar">
+    <ui-kbd-hint [keys]="[escapeKey]" i18n-label="@@admin.article.dialog.cancel" label="Annuler" />
+    <div class="ml-auto flex flex-wrap items-center gap-2">
+      <button uiBtn uiDialogClose variant="ghost" size="sm" class="h-8 rounded-sm px-3 text-[13px]">
+        <ng-container i18n="@@admin.article.dialog.cancel">Annuler</ng-container>
+      </button>
+      <button
+        uiBtn
+        size="sm"
+        class="h-8 rounded-sm px-3 text-[13px]"
+        type="submit"
+        i18n="@@admin.article.dialog.apply"
+      >
+        Appliquer
+      </button>
+    </div>
+  </div>
+</form>

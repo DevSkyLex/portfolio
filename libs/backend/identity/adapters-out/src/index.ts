@@ -1,6 +1,7 @@
 export {
   RandomIdGenerator,
   RfcTotpVerifier,
+  S256PkceVerifier,
   ScryptPasswordHasher,
   Sha256RefreshTokenCodec,
   SystemClock,
@@ -8,7 +9,9 @@ export {
 } from '@internal/identity-adapters-out/lib/crypto/crypto.adapters';
 export {
   ACCESS_TTL_SECONDS,
+  JoseResourceTokenSigner,
   JoseTokenSigner,
+  RESOURCE_ACCESS_TTL_SECONDS,
   generateSigningKey,
   loadSigningKeys,
   type PublicJwk,
@@ -27,3 +30,20 @@ export {
   type IdentityDatabase,
   type IdentityDatabaseHandle,
 } from '@internal/identity-adapters-out/lib/persistence/database/identity-database';
+export {
+  DrizzleAuthorizationCodeRepository,
+  DrizzleAuthorizationRequestRepository,
+  DrizzleOAuthClientRepository,
+  DrizzleOAuthGrantRepository,
+  DrizzleOAuthTokenRepository,
+  DrizzleOAuthUnitOfWork,
+} from '@internal/identity-adapters-out/lib/persistence/repositories/oauth/drizzle-oauth.repositories';
+export { isPublicAddress } from '@internal/identity-adapters-out/lib/oauth/address-policy/address-policy';
+export {
+  FETCH_TIMEOUT_MS,
+  HttpsClientMetadataFetcher,
+  LOGO_MAX_BYTES,
+  METADATA_MAX_BYTES,
+  maxAgeOf,
+  type ClientMetadataFetcherOptions,
+} from '@internal/identity-adapters-out/lib/oauth/client-metadata-fetcher/client-metadata-fetcher';

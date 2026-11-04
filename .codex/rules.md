@@ -11,7 +11,7 @@ and the library `README.md` files remain normative. Generated trees, `package-lo
 | [Entry points](rules/barrels.md)                 | `libs/**/src/index.ts`, secondary entry points (`server.ts`, `http.ts`, `links.ts`)                                       |
 | [Comments](rules/comments.md)                    | Authored `*.ts`, `*.mjs`, `*.html`                                                                                        |
 | [Components](rules/components.md)                | `libs/frontend/**/*.component.{ts,html}`, `*.directive.ts`, `apps/web/src/**`                                             |
-| [Design system](rules/design-system.md)          | `libs/frontend/ui/**`, `libs/frontend/design-tokens/**`, `apps/web/src/styles.css`, templates                             |
+| [Design system](rules/design-system.md)          | `libs/frontend/ui/**`, `libs/frontend/design-tokens/**`, `apps/web/src/styles.css`, `apps/web/src/admin.css`, templates  |
 | [Forms](rules/forms.md)                          | Contact, login and admin forms, `*.draft.ts`                                                                              |
 | [Data access](rules/data-access.md)              | `libs/frontend/*/data-access/**`, `libs/frontend/http/**`                                                                 |
 | [State](rules/state.md)                          | `**/state/**`, `*.store.ts`                                                                                               |

@@ -1,0 +1,23 @@
+{
+  "issuer": "https://valentin-fortin.pro/api/auth",
+  "authorization_endpoint": "https://valentin-fortin.pro/admin/oauth/authorize",
+  "token_endpoint": "https://valentin-fortin.pro/api/auth/oauth/token",
+  "registration_endpoint": "https://valentin-fortin.pro/api/auth/oauth/register",
+  "revocation_endpoint": "https://valentin-fortin.pro/api/auth/oauth/revoke",
+  "jwks_uri": "https://valentin-fortin.pro/api/auth/jwks.json",
+  "scopes_supported": [
+    "content:read",
+    "content:write",
+    "content:publish",
+    "content:delete",
+    "offline_access"
+  ],
+  "response_types_supported": ["code"],
+  "response_modes_supported": ["query"],
+  "grant_types_supported": ["authorization_code", "refresh_token"],
+  "token_endpoint_auth_methods_supported": ["none"],
+  "revocation_endpoint_auth_methods_supported": ["none"],
+  "code_challenge_methods_supported": ["S256"],
+  "authorization_response_iss_parameter_supported": true,
+  "client_id_metadata_document_supported": true
+}

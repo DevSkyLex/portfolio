@@ -11,11 +11,17 @@ import {
   InvalidSessionError,
   Login,
   Logout,
+  PasswordMismatchError,
   RefreshSession,
   type Session,
+  TotpInvalidError,
   VerifyLoginCode,
 } from '@vfortin/identity-application';
-import { AccountLockedError, WeakPasswordError } from '@vfortin/identity-domain';
+import {
+  AccountLockedError,
+  TwoFactorStateError,
+  WeakPasswordError,
+} from '@vfortin/identity-domain';
 import { readFileSync } from 'node:fs';
 import request from 'supertest';
 import {
@@ -595,6 +601,18 @@ describe('identityProblemMapper', (): void => {
     expect(identityProblemMapper(new WeakPasswordError())).toMatchObject({
       status: 422,
       code: 'identity.weak-password',
+    });
+    expect(identityProblemMapper(new TwoFactorStateError())).toMatchObject({
+      status: 409,
+      code: 'identity.totp-state',
+    });
+    expect(identityProblemMapper(new PasswordMismatchError())).toMatchObject({
+      status: 422,
+      code: 'identity.password-mismatch',
+    });
+    expect(identityProblemMapper(new TotpInvalidError())).toMatchObject({
+      status: 422,
+      code: 'identity.totp-invalid',
     });
     expect(identityProblemMapper(new Error('other'))).toBeNull();
   });

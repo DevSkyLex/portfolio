@@ -15,7 +15,7 @@ import { RevealDirective } from '@internal/ui/lib/reveal/reveal.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2
-      class="group mb-12 overflow-hidden pb-[0.08em] font-display text-[64px] leading-[68px] font-semibold tracking-[-0.035em] text-star @max-[768px]:text-4xl @max-[768px]:leading-[42px]"
+      class="group mb-12 overflow-hidden pb-[0.08em] font-display text-[64px] leading-[68px] font-semibold tracking-[-0.035em] text-fg @max-[768px]:text-4xl @max-[768px]:leading-[42px]"
       uiReveal
       [id]="headingId()"
     >

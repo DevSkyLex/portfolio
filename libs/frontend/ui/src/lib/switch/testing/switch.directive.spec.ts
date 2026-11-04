@@ -2,6 +2,7 @@ import { type WritableSignal, Component, signal } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { type FieldTree, FormField, form } from '@angular/forms/signals';
 import { SwitchDirective } from '@internal/ui/lib/switch/switch.directive';
+import { switchVariants } from '@internal/ui/lib/switch/constants/switch.variants';
 
 /**
  * Component HostComponent
@@ -48,6 +49,14 @@ class HostComponent {
 }
 
 describe('SwitchDirective', (): void => {
+  it('takes the 2 px accent focus ring of buttons and links', (): void => {
+    const classes: string = switchVariants();
+    expect(classes.split(' ')).toEqual(
+      expect.arrayContaining(['outline-2', 'focus-visible:outline-accent/55']),
+    );
+    expect(classes).not.toContain('outline-accent/12');
+  });
+
   it('is a labelled switch that toggles its field', async (): Promise<void> => {
     const fixture: ComponentFixture<HostComponent> = TestBed.createComponent(HostComponent);
     await fixture.whenStable();

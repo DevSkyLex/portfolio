@@ -2,16 +2,15 @@
  * Constant SHORT_FIELDS
  *
  * @description
- * Project fields serialized as single localized values rather than article paragraph arrays.
+ * Project fields serialized as single localized values, as opposed to the article documents.
  *
- * @type {readonly ['title', 'summary', 'lead', 'periodLabel', 'client', 'role', 'place']}
+ * @type {readonly ['title', 'summary', 'lead', 'client', 'role', 'place']}
  */
-export const SHORT_FIELDS: readonly [
+export const SHORT_FIELDS: readonly ['title', 'summary', 'lead', 'client', 'role', 'place'] = [
   'title',
   'summary',
   'lead',
-  'periodLabel',
   'client',
   'role',
   'place',
-] = ['title', 'summary', 'lead', 'periodLabel', 'client', 'role', 'place'] as const;
+] as const;

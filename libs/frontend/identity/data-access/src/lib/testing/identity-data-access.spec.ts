@@ -10,7 +10,10 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { authInterceptor } from '@internal/identity-web-data-access/lib/http/interceptors/auth/auth.interceptor';
+import {
+  authInterceptor,
+  isAdminApi,
+} from '@internal/identity-web-data-access/lib/http/interceptors/auth/auth.interceptor';
 import { LoginFlowStore } from '@internal/identity-web-data-access/lib/state/login-flow/login-flow.store';
 import { AdminSessionPort } from '@internal/identity-web-data-access/lib/ports/admin-session/admin-session.port';
 import { provideAdminSession } from '@internal/identity-web-data-access/lib/providers/admin-session/admin-session.provider';
@@ -245,6 +248,86 @@ describe('authInterceptor', () => {
     backend.expectOne('/api/auth/refresh').flush(null, { status: 401, statusText: 'Unauthorized' });
     await expect(result).rejects.toMatchObject({ status: 401 });
     expect(session.authenticated()).toBe(false);
+  });
+
+  it('decorates the second-factor routes but not the login, code, refresh and logout calls', () => {
+    expect(isAdminApi('/api/auth/totp')).toBe(true);
+    expect(isAdminApi('/api/auth/totp/setup')).toBe(true);
+    expect(isAdminApi('/api/auth/totp/enable?x=1')).toBe(true);
+    expect(isAdminApi('/api/content/admin/projects')).toBe(true);
+    expect(isAdminApi('/api/auth/login')).toBe(false);
+    expect(isAdminApi('/api/auth/login/totp')).toBe(false);
+    expect(isAdminApi('/api/auth/refresh')).toBe(false);
+    expect(isAdminApi('/api/auth/logout')).toBe(false);
+    expect(isAdminApi('/api/auth/totpx')).toBe(false);
+    expect(isAdminApi('/api/content/snapshot?next=/admin/')).toBe(false);
+    expect(isAdminApi('https://evil.test/api/auth/totp')).toBe(false);
+  });
+
+  it('keeps the session on a 422 or 409 of the second-factor routes', async () => {
+    const { http, backend, session }: ReturnType<typeof setup> = setup();
+    const login: Promise<LoginStep> = session.login({
+      email: 'a@b.fr',
+      password: 'p',
+      remember: false,
+    });
+    backend
+      .expectOne('/api/auth/login')
+      .flush({ status: 'authenticated', accessToken: 'jwt-1', expiresIn: 300 });
+    await login;
+
+    for (const [url, status, code] of [
+      ['/api/auth/totp/setup', 422, 'identity.password-mismatch'],
+      ['/api/auth/totp/enable', 409, 'identity.totp-state'],
+    ] as const) {
+      const result: Promise<unknown> = firstValueFrom(http.post<unknown>(url, {}));
+      await flushMicrotasks();
+      const call: TestRequest = backend.expectOne(url);
+      expect(call.request.headers.get('authorization')).toBe('Bearer jwt-1');
+      call.flush({ status, code, title: code }, { status, statusText: 'Refused' });
+      await expect(result).rejects.toMatchObject({ status });
+      backend.expectNone('/api/auth/refresh');
+      expect(session.authenticated()).toBe(true);
+    }
+  });
+
+  it('treats a 401 of a second-factor route as an expired session', async () => {
+    const { http, backend, session }: ReturnType<typeof setup> = setup();
+    const login: Promise<LoginStep> = session.login({
+      email: 'a@b.fr',
+      password: 'p',
+      remember: false,
+    });
+    backend
+      .expectOne('/api/auth/login')
+      .flush({ status: 'authenticated', accessToken: 'jwt-1', expiresIn: 300 });
+    await login;
+
+    const result: Promise<unknown> = firstValueFrom(http.get<unknown>('/api/auth/totp'));
+    await flushMicrotasks();
+    backend.expectOne('/api/auth/totp').flush(null, { status: 401, statusText: 'Unauthorized' });
+    await flushMicrotasks();
+    backend.expectOne('/api/auth/refresh').flush(null, { status: 401, statusText: 'Unauthorized' });
+    await expect(result).rejects.toMatchObject({ status: 401 });
+    expect(session.authenticated()).toBe(false);
+  });
+
+  it('sends the code step without a bearer even with an open session', async () => {
+    const { http, backend, session }: ReturnType<typeof setup> = setup();
+    const login: Promise<LoginStep> = session.login({
+      email: 'a@b.fr',
+      password: 'p',
+      remember: false,
+    });
+    backend
+      .expectOne('/api/auth/login')
+      .flush({ status: 'authenticated', accessToken: 'jwt-1', expiresIn: 300 });
+    await login;
+    void firstValueFrom(http.post<unknown>('/api/auth/login/totp', {}));
+    await flushMicrotasks();
+    expect(backend.expectOne('/api/auth/login/totp').request.headers.has('authorization')).toBe(
+      false,
+    );
   });
 });
 

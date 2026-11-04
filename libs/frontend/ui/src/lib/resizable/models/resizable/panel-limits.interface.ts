@@ -1,9 +1,12 @@
+import type { PanelSize } from '@internal/ui/lib/resizable/models/resizable/panel-size.type';
+
 /**
  * Interface PanelLimits
  * @interface PanelLimits
  *
  * @description
- * Minimum and maximum size accepted by one panel in a resizable group, expressed as percentages.
+ * Minimum and maximum size accepted by one panel in a resizable group, each a percentage of the group
+ * or a `'<n>px'` length.
  */
 export interface PanelLimits {
   // #region Properties
@@ -12,21 +15,21 @@ export interface PanelLimits {
    * @readonly
    *
    * @description
-   * Lower size bound for the panel, as a percentage of the group's full size.
+   * Lower size bound for the panel.
    *
-   * @type {number}
+   * @type {PanelSize}
    */
-  readonly min: number;
+  readonly min: PanelSize;
 
   /**
    * Property max
    * @readonly
    *
    * @description
-   * Upper size bound for the panel, as a percentage of the group's full size.
+   * Upper size bound for the panel.
    *
-   * @type {number}
+   * @type {PanelSize}
    */
-  readonly max: number;
+  readonly max: PanelSize;
   // #endregion
 }

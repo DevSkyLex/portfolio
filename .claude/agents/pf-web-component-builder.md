@@ -62,7 +62,7 @@ Answer in order; the first "yes" wins.
 | Question                                                                  | Lands in                                                                                                                                                        |
 | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Is it the route entry for a public URL?                                   | `libs/frontend/<ctx>/feature/src/lib/ui/pages/<name>-page/` (example `libs/frontend/content/feature/src/lib/ui/pages/project-page/`)                            |
-| Is it an admin screen (French only, client-rendered, D18)?                | `libs/frontend/<ctx>/feature-admin/src/lib/ui/pages/`                                                                                                           |
+| Is it an admin screen (localized, client-rendered, D18)?                  | `libs/frontend/<ctx>/feature-admin/src/lib/ui/pages/`                                                                                                           |
 | Is it a home-page section that reads a store or a service?                | `libs/frontend/<ctx>/feature/src/lib/ui/sections/` (example `libs/frontend/content/feature/src/lib/ui/sections/hero-section/hero-section.component.ts`)         |
 | Does it render a context model through inputs only?                       | `libs/frontend/<ctx>/ui/src/lib/<name>/` (example `libs/frontend/content/ui/src/lib/project-card/`); `layer:ui` may read `layer:model` (D11), never data access |
 | Is it site chrome (header, footer, layout) or a shell page (home, error)? | `libs/frontend/shell/src/lib/layout/` or `libs/frontend/shell/src/lib/pages/`                                                                                   |
@@ -90,8 +90,8 @@ is no `shared`, `common` or `utils` project.
 
 - Compose from `@vfortin/ui` first (`button[uiBtn]`, `div[uiCard]`, `ui-field`…, see
   `libs/frontend/ui/README.md`); never re-implement an entry that exists, never wrap one to rename it.
-- Literal Tailwind classes over the tokens of `libs/frontend/design-tokens/src/theme.css` (`bg-void`,
-  `bg-void-raised`, `text-star`, `text-star-muted`, `border-line`, `rounded-field`, `duration-(--dur-pop)`).
+- Literal Tailwind classes over the tokens of `libs/frontend/design-tokens/src/theme.css` (`bg-surface`,
+  `bg-surface-raised`, `text-fg`, `text-fg-muted`, `border-border`, `rounded-md`, `duration-(--dur-pop)`).
   The dark theme is the default; light is `[data-theme='light']` on `<html>`, so semantic tokens follow
   it without `dark:` variants. A computed class name produces no CSS.
 - Icons: `NgIcon` from `@ng-icons/core` with `@ng-icons/lucide` (interface), `@ng-icons/simple-icons`
@@ -102,7 +102,7 @@ is no `shared`, `common` or `utils` project.
 - Public copy is French source with an explicit id: `i18n="@@contact.lead"` in templates,
   `$localize` with `:@@area.key:` in TypeScript. After a copy change run `npx nx run web:extract-i18n`
   and add the English `<target>` in `apps/web/src/locale/messages.en.xlf`; the build fails on a missing
-  translation. Admin screens stay plain French without `$localize` (D18).
+  translation. Admin screens follow the same rule with `@@admin.<area>.<key>` ids (D18 revision).
 - Plain hierarchy, factual copy: no eyebrow labels, `01/02` numbering, slogan titles or bracket
   placeholders in the UI.
 

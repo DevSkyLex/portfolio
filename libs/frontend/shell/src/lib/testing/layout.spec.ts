@@ -4,18 +4,34 @@ import type { ThemeMode } from '@internal/web-shell/lib/theme/models/theme-mode/
 import { provideAdminInboxSummary } from '@vfortin/contact-web-data-access/summary';
 import { provideAdminProjectNavigation } from '@vfortin/content-web-data-access/navigation';
 import { provideAdminSession } from '@vfortin/identity-web-data-access/session';
+import { registerLocaleData } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
+import localeFr from '@angular/common/locales/fr';
 import {
   type TestRequest,
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { ApplicationInitStatus, LOCALE_ID, PLATFORM_ID } from '@angular/core';
+import {
+  ApplicationInitStatus,
+  EnvironmentInjector,
+  LOCALE_ID,
+  PLATFORM_ID,
+  runInInjectionContext,
+} from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { type Route, Router, provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  type Route,
+  type Routes,
+  Router,
+  provideRouter,
+  withComponentInputBinding,
+} from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { provideContentSnapshots } from '@vfortin/content-web-data-access';
 import { AdminLayoutComponent } from '@internal/web-shell/lib/admin/layouts/admin-layout/admin-layout.component';
+import { IDENTITY_SECURITY_ROUTES } from '@vfortin/identity-web-feature';
+import { ADMIN_PROTECTED_ROUTES } from '@internal/web-shell/lib/admin/admin-protected.routes';
 import { ADMIN_ROUTES } from '@internal/web-shell/lib/admin/admin.routes';
 import { APP_ROUTES } from '@internal/web-shell/lib/app.routes';
 import { provideWebShell } from '@internal/web-shell/lib/provide-web-shell';
@@ -35,6 +51,10 @@ const snapshot: {
   projects: never[];
   timeline: never[];
   skills: never[];
+  legal: Record<
+    'notice' | 'privacy',
+    { updatedOn: string; document: { type: 'doc'; content: { type: 'paragraph' }[] } }
+  >;
 } = {
   locale: 'fr',
   revision: 1,
@@ -42,6 +62,16 @@ const snapshot: {
   projects: [],
   timeline: [],
   skills: [],
+  legal: {
+    notice: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+    privacy: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+  },
 };
 
 /**
@@ -54,6 +84,9 @@ const snapshot: {
  */
 const flush: () => Promise<unknown> = (): Promise<unknown> =>
   new Promise((resolve) => setTimeout(resolve));
+
+// The legal pages spell their date with the French locale data, which the French build registers.
+registerLocaleData(localeFr);
 
 describe('SiteLayoutComponent', () => {
   beforeEach(() => {
@@ -323,6 +356,8 @@ describe('admin area', () => {
   it('counts unread messages and opens a command palette on Ctrl+K', async () => {
     TestBed.configureTestingModule({
       providers: [
+        // The French build, whose « Voir le site » opens `/` (the English one opens `/en/`).
+        { provide: LOCALE_ID, useValue: 'fr' },
         provideRouter([{ path: 'admin/projects/:id', children: [] }]),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -342,7 +377,7 @@ describe('admin area', () => {
     first.flush({ member: [], totalItems: 3 });
     await fixture.whenStable();
     const root: HTMLElement = fixture.nativeElement;
-    expect(root.querySelector('nav')?.textContent).toContain('3 non lu(s)');
+    expect(root.querySelector('nav')?.textContent).toContain('3 non lus');
 
     const palette: () => Element | null = (): Element | null =>
       document.querySelector('[aria-label="Palette de commandes"]');
@@ -374,7 +409,7 @@ describe('admin area', () => {
           position: 0,
           summary: { fr: 'Summary' },
           lead: { fr: 'Lead' },
-          periodLabel: { fr: 'Period' },
+          period: { start: { year: 2026, month: null }, end: null },
           client: { fr: 'Client' },
           role: { fr: 'Role' },
           place: { fr: 'Place' },
@@ -382,15 +417,9 @@ describe('admin area', () => {
           techs: [],
           featured: false,
           missing: [],
-          article: {
-            context: [],
-            work: [],
-            workList: [],
-            choices: [],
-            result: [],
-            lessons: [],
-            captions: [],
-          },
+          article: { fr: { type: 'doc', content: [{ type: 'paragraph' }] } },
+          cover: null,
+          media: [],
         },
       ],
       totalItems: 1,
@@ -469,10 +498,50 @@ describe('admin area', () => {
   });
 
   it('guards the admin pages and loads them on demand', async () => {
-    expect(ADMIN_ROUTES.map((route) => route.path)).toEqual(['login', '']);
+    expect(ADMIN_ROUTES.map((route) => route.path)).toEqual(['login', 'oauth/authorize', '']);
+    // The OAuth consent page (D45) and the protected layout both require the session.
     expect(ADMIN_ROUTES[1]?.canMatch).toHaveLength(1);
+    expect(ADMIN_ROUTES[2]?.canMatch).toHaveLength(1);
     const admin: Route | undefined = APP_ROUTES.find((route) => route.path === 'admin');
-    await expect(admin?.loadChildren?.()).resolves.toBe(ADMIN_ROUTES);
+    let settled: boolean = false;
+    // The router calls loadChildren in the route's injection context.
+    const loaded: Promise<unknown> = Promise.resolve(
+      runInInjectionContext(TestBed.inject(EnvironmentInjector), () => admin?.loadChildren?.()),
+    ).then((routes) => {
+      settled = true;
+      return routes;
+    });
+    const link: HTMLLinkElement | null = document.head.querySelector('link[data-admin-stylesheet]');
+    expect(link?.getAttribute('href')).toBe('admin.css');
+    // The admin routes wait for their stylesheet, so no admin screen renders unstyled.
+    await import('@internal/web-shell/lib/admin/admin.routes');
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    // jsdom fetches no stylesheet: give the link the parsed sheet the browser would have.
+    if (link) Object.defineProperty(link, 'sheet', { value: { cssRules: { length: 1 } } });
+    link?.dispatchEvent(new Event('load'));
+    await expect(loaded).resolves.toBe(ADMIN_ROUTES);
+    link?.remove();
+  });
+
+  it('mounts the owner security routes below the protected layout', () => {
+    const children: Routes = ADMIN_PROTECTED_ROUTES[0]?.children ?? [];
+    expect(children.map((route) => route.path)).toEqual([
+      '',
+      'dashboard',
+      'projects',
+      'experiences',
+      'education',
+      'information',
+      'legal',
+      'messages',
+      'security',
+    ]);
+    // The dashboard is the administration's landing page.
+    expect(children[0]?.redirectTo).toBe('dashboard');
+    expect(children.find((route) => route.path === 'security')?.children).toBe(
+      IDENTITY_SECURITY_ROUTES,
+    );
   });
 });
 

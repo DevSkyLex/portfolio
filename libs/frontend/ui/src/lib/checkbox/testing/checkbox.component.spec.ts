@@ -2,6 +2,7 @@ import { Component, signal, type WritableSignal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { FormField, disabled, form, type FieldTree } from '@angular/forms/signals';
 import { CheckboxComponent } from '@internal/ui/lib/checkbox/checkbox.component';
+import { CONTROL_CLASSES } from '@internal/ui/lib/checkbox/constants/checkbox.constants';
 
 /**
  * Component FormHostComponent
@@ -97,6 +98,13 @@ class MixedHostComponent {
 }
 
 describe('CheckboxComponent', () => {
+  it('takes the 2 px accent focus ring of buttons and links', () => {
+    expect(CONTROL_CLASSES.split(' ')).toEqual(
+      expect.arrayContaining(['outline-2', 'focus-visible:outline-accent/55']),
+    );
+    expect(CONTROL_CLASSES).not.toContain('outline-accent/12');
+  });
+
   it('syncs with a Signal Forms field, both ways, including the disabled state', async () => {
     const fixture: ComponentFixture<FormHostComponent> = TestBed.createComponent(FormHostComponent);
     await fixture.whenStable();

@@ -106,7 +106,7 @@ export class AlertTitleDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'col-start-2 min-h-5 text-control text-star group-data-[variant=danger]/alert:text-danger-ink group-data-[variant=info]/alert:text-info-ink group-data-[variant=success]/alert:text-success-ink group-data-[variant=warning]/alert:text-warning-ink',
+      'col-start-2 min-h-5 text-control text-fg group-data-[variant=danger]/alert:text-danger-ink group-data-[variant=info]/alert:text-info-ink group-data-[variant=success]/alert:text-success-ink group-data-[variant=warning]/alert:text-warning-ink',
       this.class(),
     ),
   );
@@ -147,7 +147,7 @@ export class AlertDescriptionDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('col-start-2 grid justify-items-start gap-1 text-small text-star-muted', this.class()),
+    cn('col-start-2 grid justify-items-start gap-1 text-small text-fg-muted', this.class()),
   );
   // #endregion
 }

@@ -7,6 +7,7 @@ import { provideContentSnapshotLoader } from '@internal/content-web-data-access/
 import { provideContentSnapshotValidation } from '@internal/content-web-data-access/lib/providers/content-snapshot-validation/content-snapshot-validation.provider';
 import { provideContentSnapshots } from '@internal/content-web-data-access/lib/providers/content-snapshots/content-snapshots.provider';
 import { SiteContentService } from '@internal/content-web-data-access/lib/services/site-content/site-content.service';
+import { SiteLinksService } from '@internal/content-web-data-access/lib/services/site-links/site-links.service';
 import { loadSiteContent } from '@internal/content-web-data-access/lib/providers/content-snapshot-loader/load-site-content';
 import { contentSnapshotStateKey } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshot-state-key';
 
@@ -20,7 +21,34 @@ import { contentSnapshotStateKey } from '@internal/content-web-data-access/lib/t
  */
 const base: Omit<ContentSnapshot, 'locale' | 'projects'> = {
   revision: 3,
-  profile: { heroIntro: 'Intro', aboutStatement: 'Phrase', aboutLead: 'Lead', facts: [] },
+  profile: {
+    heroIntro: 'Intro',
+    aboutStatement: 'Phrase',
+    aboutLead: 'Lead',
+    facts: [],
+    links: [{ kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null }],
+  },
+  legal: {
+    notice: {
+      updatedOn: '2026-11-02',
+      document: {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: 'Préambule.' }] },
+          {
+            type: 'heading',
+            attrs: { level: 2 },
+            content: [{ type: 'text', text: 'Éditeur du site' }],
+          },
+          { type: 'paragraph', content: [{ type: 'text', text: 'Valentin Fortin.' }] },
+        ],
+      },
+    },
+    privacy: {
+      updatedOn: '2026-11-03',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+  },
   timeline: [
     {
       id: 'job',
@@ -70,14 +98,24 @@ const project = (slug: string, featured: boolean): ProjectDto => ({
   techs: ['angular'],
   featured,
   article: {
-    context: [],
-    work: [],
-    workList: [],
-    choices: [],
-    result: [],
-    lessons: [],
-    captions: [],
+    type: 'doc',
+    content: [
+      { type: 'paragraph', content: [{ type: 'text', text: 'Intro.' }] },
+      { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Contexte' }] },
+      { type: 'paragraph', content: [{ type: 'text', text: 'Contexte.' }] },
+    ],
   },
+  cover:
+    slug === 'movah'
+      ? {
+          src: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
+          small: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp',
+          width: 2400,
+          height: 1350,
+          alt: 'Accueil de Movah',
+        }
+      : null,
+  seo: { title: null, description: null, keywords: [] },
 });
 
 /**
@@ -129,6 +167,21 @@ function setup(
 }
 
 describe('SiteContentService', (): void => {
+  it('serves the legal documents and hands the links over to the layout', (): void => {
+    const service: SiteContentService = setup('fr');
+    const links: SiteLinksService = TestBed.inject<SiteLinksService>(SiteLinksService);
+    expect(service.legal('notice').sections.map((section): string => section.label)).toEqual([
+      'Éditeur du site',
+    ]);
+    expect(service.legal('privacy').updatedOn).toBe('2026-11-03');
+    expect(links.email()).toEqual({
+      kind: 'email',
+      href: 'mailto:contact@valentin-fortin.pro',
+      label: 'contact@valentin-fortin.pro',
+    });
+    expect(links.profiles()).toEqual([]);
+  });
+
   it('separates the featured project from the others', (): void => {
     const service: SiteContentService = setup('fr');
     expect(service.featuredProject()?.slug).toBe('movah');
@@ -172,6 +225,29 @@ describe('SiteContentService', (): void => {
       url: 'https://www.iotplatform.fr/fr/',
       label: 'iotplatform.fr',
     });
+  });
+
+  it('splits the article at its level-2 headings and keeps the cover', (): void => {
+    const service: SiteContentService = setup('fr');
+    const movah: ReturnType<SiteContentService['project']> = service.project('movah');
+    expect(movah?.intro).toEqual([
+      { kind: 'paragraph', content: [{ kind: 'text', text: 'Intro.' }] },
+    ]);
+    expect(movah?.sections).toEqual([
+      {
+        id: 'contexte',
+        label: 'Contexte',
+        blocks: [{ kind: 'paragraph', content: [{ kind: 'text', text: 'Contexte.' }] }],
+      },
+    ]);
+    expect(movah?.cover).toEqual({
+      src: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
+      small: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp',
+      width: 2400,
+      height: 1350,
+      alt: 'Accueil de Movah',
+    });
+    expect(service.otherProjects()[0]?.cover).toBeNull();
   });
 
   it("reads the snapshot of the build's locale", (): void => {

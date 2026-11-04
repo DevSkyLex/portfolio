@@ -52,13 +52,14 @@ unmeasured violation counts in documentation.
 `tools/` contains recurring workspace-wide checks only; see its [inventory](../../tools/README.md).
 The owning Nx projects run their own helpers:
 
-| Owner            | Command                                                  | Purpose                                                          |
-| ---------------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
-| `web`            | `npx nx run web:content-snapshot`                        | Collect matching FR/EN revisions before a public release         |
-| `web`            | `npx nx run web:test-snapshot`                           | Prove failed collection preserves existing snapshots             |
-| `web-e2e`        | `npx nx run web-e2e:test-tooling`                        | Verify preview routing and disposable Compose lifecycle          |
-| CI               | `node .github/scripts/coverage-summary.mjs`              | Present native coverage summaries in GitHub Actions              |
-| Claude and Codex | `node .agents/scripts/comment-diff.mjs <before> <after>` | Check syntax and protected directives during comment maintenance |
+| Owner            | Command                                                  | Purpose                                                                                     |
+| ---------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `web`            | `npx nx run web:content-snapshot`                        | Collect matching FR/EN revisions before a public release                                    |
+| `web`            | `npx nx run web:test-snapshot`                           | Prove failed collection preserves existing snapshots; test the sitemap and robots generator |
+| `web`            | `npx nx run web:seo-files`                               | Build, then write `sitemap.xml` and `robots.txt` (D42)                                      |
+| `web-e2e`        | `npx nx run web-e2e:test-tooling`                        | Verify preview routing and disposable Compose lifecycle                                     |
+| CI               | `node .github/scripts/coverage-summary.mjs`              | Present native coverage summaries in GitHub Actions                                         |
+| Claude and Codex | `node .agents/scripts/comment-diff.mjs <before> <after>` | Check syntax and protected directives during comment maintenance                            |
 
 E2E helpers are inside the E2E project, so Nx affected selection sees their changes. Both browser
 targets depend on their tooling tests. The collector depends on its own tests; CI quality also runs

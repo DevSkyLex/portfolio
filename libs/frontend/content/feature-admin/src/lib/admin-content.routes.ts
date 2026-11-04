@@ -14,7 +14,7 @@ export const ADMIN_CONTENT_ROUTES: Routes = [
       import('@internal/content-web-feature-admin/lib/ui/pages/admin-projects-page/admin-projects-page.component').then(
         (m) => m.AdminProjectsPageComponent,
       ),
-    title: 'Projets — Administration',
+    title: $localize`:@@admin.projects.routeTitle:Projets — Administration`,
   },
   {
     path: ':id',
@@ -23,6 +23,6 @@ export const ADMIN_CONTENT_ROUTES: Routes = [
         (m) => m.AdminProjectEditPageComponent,
       ),
     canDeactivate: [leaveProjectEditor],
-    title: 'Projet — Administration',
+    title: $localize`:@@admin.project.routeTitle:Projet — Administration`,
   },
 ];

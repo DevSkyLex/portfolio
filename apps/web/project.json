@@ -8,10 +8,13 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": ["{options.outputPath.base}"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/apps/web",
+        "outputPath": {
+          "base": "dist/apps/web",
+          "media": "assets"
+        },
         "browser": "apps/web/src/main.ts",
         "tsConfig": "apps/web/tsconfig.app.json",
         "assets": [
@@ -20,7 +23,14 @@
             "input": "apps/web/public"
           }
         ],
-        "styles": ["apps/web/src/styles.css"],
+        "styles": [
+          "apps/web/src/styles.css",
+          {
+            "input": "apps/web/src/admin.css",
+            "bundleName": "admin",
+            "inject": false
+          }
+        ],
         "server": "apps/web/src/main.server.ts",
         "outputMode": "static",
         "localize": true,
@@ -51,14 +61,84 @@
             "fonts": true
           }
         },
+        "e2e": {
+          "outputPath": {
+            "base": "dist/apps/web-e2e-site",
+            "media": "assets"
+          },
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "700kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "optimization": {
+            "scripts": true,
+            "styles": {
+              "minify": true,
+              "inlineCritical": false
+            },
+            "fonts": true
+          },
+          "fileReplacements": [
+            {
+              "replace": "apps/web/src/environments/audience-measurement.ts",
+              "with": "apps/web/src/environments/audience-measurement.e2e.ts"
+            }
+          ]
+        },
         "development": {
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,
-          "localize": ["fr"]
+          "localize": ["fr"],
+          "fileReplacements": [
+            {
+              "replace": "apps/web/src/environments/content-snapshot.ts",
+              "with": "apps/web/src/environments/content-snapshot.development.ts"
+            }
+          ]
         }
       },
       "inputs": ["production", "^production", "{projectRoot}/content-snapshot/*.json"]
+    },
+    "seo-files": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "test-snapshot"],
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/scripts/generate-seo-files.mjs",
+        "{projectRoot}/content-snapshot/*.json",
+        {
+          "env": "SITE_ORIGIN"
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/apps/web/browser/sitemap.xml",
+        "{workspaceRoot}/dist/apps/web/browser/robots.txt"
+      ],
+      "options": {
+        "command": "node apps/web/scripts/generate-seo-files.mjs"
+      }
+    },
+    "e2e-site": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["test-snapshot"],
+      "options": {
+        "commands": [
+          "npx nx run web:build:e2e",
+          "node apps/web/scripts/generate-seo-files.mjs dist/apps/web-e2e-site/browser"
+        ],
+        "parallel": false
+      }
     },
     "serve": {
       "continuous": true,
@@ -119,12 +199,20 @@
         "command": "node apps/web/scripts/fetch-content-snapshot.mjs"
       }
     },
+    "local-refresh": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["test-snapshot"],
+      "options": {
+        "command": "node apps/web/scripts/local-refresh.mjs"
+      }
+    },
     "test-snapshot": {
       "executor": "nx:run-commands",
       "cache": true,
       "inputs": ["{projectRoot}/scripts/**/*.mjs", "sharedGlobals"],
       "options": {
-        "command": "node --test apps/web/scripts/testing/fetch-content-snapshot.test.mjs"
+        "command": "node --test apps/web/scripts/testing/fetch-content-snapshot.test.mjs apps/web/scripts/testing/generate-seo-files.test.mjs apps/web/scripts/testing/local-refresh.test.mjs"
       }
     },
     "extract-i18n": {

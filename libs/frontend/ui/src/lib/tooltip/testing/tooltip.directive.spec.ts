@@ -25,6 +25,19 @@ import { TooltipDirective } from '@internal/ui/lib/tooltip/tooltip.directive';
 class HostComponent {}
 
 /**
+ * Component ShortcutHostComponent
+ * @class ShortcutHostComponent
+ *
+ * @description
+ * Renders a tooltip trigger whose bubble shows a keyboard shortcut.
+ */
+@Component({
+  imports: [TooltipDirective],
+  template: `<button type="button" uiTooltip="Gras" [tooltipShortcut]="['Ctrl', 'B']">B</button>`,
+})
+class ShortcutHostComponent {}
+
+/**
  * Function wait
  *
  * @description
@@ -111,6 +124,24 @@ describe('TooltipDirective', (): void => {
     trigger.focus();
     await fixture.whenStable();
     expect(tooltip()).toBeNull();
+    trigger.blur();
+  });
+
+  it('shows the shortcut in key caps hidden from assistive technology', async (): Promise<void> => {
+    const fixture: ComponentFixture<ShortcutHostComponent> =
+      TestBed.createComponent(ShortcutHostComponent);
+    await fixture.whenStable();
+    const trigger: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+    trigger.focus();
+    await fixture.whenStable();
+    const keys: HTMLElement | null | undefined = tooltip()?.querySelector(
+      '[data-slot="tooltip-shortcut"]',
+    );
+    expect(keys?.getAttribute('aria-hidden')).toBe('true');
+    expect(
+      [...(keys?.querySelectorAll('kbd[data-slot="kbd"]') ?? [])].map((k) => k.textContent),
+    ).toEqual(['Ctrl', 'B']);
+    expect(tooltip()?.firstChild?.textContent).toBe('Gras');
     trigger.blur();
   });
 });

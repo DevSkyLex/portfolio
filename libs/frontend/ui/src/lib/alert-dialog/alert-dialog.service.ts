@@ -56,7 +56,7 @@ export class AlertDialogService {
       ...options,
       role: 'alertdialog',
       slot: 'alert-dialog-content',
-      panelClass: cn(alertDialogContentVariants(), options.class),
+      panelClass: cn(alertDialogContentVariants({ size: options.size }), options.class),
       showClose: false,
       closeOnBackdropClick: false,
     });

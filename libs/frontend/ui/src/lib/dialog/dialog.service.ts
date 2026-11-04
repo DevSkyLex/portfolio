@@ -1,6 +1,7 @@
 import { Dialog, type DialogRef } from '@angular/cdk/dialog';
+import { createGlobalPositionStrategy } from '@angular/cdk/overlay';
 import { hasModifierKey } from '@angular/cdk/keycodes';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import { DialogContainerComponent } from '@internal/ui/lib/dialog/components/dialog-container/dialog-container.component';
 import { DIALOG_PANEL } from '@internal/ui/lib/dialog/tokens/dialog-panel/dialog-panel.token';
@@ -93,6 +94,17 @@ export class DialogService {
    * @type {Dialog}
    */
   private readonly dialog: Dialog = inject<Dialog>(Dialog);
+
+  /**
+   * Property injector
+   * @readonly
+   *
+   * @description
+   * Injector creating the position strategy of a top-anchored panel.
+   *
+   * @type {Injector}
+   */
+  private readonly injector: Injector = inject<Injector>(Injector);
   // #endregion
 
   // #region Methods
@@ -118,7 +130,14 @@ export class DialogService {
       ...options,
       role: 'dialog',
       slot: 'dialog-content',
-      panelClass: cn(dialogContentVariants(), options.class),
+      panelClass: cn(dialogContentVariants({ size: options.size }), options.class),
+      ...(options.placement === 'top'
+        ? {
+            positionStrategy: createGlobalPositionStrategy(this.injector)
+              .top('15vh')
+              .centerHorizontally(),
+          }
+        : {}),
     });
   }
 

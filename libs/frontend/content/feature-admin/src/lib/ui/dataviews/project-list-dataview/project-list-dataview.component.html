@@ -1,130 +1,204 @@
-@for (group of groups(); track group.status) {
-  <section [attr.aria-label]="group.label">
-    <div
-      class="flex h-9 items-center gap-2 border-b border-line bg-void-raised px-6 text-[13px] @max-[640px]:px-4"
-    >
-      @if (group.status === 'published') {
-        <ng-icon class="text-success-ink" [svg]="icons.published" size="14" aria-hidden="true" />
-      } @else {
-        <ng-icon class="text-star-faint" [svg]="icons.draft" size="14" aria-hidden="true" />
-      }
-      <span class="font-medium text-star">{{ group.label }}</span>
-      <span class="text-star-faint">{{ group.projects.length }}</span>
+<ui-data-table
+  caption="Projets"
+  i18n-caption="@@admin.projects.title"
+  density="compact"
+  activatable
+  selectable
+  resizableColumns
+  stickyHeader
+  emptyLayout="fill"
+  class="[--data-table-sticky-top:3rem]"
+  columnWidthsKey="portfolio.admin.table.projects.v2"
+  [framed]="false"
+  [data]="rows()"
+  [columns]="columns"
+  [facets]="facets"
+  [rowKey]="key"
+  [rowLabel]="name"
+  [searchPredicate]="search"
+  [loading]="loading()"
+  [pageSizeOptions]="pageSizes"
+  [labels]="labels"
+  [(state)]="state"
+  [(selection)]="selection"
+  (rowActivated)="projectOpened.emit($event)"
+>
+  <ng-template uiDataTableCell="titre" [uiDataTableCellRows]="rows()" let-project>
+    <!-- Zero intrinsic width, then the cell's: the title truncates instead of widening the table. -->
+    <div class="flex w-0 min-w-full items-baseline gap-2.5">
+      <a
+        class="truncate font-medium text-fg outline-2 outline-offset-2 outline-transparent focus-visible:rounded-xs focus-visible:outline-accent/55"
+        [routerLink]="[project.id]"
+        >{{ project.title.fr }}</a
+      >
     </div>
-    <ul role="list">
-      @for (project of group.projects; track project.id) {
-        <li
-          class="group flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-6 py-1.5 transition-colors duration-(--dur-pop) ease-orbit hover:bg-star/3 @max-[640px]:px-4"
+  </ng-template>
+
+  <ng-template uiDataTableCell="slug" [uiDataTableCellRows]="rows()" let-project>
+    <!-- A filled badge, unlike the outlined statuses: the slug is an identifier, not a state. -->
+    <span
+      uiBadge
+      variant="outline"
+      class="max-w-full bg-surface-raised font-mono text-[12px] font-normal"
+      [title]="'/' + project.slug"
+      ><span class="truncate"><span class="text-fg-faint">/</span>{{ project.slug }}</span></span
+    >
+  </ng-template>
+
+  <ng-template uiDataTableCell="statut" [uiDataTableCellRows]="rows()" let-project>
+    @if (project.status === 'published') {
+      <span uiBadge dot variant="success" i18n="@@admin.projects.status.published">Publié</span>
+    } @else {
+      <span uiBadge variant="outline" dot i18n="@@admin.projects.status.draft">Brouillon</span>
+    }
+  </ng-template>
+
+  <ng-template uiDataTableCell="accueil" [uiDataTableCellRows]="rows()" let-project>
+    @if (project.featured) {
+      <span class="inline-flex items-center gap-1.5 text-fg-muted" data-slot="project-featured">
+        <ng-icon class="text-info-ink" [svg]="icons.featured" size="14" aria-hidden="true" />
+        <ng-container i18n="@@admin.projects.featured.yes">Oui</ng-container
+        ><span class="sr-only" i18n="@@admin.projects.featured.srSuffix">, mis en avant</span>
+      </span>
+    } @else {
+      <ui-data-table-empty-cell />
+    }
+  </ng-template>
+
+  <ng-template uiDataTableCell="completude" [uiDataTableCellRows]="rows()" let-project>
+    @if (project.missing.length > 0) {
+      <span
+        uiBadge
+        variant="warning"
+        class="cursor-help"
+        tabindex="0"
+        data-row-activation="ignore"
+        [uiTooltip]="missingText(project)"
+      >
+        <ng-icon [svg]="icons.missing" size="12" aria-hidden="true" />
+        <ng-container i18n="@@admin.projects.completeness.missingCount"
+          >{{ project.missing.length }} à compléter</ng-container
         >
-          @if (project.status === 'published') {
-            <ng-icon
-              class="shrink-0 text-success-ink"
-              [svg]="icons.published"
-              size="14"
-              aria-hidden="true"
-            />
-            <span class="sr-only">Publié</span>
-          } @else {
-            <ng-icon
-              class="shrink-0 text-star-faint"
-              [svg]="icons.draft"
-              size="14"
-              aria-hidden="true"
-            />
-            <span class="sr-only">Brouillon</span>
-          }
-          <a
-            class="truncate text-[14px] font-medium text-star outline-2 outline-offset-2 outline-transparent focus-visible:rounded-[4px] focus-visible:outline-signal/55"
-            [routerLink]="[project.id]"
-            >{{ project.title.fr }}</a
-          >
-          <span class="truncate font-mono text-[12px] text-star-faint">{{ project.slug }}</span>
-          <span class="flex-1"></span>
-          @if (project.featured) {
-            <span uiBadge variant="info" class="h-5 px-2">
-              <ng-icon [svg]="icons.featured" size="12" aria-hidden="true" />
-              Accueil
-            </span>
-          }
-          @if (project.missing.length > 0) {
-            <span uiBadge variant="warning" class="h-5 px-2" [title]="project.missing.join(', ')">
-              <ng-icon [svg]="icons.missing" size="12" aria-hidden="true" />
-              {{ project.missing.length }} champ(s) à compléter avant publication
-            </span>
-          } @else {
-            <span class="inline-flex h-5 items-center gap-1 px-1 text-[12px] text-star-faint">
-              <ng-icon
-                class="text-success-ink"
-                [svg]="icons.complete"
-                size="12"
-                aria-hidden="true"
-              />
-              Complet en français et en anglais
-            </span>
-          }
-          <button
-            uiBtn
-            variant="ghost"
-            size="sm"
-            class="size-7 px-0"
-            type="button"
-            uiTooltip="Actions"
-            [attr.aria-label]="'Actions pour « ' + project.title.fr + ' »'"
-            [uiDropdownMenuTrigger]="actions"
-            align="end"
-          >
-            <ng-icon [svg]="icons.more" size="16" aria-hidden="true" />
-          </button>
-          <ng-template #actions>
-            <div uiDropdownMenuContent class="min-w-44">
-              <a uiDropdownMenuItem class="min-h-8 text-[13px]" [routerLink]="[project.id]">
-                <ng-icon [svg]="icons.edit" size="14" aria-hidden="true" />
-                Modifier
-              </a>
-              @if (project.status === 'published') {
-                <a
-                  uiDropdownMenuItem
-                  class="min-h-8 text-[13px]"
-                  [href]="'/projects/' + project.slug"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  <ng-icon [svg]="icons.open" size="14" aria-hidden="true" />
-                  Voir la page
-                </a>
-                <div uiDropdownMenuSeparator></div>
-                <button
-                  uiDropdownMenuItem
-                  class="min-h-8 text-[13px]"
-                  type="button"
-                  [disabled]="writing()"
-                  (triggered)="unpublishRequested.emit(project)"
-                >
-                  <ng-icon
-                    class="text-danger-ink"
-                    [svg]="icons.unpublish"
-                    size="14"
-                    aria-hidden="true"
-                  />
-                  Dépublier
-                </button>
-              } @else {
-                <div uiDropdownMenuSeparator></div>
-                <button
-                  uiDropdownMenuItem
-                  class="min-h-8 text-[13px]"
-                  type="button"
-                  [disabled]="writing() || project.missing.length > 0"
-                  (triggered)="publishRequested.emit(project)"
-                >
-                  <ng-icon [svg]="icons.publish" size="14" aria-hidden="true" />
-                  Publier
-                </button>
-              }
-            </div>
-          </ng-template>
-        </li>
+      </span>
+    } @else {
+      <span uiBadge variant="success">
+        <ng-icon [svg]="icons.complete" size="12" aria-hidden="true" />
+        <ng-container i18n="@@admin.projects.completeness.complete">Complet</ng-container>
+      </span>
+    }
+  </ng-template>
+
+  <ng-template uiDataTableCell="technos" [uiDataTableCellRows]="rows()" let-project>
+    <div class="flex w-0 min-w-full items-center gap-1 overflow-hidden">
+      @if (!project.techs.length) {
+        <ui-data-table-empty-cell />
       }
-    </ul>
-  </section>
-}
+      @for (tech of project.techs.slice(0, 3); track tech) {
+        <span uiBadge variant="outline" class="h-5 px-1.5 font-mono text-[11px] font-normal">{{
+          tech
+        }}</span>
+      }
+      @if (project.techs.length > 3) {
+        <span class="text-[12px] text-fg-faint" [title]="project.techs.slice(3).join(', ')"
+          >+{{ project.techs.length - 3 }}</span
+        >
+      }
+    </div>
+  </ng-template>
+
+  <ng-template uiDataTableCell="version" [uiDataTableCellRows]="rows()" let-project>
+    <span class="font-mono text-[12px] text-fg-muted">v{{ project.version }}</span>
+  </ng-template>
+
+  <ng-template uiDataTableCell="actions" [uiDataTableCellRows]="rows()" let-project>
+    <button
+      uiBtn
+      variant="ghost"
+      size="icon-xs"
+      type="button"
+      uiTooltip="Actions"
+      i18n-uiTooltip="@@admin.projects.row.menu"
+      align="end"
+      [attr.aria-label]="actionsLabel(project)"
+      [attr.data-project-actions]="project.id"
+      [uiDropdownMenuTrigger]="actions"
+    >
+      <ng-icon [svg]="icons.more" size="16" aria-hidden="true" />
+    </button>
+    <ng-template #actions>
+      <div uiDropdownMenuContent class="min-w-44">
+        <a uiDropdownMenuItem [routerLink]="[project.id]">
+          <ng-icon [svg]="icons.edit" size="14" aria-hidden="true" />
+          <ng-container i18n="@@admin.projects.row.edit">Modifier</ng-container>
+        </a>
+        @if (project.status === 'published') {
+          <a uiDropdownMenuItem target="_blank" rel="noopener" [href]="publicPath(project)">
+            <ng-icon [svg]="icons.open" size="14" aria-hidden="true" />
+            <ng-container i18n="@@admin.projects.row.viewPage">Voir la page</ng-container>
+          </a>
+          <div uiDropdownMenuSeparator></div>
+          <button
+            uiDropdownMenuItem
+            type="button"
+            [disabled]="writing()"
+            (triggered)="unpublishRequested.emit(project)"
+          >
+            <ng-icon class="text-danger-ink" [svg]="icons.unpublish" size="14" aria-hidden="true" />
+            <ng-container i18n="@@admin.projects.action.unpublish">Dépublier</ng-container>
+          </button>
+        } @else {
+          <div uiDropdownMenuSeparator></div>
+          <button
+            uiDropdownMenuItem
+            type="button"
+            [disabled]="writing() || project.missing.length > 0"
+            (triggered)="publishRequested.emit(project)"
+          >
+            <ng-icon [svg]="icons.publish" size="14" aria-hidden="true" />
+            <ng-container i18n="@@admin.projects.action.publish">Publier</ng-container>
+          </button>
+        }
+      </div>
+    </ng-template>
+  </ng-template>
+
+  <ng-template uiDataTableEmpty let-layout>
+    <div uiEmpty [layout]="layout">
+      <div uiEmptyHeader>
+        <div uiEmptyMedia variant="icon">
+          <ng-icon [svg]="icons.empty" size="16" />
+        </div>
+        <p uiEmptyTitle i18n="@@admin.projects.empty.title">Aucun projet</p>
+        <p uiEmptyDescription i18n="@@admin.projects.empty.description">
+          Les projets du service de contenu apparaissent ici, publiés ou en brouillon.
+        </p>
+      </div>
+    </div>
+  </ng-template>
+</ui-data-table>
+
+<ui-selection-bar
+  label="Actions sur la sélection"
+  i18n-label="@@admin.projects.selection.label"
+  clearLabel="Effacer la sélection"
+  i18n-clearLabel="@@admin.projects.selection.clear"
+  [clearHint]="clearHint"
+  [count]="selection().length"
+  [countLabel]="selectedCount"
+  (cleared)="selection.set([])"
+>
+  @for (action of bulkActions; track action.action) {
+    <button
+      uiBtn
+      variant="ghost"
+      size="sm"
+      type="button"
+      class="h-8 rounded-sm px-2.5 text-[13px]"
+      [attr.data-bulk-action]="action.action"
+      [disabled]="writing() || eligible(action.action) === 0"
+      (click)="bulkRequested.emit({ action: action.action, projects: selection() })"
+    >
+      {{ action.label }}
+    </button>
+  }
+</ui-selection-bar>

@@ -1,105 +1,175 @@
 <header
-  class="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-void px-6 @max-[640px]:px-4"
+  class="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[640px]:px-4"
 >
-  <h1 class="text-[14px] font-semibold text-star">Messages</h1>
-  <span class="text-[13px] text-star-faint">{{ store.total() }}</span>
-  <div
-    uiToggleGroup
-    required
-    class="ml-auto gap-px rounded-[8px] border border-line-field p-0.5"
-    aria-label="Filtrer par statut"
-    [value]="filterKey()"
-    (valueChange)="applyFilter($event)"
-  >
-    @for (filter of filters; track filter.key) {
-      <button
-        uiToggleGroupItem
-        class="h-6 min-w-0 rounded-[6px] px-2.5 text-[12px] font-medium"
-        [value]="filter.key"
-      >
-        {{ filter.label }}
-      </button>
-    }
-  </div>
+  <ui-sidebar-trigger class="-ml-2" />
+  <span class="font-medium text-fg" aria-current="page" i18n="@@admin.inbox.title">Messages</span>
 </header>
 
-@if (store.loadCallState().error; as error) {
-  <div
-    uiAlert
-    variant="danger"
-    class="mx-6 mt-4 w-auto px-3 py-2.5 text-[13px]/5 @max-[640px]:mx-4"
-  >
-    <ng-icon [svg]="icons.error" size="14" aria-hidden="true" />
-    <p class="col-start-2">{{ error.message }}</p>
-    <div class="col-start-2 mt-1.5">
-      <button
-        uiBtn
-        size="sm"
-        variant="secondary"
-        class="h-7 px-2.5 text-[13px]"
-        type="button"
-        [disabled]="store.loading()"
-        (click)="store.load()"
-      >
-        Réessayer
-      </button>
-    </div>
-  </div>
-}
-
-@if (store.loading() && store.messages().length === 0) {
-  <div class="flex flex-col" role="status">
-    <span class="sr-only">Chargement…</span>
-    @for (row of [1, 2, 3]; track row) {
-      <div class="flex flex-col gap-2 border-b border-line px-4 py-3" aria-hidden="true">
-        <span uiSkeleton class="h-3 w-40 rounded-full"></span>
-        <span uiSkeleton class="h-3 w-64 rounded-full"></span>
-      </div>
-    }
-  </div>
-} @else if (store.messages().length === 0) {
-  <div
-    uiEmpty
-    class="justify-start gap-4 rounded-none px-6 py-16 md:px-6 md:py-16 @max-[640px]:px-4"
-  >
-    <div uiEmptyHeader>
-      <div uiEmptyMedia class="mb-1 text-star-faint">
-        <ng-icon [svg]="icons.empty" size="24" />
-      </div>
-      <p uiEmptyTitle class="font-sans text-[14px] font-medium">Aucun message.</p>
-      <p uiEmptyDescription class="text-[13px]">
-        Les messages sont supprimés automatiquement trois ans après leur réception.
-      </p>
-    </div>
-  </div>
-} @else {
-  <div class="grid min-h-0 flex-1 grid-cols-[360px_minmax(0,1fr)] @max-[1024px]:grid-cols-1">
-    <contact-message-list-dataview
-      [messages]="store.messages()"
-      [selectedId]="selected()?.id ?? null"
-      [page]="store.page()"
-      [pages]="store.pages()"
-      (opened)="select($event)"
-      (pageChange)="store.goTo($event)"
-    />
-    @if (!narrow()) {
-      @if (selected(); as message) {
-        <contact-message-detail
-          [message]="message"
-          [writing]="store.writing()"
-          (readRequested)="markRead($event)"
-          (archiveRequested)="archive($event)"
-          (removeRequested)="remove($event)"
-        />
+<!-- The status filter is a tab set: its triggers sit in the page header, one panel holds the list. -->
+<div
+  uiTabs
+  activation="manual"
+  class="min-h-0 flex-1 gap-0"
+  [value]="filterKey()"
+  (valueChange)="applyFilter($event)"
+>
+  <ui-page-header>
+    <h1 uiPageHeaderTitle>
+      <ng-container i18n="@@admin.inbox.title">Messages</ng-container>
+      @if (total() !== null) {
+        <!-- The spaces stay inside the spans: Angular drops the whitespace-only text between them. -->
+        <span class="text-[14px] font-normal text-fg-faint tabular-nums">
+          {{ total() }}<span class="sr-only"> {{ totalLabel() }}</span></span
+        >
       }
+    </h1>
+    <div uiPageHeaderTabs>
+      <div
+        uiTabsList
+        class="gap-5"
+        aria-label="Filtrer par statut"
+        i18n-aria-label="@@admin.inbox.filter.tabs"
+      >
+        @for (filter of filters; track filter.key) {
+          <button class="h-10 gap-1.5 text-[13px] font-medium" [uiTabsTrigger]="filter.key">
+            <ng-icon class="shrink-0" [svg]="filter.icon" size="14" aria-hidden="true" />
+            {{ filter.label }}
+            @if (filter.key === 'received' && unreadCount(); as unread) {
+              <ui-count-badge [count]="unread"
+                ><span class="sr-only" i18n="@@admin.inbox.filter.unreadCount">
+                  non lus</span
+                ></ui-count-badge
+              >
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </ui-page-header>
+
+  <div class="flex min-h-0 flex-col" [uiTabsContent]="filterKey()">
+    @if (store.loadCallState().error; as error) {
+      <div
+        uiAlert
+        variant="danger"
+        class="mx-6 mt-4 w-auto px-3 py-2.5 text-[13px]/5 @max-[640px]:mx-4"
+      >
+        <ng-icon [svg]="icons.error" size="14" aria-hidden="true" />
+        <p class="col-start-2">{{ error.message }}</p>
+        <div class="col-start-2 mt-1.5">
+          <button
+            uiBtn
+            size="xs"
+            variant="secondary"
+            type="button"
+            [disabled]="store.loading()"
+            (click)="store.load()"
+            i18n="@@admin.inbox.retry"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (store.loading() && store.messages().length === 0) {
+      <div class="flex flex-col" role="status">
+        <span class="sr-only" i18n="@@admin.inbox.loading">Chargement…</span>
+        @for (row of [1, 2, 3]; track row) {
+          <div class="flex flex-col gap-2 border-b border-border px-4 py-3" aria-hidden="true">
+            <span uiSkeleton class="h-3 w-40 rounded-full"></span>
+            <span uiSkeleton class="h-3 w-64 rounded-full"></span>
+          </div>
+        }
+      </div>
+    } @else if (store.messages().length === 0 && !store.loadCallState().error) {
+      <!-- Nothing follows the list in the tab panel: the fill layout. -->
+      @let current = filter();
+      <div uiEmpty layout="fill">
+        <div uiEmptyHeader>
+          <div uiEmptyMedia variant="icon">
+            <ng-icon [svg]="current.icon" size="16" />
+          </div>
+          <p uiEmptyTitle>{{ current.empty }}</p>
+          <p uiEmptyDescription>{{ current.emptyHint }}</p>
+        </div>
+        @if (filterKey() !== 'all') {
+          <div uiEmptyContent>
+            <button
+              uiBtn
+              variant="secondary"
+              size="xs"
+              type="button"
+              (click)="applyFilter('all')"
+              i18n="@@admin.inbox.empty.showAll"
+            >
+              Voir tous les messages
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <div
+        uiResizablePanelGroup
+        #panes="uiResizablePanelGroup"
+        class="min-h-0 flex-1"
+        (layoutChange)="savePanes(panes.pixelSizes()[0])"
+      >
+        <div
+          uiResizablePanel
+          class="grid min-w-0 grid-cols-[minmax(0,1fr)]"
+          [defaultSize]="listDefault()"
+          [minSize]="panesLayout.limits[0].min"
+          [maxSize]="panesLayout.limits[0].max"
+        >
+          <contact-message-list-dataview
+            [messages]="store.messages()"
+            [label]="filter().listLabel"
+            [selectedId]="currentId()"
+            [page]="store.page()"
+            [pages]="store.pages()"
+            (opened)="select($event)"
+            (pageChange)="store.goTo($event)"
+          />
+        </div>
+        @if (!narrow()) {
+          @if (selected(); as message) {
+            <ui-resizable-handle
+              #panesHandle
+              label="Redimensionner la liste des messages"
+              i18n-label="@@admin.inbox.panes.resize"
+              class="outline-2 hover:bg-border-hover focus-visible:bg-fg focus-visible:outline-accent/55 data-dragging:bg-fg"
+              step="16px"
+              (dblclick)="resetPanes(panes, panesHandle)"
+            />
+            <div
+              uiResizablePanel
+              class="grid min-w-0 grid-cols-[minmax(0,1fr)]"
+              [minSize]="panesLayout.limits[1].min"
+              [maxSize]="panesLayout.limits[1].max"
+            >
+              <contact-message-detail
+                [message]="message"
+                [writing]="store.writing()"
+                (archiveRequested)="archive($event)"
+                (removeRequested)="remove($event)"
+              />
+            </div>
+          }
+        }
+      </div>
     }
   </div>
-}
+</div>
 
 <ng-template #reading>
   @if (selected(); as message) {
-    <div class="flex h-12 shrink-0 items-center gap-2 border-b border-line pr-2 pl-4">
-      <h2 uiSheetTitle class="min-w-0 truncate font-sans text-[14px]/5 font-semibold">
+    <div class="flex h-12 shrink-0 items-center gap-2 border-b border-border pr-2 pl-4">
+      <h2
+        uiSheetTitle
+        class="min-w-0 truncate font-sans text-[14px]/5 font-semibold"
+        i18n="@@admin.inbox.sheet.title"
+      >
         Message de {{ message.name }}
       </h2>
       <button
@@ -107,18 +177,20 @@
         uiSheetClose
         size="sm"
         variant="ghost"
-        class="ml-auto size-8 shrink-0 px-0"
+        class="ml-auto size-8 shrink-0 rounded-sm px-0"
         aria-label="Fermer"
+        i18n-aria-label="@@admin.inbox.sheet.close"
         uiTooltip="Fermer (Échap)"
+        i18n-uiTooltip="@@admin.inbox.sheet.closeTooltip"
         tooltipPosition="left"
       >
         <ng-icon [svg]="icons.close" size="16" aria-hidden="true" />
       </button>
     </div>
     <contact-message-detail
+      surface="raised"
       [message]="message"
       [writing]="store.writing()"
-      (readRequested)="markRead($event)"
       (archiveRequested)="archive($event)"
       (removeRequested)="remove($event)"
     />

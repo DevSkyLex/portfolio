@@ -71,7 +71,7 @@ export class LoginCodeFormComponent {
    * @readonly
    *
    * @description
-   * French rejection of the last code, or `null` when there is none.
+   * Localized rejection of the last code, or `null` when there is none.
    *
    * @type {InputSignal<string | null>}
    */
@@ -211,7 +211,10 @@ export class LoginCodeFormComponent {
         this.invalid.set(null);
         this.submitted.emit(this.model());
       },
-      onInvalid: () => this.invalid.set('Saisissez les six chiffres du code.'),
+      onInvalid: () =>
+        this.invalid.set(
+          $localize`:@@admin.identity.validation.code:Saisissez les six chiffres du code.`,
+        ),
     });
   }
   // #endregion

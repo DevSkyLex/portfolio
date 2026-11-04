@@ -1,0 +1,7 @@
+{
+  "access_token": "header.payload.signature",
+  "token_type": "Bearer",
+  "expires_in": 300,
+  "refresh_token": "opaque-refresh-token-value",
+  "scope": "content:read content:write"
+}

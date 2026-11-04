@@ -76,7 +76,7 @@ export interface LoginCommand {
  * @type LoginResult
  *
  * @description
- * Outcome of a correct password: a session at once on a trusted device, otherwise a single-use challenge
+ * Outcome of a correct password: a session at once without a second factor or on a trusted device, otherwise a single-use challenge
  * to send back with the one-time code before `expiresIn` seconds.
  */
 export type LoginResult =
@@ -88,7 +88,7 @@ export type LoginResult =
  * @class Login
  *
  * @description
- * First login step. Verifies the password under the account lock (so failed counts cannot race), then either opens the session for a device trusted by this account or opens a one-time-code challenge (`VerifyLoginCode`).
+ * First login step. Verifies the password under the account lock (so failed counts cannot race), then opens the session when the second factor is off or the device is trusted by this account, otherwise opens a one-time-code challenge (`VerifyLoginCode`).
  */
 export class Login {
   // #region Constructor
@@ -121,7 +121,7 @@ export class Login {
    * @method execute
    *
    * @description
-   * A wrong password commits the failed attempt and rejects with `InvalidCredentialsError`; an active lock propagates `AccountLockedError`. A right password resets the failures only when a trusted device skips the code: a challenge alone leaves the counter as it is, since the second factor is still unproven.
+   * A wrong password commits the failed attempt and rejects with `InvalidCredentialsError`; an active lock propagates `AccountLockedError`. A right password opens the session at once, resetting the failures, when the second factor is off or a trusted device skips the code; a challenge alone leaves the counter as it is, since the second factor is still unproven.
    *
    * @param {LoginCommand} command - Email, password, "remember me" and device token of the attempt.
    *
@@ -153,11 +153,24 @@ export class Login {
           return null;
         }
 
+        // Second factor off (D17): the password alone opens the session.
+        if (!account.isTwoFactorEnabled) {
+          await accounts.save(account.succeededWithoutCode());
+          const session: Session = await startSession(
+            this.services,
+            tokens,
+            account.id,
+            command.remember,
+            now,
+          );
+          return { status: 'authenticated', session };
+        }
+
         const device: TrustedDevice | null =
           deviceHash === null ? null : await devices.findByHash(deviceHash);
         if (device !== null && device.isTrustedFor(account.id, now)) {
           await devices.save(device.used(now));
-          await accounts.save(account.succeededOnTrustedDevice());
+          await accounts.save(account.succeededWithoutCode());
           const session: Session = await startSession(
             this.services,
             tokens,

@@ -1,6 +1,6 @@
 <button
   #control
-  class="group/radio inline-flex items-center gap-3 text-start text-control text-star outline-none focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+  class="group/radio inline-flex items-center gap-3 text-start text-control text-fg outline-none focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
   type="button"
   role="radio"
   [id]="controlId()"
@@ -13,7 +13,7 @@
 >
   <span [class]="indicatorClasses()" data-slot="radio-group-indicator">
     <span
-      class="size-2.5 scale-0 rounded-full bg-star transition-transform duration-(--dur-pop) ease-orbit group-aria-checked/radio:scale-100 motion-reduce:transition-none"
+      class="size-2.5 scale-0 rounded-full bg-fill transition-transform duration-(--dur-pop) ease-orbit group-aria-checked/radio:scale-100 motion-reduce:transition-none"
     ></span>
   </span>
   <ng-content />

@@ -1,21 +1,28 @@
 import {
+  LegalDocument,
+  type LegalDocumentKind,
   LocalizedText,
   Period,
   type Profile,
   Project,
+  ProjectPeriod,
   type ProjectProps,
+  ProjectSeo,
   type SkillGroup,
   Slug,
-  type TimelineEntry,
+  TimelineEntry,
+  type TimelineKind,
 } from '@vfortin/content-domain';
 import type {
   ContentRepository,
   ContentSnapshotReader,
+  MediaRecord,
 } from '@internal/content-application/lib/ports/content/content.ports';
 import {
   GetPublishedContent,
   type PublishedContent,
 } from '@internal/content-application/lib/use-cases/get-published-content/get-published-content.use-case';
+import { articleDoc, mediaRecord } from '@internal/content-application/lib/testing/content.fakes';
 
 /**
  * Constant t
@@ -33,22 +40,29 @@ const t: (fr: string) => LocalizedText = (fr: string): LocalizedText =>
  * Function project
  *
  * @description
- * Builds a minimal valid project with the requested status and display position.
+ * Builds a minimal valid project with the requested status, display position, cover and figures.
  *
  * @param {string} slug - Project identifier and public slug.
  * @param {number} position - Display-order position.
  * @param {ProjectProps['status']} status - Visibility state.
+ * @param {string | null} cover - Media of the cover, or `null`.
+ * @param {readonly string[]} figures - Media of the French figures.
  * @returns {Project} Rehydrated project aggregate.
  */
-function project(slug: string, position: number, status: ProjectProps['status']): Project {
-  const p: LocalizedText[] = [t('§')];
+function project(
+  slug: string,
+  position: number,
+  status: ProjectProps['status'],
+  cover: string | null = null,
+  figures: readonly string[] = [],
+): Project {
   return Project.rehydrate({
     id: slug,
     slug: Slug.of(slug),
     title: t(slug),
     summary: t('s'),
     lead: t('l'),
-    periodLabel: t('2026'),
+    period: ProjectPeriod.of({ start: { year: 2026, month: null }, end: null }),
     client: t('c'),
     role: t('r'),
     place: t('p'),
@@ -58,7 +72,9 @@ function project(slug: string, position: number, status: ProjectProps['status'])
     position,
     status,
     version: 1,
-    article: { context: p, work: p, workList: p, choices: p, result: p, lessons: p, captions: p },
+    article: { fr: articleDoc('§', figures) },
+    cover: cover === null ? null : { media: cover, alt: { fr: 'Couverture' } },
+    seo: ProjectSeo.empty(),
   });
 }
 
@@ -71,18 +87,28 @@ function project(slug: string, position: number, status: ProjectProps['status'])
  * @param {string} id - Timeline identifier and title.
  * @param {number} start - Starting calendar year.
  * @param {number | null} end - Ending calendar year, or `null` for an ongoing entry.
+ * @param {number} position - Position within its kind.
+ * @param {TimelineKind} kind - Kind of the entry.
  * @returns {TimelineEntry} Validated domain timeline entry.
  */
-function entry(id: string, start: number, end: number | null): TimelineEntry {
-  return {
+function entry(
+  id: string,
+  start: number,
+  end: number | null,
+  position: number = 0,
+  kind: TimelineKind = 'education',
+): TimelineEntry {
+  return TimelineEntry.rehydrate({
     id,
-    kind: 'education',
+    kind,
     title: t(id),
     place: t('Tours'),
     description: t('d'),
     period: Period.of({ year: start, month: 9 }, end === null ? null : { year: end, month: 6 }),
     techs: [],
-  };
+    position,
+    version: 1,
+  });
 }
 
 /**
@@ -109,6 +135,14 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
    * Count of project-list reads used to verify whether cached content was reused.
    */
   public reads: number = 0;
+
+  /**
+   * Property mediaRequests
+   *
+   * @description
+   * Identifiers requested from `loadMedia`, per call.
+   */
+  public readonly mediaRequests: (readonly string[])[] = [];
   // #endregion
 
   // #region Constructor
@@ -127,6 +161,7 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
     private readonly projects: Project[],
     private readonly timeline: TimelineEntry[],
     private readonly skills: SkillGroup[],
+    private readonly media: MediaRecord[] = [],
   ) {}
   // #endregion
 
@@ -146,7 +181,31 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
       aboutStatement: t('a'),
       aboutLead: t('l'),
       facts: [],
+      links: [],
+      version: 1,
     });
+  }
+
+  /**
+   * Method loadLegalDocuments
+   * @method loadLegalDocuments
+   *
+   * @description
+   * Resolves both legal documents with one paragraph per language.
+   *
+   * @returns {Promise<Readonly<Record<LegalDocumentKind, LegalDocument>>>} Documents by kind.
+   */
+  public loadLegalDocuments(): Promise<Readonly<Record<LegalDocumentKind, LegalDocument>>> {
+    const legal: (kind: LegalDocumentKind) => LegalDocument = (
+      kind: LegalDocumentKind,
+    ): LegalDocument =>
+      LegalDocument.rehydrate({
+        kind,
+        body: { fr: articleDoc(kind), en: articleDoc(kind) },
+        updatedAt: new Date('2026-11-02T12:00:00Z'),
+        version: 1,
+      });
+    return Promise.resolve({ notice: legal('notice'), privacy: legal('privacy') });
   }
 
   /**
@@ -187,6 +246,23 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
    */
   public listSkillGroups(): Promise<SkillGroup[]> {
     return Promise.resolve(this.skills);
+  }
+
+  /**
+   * Method loadMedia
+   * @method loadMedia
+   *
+   * @description
+   * Records the requested identifiers and resolves the matching media fixtures.
+   *
+   * @param {readonly string[]} ids - Requested media.
+   * @returns {Promise<MediaRecord[]>} Media found.
+   */
+  public loadMedia(ids: readonly string[]): Promise<MediaRecord[]> {
+    this.mediaRequests.push(ids);
+    return Promise.resolve(
+      this.media.filter((record: MediaRecord): boolean => ids.includes(record.id)),
+    );
   }
 
   /**
@@ -235,7 +311,30 @@ describe('GetPublishedContent', (): void => {
     expect(content.revision).toBe(7);
   });
 
-  it('sorts the timeline chronologically and skills by position', async (): Promise<void> => {
+  it('reads the legal documents with the rest of the content', async (): Promise<void> => {
+    const content: PublishedContent = await new GetPublishedContent(
+      new InMemoryContentRepository([], [], []),
+    ).execute();
+    expect(content.legal.notice.kind).toBe('notice');
+    expect(content.legal.privacy.kind).toBe('privacy');
+  });
+
+  it('loads the media of the published projects only', async (): Promise<void> => {
+    const repository: InMemoryContentRepository = new InMemoryContentRepository(
+      [
+        project('crm', 0, 'published', 'cover', ['shot', 'cover']),
+        project('draft', 1, 'draft', 'hidden', ['hidden-shot']),
+      ],
+      [],
+      [],
+      [mediaRecord('cover'), mediaRecord('shot'), mediaRecord('hidden')],
+    );
+    const content: PublishedContent = await new GetPublishedContent(repository).execute();
+    expect(repository.mediaRequests).toEqual([['cover', 'shot']]);
+    expect([...content.media.keys()]).toEqual(['cover', 'shot']);
+  });
+
+  it('orders the timeline by kind then date, whatever the position, and skills by position', async (): Promise<void> => {
     const skill: (id: string, position: number) => SkillGroup = (
       id: string,
       position: number,
@@ -248,14 +347,19 @@ describe('GetPublishedContent', (): void => {
     });
     const repository: InMemoryContentRepository = new InMemoryContentRepository(
       [],
-      [entry('master', 2024, 2026), entry('bts', 2021, 2023), entry('poste', 2023, null)],
+      [
+        entry('poste', 2023, null, 0, 'experience'),
+        entry('bts', 2021, 2023, 1),
+        entry('master', 2024, 2026, 0),
+      ],
       [skill('outils', 3), skill('front', 0)],
     );
     const content: PublishedContent = await new GetPublishedContent(repository).execute();
+    // « master » holds position 0, yet « bts » started earlier.
     expect(content.timeline.map((e: TimelineEntry): string => e.id)).toEqual([
       'bts',
-      'poste',
       'master',
+      'poste',
     ]);
     expect(content.skills.map((s: SkillGroup): string => s.id)).toEqual(['front', 'outils']);
   });

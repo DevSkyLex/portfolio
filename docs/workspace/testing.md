@@ -79,7 +79,7 @@ npx nx run web-e2e:e2e-stack                      # isolated real-service accept
 
 ## E2E scope
 
-`web-e2e` serves `dist/apps/web/browser` with `apps/web-e2e/support/preview/serve-site.mjs` (Nginx routing: prerendered pages, `/admin/*` → `index.csr.html`, administration locale redirects/cache/indexing headers, real 404, `/api/*` → 404). Its dedicated preview port is `E2E_PORT` (default 4200, validated integer 1–65535), shared by the server command, readiness and browser URLs. Choose an available port; never stop or reuse an unknown user's server. `BASE_URL` deliberately selects an existing endpoint and disables preview startup.
+`web-e2e` serves `dist/apps/web-e2e-site/browser` (`web:e2e-site`: the production build with the placeholder GA4 measurement id of `audience-measurement.e2e.ts`, D48) with `apps/web-e2e/support/preview/serve-site.mjs` (Nginx routing: prerendered pages, `/admin/*` → `index.csr.html`, administration locale redirects/cache/indexing headers, real 404, `/api/*` → 404). Its dedicated preview port is `E2E_PORT` (default 4200, validated integer 1–65535), shared by the server command, readiness and browser URLs. Choose an available port; never stop or reuse an unknown user's server. `BASE_URL` deliberately selects an existing endpoint and disables preview startup.
 
 Without services, it covers home/project pages, English/legal pages, FR/EN 404s, contact client validation, unauthenticated admin/keyboard/axe, theme persistence/system, language switching, mobile menu/focus, skip link and reduced motion. Startup probes prove that public hydration consumes TransferState without a duplicate snapshot fetch, administration does not load public snapshots, and failed application scripts leave prerendered text readable, including descendant opacity.
 
@@ -107,13 +107,15 @@ its volumes are not used by this workflow.
 
 The overlay mounts only committed public development examples. It does not prepare or read local
 service secrets. The runner creates fresh project-scoped database/key volumes, seeds content and
-bootstraps an ephemeral account. Its random password and generated TOTP enrollment are passed to the
-test process in memory, not checked into files or printed to the command log. The runner removes its
+bootstraps an ephemeral, password-only account. Its random password is passed to the test process in
+memory, not checked into files or printed to the command log; the journey enrolls the one-time code
+through `/api/auth/totp/setup` and `/api/auth/totp/enable` and keeps the secret in memory too. The runner removes its
 own project, volumes and three image tags after success or a handled failure; project-name validation
 rejects shared or manually supplied project names. Jobs reuse the three service images, and inherited
 Compose project/env-file/profile settings cannot redirect their ownership.
 
-The `@stack` specs under `apps/web-e2e/src/stack/` exercise the credentials/TOTP UI, real refresh cookie,
+The `@stack` specs under `apps/web-e2e/src/stack/` exercise the password-only login, the TOTP enrollment
+and removal routes, the credentials/TOTP UI, real refresh cookie,
 project identity switching and draft navigation protection, real form saves, visible revision conflicts
 and reload, UI validation/publication, public contact submission and Mailpit delivery, inbox read/archive
 and immediate sidebar counts, and failed logout followed by successful retry. Authenticated login,

@@ -17,14 +17,14 @@
 />
 @if (indeterminate()) {
   <ng-icon
-    class="pointer-events-none absolute text-void peer-disabled:opacity-50"
+    class="pointer-events-none absolute text-on-fill peer-disabled:opacity-50"
     [svg]="icons.minus"
     [size]="iconSize()"
     aria-hidden="true"
   />
 } @else if (checked()) {
   <ng-icon
-    class="pointer-events-none absolute text-void peer-disabled:opacity-50"
+    class="pointer-events-none absolute text-on-fill peer-disabled:opacity-50"
     [svg]="icons.check"
     [size]="iconSize()"
     aria-hidden="true"

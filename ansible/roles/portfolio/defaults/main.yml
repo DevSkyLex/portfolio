@@ -15,6 +15,13 @@ portfolio_web_memory_limit: "{{ lookup('ansible.builtin.env', 'WEB_MEMORY_LIMIT'
 portfolio_web_cpu_limit: "{{ lookup('ansible.builtin.env', 'WEB_CPU_LIMIT') | default('1.0', true) }}"
 portfolio_log_max_size: "{{ lookup('ansible.builtin.env', 'LOG_MAX_SIZE') | default('10m', true) }}"
 portfolio_log_max_files: "{{ lookup('ansible.builtin.env', 'LOG_MAX_FILES') | default('5', true) }}"
+# SEO dashboard (D47), all optional: Search Console property, numeric GA4 property id and the
+# comma-separated key URLs measured by PageSpeed Insights (empty: home FR/EN and the first project).
+portfolio_seo_search_console_property: "{{ lookup('ansible.builtin.env', 'SEO_SEARCH_CONSOLE_PROPERTY') }}"
+portfolio_seo_ga4_property_id: "{{ lookup('ansible.builtin.env', 'SEO_GA4_PROPERTY_ID') }}"
+portfolio_seo_web_vitals_urls: "{{ lookup('ansible.builtin.env', 'SEO_WEB_VITALS_URLS') }}"
+# Uploaded images (D40): written by content-service (UID service_uid), read by Nginx, backed up with the dump.
+portfolio_media_root: '{{ app_root }}/media'
 # Backups: daily (systemd OnCalendar, server time zone), kept N days, restore-tested weekly.
 portfolio_backup_on_calendar: '*-*-* 03:30:00'
 portfolio_backup_retention_days: 14

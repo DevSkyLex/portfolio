@@ -11,6 +11,9 @@
   trigger that would replace the prerendered markup.
 - Admin access goes through `adminGuard` and the lazy identity interceptor; tokens never reach
   `TransferState`, the HTML or web storage.
+- The `admin` route of `APP_ROUTES` resolves after `AdminStylesheetService` has loaded `admin.css` (D31):
+  admin styles never reach a prerendered page and no admin screen renders unstyled. `admin.css` is
+  unhashed and served with `no-cache` by Nginx and the preview.
 - Keep parity with the Nginx routing (`docker/nginx/snippets/site.conf`) and its e2e copy
   `apps/web-e2e/support/preview/serve-site.mjs` (D25).
 

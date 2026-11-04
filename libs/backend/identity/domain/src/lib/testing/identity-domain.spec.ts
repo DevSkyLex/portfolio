@@ -6,6 +6,7 @@ import {
 } from '@internal/identity-domain/lib/account/admin-account';
 import {
   AccountLockedError,
+  TwoFactorStateError,
   WeakPasswordError,
 } from '@internal/identity-domain/lib/errors/domain-error';
 import {
@@ -49,18 +50,60 @@ const account = (): AdminAccount =>
     id: 'a1',
     email: ' Moi@Exemple.FR ',
     passwordHash: 'hash',
-    totpSecret: 'SECRET',
   });
 
 describe('AdminAccount', (): void => {
-  it('normalizes the e-mail address and exposes its credentials', (): void => {
+  it('normalizes the e-mail address and starts with the second factor off', (): void => {
     const created: AdminAccount = account();
     expect(created.email).toBe('moi@exemple.fr');
-    expect([created.id, created.passwordHash, created.totpSecret]).toEqual([
-      'a1',
-      'hash',
-      'SECRET',
-    ]);
+    expect([created.id, created.passwordHash, created.totpSecret]).toEqual(['a1', 'hash', null]);
+    expect(created.pendingTotpSecret).toBeNull();
+    expect(created.isTwoFactorEnabled).toBe(false);
+  });
+
+  it('activates a pending secret only once confirmed, recording the step', (): void => {
+    const pending: AdminAccount = account()
+      .startTwoFactorSetup('FIRST')
+      .startTwoFactorSetup('NEXT');
+    expect(pending.pendingTotpSecret).toBe('NEXT');
+    expect(pending.isTwoFactorEnabled).toBe(false);
+    const enabled: AdminAccount = pending.enableTwoFactor(42);
+    expect(enabled.snapshot()).toMatchObject({
+      totpSecret: 'NEXT',
+      pendingTotpSecret: null,
+      lastTotpStep: 42,
+    });
+    expect(enabled.isTwoFactorEnabled).toBe(true);
+    expect(enabled.isFreshTotpStep(42)).toBe(false);
+  });
+
+  it('refuses the second-factor changes its state does not allow', (): void => {
+    const enabled: AdminAccount = account().startTwoFactorSetup('S').enableTwoFactor(1);
+    expect((): AdminAccount => account().enableTwoFactor(1)).toThrow(TwoFactorStateError);
+    expect((): AdminAccount => account().disableTwoFactor()).toThrow(TwoFactorStateError);
+    expect((): AdminAccount => enabled.startTwoFactorSetup('OTHER')).toThrow(TwoFactorStateError);
+    expect((): AdminAccount => enabled.enableTwoFactor(2)).toThrow(TwoFactorStateError);
+    try {
+      enabled.enableTwoFactor(2);
+      expect.unreachable();
+    } catch (error: unknown) {
+      expect((error as TwoFactorStateError).code).toBe('identity.totp-state');
+    }
+  });
+
+  it('removes both secrets and the replay step when the second factor is turned off, keeping the lock state', (): void => {
+    const disabled: AdminAccountProps = account()
+      .startTwoFactorSetup('S')
+      .enableTwoFactor(1)
+      .failed(now)
+      .disableTwoFactor()
+      .snapshot();
+    expect(disabled).toMatchObject({
+      totpSecret: null,
+      pendingTotpSecret: null,
+      lastTotpStep: 0,
+      failedAttempts: 1,
+    });
   });
 
   it(`locks after ${MAX_FAILED_ATTEMPTS} failures, for 15 minutes`, (): void => {
@@ -97,11 +140,11 @@ describe('AdminAccount', (): void => {
     expect(current.isFreshTotpStep(101)).toBe(true);
   });
 
-  it('clears the failures on a trusted device without touching the accepted TOTP step', (): void => {
+  it('clears the failures of a login without code without touching the accepted TOTP step', (): void => {
     const current: AdminAccountProps = account()
       .succeeded(42)
       .failed(now)
-      .succeededOnTrustedDevice()
+      .succeededWithoutCode()
       .snapshot();
     expect(current).toMatchObject({ failedAttempts: 0, lastTotpStep: 42, lockedUntil: null });
   });

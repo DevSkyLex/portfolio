@@ -22,6 +22,20 @@
       "when": 1793650539646,
       "tag": "0002_login_challenges_trusted_devices",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793722330828,
+      "tag": "0003_optional_totp",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793804430757,
+      "tag": "0004_oauth_authorization_server",
+      "breakpoints": true
     }
   ]
 }

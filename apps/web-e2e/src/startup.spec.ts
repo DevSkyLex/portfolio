@@ -4,6 +4,8 @@ import {
   type APIRequestContext,
   type Locator,
   type Page,
+  type Request,
+  type Response,
   type Route,
 } from '@playwright/test';
 
@@ -21,7 +23,15 @@ async function activeSnapshotChunk(request: APIRequestContext): Promise<string> 
   const main: string | undefined = /src="([^"]*main-[^"]+\.js)"/.exec(html)?.[1];
   if (!main) throw new Error('Missing built main bundle.');
   const bundle: string = await (await request.get('/' + main.replace(/^\//, ''))).text();
-  const loader: string | undefined = /contentSnapshot:.{0,350}/.exec(bundle)?.[0];
+  // The option is either an inline loader or a reference to the environment's loader function
+  // (`contentSnapshot:t2` … `function t2(a){…}`, D7 development exception), whose body holds the imports.
+  const option: string | undefined = /contentSnapshot:.{0,350}/.exec(bundle)?.[0];
+  const reference: string | undefined = /^contentSnapshot:([\w$]+)[,}]/.exec(option ?? '')?.[1];
+  const loader: string | undefined = reference
+    ? new RegExp(`function ${reference.replace(/\$/g, '\\$')}\\([^)]*\\)\\{.{0,350}`).exec(
+        bundle,
+      )?.[0]
+    : option;
   const chunks: RegExpExecArray[] = [
     ...(loader ?? '').matchAll(/import\([`'"]\.\/(chunk-[^`'"]+\.js)[`'"]\)/g),
   ];
@@ -129,4 +139,96 @@ test('public prerendered content remains readable when the application bundle fa
   await expect
     .poll((): Promise<boolean> => readable(page.getByRole('heading', { level: 1 }).first()))
     .toBe(true);
+});
+
+/**
+ * Function publicStylesheet
+ *
+ * @description
+ * Reads the stylesheet a prerendered page links, discovered from its HTML rather than a frozen hash.
+ *
+ * @param {APIRequestContext} request - Same-origin test client.
+ * @param {string} html - Prerendered page.
+ * @returns {Promise<string>} Public stylesheet text.
+ */
+async function publicStylesheet(request: APIRequestContext, html: string): Promise<string> {
+  const href: string | undefined = /<link rel="stylesheet" href="([^"]*styles-[^"]+\.css)"/.exec(
+    html,
+  )?.[1];
+  if (!href) throw new Error('Missing public stylesheet.');
+  return (await request.get('/' + href.replace(/^\//, ''))).text();
+}
+
+/**
+ * Function projectPath
+ *
+ * @description
+ * First project page linked by the prerendered home page, read from the build instead of a fixture.
+ *
+ * @param {string} home - Prerendered home page.
+ * @returns {string} Root-relative project page path.
+ */
+function projectPath(home: string): string {
+  const path: string | undefined = /href="(\/projects\/[a-z0-9-]+)"/.exec(home)?.[1];
+  if (!path) throw new Error('Missing project link on the home page.');
+  return path;
+}
+
+test('public pages never load the administration stylesheet (D31)', async ({
+  page,
+  request,
+}: {
+  page: Page;
+  request: APIRequestContext;
+}): Promise<void> => {
+  const home: string = await (await request.get('/')).text();
+  const project: string = projectPath(home);
+  const requested: string[] = [];
+  page.on('request', (sent: Request): void => {
+    if (new URL(sent.url()).pathname.endsWith('/admin.css')) requested.push(sent.url());
+  });
+  for (const path of ['/', '/en/', project, '/legal-notice', '/en/privacy']) {
+    const html: string = await (await request.get(path)).text();
+    expect(html, path).not.toContain('admin.css');
+    await page.goto(path);
+    await expect(page.locator('html')).toHaveAttribute('data-app', '');
+  }
+  expect(requested).toEqual([]);
+  // Admin-only catalogue families (resizable panels, sidebar) stay out of the public stylesheet.
+  const styles: string = await publicStylesheet(request, home);
+  const admin: string = await (await request.get('/admin.css')).text();
+  for (const family of ['cursor-col-resize', '/sidebar']) {
+    expect(admin).toContain(family);
+    expect(styles).not.toContain(family);
+  }
+});
+
+test('the administration renders only once its stylesheet has loaded', async ({
+  page,
+}: {
+  page: Page;
+}): Promise<void> => {
+  let release: (() => void) | undefined;
+  const gate: Promise<void> = new Promise<void>((resolve: () => void): void => {
+    release = resolve;
+  });
+  let requests: number = 0;
+  await page.route('**/admin.css', async (route: Route): Promise<void> => {
+    requests++;
+    await gate;
+    await route.continue();
+  });
+  const heading: Locator = page.getByRole('heading', { name: 'Administration', exact: true });
+  const response: Promise<Response> = page.waitForResponse('**/admin.css');
+  await page.goto('/admin/login', { waitUntil: 'domcontentloaded' });
+  await expect.poll((): number => requests).toBe(1);
+  await expect(heading).toHaveCount(0);
+  release?.();
+  expect((await response).headers()['cache-control']).toBe('no-cache');
+  await expect(heading).toBeVisible();
+  // `text-[22px]/7` exists in admin.css only: the login title proves the stylesheet applies.
+  await expect(heading).toHaveCSS('font-size', '22px');
+  await expect(heading).toHaveCSS('line-height', '28px');
+  await expect(page.locator('link[data-admin-stylesheet]')).toHaveAttribute('href', 'admin.css');
+  expect(requests).toBe(1);
 });

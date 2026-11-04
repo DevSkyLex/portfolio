@@ -1,0 +1,296 @@
+<form
+  id="edit-timeline-form"
+  class="@container/form flex flex-1 flex-col gap-8"
+  novalidate
+  (submit)="onSubmit($event)"
+>
+  @if (summary(); as message) {
+    <div uiAlert variant="danger" class="-mb-2">
+      <ng-icon [svg]="icons.alert" size="16" aria-hidden="true" />
+      <p uiAlertTitle class="text-[13px]/5">{{ message }}</p>
+    </div>
+  }
+
+  <section class="flex flex-col gap-6" aria-labelledby="edit-timeline-content">
+    <header class="flex flex-col gap-1">
+      <h2
+        id="edit-timeline-content"
+        class="text-[14px]/5 font-semibold text-fg"
+        i18n="@@admin.timeline.form.content"
+      >
+        Contenu
+      </h2>
+      <p class="text-[13px]/5 text-fg-faint" i18n="@@admin.timeline.form.contentHint">
+        Publié tel quel sur la frise du site, en français et en anglais : le sélecteur accolé à
+        chaque champ change sa langue.
+      </p>
+    </header>
+    <fieldset
+      uiFieldSet
+      class="gap-6"
+      aria-labelledby="edit-timeline-content"
+      [disabled]="pending()"
+    >
+      @for (field of fields; track field.key) {
+        @let lang = shown()[field.key];
+        @let id = 'edit-timeline-' + field.key + '-' + lang;
+        @let error = textError(field.key, lang);
+        @let length = textLength(field.key, lang);
+        @let name = fieldName(field.label, lang);
+        <ui-field
+          size="sm"
+          [required]="true"
+          [label]="field.label"
+          [controlId]="id"
+          [error]="error"
+        >
+          <!--
+            The language toggle is joined to the field: at the end of a one-line control, in a strip
+            under a textarea.
+          -->
+          <div [class]="field.multiline ? 'flex w-full min-w-0 flex-col' : 'flex w-full min-w-0'">
+            @if (field.multiline) {
+              <textarea
+                uiInput
+                size="sm"
+                multiline
+                rows="4"
+                class="relative rounded-b-none text-[14px] focus:z-10"
+                aria-required="true"
+                [id]="id"
+                [attr.aria-label]="name"
+                [attr.lang]="lang === 'en' ? 'en' : null"
+                [attr.aria-describedby]="describedBy(id, error, true)"
+                [attr.aria-invalid]="error ? 'true' : null"
+                [formField]="entryForm[field.key][lang]"
+              ></textarea>
+            } @else if (field.key === 'place') {
+              <!-- Free text with the places already used as suggestions. -->
+              <ui-autocomplete
+                size="sm"
+                class="relative min-w-0 flex-1 rounded-e-none text-[14px] focus:z-10"
+                [inputId]="id"
+                [ariaLabel]="name"
+                [options]="placeSuggestions()[lang]"
+                [placeholder]="lang === 'fr' ? texts().placePlaceholder : ''"
+                [attr.lang]="lang === 'en' ? 'en' : null"
+                [ariaDescribedby]="describedBy(id, error, true) ?? undefined"
+                [formField]="entryForm[field.key][lang]"
+              />
+            } @else {
+              <input
+                uiInput
+                size="sm"
+                class="relative min-w-0 flex-1 rounded-e-none text-[14px] focus:z-10"
+                aria-required="true"
+                [id]="id"
+                [attr.aria-label]="name"
+                [placeholder]="lang === 'fr' ? texts().titlePlaceholder : ''"
+                [attr.lang]="lang === 'en' ? 'en' : null"
+                [attr.aria-describedby]="describedBy(id, error, true)"
+                [attr.aria-invalid]="error ? 'true' : null"
+                [formField]="entryForm[field.key][lang]"
+              />
+            }
+            @if (field.multiline) {
+              <div
+                class="-mt-px flex justify-end rounded-b-md border border-border-field bg-surface-field p-1"
+              >
+                <content-locale-switch
+                  compact
+                  [attached]="false"
+                  [label]="field.label"
+                  [states]="localeStates(field.key)"
+                  [value]="lang"
+                  (valueChange)="show(field.key, $event)"
+                />
+              </div>
+            } @else {
+              <content-locale-switch
+                [label]="field.label"
+                [states]="localeStates(field.key)"
+                [value]="lang"
+                (valueChange)="show(field.key, $event)"
+              />
+            }
+          </div>
+          <span
+            uiFieldAside
+            [class]="
+              length > field.max
+                ? 'ml-auto shrink-0 font-mono text-[12px]/5 text-danger-ink'
+                : 'ml-auto shrink-0 font-mono text-[12px]/5 text-fg-faint'
+            "
+            [id]="id + '-count'"
+            ><span class="sr-only" i18n="@@admin.timeline.form.characters">Caractères : </span
+            >{{ length }}/{{ field.max }}</span
+          >
+        </ui-field>
+      }
+    </fieldset>
+  </section>
+
+  <!-- Floating bar sized to its content and centred under the form, as in the project editor (D43). -->
+  <div
+    class="sticky bottom-4 z-10 mx-auto mt-auto flex w-fit max-w-full items-center gap-3 rounded-xl border border-border bg-surface-float p-1.5 pl-3.5 shadow-float"
+  >
+    <span
+      #status
+      class="flex min-w-0 items-center gap-2 text-[13px]/5 text-fg-muted outline-none"
+      tabindex="-1"
+      data-slot="save-status"
+    >
+      @if (dirty()) {
+        <span class="size-1.5 shrink-0 rounded-full bg-warning-ink" aria-hidden="true"></span>
+        <span class="truncate text-fg max-sm:sr-only" i18n="@@admin.timeline.form.status.unsaved"
+          >Modifications non enregistrées</span
+        >
+      } @else if (creating()) {
+        <span class="size-1.5 shrink-0 rounded-full bg-warning-ink" aria-hidden="true"></span>
+        <span class="truncate text-fg max-sm:sr-only" i18n="@@admin.timeline.form.status.new"
+          >Pas encore enregistrée</span
+        >
+      } @else {
+        <ng-icon
+          class="shrink-0 text-success-ink"
+          [svg]="icons.saved"
+          size="14"
+          aria-hidden="true"
+        />
+        <span class="truncate max-sm:sr-only" i18n="@@admin.timeline.form.status.saved"
+          >Tout est enregistré</span
+        >
+      }
+    </span>
+    <span class="h-5 w-px shrink-0 bg-border" aria-hidden="true"></span>
+    <span class="flex shrink-0 items-center gap-1.5">
+      <button
+        uiBtn
+        variant="ghost"
+        size="sm"
+        class="h-8 rounded-sm px-3 text-[13px]"
+        type="button"
+        aria-label="Abandonner les modifications"
+        i18n-aria-label="@@admin.timeline.form.discardLabel"
+        i18n="@@admin.timeline.form.discard"
+        [disabled]="pending() || !dirty()"
+        (click)="discard()"
+      >
+        Abandonner
+      </button>
+      <button
+        uiBtn
+        size="sm"
+        class="h-8 gap-2 rounded-sm pr-2 pl-3 text-[13px]"
+        type="submit"
+        [disabled]="!canSave()"
+      >
+        @if (pending()) {
+          <ng-container i18n="@@admin.timeline.form.saving">Enregistrement…</ng-container>
+        } @else {
+          <ng-container i18n="@@admin.timeline.form.save">Enregistrer</ng-container>
+        }
+        <kbd
+          uiKbd
+          class="h-4 min-w-0 rounded-2xs border-0 bg-current/12 px-1 text-[10px]/4 font-normal text-current max-sm:hidden"
+          aria-hidden="true"
+          >{{ modifier.key }} S</kbd
+        >
+      </button>
+    </span>
+  </div>
+</form>
+
+<!--
+  Shared settings: the page renders this template in its properties panel (or below the form on a
+  narrow page), outside the form element, so its controls name the form for Enter to submit it.
+-->
+<ng-template #settings>
+  @let periodError = settingError('period');
+  @let techsError = settingError('techs');
+  <fieldset uiFieldSet class="gap-6" [disabled]="pending()">
+    <section
+      class="flex flex-col gap-3 border-t border-border pt-6"
+      aria-labelledby="edit-timeline-period-label"
+    >
+      <h3
+        id="edit-timeline-period-label"
+        class="flex items-baseline gap-1 text-[14px]/5 font-semibold text-fg"
+      >
+        <ng-container i18n="@@admin.timeline.form.period">Période</ng-container
+        ><span class="text-danger-ink" aria-hidden="true">*</span>
+      </h3>
+      <div class="flex min-w-0 flex-col gap-1.5">
+        <ui-period-picker
+          size="sm"
+          triggerId="edit-timeline-period"
+          triggerClass="h-8 rounded-sm ps-2.5 pe-2 text-[13px]"
+          placeholder="Choisir le début et la fin"
+          i18n-placeholder="@@admin.timeline.form.periodPlaceholder"
+          dialogLabel="Période"
+          i18n-dialogLabel="@@admin.timeline.form.periodDialog"
+          ariaLabelledby="edit-timeline-period-label edit-timeline-period"
+          [minBound]="periodMin"
+          [maxBound]="periodMax"
+          [describedBy]="periodError ? 'edit-timeline-period-error' : 'edit-timeline-period-hint'"
+          [formField]="entryForm.period"
+        />
+        @if (periodError) {
+          <p uiFieldError id="edit-timeline-period-error" class="text-[12px]/4">
+            {{ periodError }}
+          </p>
+        } @else {
+          <p
+            id="edit-timeline-period-hint"
+            class="text-[12px]/4 text-fg-faint"
+            i18n="@@admin.timeline.form.periodHint"
+          >
+            « En cours » laisse la fin vide : l’entrée court jusqu’à aujourd’hui.
+          </p>
+        }
+      </div>
+    </section>
+
+    <section
+      class="flex flex-col gap-3 border-t border-border pt-6"
+      aria-labelledby="edit-timeline-techs-label"
+    >
+      <h3
+        id="edit-timeline-techs-label"
+        class="text-[14px]/5 font-semibold text-fg"
+        i18n="@@admin.timeline.form.techs"
+      >
+        Technos
+      </h3>
+      <div class="flex min-w-0 flex-col gap-1.5">
+        <ui-tags-input
+          size="sm"
+          mono
+          controlId="edit-timeline-techs"
+          form="edit-timeline-form"
+          placeholder="angular, typescript"
+          ariaLabel="Technos"
+          i18n-ariaLabel="@@admin.timeline.form.techsLabel"
+          removeLabel="Retirer"
+          i18n-removeLabel="@@admin.timeline.form.techRemove"
+          [maxTags]="techLimit"
+          [normalize]="normalizeTech"
+          [ariaDescribedby]="techsError ? 'edit-timeline-techs-error' : 'edit-timeline-techs-hint'"
+          [ariaInvalid]="!!techsError"
+          [formField]="entryForm.techs"
+        />
+        @if (techsError) {
+          <p uiFieldError id="edit-timeline-techs-error" class="text-[12px]/4">{{ techsError }}</p>
+        } @else {
+          <p
+            id="edit-timeline-techs-hint"
+            class="text-[12px]/4 text-fg-faint"
+            i18n="@@admin.timeline.form.techsHint"
+          >
+            {{ techLimit }} clés au plus ; Entrée ou une virgule ajoute la clé.
+          </p>
+        }
+      </div>
+    </section>
+  </fieldset>
+</ng-template>

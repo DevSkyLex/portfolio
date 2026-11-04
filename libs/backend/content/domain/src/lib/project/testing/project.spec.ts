@@ -5,7 +5,25 @@ import {
   type LocalizedTextProps,
 } from '@internal/content-domain/lib/values/localized-text/localized-text';
 import { Slug } from '@internal/content-domain/lib/values/slug/slug';
+import {
+  ArticleDocument,
+  type ArticleBlock,
+} from '@internal/content-domain/lib/values/article-document/article-document';
+import { ProjectPeriod } from '@internal/content-domain/lib/values/project-period/project-period';
+import { ProjectSeo } from '@internal/content-domain/lib/values/project-seo/project-seo';
 import { Project, type ProjectProps } from '@internal/content-domain/lib/project/project';
+
+/**
+ * Constant MEDIA
+ *
+ * @description
+ * Media identifiers referenced by the cover and figure fixtures.
+ */
+const MEDIA: readonly [string, string, string] = [
+  '8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f',
+  '3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90',
+  '5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d',
+];
 
 /**
  * Constant text
@@ -21,6 +39,36 @@ const text: (fr: string, en?: string) => LocalizedText = (fr: string, en?: strin
   LocalizedText.of('test', en === undefined ? { fr } : ({ fr, en } satisfies LocalizedTextProps));
 
 /**
+ * Function doc
+ *
+ * @description
+ * Builds an article document holding one paragraph, then the supplied figures.
+ *
+ * @param {string} paragraph - Paragraph text; blank text leaves the paragraph without content.
+ * @param {readonly { media: string; alt: string }[]} figures - Figures appended to the paragraph.
+ * @returns {ArticleDocument} Document value.
+ */
+function doc(
+  paragraph: string,
+  figures: readonly { media: string; alt: string }[] = [],
+): ArticleDocument {
+  const first: ArticleBlock =
+    paragraph === ''
+      ? { type: 'paragraph' }
+      : { type: 'paragraph', content: [{ type: 'text', text: paragraph }] };
+  return ArticleDocument.of('article', {
+    type: 'doc',
+    content: [
+      first,
+      ...figures.map((figure: { media: string; alt: string }): ArticleBlock => ({
+        type: 'figure',
+        attrs: { ...figure, caption: '' },
+      })),
+    ],
+  });
+}
+
+/**
  * Function projectProps
  *
  * @description
@@ -30,14 +78,13 @@ const text: (fr: string, en?: string) => LocalizedText = (fr: string, en?: strin
  * @returns {ProjectProps} Project state suitable for rehydration.
  */
 function projectProps(overrides: Partial<ProjectProps> = {}): ProjectProps {
-  const paragraph: LocalizedText[] = [text('Paragraphe', 'Paragraph')];
   return {
     id: 'p-1',
     slug: Slug.of('movah'),
     title: text('Movah', 'Movah'),
     summary: text('Résumé', 'Summary'),
     lead: text('Intro', 'Lead'),
-    periodLabel: text('Depuis 2026', 'Since 2026'),
+    period: ProjectPeriod.of({ start: { year: 2026, month: null }, end: null }),
     client: text('Projet personnel', 'Personal project'),
     role: text('Conception', 'Design'),
     place: text('Android et iOS', 'Android and iOS'),
@@ -47,15 +94,9 @@ function projectProps(overrides: Partial<ProjectProps> = {}): ProjectProps {
     position: 0,
     status: 'draft',
     version: 1,
-    article: {
-      context: paragraph,
-      work: paragraph,
-      workList: paragraph,
-      choices: paragraph,
-      result: paragraph,
-      lessons: paragraph,
-      captions: paragraph,
-    },
+    article: { fr: doc('Paragraphe'), en: doc('Paragraph') },
+    cover: null,
+    seo: ProjectSeo.empty(),
     ...overrides,
   };
 }
@@ -77,18 +118,56 @@ describe('Project', (): void => {
   });
 
   it('publishes in French only even without a translation', (): void => {
-    const project: Project = Project.rehydrate(projectProps({ lead: text('Intro') }));
+    const project: Project = Project.rehydrate(
+      projectProps({ lead: text('Intro'), article: { fr: doc('Texte') } }),
+    );
     project.publish(['fr']);
     expect(project.isPublished()).toBe(true);
   });
 
-  it('refuses to publish a case study without an outcome', (): void => {
-    const base: ProjectProps = projectProps();
-    const project: Project = Project.rehydrate({
-      ...base,
-      article: { ...base.article, result: [] },
-    });
-    expect(project.missingFor(['fr'])).toEqual(['article.result.fr']);
+  it('reports an empty or absent article document', (): void => {
+    const project: Project = Project.rehydrate(projectProps({ article: { fr: doc('  ') } }));
+    expect(project.missingFor(['fr', 'en'])).toEqual(['article.fr', 'article.en']);
+    expect((): void => project.publish(['fr'])).toThrow(
+      expect.objectContaining({ code: 'content.project-incomplete', details: ['article.fr'] }),
+    );
+  });
+
+  it('reports figures and a cover without alternative text, per locale', (): void => {
+    const project: Project = Project.rehydrate(
+      projectProps({
+        article: {
+          fr: doc('', [{ media: MEDIA[1], alt: 'Écran' }]),
+          en: doc('Text', [{ media: MEDIA[2], alt: ' ' }]),
+        },
+        cover: { media: MEDIA[0], alt: { fr: 'Accueil', en: '  ' } },
+      }),
+    );
+    expect(project.missingFor(['fr', 'en'])).toEqual(['article.en.figures', 'cover.alt.en']);
+    const untranslated: Project = Project.rehydrate(
+      projectProps({ cover: { media: MEDIA[0], alt: { fr: '' } } }),
+    );
+    expect(untranslated.missingFor(['fr', 'en'])).toEqual(['cover.alt.fr', 'cover.alt.en']);
+  });
+
+  it('lists its media once, the cover first', (): void => {
+    const project: Project = Project.rehydrate(
+      projectProps({
+        article: {
+          fr: doc('a', [
+            { media: MEDIA[1], alt: 'a' },
+            { media: MEDIA[0], alt: 'b' },
+          ]),
+          en: doc('b', [
+            { media: MEDIA[2], alt: 'c' },
+            { media: MEDIA[1], alt: 'd' },
+          ]),
+        },
+        cover: { media: MEDIA[0], alt: { fr: 'c' } },
+      }),
+    );
+    expect(project.mediaIds()).toEqual([MEDIA[0], MEDIA[1], MEDIA[2]]);
+    expect(Project.rehydrate(projectProps({ article: { fr: doc('a') } })).mediaIds()).toEqual([]);
   });
 
   it.each([
@@ -97,6 +176,7 @@ describe('Project', (): void => {
     ['a non-https link', { siteUrl: 'http://iotplatform.fr' }],
     ['an invalid tech key', { techs: ['Vue.js'] }],
     ['a duplicate tech', { techs: ['dart', 'dart'] }],
+    ['a cover without media', { cover: { media: ' ', alt: { fr: 'a' } } }],
   ])('refuse %s', (_label, overrides): void => {
     expect((): Project =>
       Project.rehydrate(projectProps(overrides as Partial<ProjectProps>)),
@@ -130,8 +210,46 @@ describe('Project', (): void => {
     ).toThrow(
       expect.objectContaining({ code: 'content.project-incomplete', details: ['lead.en'] }),
     );
-    project.revise({ ...projectProps(), title: text('Movah 2', 'Movah 2') }, ['fr', 'en']);
-    expect(project.snapshot().title.en).toBe('Movah 2');
+    expect((): void =>
+      project.revise({ ...projectProps(), article: { fr: doc('Texte') } }, ['fr', 'en']),
+    ).toThrow(expect.objectContaining({ details: ['article.en'] }));
+    expect((): void =>
+      project.revise({ ...projectProps(), cover: { media: MEDIA[0], alt: { fr: 'Accueil' } } }, [
+        'fr',
+        'en',
+      ]),
+    ).toThrow(expect.objectContaining({ details: ['cover.alt.en'] }));
+    project.revise(
+      {
+        ...projectProps(),
+        title: text('Movah 2', 'Movah 2'),
+        cover: { media: MEDIA[0], alt: { fr: 'Accueil', en: 'Home' } },
+      },
+      ['fr', 'en'],
+    );
+    expect(project.snapshot()).toMatchObject({
+      title: { en: 'Movah 2' },
+      cover: { media: MEDIA[0], alt: { fr: 'Accueil', en: 'Home' } },
+    });
+  });
+
+  it('revises the search texts without making them a publication requirement', (): void => {
+    const project: Project = Project.rehydrate(projectProps({ status: 'published' }));
+    const seo: ProjectSeo = ProjectSeo.of({
+      title: { fr: 'Movah, suivi de séries' },
+      description: {},
+      keywords: { fr: ['Flutter'] },
+    });
+    project.revise({ ...projectProps(), seo }, ['fr', 'en']);
+    expect(project.snapshot().seo.in('fr').title).toBe('Movah, suivi de séries');
+    expect(project.snapshot().seo.in('fr').keywords).toEqual(['Flutter']);
+    expect(project.missingFor(['fr', 'en'])).toEqual([]);
+    project.revise({ ...projectProps(), seo: ProjectSeo.empty() }, ['fr', 'en']);
+    expect(project.snapshot().seo.in('fr')).toEqual({
+      title: null,
+      description: null,
+      keywords: [],
+    });
   });
 
   it('only revises the editable fields', (): void => {

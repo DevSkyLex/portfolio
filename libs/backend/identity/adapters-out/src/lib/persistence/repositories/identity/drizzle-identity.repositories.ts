@@ -150,7 +150,7 @@ export class DrizzleAdminAccountRepository implements AdminAccountRepository {
    * @method save
    *
    * @description
-   * Updates password verifier and sign-in state without rewriting the account's stable email or TOTP secret.
+   * Updates password verifier, sign-in and second-factor state without rewriting the account's stable email.
    *
    * @param {AdminAccount} account - Updated domain state.
    *
@@ -162,6 +162,8 @@ export class DrizzleAdminAccountRepository implements AdminAccountRepository {
       .update(adminAccounts)
       .set({
         passwordHash: state.passwordHash,
+        totpSecret: state.totpSecret,
+        pendingTotpSecret: state.pendingTotpSecret,
         lastTotpStep: state.lastTotpStep,
         failedAttempts: state.failedAttempts,
         lockedUntil: state.lockedUntil,
@@ -568,6 +570,25 @@ export class DrizzleTrustedDeviceRepository implements TrustedDeviceRepository {
       .update(trustedDevices)
       .set({ lastUsedAt: state.lastUsedAt, revokedAt: state.revokedAt })
       .where(eq(trustedDevices.id, state.id));
+  }
+
+  /**
+   * Method deleteByAccount
+   * @method deleteByAccount
+   *
+   * @description
+   * Deletes every device of the account, expired, revoked or not.
+   *
+   * @param {string} accountId - Owning account.
+   *
+   * @returns {Promise<number>} Number of deleted rows.
+   */
+  public async deleteByAccount(accountId: string): Promise<number> {
+    const deleted: { id: string }[] = await this.db
+      .delete(trustedDevices)
+      .where(eq(trustedDevices.accountId, accountId))
+      .returning({ id: trustedDevices.id });
+    return deleted.length;
   }
 
   /**

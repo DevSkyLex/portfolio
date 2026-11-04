@@ -8,22 +8,12 @@ import {
   lerp,
   mix,
   rgba,
-  rnd,
   sceneProgress,
   smoothProgress,
   timeSpan,
 } from '@internal/content-web-ui/lib/timeline/utils/scene-maths/scene-maths.utils';
 import type { Palette } from '@internal/content-web-ui/lib/timeline/models/palette/palette.interface';
 import type { Span } from '@internal/content-web-ui/lib/timeline/models/span/span.interface';
-
-/**
- * Constant TAU
- *
- * @description
- * Full-turn angle used for deterministic star phase and marker rotation.
- */
-
-const TAU: number = Math.PI * 2;
 
 /**
  * Type Ctx
@@ -201,13 +191,13 @@ function readPalette(el: Element): Palette {
   const cs: CSSStyleDeclaration = getComputedStyle(el);
   const g: (n: string) => string = (n: string): string => cs.getPropertyValue(n);
   return {
-    star: hex(g('--star'), [238, 237, 251]),
-    muted: hex(g('--star-muted'), [170, 168, 200]),
+    star: hex(g('--fg'), [238, 237, 251]),
+    muted: hex(g('--fg-muted'), [170, 168, 200]),
     pink: hex(g('--aurora-pink'), [255, 79, 174]),
     violet: hex(g('--aurora-violet'), [155, 109, 255]),
     blue: hex(g('--aurora-blue'), [79, 128, 255]),
     cyan: hex(g('--aurora-cyan'), [79, 230, 255]),
-    void: hex(g('--void'), [5, 5, 11]),
+    void: hex(g('--surface'), [5, 5, 11]),
   };
 }
 
@@ -223,8 +213,9 @@ function readPalette(el: Element): Palette {
 function readFonts(el: Element): Fonts {
   const cs: CSSStyleDeclaration = getComputedStyle(el);
   return {
-    sans: cs.getPropertyValue('--font-sans').trim() || '"Host Grotesk", system-ui, sans-serif',
-    mono: cs.getPropertyValue('--font-mono').trim() || '"Martian Mono", ui-monospace, monospace',
+    sans: cs.getPropertyValue('--font-sans').trim() || '"Geist Variable", system-ui, sans-serif',
+    mono:
+      cs.getPropertyValue('--font-mono').trim() || '"Geist Mono Variable", ui-monospace, monospace',
   };
 }
 
@@ -370,10 +361,6 @@ interface Scene {
 function parallel(P: Palette, fonts: Fonts, sec: HTMLElement): Scene {
   const tracks: [Track, Track] = readTracks(sec);
   const [T0, T1] = timeSpan(tracks.map((tk: Track): readonly Item[] => tk.items));
-  const R: () => number = rnd(911);
-  const stars: { x: number; y: number; d: number; tw: number }[] = [];
-  for (let s: number = 0; s < 240; s++)
-    stars.push({ x: R(), y: R(), d: 0.2 + R() * 0.8, tw: R() * TAU });
   let pS: number | null = null;
   let lastT: number = 0;
   return {
@@ -398,16 +385,8 @@ function parallel(P: Palette, fonts: Fonts, sec: HTMLElement): Scene {
       const D: number = mob ? w * 0.5 : Math.min(w * 0.27, 400);
       const ax: number = mob ? w * 0.5 : w * 0.66;
       const ys: readonly [number, number] = mob ? [h * 0.29, h * 0.42] : [h * 0.38, h * 0.68];
-      ctx.fillStyle = rgba(P.void);
-      ctx.fillRect(0, 0, w, h);
-      for (const st of stars) {
-        const sx: number = (((st.x * w * 1.6 - T * D * 0.1 * st.d) % w) + w) % w;
-        ctx.fillStyle = rgba(
-          P.star,
-          (0.1 + 0.3 * st.d) * (0.75 + 0.25 * Math.sin(t * 1.2 + st.tw)),
-        );
-        square(ctx, sx, st.y * h, 0.6 + st.d);
-      }
+      // Transparent: the page background runs on behind the timeline, without a starfield of its own.
+      ctx.clearRect(0, 0, w, h);
       const fadeX: (px: number) => number = (px: number): number =>
         mob ? 1 : clamp((px - w * 0.4) / (w * 0.12), 0, 1);
       const X: (yr: number) => number = (yr: number): number => ax + (yr - T) * D;

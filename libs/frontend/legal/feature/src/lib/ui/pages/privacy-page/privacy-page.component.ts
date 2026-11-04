@@ -1,85 +1,40 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { LegalArticleComponent } from '@internal/legal-web-feature/lib/ui/components/legal-article/legal-article.component';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ButtonDirective } from '@vfortin/ui';
+import type { CookiePreferences } from '@internal/legal-web-feature/lib/models/cookie-preferences/cookie-preferences.interface';
+import type { LegalDocument } from '@internal/legal-web-feature/lib/models/legal-document/legal-document.interface';
+import type { LegalDocumentSource } from '@internal/legal-web-feature/lib/models/legal-document/legal-document-source.interface';
+import { COOKIE_PREFERENCES } from '@internal/legal-web-feature/lib/tokens/cookie-preferences/cookie-preferences.token';
+import { LEGAL_DOCUMENTS } from '@internal/legal-web-feature/lib/tokens/legal-documents/legal-documents.token';
+import { LegalDocumentComponent } from '@internal/legal-web-feature/lib/ui/components/legal-document/legal-document.component';
 
 /**
  * Component PrivacyPageComponent
  * @class PrivacyPageComponent
  *
  * @description
- * Renders the site's French privacy notice, including contact-form data use, retention, cookies,
- * and data subject rights.
+ * Renders the site's privacy policy (controller, data collected, purpose and legal basis,
+ * recipients, retention, cookies, rights) from the content snapshot, as edited on the « Légal » page,
+ * followed by « Gérer les cookies » when the site measures its audience (D48).
  */
 @Component({
   selector: 'legal-privacy-page',
-  imports: [LegalArticleComponent],
+  imports: [ButtonDirective, LegalDocumentComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <legal-article [heading]="heading">
-      <section aria-labelledby="privacy-controller">
-        <h2 id="privacy-controller" i18n="@@legal.controller.title">Responsable du traitement</h2>
-        <p i18n="@@legal.controller.body">
-          Valentin Fortin, joignable à
-          <a href="mailto:contact@valentin-fortin.pro">contact&#64;valentin-fortin.pro</a>.
-        </p>
-      </section>
-      <section aria-labelledby="privacy-collected">
-        <h2 id="privacy-collected" i18n="@@legal.collected.title">Données collectées</h2>
-        <p i18n="@@legal.collected.body">
-          Le site ne collecte des données que lorsque vous utilisez le formulaire de contact : votre
-          nom, votre adresse e-mail, l'objet et le contenu de votre message, et le nom de votre
-          entreprise si vous l'indiquez. Pour limiter les abus, une empreinte de votre adresse IP
-          (jamais l'adresse elle-même) est conservée une heure au plus.
-        </p>
-      </section>
-      <section aria-labelledby="privacy-basis">
-        <h2 id="privacy-basis" i18n="@@legal.basis.title">Utilisation et base légale</h2>
-        <p i18n="@@legal.basis.body">
-          Ces données servent uniquement à répondre à votre message. Le traitement repose sur
-          l'intérêt légitime de l'éditeur à répondre aux demandes qui lui sont adressées (article
-          6.1.f du RGPD).
-        </p>
-      </section>
-      <section aria-labelledby="privacy-recipients">
-        <h2 id="privacy-recipients" i18n="@@legal.recipients.title">Destinataires</h2>
-        <p i18n="@@legal.recipients.body">
-          Seul l'éditeur lit vos messages. Ils transitent par l'hébergeur, OVH SAS, en France, qui
-          assure aussi l'envoi de l'e-mail de notification. Vos données ne sont ni vendues ni
-          cédées.
-        </p>
-      </section>
-      <section aria-labelledby="privacy-retention">
-        <h2 id="privacy-retention" i18n="@@legal.retention.title">Durée de conservation</h2>
-        <p i18n="@@legal.retention.body">
-          Les messages sont supprimés automatiquement trois ans après leur réception, ou plus tôt
-          sur simple demande.
-        </p>
-      </section>
-      <section aria-labelledby="privacy-cookies">
-        <h2 id="privacy-cookies" i18n="@@legal.cookies.title">Cookies</h2>
-        <p i18n="@@legal.cookies.body">
-          Le site ne dépose aucun cookie chez ses visiteurs et n'utilise aucun outil de mesure
-          d'audience. Seul l'espace d'administration, réservé à l'éditeur, utilise un cookie de
-          session indispensable à la connexion.
-        </p>
-        <p i18n="@@legal.cookies.storage">
-          Votre choix de thème est enregistré dans le stockage local de votre navigateur ; il n'en
-          sort pas.
-        </p>
-      </section>
-      <section aria-labelledby="privacy-rights">
-        <h2 id="privacy-rights" i18n="@@legal.rights.title">Vos droits</h2>
-        <p i18n="@@legal.rights.body">
-          Vous pouvez accéder à vos données, les faire rectifier ou effacer, en limiter le
-          traitement, vous y opposer et en demander la portabilité en écrivant à
-          <a href="mailto:contact@valentin-fortin.pro">contact&#64;valentin-fortin.pro</a>.
-        </p>
-        <p i18n="@@legal.rights.cnil">
-          Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation
-          à la CNIL sur <a href="https://www.cnil.fr">cnil.fr</a>.
-        </p>
-      </section>
-    </legal-article>
-  `,
+  template: `<legal-document [heading]="heading" [document]="document">
+    @if (cookies?.enabled) {
+      <div>
+        <button
+          uiBtn
+          variant="secondary"
+          type="button"
+          (click)="cookies.openPreferences()"
+          i18n="@@consent.manage"
+        >
+          Gérer les cookies
+        </button>
+      </div>
+    }
+  </legal-document>`,
 })
 export class PrivacyPageComponent {
   // #region Properties
@@ -88,10 +43,36 @@ export class PrivacyPageComponent {
    * @readonly
    *
    * @description
-   * Localized page heading passed to the shared legal article layout.
+   * Localized page heading.
    *
    * @type {string}
    */
   protected readonly heading: string = $localize`:@@legal.privacy.title:Politique de confidentialité`;
+
+  /**
+   * Property document
+   * @readonly
+   *
+   * @description
+   * Privacy policy of the active locale.
+   *
+   * @type {LegalDocument}
+   */
+  protected readonly document: LegalDocument =
+    inject<LegalDocumentSource>(LEGAL_DOCUMENTS).document('privacy');
+
+  /**
+   * Property cookies
+   * @readonly
+   *
+   * @description
+   * Cookie preferences of the site, `null` when the shell provides none.
+   *
+   * @type {CookiePreferences | null}
+   */
+  protected readonly cookies: CookiePreferences | null = inject<CookiePreferences>(
+    COOKIE_PREFERENCES,
+    { optional: true },
+  );
   // #endregion
 }

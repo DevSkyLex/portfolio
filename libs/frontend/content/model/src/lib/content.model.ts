@@ -61,6 +61,534 @@ export interface Profile {
    * @type {readonly { readonly label: string; readonly value: string }[]}
    */
   readonly facts: readonly { readonly label: string; readonly value: string }[];
+
+  /**
+   * Property links
+   * @readonly
+   *
+   * @description
+   * Public links in display order (contact section, footer).
+   *
+   * @type {readonly SiteLink[]}
+   */
+  readonly links: readonly SiteLink[];
+  // #endregion
+}
+
+/**
+ * Type SiteLinkKind
+ * @type SiteLinkKind
+ *
+ * @description
+ * Kind of a public link, which chooses its icon.
+ */
+export type SiteLinkKind = 'email' | 'github' | 'linkedin' | 'malt' | 'website';
+
+/**
+ * Interface SiteLink
+ * @interface SiteLink
+ *
+ * @description
+ * Public link of the profile, its label resolved: the written one, else the address of an e-mail, the
+ * brand of a profile or the host of a website.
+ */
+export interface SiteLink {
+  // #region Properties
+  /**
+   * Property kind
+   * @readonly
+   *
+   * @description
+   * Link kind.
+   *
+   * @type {SiteLinkKind}
+   */
+  readonly kind: SiteLinkKind;
+
+  /**
+   * Property href
+   * @readonly
+   *
+   * @description
+   * `mailto:` address of an e-mail, `https://` address otherwise.
+   *
+   * @type {string}
+   */
+  readonly href: string;
+
+  /**
+   * Property label
+   * @readonly
+   *
+   * @description
+   * Displayed text.
+   *
+   * @type {string}
+   */
+  readonly label: string;
+  // #endregion
+}
+
+/**
+ * Type LegalDocumentKind
+ * @type LegalDocumentKind
+ *
+ * @description
+ * Legal notice or privacy policy.
+ */
+export type LegalDocumentKind = 'notice' | 'privacy';
+
+/**
+ * Type LegalBlock
+ * @type LegalBlock
+ *
+ * @description
+ * Block of a legal document: an article block (D40) other than a figure, which legal documents never
+ * hold.
+ */
+export type LegalBlock = Exclude<ArticleBlock, { readonly kind: 'figure' }>;
+
+/**
+ * Interface LegalSection
+ * @interface LegalSection
+ *
+ * @description
+ * Part of a legal document opened by a level-2 heading.
+ */
+export interface LegalSection {
+  // #region Properties
+  /**
+   * Property id
+   * @readonly
+   *
+   * @description
+   * Slug of the heading, unique within the document.
+   *
+   * @type {string}
+   */
+  readonly id: string;
+
+  /**
+   * Property label
+   * @readonly
+   *
+   * @description
+   * Plain text of the heading.
+   *
+   * @type {string}
+   */
+  readonly label: string;
+
+  /**
+   * Property blocks
+   * @readonly
+   *
+   * @description
+   * Blocks until the next level-2 heading.
+   *
+   * @type {readonly LegalBlock[]}
+   */
+  readonly blocks: readonly LegalBlock[];
+  // #endregion
+}
+
+/**
+ * Interface LegalDocument
+ * @interface LegalDocument
+ *
+ * @description
+ * Legal notice or privacy policy in the site locale.
+ */
+export interface LegalDocument {
+  // #region Properties
+  /**
+   * Property updatedOn
+   * @readonly
+   *
+   * @description
+   * Date of the last save, `YYYY-MM-DD`, shown as « Dernière mise à jour ».
+   *
+   * @type {string}
+   */
+  readonly updatedOn: string;
+
+  /**
+   * Property intro
+   * @readonly
+   *
+   * @description
+   * Blocks before the first level-2 heading.
+   *
+   * @type {readonly LegalBlock[]}
+   */
+  readonly intro: readonly LegalBlock[];
+
+  /**
+   * Property sections
+   * @readonly
+   *
+   * @description
+   * Sections in document order.
+   *
+   * @type {readonly LegalSection[]}
+   */
+  readonly sections: readonly LegalSection[];
+  // #endregion
+}
+
+/**
+ * Interface ProjectImage
+ * @interface ProjectImage
+ *
+ * @description
+ * Uploaded image of a project (D40): a WebP of 2400 px wide at most, its 960 px rendition and the
+ * intrinsic size that reserves its box before it loads.
+ */
+export interface ProjectImage {
+  // #region Properties
+  /**
+   * Property src
+   * @readonly
+   *
+   * @description
+   * Full rendition, `/media/<uuid>.webp`.
+   *
+   * @type {string}
+   */
+  readonly src: string;
+
+  /**
+   * Property small
+   * @readonly
+   *
+   * @description
+   * 960 px rendition, `/media/<uuid>-960.webp`, or `null` when the original is not wider.
+   *
+   * @type {string | null}
+   */
+  readonly small: string | null;
+
+  /**
+   * Property width
+   * @readonly
+   *
+   * @description
+   * Intrinsic width of the full rendition, in pixels.
+   *
+   * @type {number}
+   */
+  readonly width: number;
+
+  /**
+   * Property height
+   * @readonly
+   *
+   * @description
+   * Intrinsic height of the full rendition, in pixels.
+   *
+   * @type {number}
+   */
+  readonly height: number;
+
+  /**
+   * Property alt
+   * @readonly
+   *
+   * @description
+   * Localized alternative text.
+   *
+   * @type {string}
+   */
+  readonly alt: string;
+  // #endregion
+}
+
+/**
+ * Type ArticleInline
+ * @type ArticleInline
+ *
+ * @description
+ * Inline content of a paragraph or a subheading, as a tree: consecutive text sharing a mark is grouped
+ * under one `bold`, `italic`, `code` or `link` node, so nested marks render as nested elements. An
+ * `external` link opens an `https://` address; the others are `mailto:` links.
+ */
+export type ArticleInline =
+  | { readonly kind: 'text'; readonly text: string }
+  | { readonly kind: 'break' }
+  | { readonly kind: 'bold' | 'italic' | 'code'; readonly content: readonly ArticleInline[] }
+  | {
+      readonly kind: 'link';
+      readonly href: string;
+      readonly external: boolean;
+      readonly content: readonly ArticleInline[];
+    };
+
+/**
+ * Interface ArticleParagraph
+ * @interface ArticleParagraph
+ *
+ * @description
+ * Paragraph of an article, at the top level, in a list item or in a quotation.
+ */
+export interface ArticleParagraph {
+  // #region Properties
+  /**
+   * Property kind
+   * @readonly
+   *
+   * @description
+   * Block discriminant.
+   *
+   * @type {'paragraph'}
+   */
+  readonly kind: 'paragraph';
+
+  /**
+   * Property content
+   * @readonly
+   *
+   * @description
+   * Inline content; empty for an empty paragraph.
+   *
+   * @type {readonly ArticleInline[]}
+   */
+  readonly content: readonly ArticleInline[];
+  // #endregion
+}
+
+/**
+ * Interface ArticleList
+ * @interface ArticleList
+ *
+ * @description
+ * Bullet or ordered list; each item holds paragraphs and nested lists (three levels at most).
+ */
+export interface ArticleList {
+  // #region Properties
+  /**
+   * Property kind
+   * @readonly
+   *
+   * @description
+   * Block discriminant.
+   *
+   * @type {'list'}
+   */
+  readonly kind: 'list';
+
+  /**
+   * Property ordered
+   * @readonly
+   *
+   * @description
+   * Whether the items are numbered.
+   *
+   * @type {boolean}
+   */
+  readonly ordered: boolean;
+
+  /**
+   * Property start
+   * @readonly
+   *
+   * @description
+   * Number of the first item of an ordered list; 1 for a bullet list.
+   *
+   * @type {number}
+   */
+  readonly start: number;
+
+  /**
+   * Property items
+   * @readonly
+   *
+   * @description
+   * Items, each one the blocks it contains.
+   *
+   * @type {readonly (readonly ArticleFlowBlock[])[]}
+   */
+  readonly items: readonly (readonly ArticleFlowBlock[])[];
+  // #endregion
+}
+
+/**
+ * Type ArticleCodeTokenKind
+ * @type ArticleCodeTokenKind
+ *
+ * @description
+ * Kind of a highlighted run of code, each drawn in its own colour.
+ */
+export type ArticleCodeTokenKind =
+  | 'keyword'
+  | 'string'
+  | 'number'
+  | 'literal'
+  | 'comment'
+  | 'function'
+  | 'type'
+  | 'variable'
+  | 'property'
+  | 'operator'
+  | 'punctuation'
+  | 'tag'
+  | 'attribute'
+  | 'meta';
+
+/**
+ * Interface ArticleCodeToken
+ * @interface ArticleCodeToken
+ *
+ * @description
+ * Highlighted run of a code block; a run without kind is drawn as plain code.
+ */
+export interface ArticleCodeToken {
+  // #region Properties
+  /**
+   * Property text
+   * @readonly
+   *
+   * @description
+   * Text of the run, line breaks and indentation included.
+   *
+   * @type {string}
+   */
+  readonly text: string;
+
+  /**
+   * Property kind
+   * @readonly
+   *
+   * @description
+   * Kind of the run, `null` for plain code.
+   *
+   * @type {ArticleCodeTokenKind | null}
+   */
+  readonly kind: ArticleCodeTokenKind | null;
+  // #endregion
+}
+
+/**
+ * Interface ArticleCode
+ * @interface ArticleCode
+ *
+ * @description
+ * Code block of an article, highlighted when the snapshot was built (D40 code block revision).
+ */
+export interface ArticleCode {
+  // #region Properties
+  /**
+   * Property kind
+   * @readonly
+   *
+   * @description
+   * Block discriminant.
+   *
+   * @type {'code'}
+   */
+  readonly kind: 'code';
+
+  /**
+   * Property text
+   * @readonly
+   *
+   * @description
+   * Code as written, the text the copy button writes to the clipboard.
+   *
+   * @type {string}
+   */
+  readonly text: string;
+
+  /**
+   * Property language
+   * @readonly
+   *
+   * @description
+   * Display name of the language (`TypeScript`), `null` for plain text.
+   *
+   * @type {string | null}
+   */
+  readonly language: string | null;
+
+  /**
+   * Property tokens
+   * @readonly
+   *
+   * @description
+   * Highlighted runs spelling `text`; empty when the block is plain text, which is then shown as is.
+   *
+   * @type {readonly ArticleCodeToken[]}
+   */
+  readonly tokens: readonly ArticleCodeToken[];
+  // #endregion
+}
+
+/**
+ * Type ArticleFlowBlock
+ * @type ArticleFlowBlock
+ *
+ * @description
+ * Block allowed inside a list item or a quotation.
+ */
+export type ArticleFlowBlock = ArticleParagraph | ArticleList;
+
+/**
+ * Type ArticleBlock
+ * @type ArticleBlock
+ *
+ * @description
+ * Top-level block of an article (D40). Level-3 headings are `subheading` blocks; level-2 headings open
+ * an `ArticleSection` instead of appearing as blocks.
+ */
+export type ArticleBlock =
+  | ArticleParagraph
+  | ArticleList
+  | { readonly kind: 'subheading'; readonly content: readonly ArticleInline[] }
+  | { readonly kind: 'blockquote'; readonly blocks: readonly ArticleFlowBlock[] }
+  | ArticleCode
+  | { readonly kind: 'rule' }
+  | { readonly kind: 'figure'; readonly image: ProjectImage; readonly caption: string };
+
+/**
+ * Interface ArticleSection
+ * @interface ArticleSection
+ *
+ * @description
+ * Part of an article opened by a level-2 heading; it is one entry of the table of contents.
+ */
+export interface ArticleSection {
+  // #region Properties
+  /**
+   * Property id
+   * @readonly
+   *
+   * @description
+   * Fragment identifier: the slug of the label, made unique within the article.
+   *
+   * @type {string}
+   */
+  readonly id: string;
+
+  /**
+   * Property label
+   * @readonly
+   *
+   * @description
+   * Plain text of the heading, shown as the section title and the table-of-contents link.
+   *
+   * @type {string}
+   */
+  readonly label: string;
+
+  /**
+   * Property blocks
+   * @readonly
+   *
+   * @description
+   * Blocks between this heading and the next level-2 heading.
+   *
+   * @type {readonly ArticleBlock[]}
+   */
+  readonly blocks: readonly ArticleBlock[];
   // #endregion
 }
 
@@ -138,6 +666,63 @@ export interface ProjectSummary {
    * @type {boolean}
    */
   readonly featured: boolean;
+
+  /**
+   * Property cover
+   * @readonly
+   *
+   * @description
+   * Uploaded cover image, or `null` when the card and the article keep their tinted placeholder.
+   *
+   * @type {ProjectImage | null}
+   */
+  readonly cover: ProjectImage | null;
+  // #endregion
+}
+
+/**
+ * Interface ProjectSeo
+ * @interface ProjectSeo
+ *
+ * @description
+ * Search texts and keywords written by the administrator for the active locale; `null` or an empty
+ * list lets the project page fall back on the project title, summary and technologies (D42).
+ */
+export interface ProjectSeo {
+  // #region Properties
+  /**
+   * Property title
+   * @readonly
+   *
+   * @description
+   * Custom document and social title, used verbatim (70 characters at most).
+   *
+   * @type {string | null}
+   */
+  readonly title: string | null;
+
+  /**
+   * Property description
+   * @readonly
+   *
+   * @description
+   * Custom meta and social description, used verbatim (170 characters at most).
+   *
+   * @type {string | null}
+   */
+  readonly description: string | null;
+
+  /**
+   * Property keywords
+   * @readonly
+   *
+   * @description
+   * Custom keywords of the meta keywords and the JSON-LD (10 at most), empty to fall back on the
+   * project technologies.
+   *
+   * @type {readonly string[]}
+   */
+  readonly keywords: readonly string[];
   // #endregion
 }
 
@@ -206,81 +791,37 @@ export interface ProjectArticle extends ProjectSummary {
   readonly site: { readonly url: string; readonly label: string } | null;
 
   /**
-   * Property context
+   * Property intro
    * @readonly
    *
    * @description
-   * Paragraphs describing the project context.
+   * Blocks written before the first level-2 heading, rendered above the sections.
    *
-   * @type {readonly string[]}
+   * @type {readonly ArticleBlock[]}
    */
-  readonly context: readonly string[];
+  readonly intro: readonly ArticleBlock[];
 
   /**
-   * Property work
+   * Property sections
    * @readonly
    *
    * @description
-   * Paragraphs describing the work delivered.
+   * Article parts opened by a level-2 heading, in document order; they form the table of contents.
    *
-   * @type {readonly string[]}
+   * @type {readonly ArticleSection[]}
    */
-  readonly work: readonly string[];
+  readonly sections: readonly ArticleSection[];
 
   /**
-   * Property workList
+   * Property seo
    * @readonly
    *
    * @description
-   * List entries describing individual contributions.
+   * Optional search texts of the case study page.
    *
-   * @type {readonly string[]}
+   * @type {ProjectSeo}
    */
-  readonly workList: readonly string[];
-
-  /**
-   * Property choices
-   * @readonly
-   *
-   * @description
-   * Paragraphs explaining the project's technical or product choices.
-   *
-   * @type {readonly string[]}
-   */
-  readonly choices: readonly string[];
-
-  /**
-   * Property result
-   * @readonly
-   *
-   * @description
-   * Paragraphs describing project outcomes.
-   *
-   * @type {readonly string[]}
-   */
-  readonly result: readonly string[];
-
-  /**
-   * Property lessons
-   * @readonly
-   *
-   * @description
-   * Paragraphs recording lessons from the project.
-   *
-   * @type {readonly string[]}
-   */
-  readonly lessons: readonly string[];
-
-  /**
-   * Property captions
-   * @readonly
-   *
-   * @description
-   * Localized captions paired with case study images.
-   *
-   * @type {readonly string[]}
-   */
-  readonly captions: readonly string[];
+  readonly seo: ProjectSeo;
   // #endregion
 }
 
@@ -534,5 +1075,16 @@ export interface SiteContent {
    * @type {readonly SkillColumn[]}
    */
   readonly skills: readonly SkillColumn[];
+
+  /**
+   * Property legal
+   * @readonly
+   *
+   * @description
+   * Legal notice and privacy policy for the selected locale.
+   *
+   * @type {Readonly<Record<LegalDocumentKind, LegalDocument>>}
+   */
+  readonly legal: Readonly<Record<LegalDocumentKind, LegalDocument>>;
   // #endregion
 }

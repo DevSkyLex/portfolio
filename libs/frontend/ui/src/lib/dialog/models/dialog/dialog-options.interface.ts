@@ -1,4 +1,5 @@
 import type { AutoFocusTarget } from '@angular/cdk/dialog';
+import type { DialogSize } from '@internal/ui/lib/dialog/constants/dialog-content.variants';
 import type { Injector } from '@angular/core';
 
 /**
@@ -133,5 +134,31 @@ export interface DialogOptions<D = unknown> {
    * @type {string | undefined}
    */
   readonly id?: string | undefined;
+
+  /**
+   * Property placement
+   * @readonly
+   *
+   * @description
+   * `center` (the default) centres the panel in the viewport; `top` anchors it 15vh below the top
+   * edge, so that a panel whose content shrinks (a filtered command list) keeps its input in place;
+   * its content should then stay within 85dvh. Sheets and alert dialogs ignore it.
+   *
+   * @type {'center' | 'top' | undefined}
+   */
+  readonly placement?: 'center' | 'top' | undefined;
+
+  /**
+   * Property size
+   * @readonly
+   *
+   * @description
+   * Panel width: `sm` (420 px) for a question or a single field, `md` (512 px) for a form or richer
+   * content, `lg` (576 px) for a confirmation whose footer pairs a key hint with two long labels. Dialogs default to `md`, alert dialogs to `sm`; sheets ignore it. A `max-w-*` class in
+   * `class` still overrides it.
+   *
+   * @type {DialogSize | undefined}
+   */
+  readonly size?: DialogSize | undefined;
   // #endregion
 }

@@ -29,6 +29,55 @@ test.describe('public site', (): void => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('IOTPlatform');
   });
 
+  test('lists the level-2 headings of a case study in its contents and reaches them by fragment', async ({
+    page,
+  }: {
+    page: Page;
+  }): Promise<void> => {
+    // The contents column needs a 1024 px page; the mobile project would hide it.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/projects/movah');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Movah');
+    const sections: { id: string; title: string }[] = await page
+      .locator('article > section')
+      .evaluateAll((elements: Element[]): { id: string; title: string }[] =>
+        elements.map((section: Element): { id: string; title: string } => ({
+          id: section.id,
+          title: section.querySelector(':scope > h2')?.textContent?.trim() ?? '',
+        })),
+      );
+    expect(sections.length).toBeGreaterThan(1);
+    const contents: Locator = page.getByRole('navigation', { name: 'Sommaire' }).getByRole('link');
+    const entries: { href: string | null; label: string }[] = await contents.evaluateAll(
+      (links: Element[]): { href: string | null; label: string }[] =>
+        links.map((link: Element): { href: string | null; label: string } => ({
+          href: link.getAttribute('href'),
+          label: link.textContent?.trim() ?? '',
+        })),
+    );
+    expect(entries).toEqual(
+      sections.map(
+        (section: { id: string; title: string }): { href: string | null; label: string } => ({
+          href: `/projects/movah#${section.id}`,
+          label: section.title,
+        }),
+      ),
+    );
+    await expect(contents.first()).toHaveAttribute('aria-current', 'true');
+
+    const first: { id: string; title: string } = sections[0] as { id: string; title: string };
+    const last: { id: string; title: string } = sections.at(-1) as { id: string; title: string };
+    // The link answers once the page is hydrated.
+    await expect(async (): Promise<void> => {
+      await contents.last().click();
+      await expect(page).toHaveURL(new RegExp(`#${last.id}$`), { timeout: 1_000 });
+    }).toPass();
+    await expect(page.getByRole('heading', { level: 2, name: last.title })).toBeInViewport();
+
+    await page.goto(`/projects/movah#${first.id}`);
+    await expect(page.getByRole('heading', { level: 2, name: first.title })).toBeInViewport();
+  });
+
   test('serves the English version under /en/', async ({ page }: { page: Page }): Promise<void> => {
     await page.goto('/en/');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -42,8 +91,11 @@ test.describe('public site', (): void => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Politique de confidentialité',
     );
+    await expect(page.getByText('Dernière mise à jour : 2 novembre 2026')).toBeVisible();
     await page.goto('/legal-notice');
     await expect(page.getByRole('heading', { name: 'Hébergement' })).toBeVisible();
+    // The documents are content (D44): each heading labels its section.
+    await expect(page.getByRole('region', { name: 'Hébergement' })).toContainText('OVH SAS');
   });
 
   test('shows a 404 page for an unknown address', async ({

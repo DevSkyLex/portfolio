@@ -1,141 +1,323 @@
-@if (filterable()) {
-  <div class="flex items-center gap-3">
-    <input
-      class="max-w-xs"
-      uiInput
-      size="sm"
-      type="search"
-      [value]="filter()"
-      [placeholder]="filterPlaceholder()"
-      [attr.aria-label]="filterLabel()"
-      [attr.aria-controls]="tableId"
-      (input)="onFilter($event)"
-    />
+@if (toolbar()) {
+  <div data-slot="data-table-toolbar" [class]="toolbarClasses()">
+    @if (searchable()) {
+      <div uiInputGroup size="sm" class="h-8 w-56 rounded-sm @max-[640px]:w-full">
+        <div uiInputGroupAddon>
+          <ng-icon [svg]="icons.search" size="14" aria-hidden="true" />
+        </div>
+        <input
+          uiInputGroupInput
+          class="text-[13px]"
+          type="search"
+          [value]="state().search"
+          [placeholder]="text().searchPlaceholder"
+          [attr.aria-label]="text().searchLabel"
+          [attr.aria-controls]="tableId"
+          (input)="onSearch($event)"
+        />
+      </div>
+    }
+    @for (facet of facetViews(); track facet.id) {
+      <ui-data-table-facet-filter
+        [facet]="facet"
+        [labels]="text()"
+        (valuesChanged)="setFacet(facet.id, $event)"
+      />
+    }
+    <div class="ms-auto flex items-center gap-2">
+      @if (columnMenu() && columnToggles().length > 0) {
+        <ui-data-table-column-menu
+          [columns]="columnToggles()"
+          [labels]="text()"
+          (toggled)="toggleColumn($event)"
+        />
+      }
+      <ng-content select="[uiDataTableToolbar]" />
+    </div>
+  </div>
+  <!--
+    Active filters, in their own bar under the toolbar. It opens and closes like an accordion: the
+    grid row animates from 0fr to 1fr with its hairline on the moving edge, and the closed bar is inert, so it is neither seen, focused nor
+    read.
+  -->
+  <div
+    data-slot="data-table-filters"
+    [class]="filterBarFrameClasses()"
+    [attr.data-open]="filtersActive() ? '' : null"
+    [inert]="!filtersActive()"
+  >
+    <div class="min-h-0 overflow-hidden">
+      <div [class]="filterBarClasses()">
+        @for (filter of activeFilters(); track filter.facet + ':' + filter.value) {
+          <span
+            class="inline-flex h-6 items-center gap-1 rounded-xs border border-border bg-surface-raised ps-2 pe-0.5 text-[12px] text-fg"
+            data-slot="data-table-filter-chip"
+          >
+            <span class="text-fg-faint" i18n="@@ui.data-table.filter-label"
+              >{{ filter.facetLabel }} :</span
+            >
+            {{ filter.label }}
+            <!-- A 20 px button whose ::after widens the pointer target to 24 px (WCAG 2.5.8). -->
+            <button
+              type="button"
+              class="relative inline-flex size-5 cursor-pointer items-center justify-center rounded-2xs text-fg-faint outline-2 outline-transparent transition-colors duration-(--dur-pop) ease-orbit after:absolute after:-inset-0.5 hover:bg-surface-hover hover:text-fg focus-visible:outline-accent/55 motion-reduce:transition-none"
+              [attr.aria-label]="text().removeFilter(filter.facetLabel, filter.label)"
+              (click)="removeFilter(filter)"
+            >
+              <ng-icon [svg]="icons.remove" size="12" aria-hidden="true" />
+            </button>
+          </span>
+        }
+        @if (filtersActive()) {
+          <button
+            uiBtn
+            variant="ghost"
+            size="sm"
+            type="button"
+            class="h-8 rounded-sm px-2.5 text-[13px]"
+            data-slot="data-table-reset"
+            (click)="resetFilters()"
+          >
+            {{ text().reset }}
+          </button>
+        }
+      </div>
+    </div>
   </div>
 }
-<div
-  class="relative w-full [scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--star)_24%,transparent)_transparent] overflow-x-auto rounded-field border border-line"
->
-  <table class="w-full caption-bottom border-collapse text-data" [id]="tableId">
-    @if (caption(); as text) {
+<p class="sr-only" role="status">{{ status() }}</p>
+<div #frame data-slot="data-table-frame" [class]="frameClasses()">
+  <table
+    #table
+    [id]="tableId"
+    [class]="tableClasses()"
+    [style.min-width.px]="resizableColumns() && fillColumn() !== null ? tableMinWidth() : null"
+    [style.width.px]="resizableColumns() && fillColumn() === null ? requiredWidth() : null"
+    [attr.aria-busy]="loading() || null"
+  >
+    @if (caption(); as label) {
       <caption class="sr-only">
         {{
-          text
+          label
         }}
       </caption>
     }
-    <thead>
-      <tr class="border-b border-line">
+    <!--
+      The fixed layout takes each column's width from its col, whatever the column classes (a w-full
+      max-w-0 heading included): with resizable columns the model's widths, the fill column left
+      without one so that it alone takes the room left; else, without rows, the last measured ones. A
+      col takes its column's classes so that a responsive `hidden` drops it with its cells.
+    -->
+    @if (colgroup()) {
+      <colgroup>
         @if (selectable()) {
-          <th class="w-10 px-3 align-middle" scope="col">
-            <input
-              type="checkbox"
-              [class]="checkboxClass"
+          <col class="w-10" [style.width.px]="resizableColumns() ? selectionWidth() : null" />
+        }
+        @for (column of visibleColumns(); track column.id) {
+          <col
+            #col
+            [class]="resizableColumns() ? (column.class ?? '') : ''"
+            [attr.data-column]="column.id"
+            [style.width.px]="colWidth(column)"
+          />
+        }
+      </colgroup>
+    }
+    <thead [class]="headClasses()">
+      <tr class="group/head">
+        @if (selectable()) {
+          <th scope="col" [class]="plainCellClasses('w-10')">
+            <ui-checkbox
+              size="sm"
+              class="align-middle"
               [checked]="allSelected()"
               [indeterminate]="someSelected()"
               [disabled]="!rows().length"
-              [attr.aria-label]="selectAllLabel()"
-              (change)="toggleAll()"
+              [ariaLabel]="text().selectAll"
+              (checkedChange)="toggleAll()"
             />
           </th>
         }
-        @for (column of columns(); track column.id) {
-          <th scope="col" [class]="headerClasses(column)" [attr.aria-sort]="ariaSort(column)">
-            @if (column.sortable) {
+        @for (column of visibleColumns(); track column.id) {
+          <th
+            #headerCell
+            scope="col"
+            [class]="headerClasses(column)"
+            [attr.aria-sort]="ariaSort(column)"
+            [attr.data-column]="column.id"
+          >
+            @if (column.headerHidden) {
+              <span class="sr-only">{{ column.header }}</span>
+            } @else if (column.sortable) {
               <button
-                class="-mx-2 inline-flex h-8 items-center gap-1.5 rounded-option border border-transparent px-2 uppercase outline-4 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) hover:text-star focus-visible:border-star/55 focus-visible:outline-star/12 motion-reduce:transition-none"
                 type="button"
-                [class.text-star]="ariaSort(column)"
-                (click)="toggleSort(column)"
+                [class]="sortButtonClasses(column)"
+                (click)="toggleSort(column, $event)"
               >
-                {{ column.header }}
-                <ng-icon [svg]="sortIcon(column)" size="14" aria-hidden="true" />
+                <span class="min-w-0 truncate">{{ column.header }}</span>
+                <ng-icon
+                  [class]="sortOf(column) ? '' : 'opacity-60'"
+                  [svg]="sortIcon(column)"
+                  size="14"
+                  aria-hidden="true"
+                />
+                @if (sortPriority(column); as priority) {
+                  <span class="font-mono text-[10px] text-fg-faint" aria-hidden="true">{{
+                    priority
+                  }}</span>
+                }
               </button>
+            } @else if (resizableColumns()) {
+              <span class="block truncate">{{ column.header }}</span>
             } @else {
               {{ column.header }}
+            }
+            @if (resizeHandles().get(column.id); as handle) {
+              <div
+                role="separator"
+                tabindex="0"
+                aria-orientation="vertical"
+                data-slot="data-table-resize-handle"
+                [attr.data-side]="handle.side"
+                [class]="resizeHandleClasses[handle.side]"
+                [attr.aria-label]="text().resizeColumn(handle.target.header)"
+                [attr.aria-valuenow]="fixedWidth(handle.target)"
+                [attr.aria-valuemin]="minWidth(handle.target)"
+                [attr.aria-valuemax]="maxWidth(handle.target)"
+                [attr.data-dragging]="resizing() === handle.target.id ? '' : null"
+                (pointerdown)="onResizeStart($event, handle.target, handle.targetSide)"
+                (pointermove)="onResizeMove($event)"
+                (pointerup)="onResizeEnd($event)"
+                (pointercancel)="onResizeEnd($event)"
+                (lostpointercapture)="onResizeEnd($event)"
+                (keydown)="onResizeKey($event, handle.target, handle.targetSide)"
+                (dblclick)="onResizeDoubleClick($event, handle.target)"
+              ></div>
             }
           </th>
         }
       </tr>
     </thead>
     <tbody>
-      @for (row of rows(); track trackKey(row); let index = $index) {
-        <tr
-          class="border-b border-line transition-colors duration-(--dur-pop) last:border-0 hover:bg-star/3 data-[state=selected]:bg-star/5 motion-reduce:transition-none"
-          [attr.data-state]="isSelected(row) ? 'selected' : null"
-        >
+      @for (placeholder of placeholders(); track placeholder) {
+        <tr data-slot="data-table-skeleton-row">
           @if (selectable()) {
-            <td class="w-10 px-3 align-middle">
-              <input
-                type="checkbox"
-                [class]="checkboxClass"
-                [checked]="isSelected(row)"
-                [attr.aria-label]="rowCheckboxLabel(row, index)"
-                (change)="toggleRow(row)"
-              />
-            </td>
+            <td [class]="plainCellClasses('w-10')"></td>
           }
-          @for (column of columns(); track column.id) {
+          @for (column of visibleColumns(); track column.id; let col = $index) {
             <td [class]="cellClasses(column)">
-              @if (templates().get(column.id); as template) {
-                <ng-container
-                  [ngTemplateOutlet]="template"
-                  [ngTemplateOutletContext]="{ $implicit: row, index }"
-                />
-              } @else {
-                {{ column.cell?.(row) }}
-              }
+              <span uiSkeleton shape="text" [class]="skeletonWidth(placeholder, col)"></span>
             </td>
           }
         </tr>
       } @empty {
-        <tr>
-          <td class="h-24 px-3 text-star-faint" [attr.colspan]="colspan()">
-            {{ emptyText() }}
-          </td>
-        </tr>
+        @for (row of rows(); track trackKey(row); let index = $index) {
+          <tr
+            [class]="rowClasses()"
+            [attr.data-state]="isSelected(row) ? 'selected' : null"
+            (click)="onRowClick($event, row)"
+          >
+            @if (selectable()) {
+              <td [class]="plainCellClasses('w-10')">
+                <ui-checkbox
+                  size="sm"
+                  class="align-middle"
+                  [checked]="isSelected(row)"
+                  [ariaLabel]="rowCheckboxLabel(row, index)"
+                  (checkedChange)="toggleRow(row)"
+                />
+              </td>
+            }
+            @for (column of visibleColumns(); track column.id) {
+              <td [class]="cellClasses(column)" [attr.data-column]="column.id">
+                @if (templates().get(column.id); as template) {
+                  <ng-container
+                    [ngTemplateOutlet]="template"
+                    [ngTemplateOutletContext]="{ $implicit: row, index }"
+                  />
+                } @else {
+                  @let value = column.cell?.(row);
+                  @if (value === null || value === undefined || value === '') {
+                    <ui-data-table-empty-cell />
+                  } @else {
+                    {{ value }}
+                  }
+                }
+              </td>
+            }
+          </tr>
+        }
       }
     </tbody>
   </table>
+  <!--
+    Below the heading row rather than in a spanning cell, so that a fill layout can take the rest of
+    the column (a table cell cannot grow into it).
+  -->
+  @if (emptyShown()) {
+    @if (data().length === 0) {
+      @if (emptyTemplate(); as empty) {
+        <ng-container
+          [ngTemplateOutlet]="empty.template"
+          [ngTemplateOutletContext]="emptyContext()"
+        />
+      } @else {
+        <div class="contents" data-slot="data-table-empty">
+          <div uiEmpty [layout]="emptyLayout()" [class]="emptyClasses()">
+            <div uiEmptyHeader>
+              <p uiEmptyTitle>{{ text().empty }}</p>
+            </div>
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="contents" data-slot="data-table-no-results">
+        <div uiEmpty [layout]="emptyLayout()" [class]="emptyClasses()">
+          <div uiEmptyHeader>
+            <div uiEmptyMedia variant="icon">
+              <ng-icon [svg]="icons.search" size="16" />
+            </div>
+            <p uiEmptyTitle>{{ text().noResults }}</p>
+            <p uiEmptyDescription>{{ text().noResultsHint }}</p>
+          </div>
+          @if (filtersActive()) {
+            <div uiEmptyContent>
+              <button uiBtn variant="secondary" size="xs" type="button" (click)="resetFilters()">
+                {{ text().resetFilters }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+  @if (resizableColumns()) {
+    <!-- Placed by the drag on each frame, over the whole table height. -->
+    <div
+      #guide
+      aria-hidden="true"
+      data-slot="data-table-resize-guide"
+      class="pointer-events-none absolute top-0 left-0 z-2 hidden w-0 border-l border-dashed border-border-hover data-active:block"
+      [attr.data-active]="resizing() ? '' : null"
+    ></div>
+  }
 </div>
-@if (paginated()) {
-  <div class="flex flex-wrap items-center justify-end gap-x-6 gap-y-3 text-data text-star-muted">
-    <label class="flex items-center gap-2">
-      {{ rowsPerPageLabel() }}
-      <select class="w-20" uiInput size="sm" (change)="onPageSize($event)">
-        @for (option of pageSizeOptions(); track option) {
-          <option [value]="option" [selected]="option === pageSize()">{{ option }}</option>
-        }
-      </select>
-    </label>
-    <span aria-live="polite">{{ pageStatus() }}</span>
-    <div class="flex items-center gap-2">
-      <button
-        uiBtn
-        type="button"
-        variant="secondary"
-        size="sm"
-        class="w-9 px-0"
-        [attr.aria-label]="previousPageLabel()"
-        [attr.aria-controls]="tableId"
-        [disabled]="currentPage() === 0"
-        (click)="goTo(currentPage() - 1)"
-      >
-        <ng-icon class="rtl:-scale-x-100" [svg]="icons.previous" size="16" aria-hidden="true" />
-      </button>
-      <button
-        uiBtn
-        type="button"
-        variant="secondary"
-        size="sm"
-        class="w-9 px-0"
-        [attr.aria-label]="nextPageLabel()"
-        [attr.aria-controls]="tableId"
-        [disabled]="currentPage() >= pageTotal() - 1"
-        (click)="goTo(currentPage() + 1)"
-      >
-        <ng-icon class="rtl:-scale-x-100" [svg]="icons.next" size="16" aria-hidden="true" />
-      </button>
-    </div>
+@if (resizing()) {
+  <!-- Keeps the resize cursor and stops hover states wherever the dragging pointer goes. -->
+  <div aria-hidden="true" class="fixed inset-0 z-50 cursor-col-resize"></div>
+}
+@if (paginated() && sorted().length > 0) {
+  <div [class]="framed() ? '' : 'px-6 py-2 @max-[640px]:px-4'">
+    <ui-data-table-pagination
+      [page]="currentPage()"
+      [pageCount]="pageTotal()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions()"
+      [total]="sorted().length"
+      [labels]="text()"
+      [controls]="tableId"
+      (pageChanged)="goTo($event)"
+      (pageSizeChanged)="setPageSize($event)"
+    />
   </div>
 }

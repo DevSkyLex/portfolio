@@ -6,6 +6,7 @@ import {
   LIP,
   OPEN_SECONDS,
   RADIUS,
+  TRIGGER_RADIUS,
   REDUCED_SECONDS,
   SHADOW,
   W0,
@@ -180,7 +181,11 @@ export function paintMenu(
 
   // The trigger edge facing the list flattens while they touch, then rounds again as it detaches.
   const edge: number =
-    p <= 0.2 ? lerp(RADIUS, 0, ramp(p, 0, 0.2)) : p < 0.4 ? 0 : lerp(0, RADIUS, ramp(p, 0.4, 1));
+    p <= 0.2
+      ? lerp(TRIGGER_RADIUS, 0, ramp(p, 0, 0.2))
+      : p < 0.4
+        ? 0
+        : lerp(0, TRIGGER_RADIUS, ramp(p, 0.4, 1));
   const radius: string = `${edge.toFixed(2)}px`;
   trigger.style.borderTopLeftRadius = trigger.style.borderTopRightRadius = above ? radius : '';
   trigger.style.borderBottomLeftRadius = trigger.style.borderBottomRightRadius = above

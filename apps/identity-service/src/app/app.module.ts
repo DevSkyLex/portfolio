@@ -38,6 +38,7 @@ export class AppModule {
           keysDir: config.IDENTITY_KEYS_DIR,
           signingKid: config.IDENTITY_SIGNING_KID,
           issuer: config.IDENTITY_ISSUER,
+          ...(config.IDENTITY_MCP_RESOURCE ? { mcpResource: config.IDENTITY_MCP_RESOURCE } : {}),
           cookieSecure: config.IDENTITY_COOKIE_SECURE,
         }),
       ],

@@ -15,6 +15,6 @@ export const ADMIN_CONTACT_ROUTES: Routes = [
       import('@internal/contact-web-feature-admin/lib/ui/pages/admin-inbox-page/admin-inbox-page.component').then(
         (m) => m.AdminInboxPageComponent,
       ),
-    title: 'Messages — Administration',
+    title: $localize`:@@admin.inbox.routeTitle:Messages — Administration`,
   },
 ];

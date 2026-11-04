@@ -197,18 +197,19 @@ export class RadioGroupItemComponent {
    * @readonly
    *
    * @description
-   * Radio indicator styling, including group checked, invalid and focus-visible states.
+   * Radio indicator styling, including group checked, invalid and focus-visible states; the unchecked
+   * ring is `border-strong` for 3:1 against every surface (WCAG 1.4.11).
    *
    * @type {Signal<string>}
    */
   protected readonly indicatorClasses: Signal<string> = computed<string>((): string =>
     cn(
-      'inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-line-field',
+      'inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-border-strong',
       'transition-[border-color,outline-color] duration-(--dur-pop) ease-orbit motion-reduce:transition-none',
-      'outline-4 outline-offset-0 outline-transparent group-hover/radio:border-line-hover',
-      'group-aria-checked/radio:border-star',
+      'outline-2 outline-offset-0 outline-transparent group-hover/radio:border-fg-faint',
+      'group-aria-checked/radio:border-fg',
       this.group.invalid() && 'border-danger group-aria-checked/radio:border-danger',
-      'group-focus-visible/radio:border-signal/55 group-focus-visible/radio:outline-signal/12',
+      'group-focus-visible/radio:outline-accent/55',
     ),
   );
   // #endregion

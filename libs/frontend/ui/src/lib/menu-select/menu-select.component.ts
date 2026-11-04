@@ -251,7 +251,7 @@ export class MenuSelectComponent<T extends string = string> {
    */
   protected readonly buttonClasses: Signal<string> = computed<string>(() =>
     cn(
-      'flex w-full cursor-pointer items-center justify-between rounded-field border border-line-field bg-transparent text-left font-medium text-star hover:border-line-hover hover:bg-star/5 focus-visible:border-signal/55 focus-visible:outline-4 focus-visible:outline-offset-0 focus-visible:outline-signal/12 aria-expanded:border-signal/55 aria-expanded:outline-none aria-expanded:hover:border-signal/55',
+      'flex w-full cursor-pointer items-center justify-between rounded-md border border-border-field bg-transparent text-left font-medium text-fg hover:border-border-hover hover:bg-surface-hover focus-visible:border-accent/55 focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/12 aria-expanded:border-accent/55 aria-expanded:outline-none aria-expanded:hover:border-accent/55',
       this.size() === 'sm'
         ? 'h-9 gap-2 pr-2.5 pl-3 text-[14px]/5'
         : 'h-11 gap-2.5 pr-3.5 pl-4 text-[15px]/5',
@@ -269,7 +269,7 @@ export class MenuSelectComponent<T extends string = string> {
    */
   protected readonly listClasses: Signal<string> = computed<string>(() =>
     cn(
-      'invisible absolute left-0 z-60 m-0 min-w-full list-none rounded-field border border-line bg-void-raised p-1 opacity-0 shadow-float outline-none light:bg-void',
+      'invisible absolute left-0 z-60 m-0 min-w-full list-none rounded-lg border border-border bg-surface-float p-[3px] opacity-0 shadow-float outline-none',
       this.placement() === 'top'
         ? 'bottom-[calc(100%+4px)] translate-y-1 group-data-open/menu:translate-none'
         : 'top-[calc(100%+4px)] -translate-y-1 group-data-open/menu:translate-none',
@@ -287,7 +287,7 @@ export class MenuSelectComponent<T extends string = string> {
    */
   protected readonly optionClasses: Signal<string> = computed<string>(() =>
     cn(
-      'group/option relative z-1 flex -translate-y-1.5 cursor-pointer items-center rounded-option whitespace-nowrap text-star-muted opacity-0 blur-[3px] transition-[opacity,translate,filter,background-color,color] duration-[80ms,80ms,80ms,150ms,150ms] ease-orbit group-data-open/menu:translate-y-0 group-data-open/menu:opacity-100 group-data-open/menu:blur-none group-data-open/menu:delay-[calc(80ms+var(--i)*35ms),calc(80ms+var(--i)*35ms),calc(80ms+var(--i)*35ms),0s,0s] group-data-open/menu:duration-[300ms,400ms,300ms,150ms,150ms] data-active:text-star motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:blur-none motion-reduce:transition-none',
+      'group/option relative z-1 flex -translate-y-1.5 cursor-pointer items-center rounded-sm whitespace-nowrap text-fg-muted opacity-0 blur-[3px] transition-[opacity,translate,filter,background-color,color] duration-[80ms,80ms,80ms,150ms,150ms] ease-orbit group-data-open/menu:translate-y-0 group-data-open/menu:opacity-100 group-data-open/menu:blur-none group-data-open/menu:delay-[calc(80ms+var(--i)*35ms),calc(80ms+var(--i)*35ms),calc(80ms+var(--i)*35ms),0s,0s] group-data-open/menu:duration-[300ms,400ms,300ms,150ms,150ms] data-active:text-fg motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:blur-none motion-reduce:transition-none',
       this.size() === 'sm'
         ? 'min-h-8 gap-2 px-2 text-[14px]/5'
         : 'min-h-10 gap-2.5 px-2.5 text-[15px]/5',

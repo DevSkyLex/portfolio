@@ -1,0 +1,214 @@
+<main class="flex min-h-dvh flex-col items-center px-6 py-16 max-sm:py-10">
+  <div class="flex w-full max-w-[480px] flex-col gap-6">
+    @if (leavingFor(); as host) {
+      <div class="flex items-center gap-3 text-[14px]/5 text-fg-muted" role="status">
+        <ng-icon
+          class="motion-safe:animate-spin"
+          [svg]="icons.loading"
+          size="16"
+          aria-hidden="true"
+        />
+        <p i18n="@@admin.oauth.redirecting">
+          Redirection vers <span class="font-medium text-fg">{{ host }}</span
+          >…
+        </p>
+      </div>
+    } @else if (refused()) {
+      <div uiAlert variant="danger">
+        <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.oauth.refused.title">
+          Redirection refusée
+        </p>
+        <div uiAlertDescription class="text-[13px]/5">
+          <p i18n="@@admin.oauth.refused.description">
+            L’adresse de retour n’est ni sécurisée (https) ni sur cet ordinateur.
+          </p>
+        </div>
+      </div>
+    } @else if (store.loadCallState().error; as error) {
+      <div class="flex flex-col gap-1.5">
+        <h1
+          class="text-[22px]/7 font-semibold tracking-[-0.01em] text-fg"
+          i18n="@@admin.oauth.failed.title"
+        >
+          Autorisation impossible
+        </h1>
+        <p class="text-[14px]/5 text-fg-muted" i18n="@@admin.oauth.failed.description">
+          La demande n’a pas été renvoyée à l’application.
+        </p>
+      </div>
+      <div uiAlert variant="danger">
+        <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+        <p uiAlertTitle class="text-[13px]/5">{{ error.message }}</p>
+      </div>
+      <a
+        class="-ml-2 inline-flex h-8 items-center gap-1.5 self-start rounded-sm px-2 text-[13px] text-fg-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-surface-hover hover:text-fg focus-visible:outline-accent/55"
+        routerLink="/admin"
+      >
+        <ng-icon [svg]="icons.back" size="14" aria-hidden="true" />
+        <ng-container i18n="@@admin.oauth.backToAdmin">Retour à l’administration</ng-container>
+      </a>
+    } @else if (consent(); as request) {
+      <header class="flex items-start gap-4">
+        @if (request.client.logo; as logo) {
+          <img
+            class="size-12 shrink-0 rounded-lg border border-border bg-surface-raised object-contain p-1"
+            [src]="logo"
+            alt=""
+            width="48"
+            height="48"
+          />
+        } @else {
+          <span
+            class="grid size-12 shrink-0 place-items-center rounded-lg border border-border bg-surface-raised text-fg-muted"
+            aria-hidden="true"
+          >
+            <ng-icon [svg]="icons.app" size="20" />
+          </span>
+        }
+        <div class="flex min-w-0 flex-col gap-1.5">
+          <h1
+            class="text-[22px]/7 font-semibold tracking-[-0.01em] break-words text-fg"
+            i18n="@@admin.oauth.title"
+          >
+            Autoriser {{ clientName() }} ?
+          </h1>
+          <p class="text-[14px]/5 text-fg-muted" i18n="@@admin.oauth.intro">
+            {{ clientName() }} demande à agir sur le contenu de votre site, en votre nom.
+          </p>
+        </div>
+      </header>
+
+      @if (request.client.registration === 'dynamic') {
+        <div uiAlert variant="warning">
+          <ng-icon [svg]="icons.warning" size="16" aria-hidden="true" />
+          <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.oauth.unverified.title">
+            Application non vérifiée
+          </p>
+          <div uiAlertDescription class="text-[13px]/5">
+            <p i18n="@@admin.oauth.unverified.description">
+              Elle s’est enregistrée elle-même : aucun domaine ne garantit son nom. N’autorisez que
+              si vous venez de lancer cette connexion depuis l’application.
+            </p>
+          </div>
+        </div>
+      }
+      @if (request.loopbackRedirect) {
+        <div uiAlert variant="warning">
+          <ng-icon [svg]="icons.warning" size="16" aria-hidden="true" />
+          <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.oauth.loopback.title">
+            Retour vers cet ordinateur
+          </p>
+          <div uiAlertDescription class="text-[13px]/5">
+            <p i18n="@@admin.oauth.loopback.description">
+              Le code d’autorisation sera remis à {{ request.redirectHost }} : tout programme de cet
+              ordinateur à l’écoute de cette adresse pourrait le recevoir.
+            </p>
+          </div>
+        </div>
+      }
+
+      <dl
+        class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-4 gap-y-2 border-y border-border py-4 text-[13px]/5"
+      >
+        <dt class="text-fg-muted" i18n="@@admin.oauth.details.application">Application</dt>
+        <dd class="flex min-w-0 flex-col gap-1">
+          @if (clientHost(); as host) {
+            <span class="font-medium text-fg">{{ host }}</span>
+          } @else {
+            <span class="text-fg" i18n="@@admin.oauth.details.dynamic"
+              >Enregistrée dynamiquement</span
+            >
+          }
+          <span class="font-mono text-[12px]/4.5 break-all text-fg-muted">{{
+            request.client.clientId
+          }}</span>
+        </dd>
+        <dt class="text-fg-muted" i18n="@@admin.oauth.details.redirect">Retour vers</dt>
+        <dd class="min-w-0 font-medium break-all text-fg">{{ request.redirectHost }}</dd>
+        <dt class="text-fg-muted" i18n="@@admin.oauth.details.site">Site</dt>
+        <dd class="min-w-0 break-all text-fg">{{ resourceHost() }}</dd>
+      </dl>
+
+      <section class="flex flex-col gap-3" aria-labelledby="oauth-scopes-title">
+        <h2
+          id="oauth-scopes-title"
+          class="text-[14px]/5 font-semibold text-fg"
+          i18n="@@admin.oauth.scopes.title"
+        >
+          Accès demandés
+        </h2>
+        <ul class="flex flex-col divide-y divide-border">
+          @for (row of scopes(); track row.scope) {
+            <li class="flex items-start gap-3 py-3">
+              <span
+                class="grid size-8 shrink-0 place-items-center rounded-md border border-border bg-surface-raised text-fg-muted"
+                aria-hidden="true"
+              >
+                <ng-icon [svg]="row.icon" size="14" />
+              </span>
+              <div class="flex min-w-0 flex-col gap-0.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="text-[14px]/5 font-medium text-fg">{{ row.text.title }}</h3>
+                  @if (row.added) {
+                    <span uiBadge variant="info" [dot]="true" i18n="@@admin.oauth.scopes.new"
+                      >Nouveau</span
+                    >
+                  }
+                </div>
+                <p class="text-[13px]/5 text-fg-muted">{{ row.text.description }}</p>
+              </div>
+            </li>
+          }
+        </ul>
+        <p class="text-[12px]/4.5 text-fg-muted" i18n="@@admin.oauth.scopes.contactNote">
+          Les messages reçus par le formulaire de contact ne sont jamais accessibles.
+        </p>
+      </section>
+
+      @if (store.decideCallState().error; as error) {
+        <div uiAlert variant="danger">
+          <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+          <p uiAlertTitle class="text-[13px]/5">{{ error.message }}</p>
+        </div>
+      }
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <button
+          uiBtn
+          variant="secondary"
+          type="button"
+          [disabled]="store.deciding() || expired()"
+          (click)="decide('deny')"
+          i18n="@@admin.oauth.deny"
+        >
+          Refuser
+        </button>
+        <button
+          uiBtn
+          type="button"
+          [disabled]="store.deciding() || expired()"
+          (click)="decide('approve')"
+          i18n="@@admin.oauth.approve"
+        >
+          Autoriser
+        </button>
+      </div>
+      <p class="text-[12px]/4.5 text-fg-muted" i18n="@@admin.oauth.revokeNote">
+        Vous pourrez retirer cet accès à tout moment dans Sécurité, Applications connectées.
+      </p>
+    } @else {
+      <div class="flex flex-col gap-4" role="status">
+        <span class="sr-only" i18n="@@admin.oauth.checking">Vérification de la demande…</span>
+        <div class="flex items-center gap-4">
+          <span uiSkeleton class="size-12 shrink-0 rounded-lg"></span>
+          <div class="flex flex-1 flex-col gap-2">
+            <span uiSkeleton class="h-5 w-56 max-w-full rounded-full"></span>
+            <span uiSkeleton class="h-3 w-72 max-w-full rounded-full"></span>
+          </div>
+        </div>
+        <span uiSkeleton class="h-24 w-full rounded-lg"></span>
+      </div>
+    }
+  </div>
+</main>

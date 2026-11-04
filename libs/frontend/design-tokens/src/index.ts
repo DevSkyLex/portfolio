@@ -29,13 +29,13 @@ export type AuroraToken = (typeof AURORA_TOKENS)[number];
  */
 export type ColorToken =
   | AuroraToken
-  | '--void'
-  | '--void-raised'
-  | '--star'
-  | '--star-muted'
-  | '--star-faint'
-  | '--line'
-  | '--signal';
+  | '--surface'
+  | '--surface-raised'
+  | '--fg'
+  | '--fg-muted'
+  | '--fg-faint'
+  | '--border'
+  | '--accent';
 
 /**
  * Function readToken

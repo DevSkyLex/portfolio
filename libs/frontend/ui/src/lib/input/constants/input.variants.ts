@@ -10,9 +10,9 @@ import { cva, type VariantProps } from 'class-variance-authority';
  */
 export const inputVariants = cva(
   [
-    'w-full rounded-field border border-line-field bg-void-raised text-star placeholder:text-star-faint',
-    'transition-[border-color] duration-(--dur-pop) ease-orbit hover:border-line-hover',
-    'outline-4 outline-offset-0 outline-transparent focus:border-signal/55 focus:outline-signal/12',
+    'w-full rounded-md border border-border-field bg-surface-field text-fg placeholder:text-fg-faint',
+    'transition-[border-color] duration-(--dur-pop) ease-orbit hover:border-border-hover',
+    'outline-2 outline-offset-0 outline-transparent focus:border-accent/55 focus:outline-accent/12',
     // Focus wins over the error border, as in the mockup.
     'aria-invalid:not-focus:border-danger',
     'disabled:cursor-not-allowed disabled:opacity-50',
@@ -22,7 +22,7 @@ export const inputVariants = cva(
       size: {
         sm: 'h-9 px-3 text-sm',
         md: 'h-11 px-4.5 text-base/6',
-        lg: 'h-14 px-5 text-[17px]/6',
+        lg: 'h-14 rounded-lg px-5 text-[17px]/6',
       },
       multiline: { true: 'h-auto min-h-36 py-3', false: '' },
       /** Native select: arrow drawn by the parent component, on the right. */

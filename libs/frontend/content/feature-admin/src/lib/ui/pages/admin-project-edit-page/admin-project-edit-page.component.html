@@ -1,143 +1,221 @@
 <header
-  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-line bg-void px-6 text-[13px] @max-[640px]:px-4"
+  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface px-6 text-[13px] @max-[640px]:px-4"
 >
+  <ui-sidebar-trigger class="-ml-2" />
   <a
-    class="inline-flex h-7 items-center gap-1.5 rounded-option px-1.5 font-medium text-star-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-star/5 hover:text-star focus-visible:outline-signal/55"
+    class="inline-flex h-7 items-center gap-1.5 rounded-sm px-1.5 font-medium text-fg-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-surface-hover hover:text-fg focus-visible:outline-accent/55"
     routerLink=".."
   >
     <ng-icon [svg]="icons.back" size="14" aria-hidden="true" />
-    Tous les projets
+    <ng-container i18n="@@admin.project.back">Tous les projets</ng-container>
   </a>
   @if (project(); as current) {
-    <ng-icon class="shrink-0 text-star-faint" [svg]="icons.chevron" size="14" aria-hidden="true" />
-    <span class="truncate font-medium text-star">{{ current.title.fr }}</span>
-    <span class="ml-auto flex shrink-0 items-center gap-1.5">
-      <button
-        uiBtn
-        variant="ghost"
-        size="sm"
-        class="hidden h-7 px-2.5 text-[13px] @max-[1180px]:inline-flex"
-        type="button"
-        [uiSheetTrigger]="properties"
-      >
-        <ng-icon [svg]="icons.properties" size="14" aria-hidden="true" />
-        Propriétés
-      </button>
-      <ng-template
-        #properties="uiSheetContent"
-        uiSheetContent
-        side="right"
-        class="max-w-80 gap-6 p-5"
-      >
-        <div uiSheetHeader>
-          <h2 uiSheetTitle class="font-sans text-[14px]/5 font-semibold">Propriétés</h2>
-        </div>
-        <content-project-properties-panel [project]="current" />
-      </ng-template>
-      @if (current.status === 'published') {
-        <a
-          uiBtn
-          variant="ghost"
-          size="sm"
-          class="h-7 px-2.5 text-[13px]"
-          [href]="'/projects/' + current.slug"
-          target="_blank"
-          rel="noopener"
-        >
-          <ng-icon [svg]="icons.open" size="14" aria-hidden="true" />
-          Voir la page
-        </a>
-      }
-      <button
-        uiBtn
-        size="sm"
-        class="h-7 px-2.5 text-[13px]"
-        [variant]="current.status === 'published' ? 'secondary' : 'primary'"
-        type="button"
-        [disabled]="
-          store.writing() || dirty() || (current.status === 'draft' && current.missing.length > 0)
-        "
-        [title]="dirty() ? 'Enregistrez d’abord les modifications.' : ''"
-        (click)="togglePublication()"
-      >
-        {{ current.status === 'published' ? 'Dépublier' : 'Publier' }}
-      </button>
-    </span>
+    <ng-icon class="shrink-0 text-fg-faint" [svg]="icons.chevron" size="14" aria-hidden="true" />
+    <span class="truncate font-medium text-fg" aria-current="page">{{ current.title.fr }}</span>
   }
 </header>
 
-@if (project(); as current) {
-  <div class="grid flex-1 grid-cols-[minmax(0,1fr)_288px] @max-[1180px]:grid-cols-1">
-    <div
-      class="mx-auto flex w-full max-w-[920px] min-w-0 flex-col gap-6 px-10 py-8 @max-[640px]:px-4"
-    >
-      <div class="flex flex-col gap-2">
-        <h1 class="text-[24px]/8 font-semibold tracking-[-0.01em] text-star">
-          {{ current.title.fr }}
-        </h1>
-        <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-star-muted">
+<div class="flex flex-1 flex-col">
+  @if (project(); as current) {
+    <ui-page-header>
+      <h1 uiPageHeaderTitle>{{ current.title.fr }}</h1>
+      <div uiPageHeaderActions>
+        <button
+          uiBtn
+          variant="ghost"
+          size="xs"
+          class="hidden @max-[1180px]:inline-flex"
+          type="button"
+          aria-haspopup="dialog"
+          [attr.aria-expanded]="propertiesOpen()"
+          (click)="openProperties()"
+        >
+          <ng-icon [svg]="icons.properties" size="14" aria-hidden="true" />
+          <ng-container i18n="@@admin.project.properties">Propriétés</ng-container>
+        </button>
+        <ng-template #properties>
+          <div uiSheetHeader>
+            <h2 uiSheetTitle class="font-sans text-[14px]/5 font-semibold">
+              <ng-container i18n="@@admin.project.properties">Propriétés</ng-container>
+            </h2>
+          </div>
+          <content-project-properties-panel [project]="current" [settings]="settings()" />
+        </ng-template>
+        @if (current.status === 'published') {
+          <a
+            uiBtn
+            variant="ghost"
+            size="xs"
+            [href]="publicPath(current)"
+            target="_blank"
+            rel="noopener"
+          >
+            <ng-icon [svg]="icons.open" size="14" aria-hidden="true" />
+            <ng-container i18n="@@admin.project.viewPage">Voir la page</ng-container>
+          </a>
+        }
+        <button
+          uiBtn
+          size="xs"
+          [variant]="current.status === 'published' ? 'secondary' : 'primary'"
+          type="button"
+          [disabled]="
+            store.writing() || dirty() || (current.status === 'draft' && current.missing.length > 0)
+          "
+          [title]="dirty() ? saveFirst : ''"
+          (click)="togglePublication()"
+        >
           @if (current.status === 'published') {
-            <span uiBadge variant="success" dot>Publié</span>
+            <ng-container i18n="@@admin.projects.action.unpublish">Dépublier</ng-container>
           } @else {
-            <span uiBadge variant="outline" dot>Brouillon</span>
+            <ng-container i18n="@@admin.projects.action.publish">Publier</ng-container>
           }
-          <span>version {{ current.version }}</span>
-          <span class="text-star-faint" aria-hidden="true">·</span>
-          <span class="font-mono text-[12px] text-star-faint">{{ current.slug }}</span>
-        </p>
+        </button>
+      </div>
+    </ui-page-header>
+
+    <!--
+    The form panel stays overflow-visible: the page scrolls with the document, so the title bar, the
+    article toolbar and the save bar keep sticking. Below 1180 px the hidden panel leaves the form alone.
+  -->
+    <div
+      uiResizablePanelGroup
+      #split="uiResizablePanelGroup"
+      class="h-auto flex-1"
+      (layoutChange)="saveSplit(split.pixelSizes()[1])"
+    >
+      <div
+        uiResizablePanel
+        class="overflow-visible"
+        [minSize]="splitLayout.limits[0].min"
+        [maxSize]="splitLayout.limits[0].max"
+      >
+        <div
+          class="mx-auto flex w-full max-w-[920px] min-w-0 flex-col gap-6 self-stretch px-6 py-6 @max-[640px]:px-4"
+        >
+          @if (store.conflict()) {
+            <div uiAlert variant="warning">
+              <ng-icon [svg]="icons.conflict" size="16" aria-hidden="true" />
+              <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.project.conflict.title">
+                Le projet a été modifié ailleurs depuis son ouverture.
+              </p>
+              <div uiAlertDescription class="gap-2 text-[13px]/5">
+                <p i18n="@@admin.project.conflict.description">
+                  Recharger remplace vos modifications.
+                </p>
+                <button
+                  uiBtn
+                  variant="secondary"
+                  size="xs"
+                  type="button"
+                  i18n="@@admin.project.conflict.reload"
+                  (click)="reload()"
+                >
+                  Recharger
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (values(); as initial) {
+            <!-- Stretched to the page bottom, so the save bar sticks to the viewport even on a short form. -->
+            <content-project-form
+              class="flex flex-1 flex-col"
+              [values]="initial"
+              [slug]="current.slug"
+              [complete]="current.status === 'published'"
+              [pending]="store.writing()"
+              [upload]="upload"
+              [media]="media()"
+              [serverErrors]="store.writeError()?.fieldErrors ?? []"
+              (submitted)="save($event)"
+              (cancelled)="reload()"
+            />
+          }
+        </div>
       </div>
 
-      @if (store.conflict()) {
-        <div uiAlert variant="warning">
-          <ng-icon [svg]="icons.conflict" size="16" aria-hidden="true" />
-          <p uiAlertTitle class="text-[13px]/5">
-            Le projet a été modifié ailleurs depuis son ouverture.
-          </p>
-          <div uiAlertDescription class="gap-2 text-[13px]/5">
-            <p>Recharger remplace vos modifications.</p>
-            <button
-              uiBtn
-              variant="secondary"
-              size="sm"
-              class="h-7 px-2.5 text-[13px]"
-              type="button"
-              (click)="reload()"
-            >
-              Recharger
-            </button>
-          </div>
-        </div>
-      }
-
-      @if (values(); as initial) {
-        <content-project-form
-          [values]="initial"
-          [complete]="current.status === 'published'"
-          [pending]="store.writing()"
-          [serverErrors]="store.writeError()?.fieldErrors ?? []"
-          (submitted)="save($event)"
-          (cancelled)="reload()"
+      @if (!narrow()) {
+        <ui-resizable-handle
+          #splitHandle
+          label="Redimensionner le panneau Propriétés"
+          i18n-label="@@admin.project.resizeProperties"
+          class="outline-2 hover:bg-border-hover focus-visible:bg-fg focus-visible:outline-accent/55 data-dragging:bg-fg @max-[1180px]:hidden"
+          step="16px"
+          (dblclick)="resetSplit(split, splitHandle)"
         />
       }
+      <aside
+        uiResizablePanel
+        class="sticky top-12 h-[calc(100dvh-3rem)] overflow-auto @max-[1180px]:hidden"
+        aria-label="Propriétés"
+        i18n-aria-label="@@admin.project.properties"
+        [defaultSize]="panelDefault()"
+        [minSize]="splitLayout.limits[1].min"
+        [maxSize]="splitLayout.limits[1].max"
+      >
+        <!-- The padding sits inside: on the panel itself it would add to its width. -->
+        <div class="flex flex-col gap-6 px-5 py-6">
+          <h2 class="text-[14px]/5 font-semibold text-fg">
+            <ng-container i18n="@@admin.project.properties">Propriétés</ng-container>
+          </h2>
+          <!-- Below 1180 px the sheet holds the shared settings: their fields render once. -->
+          <content-project-properties-panel
+            [project]="current"
+            [settings]="narrow() ? null : settings()"
+          />
+        </div>
+      </aside>
     </div>
-
-    <aside
-      class="sticky top-12 flex h-[calc(100dvh-3rem)] flex-col gap-6 overflow-y-auto border-l border-line px-5 py-6 @max-[1180px]:hidden"
-      aria-label="Propriétés"
+  } @else if (store.loadCallState().status === 'error') {
+    @let failure = store.loadCallState().error;
+    <div uiAlert variant="danger" class="mx-6 my-6 w-auto max-w-[920px] @max-[640px]:mx-4">
+      <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+      @if (failure?.status === 404) {
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.project.notFound.title">
+          Projet introuvable
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p i18n="@@admin.project.notFound.description">
+            Il a peut-être été supprimé, ou son adresse est incorrecte.
+          </p>
+          <a uiBtn variant="secondary" size="xs" routerLink=".."
+            ><ng-container i18n="@@admin.project.back">Tous les projets</ng-container></a
+          >
+        </div>
+      } @else {
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.project.loadFailed.title">
+          Impossible de charger le projet
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p>{{ failure?.message }}</p>
+          <button
+            uiBtn
+            variant="secondary"
+            size="xs"
+            type="button"
+            i18n="@@admin.project.loadFailed.retry"
+            (click)="reload()"
+          >
+            Réessayer
+          </button>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Same header and first fields as the loaded page, so that nothing moves on arrival. -->
+    <span class="sr-only" role="status" i18n="@@admin.project.loading">Chargement du projet…</span>
+    <ui-page-header aria-hidden="true">
+      <div uiPageHeaderTitle><span uiSkeleton class="h-7 w-64"></span></div>
+      <div uiPageHeaderActions><span uiSkeleton class="h-7 w-20"></span></div>
+    </ui-page-header>
+    <div
+      class="mx-auto flex w-full max-w-[920px] flex-col gap-6 px-6 py-6 @max-[640px]:px-4"
+      aria-hidden="true"
     >
-      <h2 class="text-[13px] font-semibold text-star">Propriétés</h2>
-      <content-project-properties-panel [project]="current" />
-    </aside>
-  </div>
-} @else if (store.loading()) {
-  <div class="flex flex-col gap-3 px-10 py-8" role="status">
-    <span class="sr-only">Chargement…</span>
-    <span uiSkeleton class="h-7 w-64 rounded-[6px]"></span>
-    <span uiSkeleton class="h-4 w-40 rounded-[6px]"></span>
-  </div>
-} @else {
-  <div uiAlert variant="danger" class="mx-10 my-8 w-auto max-w-[920px] @max-[640px]:mx-4">
-    <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
-    <p uiAlertTitle class="text-[13px]/5">Projet introuvable.</p>
-  </div>
-}
+      <span uiSkeleton class="h-5 w-40"></span>
+      <span uiSkeleton class="h-9 w-full"></span>
+      <span uiSkeleton class="h-9 w-full"></span>
+    </div>
+  }
+</div>

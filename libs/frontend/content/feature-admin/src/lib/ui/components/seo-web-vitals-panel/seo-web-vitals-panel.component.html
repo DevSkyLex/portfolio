@@ -1,0 +1,63 @@
+<p class="max-w-[72ch] text-[13px]/5 text-fg-muted" i18n="@@admin.dashboard.vitals.note">
+  LCP, INP et CLS : 75e centile des visites réelles de Chrome (CrUX) sur 28 jours, ceux de l’origine
+  quand l’adresse n’a pas assez de visites. Score labo : performance Lighthouse d’une mesure
+  simulée.
+</p>
+
+<ng-template #vital let-cell>
+  @if (cell) {
+    <span class="flex items-center gap-2">
+      <span class="text-fg tabular-nums">{{ cell.display }}</span>
+      <span uiBadge dot [variant]="cell.variant">{{ cell.word }}</span>
+    </span>
+  } @else {
+    <ui-data-table-empty-cell />
+  }
+</ng-template>
+
+<ui-data-table
+  density="compact"
+  caption="Core Web Vitals"
+  [data]="rows()"
+  [columns]="columns"
+  [rowKey]="rowKey"
+  [searchable]="false"
+  [columnMenu]="false"
+  [paginated]="false"
+>
+  <ng-template uiDataTableCell="page" [uiDataTableCellRows]="rows()" let-row>
+    <div class="flex w-0 min-w-full flex-col">
+      <a
+        class="truncate text-fg outline-2 outline-offset-2 outline-transparent hover:underline focus-visible:rounded-xs focus-visible:outline-accent/55"
+        target="_blank"
+        rel="noopener"
+        [href]="row.url"
+        [title]="row.url"
+        >{{ row.path }}</a
+      >
+      @if (row.error) {
+        <span
+          class="truncate text-[12px]/4 text-danger-ink"
+          i18n="@@admin.dashboard.vitals.rowError"
+          >Mesure impossible : {{ row.error }}</span
+        >
+      } @else if (row.origin) {
+        <span class="truncate text-[12px]/4 text-fg-faint" i18n="@@admin.dashboard.vitals.origin"
+          >Données terrain de l’origine</span
+        >
+      }
+    </div>
+  </ng-template>
+  <ng-template uiDataTableCell="lcp" [uiDataTableCellRows]="rows()" let-row>
+    <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.lcp }" />
+  </ng-template>
+  <ng-template uiDataTableCell="inp" [uiDataTableCellRows]="rows()" let-row>
+    <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.inp }" />
+  </ng-template>
+  <ng-template uiDataTableCell="cls" [uiDataTableCellRows]="rows()" let-row>
+    <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.cls }" />
+  </ng-template>
+  <ng-template uiDataTableCell="score" [uiDataTableCellRows]="rows()" let-row>
+    <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.score }" />
+  </ng-template>
+</ui-data-table>

@@ -1,4 +1,7 @@
 import { z } from 'zod/mini';
+import { EditableArticleDocumentSchema } from '@internal/content-contracts/lib/article-document.contract';
+import { MediaDtoSchema } from '@internal/content-contracts/lib/media.contract';
+import { ProjectSeoDtoSchema } from '@internal/content-contracts/lib/project-seo.contract';
 
 /**
  * Constant Text
@@ -29,24 +32,108 @@ export const LocalizedTextDtoSchema = z.object({
 export type LocalizedTextDto = z.infer<typeof LocalizedTextDtoSchema>;
 
 /**
- * Constant Paragraphs
+ * Constant AltText
  *
  * @description
- * Validates an ordered list of at most 30 localized paragraphs or captions.
+ * Alternative text of an image, empty while a draft still lacks it.
  */
-const Paragraphs = z.array(LocalizedTextDtoSchema).check(z.maxLength(30));
+const AltText = z.string().check(z.trim(), z.maxLength(300));
+
+/**
+ * Constant ProjectCoverDtoSchema
+ *
+ * @description
+ * Cover image of a project: an uploaded media and its localized alternative text.
+ */
+export const ProjectCoverDtoSchema = z.object({
+  media: z.uuid(),
+  alt: z.object({ fr: AltText, en: z.optional(AltText) }),
+});
+
+/**
+ * Type ProjectCoverDto
+ * @type ProjectCoverDto
+ *
+ * @description
+ * Project cover referencing an uploaded media.
+ */
+export type ProjectCoverDto = z.infer<typeof ProjectCoverDtoSchema>;
+
+/**
+ * Constant PROJECT_PERIOD_LIMITS
+ *
+ * @description
+ * Accepted years of a project period, those of the timeline entries (`TIMELINE_ENTRY_LIMITS`),
+ * mirrored by the domain's `ProjectPeriod` and by the admin form's picker bounds (D10, D46).
+ */
+export const PROJECT_PERIOD_LIMITS = { yearMin: 1990, yearMax: 2100 } as const;
+
+/**
+ * Constant ProjectPeriodBoundDtoSchema
+ *
+ * @description
+ * One end of a project period: a four-digit year and a one-based month, or `null` for the whole year.
+ */
+export const ProjectPeriodBoundDtoSchema = z.object({
+  year: z
+    .int()
+    .check(z.minimum(PROJECT_PERIOD_LIMITS.yearMin), z.maximum(PROJECT_PERIOD_LIMITS.yearMax)),
+  month: z.nullable(z.int().check(z.minimum(1), z.maximum(12))),
+});
+
+/**
+ * Type ProjectPeriodBoundDto
+ * @type ProjectPeriodBoundDto
+ *
+ * @description
+ * Year, with a month or for the whole year.
+ */
+export type ProjectPeriodBoundDto = z.infer<typeof ProjectPeriodBoundDtoSchema>;
+
+/**
+ * Constant ProjectPeriodDtoSchema
+ *
+ * @description
+ * Period of a project (D46): its start and its end, `null` while ongoing. The end does not precede
+ * the start: by year, then by month when both ends have one. The public snapshot keeps the label the
+ * service writes from it (`periodLabel`).
+ */
+export const ProjectPeriodDtoSchema = z
+  .object({ start: ProjectPeriodBoundDtoSchema, end: z.nullable(ProjectPeriodBoundDtoSchema) })
+  .check(
+    z.refine(
+      (period: { start: ProjectPeriodBoundDto; end: ProjectPeriodBoundDto | null }): boolean =>
+        period.end === null ||
+        period.end.year > period.start.year ||
+        (period.end.year === period.start.year &&
+          (period.end.month === null ||
+            period.start.month === null ||
+            period.end.month >= period.start.month)),
+      { message: 'The end precedes the start.', path: ['end'] },
+    ),
+  );
+
+/**
+ * Type ProjectPeriodDto
+ * @type ProjectPeriodDto
+ *
+ * @description
+ * Start and end of a project, the end `null` while ongoing.
+ */
+export type ProjectPeriodDto = z.infer<typeof ProjectPeriodDtoSchema>;
 
 /**
  * Constant ProjectRevisionRequestSchema
  *
  * @description
- * Validates editable project fields, bilingual article sections, HTTPS links and normalized technology keys.
+ * Validates editable project fields, the period, the article document of each language, the cover,
+ * HTTPS links and normalized technology keys.
  */
 export const ProjectRevisionRequestSchema = z.object({
   title: LocalizedTextDtoSchema,
   summary: LocalizedTextDtoSchema,
   lead: LocalizedTextDtoSchema,
-  periodLabel: LocalizedTextDtoSchema,
+  period: ProjectPeriodDtoSchema,
   client: LocalizedTextDtoSchema,
   role: LocalizedTextDtoSchema,
   place: LocalizedTextDtoSchema,
@@ -54,14 +141,11 @@ export const ProjectRevisionRequestSchema = z.object({
   techs: z.array(z.string().check(z.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/))).check(z.maxLength(12)),
   featured: z.boolean(),
   article: z.object({
-    context: Paragraphs,
-    work: Paragraphs,
-    workList: Paragraphs,
-    choices: Paragraphs,
-    result: Paragraphs,
-    lessons: Paragraphs,
-    captions: Paragraphs,
+    fr: EditableArticleDocumentSchema,
+    en: z.optional(EditableArticleDocumentSchema),
   }),
+  cover: z.nullable(ProjectCoverDtoSchema),
+  seo: ProjectSeoDtoSchema,
 });
 
 /**
@@ -85,8 +169,10 @@ export const AdminProjectDtoSchema = z.extend(ProjectRevisionRequestSchema, {
   status: z.enum(['draft', 'published']),
   version: z.int(),
   position: z.int(),
-  /** Fields to fill in before publishing (`title.en`, `article.context.en`…); empty if publishable. */
+  /** Fields to fill in before publishing (`title.en`, `article.en`, `cover.alt.en`…); empty if publishable. */
   missing: z.array(z.string()),
+  /** Media referenced by the cover and the article figures, to display them in the editor. */
+  media: z.array(MediaDtoSchema),
 });
 
 /**

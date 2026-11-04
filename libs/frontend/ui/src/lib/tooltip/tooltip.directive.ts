@@ -29,6 +29,7 @@ import {
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import { connectedPositions } from '@internal/ui/lib/popover/utils/connected-position/connected-position';
 import type { OverlaySide } from '@internal/ui/lib/popover/models/overlay/overlay-side.type';
+import { KbdDirective } from '@internal/ui/lib/kbd/kbd.directive';
 import { tooltipVariants } from '@internal/ui/lib/tooltip/constants/tooltip.variants';
 
 /**
@@ -36,12 +37,26 @@ import { tooltipVariants } from '@internal/ui/lib/tooltip/constants/tooltip.vari
  * @class TooltipPanelComponent
  *
  * @description
- * Renders tooltip text inside the overlay created by `TooltipDirective`.
+ * Renders tooltip text inside the overlay created by `TooltipDirective`, followed by its keyboard
+ * shortcut in `uiKbd` caps. The caps are hidden from assistive technology: glyphs such as ⌘ read
+ * badly, and the trigger states its shortcut with `aria-keyshortcuts`.
  */
 @Component({
   selector: 'ui-tooltip-panel',
+  imports: [KbdDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '{{ text() }}',
+  template: `<span>{{ text() }}</span>
+    @if (shortcut().length > 0) {
+      <span
+        class="ms-2 inline-flex gap-0.5 align-[1px]"
+        data-slot="tooltip-shortcut"
+        aria-hidden="true"
+      >
+        @for (key of shortcut(); track $index) {
+          <kbd uiKbd>{{ key }}</kbd>
+        }
+      </span>
+    }`,
   host: { role: 'tooltip', '[id]': 'id()', '[class]': 'classes()', 'data-slot': 'tooltip-content' },
 })
 export class TooltipPanelComponent {
@@ -78,6 +93,17 @@ export class TooltipPanelComponent {
    * @type {InputSignal<string>}
    */
   public readonly class: InputSignal<string> = input<string>('');
+
+  /**
+   * Property shortcut
+   * @readonly
+   *
+   * @description
+   * Keys of the trigger's shortcut, one cap each (`['Ctrl', 'B']`); empty for none.
+   *
+   * @type {InputSignal<readonly string[]>}
+   */
+  public readonly shortcut: InputSignal<readonly string[]> = input<readonly string[]>([]);
 
   /**
    * Property classes
@@ -182,6 +208,18 @@ export class TooltipDirective {
    * @type {InputSignal<string>}
    */
   public readonly tooltipClass: InputSignal<string> = input<string>('');
+
+  /**
+   * Property tooltipShortcut
+   * @readonly
+   *
+   * @description
+   * Keyboard shortcut shown after the text in `uiKbd` caps, one key each (`['Ctrl', 'B']`). Visual
+   * only: give the trigger `aria-keyshortcuts` for assistive technology.
+   *
+   * @type {InputSignal<readonly string[]>}
+   */
+  public readonly tooltipShortcut: InputSignal<readonly string[]> = input<readonly string[]>([]);
 
   /**
    * Property host
@@ -329,11 +367,13 @@ export class TooltipDirective {
       const panel: ComponentRef<TooltipPanelComponent> | null = this.panel();
       const text: string = this.uiTooltip();
       const classes: string = this.tooltipClass();
+      const shortcut: readonly string[] = this.tooltipShortcut();
       if (this.tooltipDisabled() || !text) {
         this.hide();
       } else if (panel) {
         panel.setInput('text', text);
         panel.setInput('class', classes);
+        panel.setInput('shortcut', shortcut);
       }
     });
     inject<DestroyRef>(DestroyRef).onDestroy((): void => this.hide());
@@ -481,6 +521,7 @@ export class TooltipDirective {
     panel.setInput('id', this.id);
     panel.setInput('text', this.uiTooltip());
     panel.setInput('class', this.tooltipClass());
+    panel.setInput('shortcut', this.tooltipShortcut());
     ref.keydownEvents().subscribe((event: KeyboardEvent): void => {
       if (event.key === 'Escape' && !hasModifierKey(event)) {
         event.preventDefault();

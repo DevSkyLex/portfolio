@@ -1,5 +1,5 @@
 <div
-  class="relative h-[900px] overflow-hidden bg-void group-data-live:sticky group-data-live:top-0 group-data-live:h-screen scene-static:h-auto scene-static:overflow-visible scene-static:bg-transparent"
+  class="relative h-[900px] overflow-hidden bg-surface group-data-live:sticky group-data-live:top-0 group-data-live:h-screen scene-static:h-auto scene-static:overflow-visible scene-static:bg-transparent"
 >
   <canvas
     class="absolute inset-0 block size-full in-data-secfx:opacity-[calc(var(--in)*(1_-_var(--out)))] scene-static:hidden"
@@ -32,19 +32,17 @@
             [attr.data-end]="year(step.end)"
           >
             <p
-              class="font-display text-[32px] leading-none font-semibold tracking-[-0.03em] text-star @max-3xl:text-[24px]"
+              class="font-display text-[32px] leading-none font-semibold tracking-[-0.03em] text-fg @max-3xl:text-[24px]"
             >
               {{ step.dateLabel }}
             </p>
             <h3
-              class="font-display text-[20px] leading-[26px] font-semibold tracking-[-0.02em] text-balance text-star @max-3xl:text-[17px] @max-3xl:leading-[22px]"
+              class="font-display text-[20px] leading-[26px] font-semibold tracking-[-0.02em] text-balance text-fg @max-3xl:text-[17px] @max-3xl:leading-[22px]"
             >
               {{ step.title }}
             </h3>
-            <p class="text-data text-star-muted">{{ track.label }} · {{ step.place }}</p>
-            <p
-              class="text-[15px] leading-[23px] text-star-muted @max-3xl:hidden scene-static:block"
-            >
+            <p class="text-data text-fg-muted">{{ track.label }} · {{ step.place }}</p>
+            <p class="text-[15px] leading-[23px] text-fg-muted @max-3xl:hidden scene-static:block">
               {{ step.description }}
             </p>
             @if (step.techs.length > 0) {

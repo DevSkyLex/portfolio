@@ -1,0 +1,55 @@
+<button
+  #trigger
+  #origin="cdkOverlayOrigin"
+  cdkOverlayOrigin
+  type="button"
+  role="combobox"
+  aria-haspopup="dialog"
+  [id]="triggerId()"
+  [class]="triggerClasses()"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="open() ? dialogId() : null"
+  [attr.aria-invalid]="showInvalid() || null"
+  [attr.aria-required]="required() || null"
+  [attr.aria-describedby]="describedBy() || null"
+  [attr.aria-readonly]="readonly() || null"
+  [disabled]="disabled()"
+  (click)="toggle()"
+  (blur)="onTriggerBlur()"
+>
+  <span class="truncate">{{ display() }}</span>
+  <ng-icon class="shrink-0 text-fg-muted" [svg]="icons.calendar" size="16" aria-hidden="true" />
+</button>
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayPush]="true"
+  (attach)="onAttach()"
+  (detach)="close(false)"
+  (overlayKeydown)="onOverlayKeydown($event)"
+  (overlayOutsideClick)="onOutsideClick($event)"
+>
+  <div
+    class="flex animate-menu-in flex-col rounded-lg border border-border bg-surface-float shadow-float motion-reduce:animate-none"
+    role="dialog"
+    aria-modal="true"
+    cdkTrapFocus
+    [id]="dialogId()"
+    [attr.aria-label]="dialogLabel()"
+    [attr.aria-describedby]="statusId()"
+  >
+    <ui-calendar
+      [range]="calendarRange()"
+      [min]="minDate()"
+      [max]="maxDate()"
+      [dateDisabled]="dateDisabled()"
+      [weekStartsOn]="weekStartsOn()"
+      (dateSelect)="select($event)"
+    />
+    <p class="-mt-1 px-3 pb-3 text-[12px]/4 text-fg-muted" aria-live="polite" [id]="statusId()">
+      {{ status() }}
+    </p>
+  </div>
+</ng-template>

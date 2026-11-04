@@ -6,7 +6,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
  * @description
  * Styles a fieldset legend as a display heading or as a field label.
  */
-export const fieldLegendVariants = cva('mb-1 p-0 text-star', {
+export const fieldLegendVariants = cva('mb-1 p-0 text-fg', {
   variants: {
     /** `legend`: title of the set; `label`: the size of a field label (`ui-field`). */
     variant: {

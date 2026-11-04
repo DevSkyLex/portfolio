@@ -25,13 +25,16 @@ inject these ports rather than concrete business stores, services or DTOs.
 
 ## Invariants
 
-- French `/` and English `/en/` serve public content; admin remains French, CSR and noindex.
+- French `/` and English `/en/` serve public content and the administration (`/admin`, `/en/admin`,
+  CSR and noindex); the admin sidebar's « Langue » menu switches between the two builds (D18).
 - Root initialization is reserved for requirements shared by the whole application.
 - Public content failure preserves prerendered readability and does not prevent login.
 - Owner route trees/pages are lazy; login does not load protected workflows.
 - Failed count/search is unknown/failed, never a successful empty result.
 - Inbox changes invalidate owner summary without waiting for unrelated navigation.
 - Theme, router and browser listeners are cleaned up with their owner.
+- The cookie choice is read after hydration only; the consent banner is a deferred block absent from
+  prerendered pages, and nothing of Google loads before consent or without a measurement id (D48).
 - Server-only and heavy owner implementations remain outside narrow public entries.
 
 ## Validation

@@ -1,16 +1,23 @@
+import type { MediaRecord } from '@vfortin/content-application';
 import {
+  ArticleDocument,
+  LegalDocument,
   LocalizedText,
-  type LocalizedTextProps,
   Period,
   type Profile,
   Project,
+  ProjectPeriod,
+  ProjectSeo,
   type SkillGroup,
   Slug,
-  type TimelineEntry,
+  TimelineEntry,
   type YearMonth,
   assertSkillGroup,
+  profileLinks,
 } from '@vfortin/content-domain';
 import type {
+  legalDocuments,
+  media,
   profile,
   projects,
   skillGroups,
@@ -54,6 +61,15 @@ type SkillRow = typeof skillGroups.$inferSelect;
 type ProfileRow = typeof profile.$inferSelect;
 
 /**
+ * Type MediaRow
+ * @type MediaRow
+ *
+ * @description
+ * Drizzle select shape for an uploaded media.
+ */
+export type MediaRow = typeof media.$inferSelect;
+
+/**
  * Constant text
  *
  * @description
@@ -65,25 +81,20 @@ const text: typeof LocalizedText.of = LocalizedText.of;
  * Function toProject
  *
  * @description
- * Rehydrates a project row into domain values, validating the slug, localized fields and article
- * paragraphs before exposing it to application code.
+ * Rehydrates a project row into domain values, validating the slug, localized fields, period, article
+ * documents, cover and search texts before exposing it to application code.
  *
  * @param {ProjectRow} row - Database row selected from the projects table.
  * @returns {Project} Validated project aggregate.
  */
 export function toProject(row: ProjectRow): Project {
-  const paragraphs: (field: string, values: ProjectRow['article']['context']) => LocalizedText[] = (
-    field: string,
-    values: ProjectRow['article']['context'],
-  ): LocalizedText[] =>
-    values.map((value: LocalizedTextProps): LocalizedText => text(field, value));
   return Project.rehydrate({
     id: row.id,
     slug: Slug.of(row.slug),
     title: text('title', row.title),
     summary: text('summary', row.summary),
     lead: text('lead', row.lead),
-    periodLabel: text('periodLabel', row.periodLabel),
+    period: ProjectPeriod.of(row.period),
     client: text('client', row.client),
     role: text('role', row.role),
     place: text('place', row.place),
@@ -93,23 +104,46 @@ export function toProject(row: ProjectRow): Project {
     position: row.position,
     status: row.status,
     version: row.version,
-    article: {
-      context: paragraphs('article.context', row.article.context),
-      work: paragraphs('article.work', row.article.work),
-      workList: paragraphs('article.workList', row.article.workList),
-      choices: paragraphs('article.choices', row.article.choices),
-      result: paragraphs('article.result', row.article.result),
-      lessons: paragraphs('article.lessons', row.article.lessons),
-      captions: paragraphs('article.captions', row.article.captions),
-    },
+    article:
+      row.article.en === undefined
+        ? { fr: ArticleDocument.of('article.fr', row.article.fr) }
+        : {
+            fr: ArticleDocument.of('article.fr', row.article.fr),
+            en: ArticleDocument.of('article.en', row.article.en),
+          },
+    cover: row.cover,
+    seo: ProjectSeo.of({ ...row.seo, keywords: row.seoKeywords }),
   });
+}
+
+/**
+ * Function toMediaRecord
+ *
+ * @description
+ * Converts a media row into the application record.
+ *
+ * @param {MediaRow} row - Database row selected from the media table.
+ * @returns {MediaRecord} Media record.
+ */
+export function toMediaRecord(row: MediaRow): MediaRecord {
+  return {
+    id: row.id,
+    width: row.width,
+    height: row.height,
+    bytes: row.bytes,
+    sha256: row.sha256,
+    hasSmall: row.hasSmall,
+    createdAt: row.createdAt,
+    unlinkedAt: row.unlinkedAt,
+  };
 }
 
 /**
  * Function toTimelineEntry
  *
  * @description
- * Converts stored date columns and localized text into a validated timeline entry.
+ * Converts stored date columns, localized text, position and version into a validated timeline
+ * entry.
  *
  * @param {TimelineRow} row - Database row selected from timeline entries.
  * @returns {TimelineEntry} Domain timeline entry.
@@ -119,7 +153,7 @@ export function toTimelineEntry(row: TimelineRow): TimelineEntry {
     row.endYear === null || row.endMonth === null
       ? null
       : { year: row.endYear, month: row.endMonth };
-  return {
+  return TimelineEntry.rehydrate({
     id: row.id,
     kind: row.kind,
     title: text('title', row.title),
@@ -127,7 +161,9 @@ export function toTimelineEntry(row: TimelineRow): TimelineEntry {
     description: text('description', row.description),
     period: Period.of({ year: row.startYear, month: row.startMonth }, end),
     techs: row.techs,
-  };
+    position: row.position,
+    version: row.version,
+  });
 }
 
 /**
@@ -167,5 +203,79 @@ export function toProfile(row: ProfileRow): Profile {
       label: text('facts.label', fact.label),
       value: text('facts.value', fact.value),
     })),
+    links: profileLinks(row.links),
+    version: row.version,
+  };
+}
+
+/**
+ * Function toProfileRow
+ *
+ * @description
+ * Converts the editable fields of a profile into the columns of the singleton row.
+ *
+ * @param {Profile} value - Profile to store.
+ * @returns {Pick<ProfileRow, 'heroIntro' | 'aboutStatement' | 'aboutLead' | 'facts' | 'links'>} Columns.
+ */
+export function toProfileRow(
+  value: Profile,
+): Pick<ProfileRow, 'heroIntro' | 'aboutStatement' | 'aboutLead' | 'facts' | 'links'> {
+  return {
+    heroIntro: value.heroIntro.toProps(),
+    aboutStatement: value.aboutStatement.toProps(),
+    aboutLead: value.aboutLead.toProps(),
+    facts: value.facts.map((fact: Profile['facts'][number]): ProfileRow['facts'][number] => ({
+      label: fact.label.toProps(),
+      value: fact.value.toProps(),
+    })),
+    links: value.links.map((link: Profile['links'][number]): ProfileRow['links'][number] =>
+      link.toProps(),
+    ),
+  };
+}
+
+/**
+ * Function toLegalDocument
+ *
+ * @description
+ * Rehydrates a legal document row, validating both documents.
+ *
+ * @param {typeof legalDocuments.$inferSelect} row - Database row.
+ * @returns {LegalDocument} Domain aggregate.
+ */
+export function toLegalDocument(row: typeof legalDocuments.$inferSelect): LegalDocument {
+  return LegalDocument.rehydrate({
+    kind: row.kind,
+    body: LegalDocument.bodyOf(row.body),
+    updatedAt: row.updatedAt,
+    version: row.version,
+  });
+}
+
+/**
+ * Function toTimelineRow
+ *
+ * @description
+ * Converts a timeline entry into its row, an ongoing period leaving both end columns empty.
+ *
+ * @param {TimelineEntry} entry - Entry to store.
+ * @returns {typeof timelineEntries.$inferInsert} Row values.
+ */
+export function toTimelineRow(entry: TimelineEntry): typeof timelineEntries.$inferInsert {
+  const { id, kind, title, place, description, period, techs, position, version } =
+    entry.snapshot();
+  return {
+    id,
+    kind,
+    title: title.toProps(),
+    place: place.toProps(),
+    description: description.toProps(),
+    startYear: period.start.year,
+    startMonth: period.start.month,
+    endYear: period.end?.year ?? null,
+    endMonth: period.end?.month ?? null,
+    techs: [...techs],
+    position,
+    version,
   };
 }

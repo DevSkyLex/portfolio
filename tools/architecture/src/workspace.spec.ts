@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readCachedProjectGraph } from '@nx/devkit';
 import { describe, expect, it } from 'vitest';
@@ -23,6 +23,7 @@ import {
   layoutPortViolations,
   lightweightEntryPointViolations,
   ownerContractViolations,
+  packageOwnerViolations,
   publicConsumerViolations,
   specTypecheckViolations,
 } from '@internal/architecture/support/governance-rules';
@@ -91,6 +92,7 @@ describe('workspace structure', (): void => {
       'light public entries do not eagerly reach server, admin or NgRx code',
       lightweightEntryPointViolations,
     ],
+    ['the editor and the image library stay in their owning project (D40)', packageOwnerViolations],
   ])('%s', (_label: string, rule: (workspace: Workspace) => Violation[]): void => {
     expect(rule(workspace)).toEqual([]);
   });
@@ -101,6 +103,14 @@ describe('workspace structure', (): void => {
 
   it('every project with a spec configuration checks specs during normal typecheck', (): void => {
     expect(specTypecheckViolations(workspace, exists)).toEqual([]);
+  });
+
+  it('the web build keeps /media/ for uploaded images (D40)', (): void => {
+    // Nginx serves only `/media/<uuid>.webp` there; fonts and other CSS resources written to the
+    // builder's default `media` folder would answer 404.
+    const project: { targets: { build: { options: { outputPath: { media?: string } } } } } =
+      JSON.parse(readFileSync(join(WORKSPACE, 'apps/web/project.json'), 'utf8'));
+    expect(project.targets.build.options.outputPath.media).toBe('assets');
   });
 
   it('specs live in testing/ folders', (): void => {

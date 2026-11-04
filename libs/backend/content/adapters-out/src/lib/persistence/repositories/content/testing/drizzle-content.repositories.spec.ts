@@ -56,11 +56,11 @@ describe('DrizzleContentRepository (Postgres via PGlite)', (): void => {
     ]);
     expect(content.timeline.map((e): string => e.id)).toEqual([
       'bts-sio',
+      'bachelor-cefii',
+      'mastere-ynov',
       'utopia',
       'kodoka',
-      'bachelor-cefii',
       'object-as-a-service',
-      'mastere-ynov',
     ]);
     expect(content.skills.map((s): string => s.id)).toEqual([
       'front-end',
@@ -90,6 +90,8 @@ describe('toTimelineEntry', (): void => {
     endYear: number;
     endMonth: number;
     techs: string[];
+    position: number;
+    version: number;
   } = {
     id: 'poste',
     kind: 'experience' as const,
@@ -101,11 +103,17 @@ describe('toTimelineEntry', (): void => {
     endYear: 2026,
     endMonth: 6,
     techs: ['angular'],
+    position: 2,
+    version: 3,
   };
 
   it('reads an ended period, and an ongoing one when the end is incomplete', (): void => {
     expect(toTimelineEntry(row).period.end).toEqual({ year: 2026, month: 6 });
     expect(toTimelineEntry({ ...row, endMonth: null }).period.isOngoing()).toBe(true);
     expect(toTimelineEntry({ ...row, endYear: null }).period.isOngoing()).toBe(true);
+  });
+
+  it('keeps the position and version', (): void => {
+    expect(toTimelineEntry(row)).toMatchObject({ position: 2, version: 3 });
   });
 });

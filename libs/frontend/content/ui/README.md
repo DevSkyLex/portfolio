@@ -3,16 +3,18 @@
 ## Purpose
 
 `content-web-ui` owns content-specific presentation shared by public sections and project pages:
-project cards, technology tags, skill columns, timeline scenes, the ASCII planet and reading effects.
+project cards, the article document renderer (D40), technology tags, skill columns, timeline scenes, the
+ASCII planet and reading effects.
 It receives display models; pages own navigation and data access.
 
 ## Public entry points
 
-| Entry point               | Consumers             |
-| ------------------------- | --------------------- |
-| `@vfortin/content-web-ui` | `content-web-feature` |
+| Entry point               | Consumers                                          |
+| ------------------------- | -------------------------------------------------- |
+| `@vfortin/content-web-ui` | `content-web-feature`, `content-web-feature-admin` |
 
-The root exports supported content components and their presentation models/helpers. Renderer modules
+The root exports supported content components and their presentation models/helpers;
+`content-web-feature-admin` reads only `ARTICLE_TYPOGRAPHY`, so the editor shows the published look (D40). Renderer modules
 and scene implementation details remain private and are loaded by their owning components.
 
 ## Provider scope

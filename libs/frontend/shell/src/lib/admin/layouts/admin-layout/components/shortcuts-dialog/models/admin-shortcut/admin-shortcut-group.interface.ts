@@ -10,11 +10,22 @@ import type { AdminShortcut } from '@internal/web-shell/lib/admin/layouts/admin-
 export interface AdminShortcutGroup {
   // #region Properties
   /**
+   * Property id
+   * @readonly
+   *
+   * @description
+   * Stable key of the group, used to place it in a tab of the help dialog.
+   *
+   * @type {'general' | 'projects' | 'article' | 'messages'}
+   */
+  readonly id: 'general' | 'projects' | 'article' | 'messages';
+
+  /**
    * Property label
    * @readonly
    *
    * @description
-   * French heading of the group.
+   * Localized heading of the group.
    *
    * @type {string}
    */

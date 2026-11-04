@@ -46,6 +46,7 @@ import { DIALOG_PANEL } from '@internal/ui/lib/dialog/tokens/dialog-panel/dialog
   host: {
     '[class]': 'panel.class',
     '[attr.data-slot]': 'panel.slot',
+    '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'describedBy()',
   },
 })
@@ -78,13 +79,15 @@ export class DialogContainerComponent extends CdkDialogContainer {
    * @readonly
    *
    * @description
-   * Ghost button variant positioned in the panel's upper-right corner.
+   * Ghost button variant positioned in the panel's upper-right corner; above a header bar
+   * (`uiDialogHeader variant="bar"`, `min-h-13`) it moves to `top-2`, the centre of the bar's first
+   * line.
    *
    * @type {string}
    */
   protected readonly closeClasses: string = cn(
     buttonVariants({ variant: 'ghost', size: 'sm' }),
-    'absolute top-3 right-3 w-9 px-0',
+    'absolute top-3 right-3 w-9 px-0 [:has([data-slot=dialog-header][data-variant=bar])>&]:top-2',
   );
 
   /**
@@ -98,6 +101,32 @@ export class DialogContainerComponent extends CdkDialogContainer {
    */
   private readonly dialogRef: DialogRef<unknown, unknown> =
     inject<DialogRef<unknown, unknown>>(DialogRef);
+
+  /**
+   * Property titles
+   * @readonly
+   *
+   * @description
+   * Registered title ids; the first one names the dialog. A signal rather than the CDK queue alone:
+   * a title rendered after the panel opened (inside an `@if` of the content) registers while the
+   * container is checked, and the CDK binding read from a plain array missed that change.
+   *
+   * @type {WritableSignal<readonly string[]>}
+   */
+  private readonly titles: WritableSignal<readonly string[]> = signal<readonly string[]>([]);
+
+  /**
+   * Property labelledBy
+   * @readonly
+   *
+   * @description
+   * First registered title id, or the configured CDK one; none when `ariaLabel` names the dialog.
+   *
+   * @type {Signal<string | null>}
+   */
+  protected readonly labelledBy: Signal<string | null> = computed<string | null>(() =>
+    this._config.ariaLabel ? null : (this.titles()[0] ?? this._config.ariaLabelledBy ?? null),
+  );
 
   /**
    * Property descriptions
@@ -138,7 +167,11 @@ export class DialogContainerComponent extends CdkDialogContainer {
    */
   public registerTitle(id: string, destroyRef: DestroyRef): void {
     this._addAriaLabelledBy(id);
-    destroyRef.onDestroy(() => this._removeAriaLabelledBy(id));
+    this.titles.update((ids) => [...ids, id]);
+    destroyRef.onDestroy(() => {
+      this._removeAriaLabelledBy(id);
+      this.titles.update((ids) => ids.filter((one) => one !== id));
+    });
   }
 
   /**

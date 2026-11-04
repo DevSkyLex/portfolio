@@ -1,0 +1,49 @@
+{
+  "heroIntro": {
+    "fr": "Développeur web fullstack à Blois.",
+    "en": "Full-stack web developer in Blois."
+  },
+  "aboutStatement": {
+    "fr": "J'aime concevoir des applications qui répondent à des besoins concrets.",
+    "en": "I like building applications that meet real needs."
+  },
+  "aboutLead": {
+    "fr": "Après un BTS SIO et un bachelor.",
+    "en": "After a BTS SIO and a bachelor's degree."
+  },
+  "facts": [
+    {
+      "label": {
+        "fr": "Basé à",
+        "en": "Based in"
+      },
+      "value": {
+        "fr": "Blois, Loir-et-Cher",
+        "en": "Blois, France"
+      }
+    }
+  ],
+  "links": [
+    {
+      "kind": "email",
+      "url": "mailto:contact@valentin-fortin.pro",
+      "label": null
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/DevSkyLex",
+      "label": null
+    },
+    {
+      "kind": "linkedin",
+      "url": "https://www.linkedin.com/in/valentin-fortin",
+      "label": null
+    },
+    {
+      "kind": "website",
+      "url": "https://blog.example.fr",
+      "label": "Blog"
+    }
+  ],
+  "version": 3
+}

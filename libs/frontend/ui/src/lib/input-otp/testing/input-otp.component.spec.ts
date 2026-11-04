@@ -7,6 +7,7 @@ import {
   InputOtpSeparatorComponent,
   InputOtpSlotComponent,
 } from '@internal/ui/lib/input-otp/input-otp.component';
+import { inputOtpSlotVariants } from '@internal/ui/lib/input-otp/constants/input-otp-slot.variants';
 
 /**
  * Component HostComponent
@@ -80,6 +81,14 @@ class HostComponent {
 }
 
 describe('InputOtpComponent', () => {
+  it('rings the active slot with the 2 px accent outline, over an invalid border too', () => {
+    const active: string = inputOtpSlotVariants({ active: true, invalid: true });
+    expect(active.split(' ')).toEqual(
+      expect.arrayContaining(['outline-2', 'outline-accent/55', 'border-danger']),
+    );
+    expect(active).not.toContain('outline-danger/12');
+  });
+
   /**
    * Function setup
    *

@@ -76,9 +76,6 @@
       "@vfortin/identity-web-data-access/session": [
         "./libs/frontend/identity/data-access/src/session.ts"
       ],
-      "@vfortin/contact-web-data-access/links": [
-        "./libs/frontend/contact/data-access/src/links.ts"
-      ],
       "@vfortin/contact-web-data-access/summary": [
         "./libs/frontend/contact/data-access/src/summary.ts"
       ],

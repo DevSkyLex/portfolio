@@ -1,0 +1,58 @@
+<div
+  class="grid grid-cols-2 gap-3 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-6"
+>
+  @for (total of totals(); track total.id) {
+    <content-seo-kpi-tile [label]="total.label" [value]="total.value" [compared]="false" />
+  }
+</div>
+
+<ui-data-table
+  density="compact"
+  caption="Problèmes relevés"
+  i18n-caption="@@admin.dashboard.audit.caption"
+  [data]="rows()"
+  [columns]="columns"
+  [facets]="facets"
+  [rowKey]="rowKey"
+  [columnMenu]="false"
+>
+  <ng-template uiDataTableCell="gravite" [uiDataTableCellRows]="rows()" let-row>
+    <span uiBadge dot [variant]="row.variant">{{ row.severityLabel }}</span>
+  </ng-template>
+
+  <ng-template uiDataTableCell="projet" [uiDataTableCellRows]="rows()" let-row>
+    <a
+      class="block max-w-56 truncate font-medium whitespace-nowrap text-fg outline-2 outline-offset-2 outline-transparent hover:underline focus-visible:rounded-xs focus-visible:outline-accent/55"
+      [routerLink]="['/admin/projects', row.projectId]"
+      >{{ row.project }}</a
+    >
+  </ng-template>
+
+  <ng-template uiDataTableCell="probleme" [uiDataTableCellRows]="rows()" let-row>
+    <span class="block w-0 min-w-full truncate text-fg-muted" [title]="row.message">{{
+      row.message
+    }}</span>
+  </ng-template>
+
+  <ng-template uiDataTableEmpty let-layout>
+    <div uiEmpty [layout]="layout">
+      <div uiEmptyHeader>
+        <div uiEmptyMedia variant="icon">
+          <ng-icon [svg]="audit().totals.published ? icons.clean : icons.none" size="16" />
+        </div>
+        @if (audit().totals.published) {
+          <p uiEmptyTitle i18n="@@admin.dashboard.audit.empty.title">Aucun problème relevé</p>
+          <p uiEmptyDescription i18n="@@admin.dashboard.audit.empty.description">
+            Les textes de recherche, les images et les traductions des projets publiés sont
+            complets.
+          </p>
+        } @else {
+          <p uiEmptyTitle i18n="@@admin.dashboard.audit.none.title">Aucun projet publié</p>
+          <p uiEmptyDescription i18n="@@admin.dashboard.audit.none.description">
+            L’audit porte sur les projets publiés : publiez-en un pour l’analyser.
+          </p>
+        }
+      </div>
+    </div>
+  </ng-template>
+</ui-data-table>

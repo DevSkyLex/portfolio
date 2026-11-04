@@ -8,6 +8,6 @@ import { cva } from 'class-variance-authority';
  * used by the notification mockup.
  */
 export const toastVariants = cva([
-  'pointer-events-auto flex min-h-11 items-start gap-3 rounded-sm border border-line bg-void-raised px-4 py-3',
-  'animate-fade-up text-small text-star shadow-float motion-reduce:animate-none',
+  'pointer-events-auto flex min-h-11 items-start gap-3 rounded-xl border border-border bg-surface-raised px-4 py-3',
+  'animate-fade-up text-small text-fg shadow-float motion-reduce:animate-none',
 ]);

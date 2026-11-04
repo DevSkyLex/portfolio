@@ -252,6 +252,16 @@ export class InMemoryIdentityStore implements IdentityUnitOfWork {
       this.devices.get(hash) ?? null,
     save: async (device: TrustedDevice): Promise<undefined> =>
       void this.devices.set(device.snapshot().tokenHash, device),
+    deleteByAccount: async (accountId: string): Promise<number> => {
+      let deleted: number = 0;
+      for (const [hash, device] of this.devices) {
+        if (device.snapshot().accountId === accountId) {
+          this.devices.delete(hash);
+          deleted++;
+        }
+      }
+      return deleted;
+    },
     deleteExpired: async (now: Date): Promise<number> => {
       let deleted: number = 0;
       for (const [hash, device] of this.devices) {
@@ -341,7 +351,8 @@ export const fakeHasher: PasswordHasher = {
  * Constant fakeTotp
  *
  * @description
- * Test TOTP service that parses codes in the `step-<n>` form and returns their numeric step.
+ * Test TOTP service that parses codes in the `step-<n>` form and returns their numeric step; a code
+ * written `<secret>:step-<n>` only matches that secret, to tell the pending secret from the active one.
  *
  * @type {TotpVerifier}
  */
@@ -349,8 +360,9 @@ export const fakeTotp: TotpVerifier = {
   generateSecret: (): string => 'SECRET',
   provisioningUri: (secret: string, account: string): string =>
     `otpauth://totp/Portfolio:${account}?secret=${secret}`,
-  verify: (_secret: string, code: string): number | null => {
-    const match: RegExpExecArray | null = /^step-(\d+)$/.exec(code);
-    return match ? Number(match[1]) : null;
+  verify: (secret: string, code: string): number | null => {
+    const match: RegExpExecArray | null = /^(?:(\w+):)?step-(\d+)$/.exec(code);
+    if (!match || (match[1] !== undefined && match[1] !== secret)) return null;
+    return Number(match[2]);
   },
 };

@@ -83,8 +83,9 @@ technical capabilities are `scope:platform` (`libs/frontend/http`, `libs/fronten
    `libs/frontend/content/feature/src/lib/content.routes.ts`, `LEGAL_ROUTES`); the shell mounts it in
    `libs/frontend/shell/src/lib/app.routes.ts` and declares render modes in
    `libs/frontend/shell/src/lib/app.routes.server.ts` (pf-web-routing-ssr-builder owns their behaviour).
-4. Tailwind scans `libs/frontend` through `@source` in `apps/web/src/styles.css`: a new frontend library
-   needs no styles change.
+4. Stylesheets (D31): `apps/web/src/admin.css` scans all of `libs/frontend`, so an admin library needs
+   no styles change; a new public presentation library (or a catalogue folder newly used by a public page)
+   gets its `@source` line in `apps/web/src/styles.css`, which `stylesheets.spec.ts` checks.
 5. Proof: add a rejected-import case to `tools/architecture/src/boundaries.spec.ts` for every new kind of
    project or rule, and record a new pattern in `docs/architecture/decisions.md` (a decision states its
    need) in the same change. Update the library `README.md`.

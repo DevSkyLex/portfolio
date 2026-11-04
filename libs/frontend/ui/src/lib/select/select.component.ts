@@ -1,4 +1,6 @@
 import { RenderIdService } from '@internal/ui/lib/render-id/render-id.service';
+import type { FieldHost } from '@internal/ui/lib/field/models/field/field-host.interface';
+import { FIELD_HOST } from '@internal/ui/lib/field/tokens/field/field.token';
 import { type Highlightable, ActiveDescendantKeyManager } from '@angular/cdk/a11y';
 import { type ConnectedPosition, CdkConnectedOverlay } from '@angular/cdk/overlay';
 import {
@@ -94,6 +96,30 @@ export class SelectComponent<T = unknown> implements FormValueControl<T | null>,
    * @type {InputSignal<boolean>}
    */
   public readonly invalid: InputSignal<boolean> = input<boolean>(false);
+
+  /**
+   * Property field
+   * @readonly
+   *
+   * @description
+   * Enclosing `ui-field`, whose shown error also marks the trigger invalid.
+   *
+   * @type {FieldHost | null}
+   */
+  private readonly field: FieldHost | null = inject<FieldHost>(FIELD_HOST, { optional: true });
+
+  /**
+   * Property showInvalid
+   * @readonly
+   *
+   * @description
+   * Invalid state of the trigger: the bound `invalid` or the enclosing field's error.
+   *
+   * @type {Signal<boolean>}
+   */
+  protected readonly showInvalid: Signal<boolean> = computed<boolean>(
+    (): boolean => this.invalid() || !!this.field?.invalid(),
+  );
 
   /**
    * Property required
@@ -470,9 +496,9 @@ export class SelectComponent<T = unknown> implements FormValueControl<T | null>,
       inputVariants({ size: this.size() }),
       'flex cursor-pointer items-center justify-between gap-2.5 text-left',
       // A button shows its ring for keyboard focus only.
-      'focus:border-line-field focus:outline-transparent focus:hover:border-line-hover focus-visible:border-signal/55 focus-visible:outline-signal/12',
+      'focus:border-border-field focus:outline-transparent focus:hover:border-border-hover focus-visible:border-accent/55 focus-visible:outline-accent/12',
       // Open: the focus ring gives way to the blue border, which would otherwise overlap the list.
-      'aria-expanded:border-signal/55 aria-expanded:hover:border-signal/55 aria-expanded:focus-visible:outline-transparent',
+      'aria-expanded:border-accent/55 aria-expanded:hover:border-accent/55 aria-expanded:focus-visible:outline-transparent',
       this.class(),
     ),
   );

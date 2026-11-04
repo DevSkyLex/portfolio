@@ -25,7 +25,7 @@ import type { CommandHost } from '@internal/ui/lib/command/models/command/comman
   selector: 'ui-command-input',
   imports: [NgIcon],
   template: `
-    <ng-icon class="shrink-0 text-star-faint" [svg]="icons.search" size="16" aria-hidden="true" />
+    <ng-icon class="shrink-0 text-fg-faint" [svg]="icons.search" size="16" aria-hidden="true" />
     <input
       #field
       type="text"
@@ -34,7 +34,7 @@ import type { CommandHost } from '@internal/ui/lib/command/models/command/comman
       aria-expanded="true"
       autocomplete="off"
       spellcheck="false"
-      class="h-11 w-full min-w-0 bg-transparent text-[15px] text-star outline-none placeholder:text-star-faint"
+      class="h-11 w-full min-w-0 bg-transparent text-[15px] text-fg outline-none placeholder:text-fg-faint"
       data-slot="command-input-field"
       [attr.aria-controls]="command.listId"
       [attr.aria-activedescendant]="command.activeItem()?.id ?? null"
@@ -121,7 +121,7 @@ export class CommandInputComponent {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('flex items-center gap-2.5 border-b border-line px-3', this.class()),
+    cn('flex items-center gap-2.5 border-b border-border px-3', this.class()),
   );
   // #endregion
 }

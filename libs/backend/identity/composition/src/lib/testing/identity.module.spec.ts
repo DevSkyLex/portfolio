@@ -154,13 +154,16 @@ interface Harness {
  *
  * @returns {Promise<Harness>} Running application and its test state.
  */
-async function start(cookieSecure: boolean): Promise<Harness> {
+async function start(cookieSecure: boolean, enroll: boolean = true): Promise<Harness> {
   const keysDir: string = mkdtempSync(join(tmpdir(), 'identity-keys-'));
   await generateSigningKey(keysDir, 'k1');
   const clock: { current: Date; now: () => Date } = {
     current: new Date('2026-11-02T10:00:00Z'),
     now: (): Date => new Date(clock.current),
   };
+  // The guard of the second-factor routes verifies tokens with jose, which reads `Date`: kept on the clock.
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(clock.current);
   const secrets: Map<string, string> = new Map<string, string>();
   const moduleRef: TestingModule = await Test.createTestingModule({
     imports: [
@@ -178,23 +181,22 @@ async function start(cookieSecure: boolean): Promise<Harness> {
             database.db,
           );
           const hasher: ScryptPasswordHasher = new ScryptPasswordHasher();
-          const totp: RfcTotpVerifier = new RfcTotpVerifier();
           const result: BootstrapResult = await new BootstrapAdmin(
             accounts,
             hasher,
-            totp,
             new RandomIdGenerator(),
           ).execute(ADMIN.email, ADMIN.password);
-          secrets.set(ADMIN.email, result.totpSecret);
-          // A second account cannot be bootstrapped: inserted directly.
-          const otherSecret: string = totp.generateSecret();
+          expect(result).toEqual({ email: ADMIN.email });
+          // A second account cannot be bootstrapped: inserted directly, already enrolled.
+          const otherSecret: string = new RfcTotpVerifier().generateSecret();
           await accounts.add(
             AdminAccount.create({
               id: 'other',
               email: OTHER.email,
               passwordHash: await hasher.hash(OTHER.password),
-              totpSecret: otherSecret,
-            }),
+            })
+              .startTwoFactorSetup(otherSecret)
+              .enableTwoFactor(0),
           );
           secrets.set(OTHER.email, otherSecret);
         },
@@ -205,7 +207,44 @@ async function start(cookieSecure: boolean): Promise<Harness> {
     moduleRef.createNestApplication<INestApplication<NodeHttpServer>>();
   app.setGlobalPrefix('api', { exclude: ['health/live', 'health/ready'] });
   await app.init();
+  if (enroll) {
+    secrets.set(ADMIN.email, await enrollAdmin(app, clock));
+  }
   return { app, clock, secrets, keysDir };
+}
+
+/**
+ * Function enrollAdmin
+ *
+ * @description
+ * Enrolls the one-time code of the password-only administrator through the HTTP routes: password login,
+ * setup, then confirmation with the code of the current step.
+ *
+ * @param {INestApplication<NodeHttpServer>} app - Running application.
+ * @param {{ current: Date }} clock - Injected clock.
+ *
+ * @returns {Promise<string>} Active secret.
+ */
+async function enrollAdmin(
+  app: INestApplication<NodeHttpServer>,
+  clock: { current: Date },
+): Promise<string> {
+  const login: request.Response = await request(app.getHttpServer())
+    .post('/api/auth/login')
+    .send({ ...ADMIN, remember: false });
+  expect(login.body.status).toBe('authenticated');
+  const bearer: string = `Bearer ${login.body.accessToken}`;
+  const setup: request.Response = await request(app.getHttpServer())
+    .post('/api/auth/totp/setup')
+    .set('authorization', bearer)
+    .send({ password: ADMIN.password });
+  expect(setup.status).toBe(200);
+  const enabled: request.Response = await request(app.getHttpServer())
+    .post('/api/auth/totp/enable')
+    .set('authorization', bearer)
+    .send({ totp: totpAt(setup.body.secret, Math.floor(clock.current.getTime() / 30_000)) });
+  expect(enabled.body).toEqual({ enabled: true });
+  return setup.body.secret;
 }
 
 /**
@@ -322,6 +361,7 @@ function client(harness: Harness): IdentityClient {
    */
   const nextStep = (): void => {
     clock.current = new Date(clock.current.getTime() + 30_000);
+    vi.setSystemTime(clock.current);
   };
   /**
    * Function advance
@@ -335,6 +375,7 @@ function client(harness: Harness): IdentityClient {
    */
   const advance = (ms: number): void => {
     clock.current = new Date(clock.current.getTime() + ms);
+    vi.setSystemTime(clock.current);
   };
   /**
    * Function password
@@ -439,6 +480,7 @@ describe('IdentityModule', (): void => {
   afterAll(async (): Promise<void> => {
     await harness.app.close();
     rmSync(harness.keysDir, { recursive: true, force: true });
+    vi.useRealTimers();
   });
 
   it('rejects wrong credentials without saying which ones', async (): Promise<void> => {
@@ -624,6 +666,226 @@ describe('IdentityModule', (): void => {
   });
 });
 
+describe('IdentityModule second factor', (): void => {
+  /**
+   * Variable harness
+   *
+   * @description
+   * Application whose administrator has not enrolled the one-time code.
+   *
+   * @type {Harness}
+   */
+  let harness: Harness;
+
+  /**
+   * Variable http
+   *
+   * @description
+   * HTTP helpers bound to the harness.
+   *
+   * @type {IdentityClient}
+   */
+  let http: IdentityClient;
+
+  const DEVICE = '__Host-portfolio_device' as const;
+
+  beforeAll(async (): Promise<void> => {
+    harness = await start(true, false);
+    http = client(harness);
+  });
+
+  afterAll(async (): Promise<void> => {
+    await harness.app.close();
+    rmSync(harness.keysDir, { recursive: true, force: true });
+    vi.useRealTimers();
+  });
+
+  /**
+   * Function bearer
+   *
+   * @description
+   * Opens a session with the password alone (second factor off) and returns its authorization header.
+   *
+   * @returns {Promise<string>} `Bearer` header value.
+   */
+  const bearer = async (): Promise<string> => {
+    const login: request.Response = await http.password({ ...ADMIN, remember: false });
+    expect(login.body.status).toBe('authenticated');
+    return `Bearer ${login.body.accessToken}`;
+  };
+
+  /**
+   * Function totp
+   *
+   * @description
+   * Sends a request to a second-factor route.
+   *
+   * @param {string} path - Route below `/api/auth/totp` (`''` for the status).
+   * @param {string | null} authorization - `Authorization` header, or `null` for none.
+   * @param {object} body - Body of a `POST`; absent for the status.
+   *
+   * @returns {request.Test} Supertest request.
+   */
+  const totp = (path: string, authorization: string | null, body?: object): request.Test => {
+    const call: request.Test =
+      body === undefined
+        ? http.server().get(`/api/auth/totp${path}`)
+        : http.server().post(`/api/auth/totp${path}`).send(body);
+    return authorization === null ? call : call.set('authorization', authorization);
+  };
+
+  /**
+   * Function enroll
+   *
+   * @description
+   * Runs the setup and confirms it with a fresh code; the secret becomes the account's in the harness.
+   *
+   * @param {string} authorization - `Authorization` header.
+   *
+   * @returns {Promise<void>} Completion once the code is on.
+   */
+  const enroll = async (authorization: string): Promise<void> => {
+    const setup: request.Response = await totp('/setup', authorization, {
+      password: ADMIN.password,
+    });
+    harness.secrets.set(ADMIN.email, setup.body.secret);
+    http.nextStep();
+    const enabled: request.Response = await totp('/enable', authorization, { totp: http.code() });
+    expect(enabled.body).toEqual({ enabled: true });
+  };
+
+  it('opens the session after the password alone, with the usual refresh cookie', async (): Promise<void> => {
+    const response: request.Response = await http.password({ ...ADMIN, remember: true });
+    expect(response.status).toBe(200);
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.body).toEqual({
+      status: 'authenticated',
+      accessToken: expect.any(String),
+      expiresIn: 300,
+    });
+    const expires: string = new Date(harness.clock.current.getTime() + 30 * DAY).toUTCString();
+    expect(cookie(response, '__Host-portfolio_refresh')).toMatch(
+      new RegExp(
+        `^__Host-portfolio_refresh=[\\w-]{43}; Path=/; Expires=${expires}; HttpOnly; Secure; SameSite=Strict$`,
+      ),
+    );
+  });
+
+  it('answers the state to an administrator token only, never cached', async (): Promise<void> => {
+    for (const [path, body] of [
+      ['', undefined],
+      ['/setup', { password: ADMIN.password }],
+      ['/enable', { totp: '123456' }],
+      ['/disable', { password: ADMIN.password, totp: '123456' }],
+    ] as const) {
+      const refused: request.Response = await totp(path, null, body);
+      expect(refused.status).toBe(401);
+      expect(refused.body.code).toBe('auth.unauthorized');
+    }
+    expect((await totp('', 'Bearer forged')).status).toBe(401);
+    const response: request.Response = await totp('', await bearer());
+    expect(response.status).toBe(200);
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.body).toEqual({ enabled: false });
+  });
+
+  it('counts a wrong password at setup towards the lockout, which then answers like a login', async (): Promise<void> => {
+    const authorization: string = await bearer();
+    for (let i: number = 0; i < 5; i++) {
+      const wrong: request.Response = await totp('/setup', authorization, { password: 'wrong' });
+      expect(wrong.status).toBe(422);
+      expect(wrong.headers['cache-control']).toBe('no-store');
+      expect(wrong.body.code).toBe('identity.password-mismatch');
+    }
+    const locked: request.Response = await totp('/setup', authorization, {
+      password: ADMIN.password,
+    });
+    expect(locked.status).toBe(401);
+    expect(locked.body.code).toBe('identity.invalid-credentials');
+    expect((await http.password({ ...ADMIN, remember: false })).status).toBe(401);
+    http.advance(15 * MINUTE);
+    expect((await http.password({ ...ADMIN, remember: false })).body.status).toBe('authenticated');
+  });
+
+  it('enrolls the code only once confirmed, then the login asks for it', async (): Promise<void> => {
+    const authorization: string = await bearer();
+    const setup: request.Response = await totp('/setup', authorization, {
+      password: ADMIN.password,
+    });
+    expect(setup.status).toBe(200);
+    expect(setup.headers['cache-control']).toBe('no-store');
+    expect(setup.body).toEqual({
+      secret: expect.stringMatching(/^[A-Z2-7]{32}$/),
+      provisioningUri: expect.stringMatching(/^otpauth:\/\/totp\/Portfolio%3Amoi%40exemple\.fr\?/),
+    });
+    harness.secrets.set(ADMIN.email, setup.body.secret);
+    expect((await totp('', authorization)).body).toEqual({ enabled: false });
+    expect((await http.password({ ...ADMIN, remember: false })).body.status).toBe('authenticated');
+
+    const wrong: request.Response = await totp('/enable', authorization, {
+      totp: http.wrongCode(),
+    });
+    expect(wrong.status).toBe(422);
+    expect(wrong.body.code).toBe('identity.totp-invalid');
+    http.nextStep();
+    const enabled: request.Response = await totp('/enable', authorization, { totp: http.code() });
+    expect(enabled.status).toBe(200);
+    expect(enabled.headers['cache-control']).toBe('no-store');
+    expect(enabled.body).toEqual({ enabled: true });
+
+    const again: request.Response = await totp('/enable', authorization, { totp: http.code() });
+    expect(again.status).toBe(409);
+    expect(again.body.code).toBe('identity.totp-state');
+    expect((await totp('/setup', authorization, { password: ADMIN.password })).status).toBe(409);
+    expect((await totp('', authorization)).body).toEqual({ enabled: true });
+    // The confirmation code cannot be replayed at login.
+    const first: request.Response = await http.password({ ...ADMIN, remember: false });
+    expect(first.body.status).toBe('totp-required');
+    expect((await http.submitCode(first.body.challenge, http.code())).status).toBe(401);
+  });
+
+  it('turns the code off with both factors and forgets the trusted devices', async (): Promise<void> => {
+    const signedIn: request.Response = await http.signIn({ trustDevice: true });
+    const authorization: string = `Bearer ${signedIn.body.accessToken}`;
+    const device: string = pair(signedIn, DEVICE);
+
+    http.nextStep();
+    const wrongCode: request.Response = await totp('/disable', authorization, {
+      password: ADMIN.password,
+      totp: http.wrongCode(),
+    });
+    expect(wrongCode.status).toBe(422);
+    expect(wrongCode.body.code).toBe('identity.totp-invalid');
+    const wrongPassword: request.Response = await totp('/disable', authorization, {
+      password: 'wrong',
+      totp: http.code(),
+    });
+    expect(wrongPassword.status).toBe(422);
+    expect(wrongPassword.body.code).toBe('identity.password-mismatch');
+
+    const disabled: request.Response = await totp('/disable', authorization, {
+      password: ADMIN.password,
+      totp: http.code(),
+    });
+    expect(disabled.status).toBe(200);
+    expect(disabled.headers['cache-control']).toBe('no-store');
+    expect(disabled.body).toEqual({ enabled: false });
+    const off: request.Response = await totp('/disable', authorization, {
+      password: ADMIN.password,
+      totp: http.code(),
+    });
+    expect(off.status).toBe(409);
+    expect(off.body.code).toBe('identity.totp-state');
+    expect((await http.password({ ...ADMIN, remember: false }, device)).body.status).toBe(
+      'authenticated',
+    );
+
+    await enroll(authorization);
+    const forgotten: request.Response = await http.password({ ...ADMIN, remember: false }, device);
+    expect(forgotten.body.status).toBe('totp-required');
+  });
+});
+
 describe('IdentityModule over plain HTTP (development)', (): void => {
   /**
    * Variable harness
@@ -642,6 +904,7 @@ describe('IdentityModule over plain HTTP (development)', (): void => {
   afterAll(async (): Promise<void> => {
     await harness.app.close();
     rmSync(harness.keysDir, { recursive: true, force: true });
+    vi.useRealTimers();
   });
 
   it('uses plain cookie names on /api/auth, without Secure', async (): Promise<void> => {

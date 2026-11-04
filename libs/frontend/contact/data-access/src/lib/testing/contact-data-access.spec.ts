@@ -6,7 +6,6 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { CONTACT_LIMITS, ContactMessageRequestSchema } from '@vfortin/contact-contracts';
 import { type ServerFieldError, provideApiHttp } from '@vfortin/web-http';
-import { CONTACT_LINKS } from '@internal/contact-web-data-access/lib/constants/contact-links.constants';
 import { toContactMessageRequest } from '@internal/contact-web-data-access/lib/adapters/contact-message-request/contact-message-request.adapter';
 import { CONTACT_FORM_LIMITS } from '@internal/contact-web-data-access/lib/constants/contact-form-limits.constants';
 import type { ContactRequest } from '@internal/contact-web-data-access/lib/models/contact-request/contact-request.interface';
@@ -89,13 +88,5 @@ describe('ContactFormStore', () => {
       );
     await expect(result).resolves.toEqual([{ field: 'email', message: 'invalid' }]);
     expect(store.error()?.code).toBe('request.invalid');
-  });
-});
-
-describe('CONTACT_LINKS', () => {
-  it('gives an e-mail address and secure profile links', () => {
-    expect(CONTACT_LINKS.email).toMatch(/^[^@\s]+@[^@\s]+\.[a-z]+$/);
-    expect(CONTACT_LINKS.github.startsWith('https://github.com/')).toBe(true);
-    expect(CONTACT_LINKS.linkedin.startsWith('https://www.linkedin.com/')).toBe(true);
   });
 });

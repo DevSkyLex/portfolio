@@ -23,6 +23,8 @@ import {
 import type { FormValueControl } from '@angular/forms/signals';
 import { NgIcon } from '@ng-icons/core';
 import { lucideMinus } from '@ng-icons/lucide';
+import type { FieldHost } from '@internal/ui/lib/field/models/field/field-host.interface';
+import { FIELD_HOST } from '@internal/ui/lib/field/tokens/field/field.token';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import {
   type InputOtpSize,
@@ -158,13 +160,25 @@ export class InputOtpComponent implements FormValueControl<string> {
    * @readonly
    *
    * @description
-   * Invalid state as displayed: invalid and touched.
+   * Invalid state as displayed: invalid and touched, or the error shown by the enclosing `ui-field`
+   * (a server answer such as a wrong code).
    *
    * @type {Signal<boolean>}
    */
   public readonly showInvalid: Signal<boolean> = computed<boolean>(
-    () => this.invalid() && this.touched(),
+    () => (this.invalid() && this.touched()) || !!this.field?.invalid(),
   );
+
+  /**
+   * Property field
+   * @readonly
+   *
+   * @description
+   * Enclosing `ui-field`, if any.
+   *
+   * @type {FieldHost | null}
+   */
+  private readonly field: FieldHost | null = inject<FieldHost>(FIELD_HOST, { optional: true });
 
   /**
    * Property required
@@ -317,7 +331,7 @@ export class InputOtpComponent implements FormValueControl<string> {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('relative inline-flex items-center gap-2 has-[input:disabled]:opacity-50', this.class()),
+    cn('relative flex w-full items-center gap-2 has-[input:disabled]:opacity-50', this.class()),
   );
 
   /**
@@ -475,7 +489,7 @@ export class InputOtpGroupDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('flex items-center', this.class()),
+    cn('flex min-w-0 flex-1 items-center', this.class()),
   );
   // #endregion
 }
@@ -494,7 +508,7 @@ export class InputOtpGroupDirective {
     {{ char() }}
     @if (caret()) {
       <span class="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <span class="h-5 w-px bg-star motion-safe:animate-pulse"></span>
+        <span class="h-5 w-px bg-fill motion-safe:animate-pulse"></span>
       </span>
     }
   `,
@@ -619,7 +633,7 @@ export class InputOtpSlotComponent {
   host: {
     'aria-hidden': 'true',
     'data-slot': 'input-otp-separator',
-    class: 'flex items-center text-star-faint',
+    class: 'flex items-center text-fg-faint',
   },
 })
 export class InputOtpSeparatorComponent {

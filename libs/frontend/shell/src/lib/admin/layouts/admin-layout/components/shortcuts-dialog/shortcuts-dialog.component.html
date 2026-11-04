@@ -1,35 +1,72 @@
 <ng-template #help>
-  <div uiDialogHeader class="gap-1">
-    <h2 uiDialogTitle class="font-sans text-[15px]/6 font-semibold">Raccourcis clavier</h2>
-    <p uiDialogDescription class="text-[13px]">
+  <div uiDialogHeader variant="bar">
+    <h2 uiDialogTitle class="font-sans text-[15px]/6 font-semibold">
+      <ng-container i18n="@@admin.shell.shortcuts.title">Raccourcis clavier</ng-container>
+    </h2>
+    <p uiDialogDescription class="text-[13px]" i18n="@@admin.shell.shortcuts.description">
       Les touches à une lettre agissent hors des champs de saisie.
     </p>
   </div>
-  @for (group of groups; track group.label) {
-    <section class="flex flex-col gap-1">
-      <h3 class="text-[12px] font-medium text-star-faint">{{ group.label }}</h3>
-      <dl class="flex flex-col">
-        @for (shortcut of group.shortcuts; track shortcut.label) {
-          <div
-            class="flex min-h-8 items-center gap-3 border-line py-1 text-[13px] not-last:border-b"
-          >
-            <dt class="text-star">{{ shortcut.label }}</dt>
-            <dd class="ml-auto flex shrink-0 items-center gap-1.5">
-              <span class="sr-only">{{ shortcut.spoken }}</span>
-              @for (combo of shortcut.combos; track $index) {
-                @if (!$first) {
-                  <span class="text-[12px] text-star-faint" aria-hidden="true">/</span>
-                }
-                <span uiKbdGroup aria-hidden="true">
-                  @for (key of combo; track $index) {
-                    <kbd uiKbd>{{ key }}</kbd>
-                  }
-                </span>
+  <!--
+    One tab per context; the panels share the tallest one's height (the editor's), so switching tabs
+    never resizes the dialog.
+  -->
+  <div uiTabs class="gap-5" value="general">
+    <div
+      uiTabsList
+      class="gap-5"
+      aria-label="Contexte des raccourcis"
+      i18n-aria-label="@@admin.shell.shortcuts.tabs"
+    >
+      @for (tab of tabs; track tab.id) {
+        <button class="h-9 text-[13px] font-medium" [uiTabsTrigger]="tab.id">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+    @for (tab of tabs; track tab.id) {
+      <div class="flex min-h-[25rem] flex-col gap-5" [uiTabsContent]="tab.id">
+        @for (group of tab.groups; track group.label) {
+          <section class="flex flex-col gap-1">
+            <!-- A tab with one group is named by its tab: only the editor's two groups get a heading. -->
+            @if (tab.groups.length > 1) {
+              <h3 class="text-[12px] font-medium text-fg-faint">{{ group.label }}</h3>
+            }
+            <!-- A long group (the article editor's) takes two columns from 640 px, its last pair open. -->
+            <dl
+              [class]="
+                group.shortcuts.length > 6
+                  ? 'grid sm:grid-cols-2 sm:gap-x-6 sm:[&>div:nth-last-child(2)]:border-b-0'
+                  : 'flex flex-col'
+              "
+            >
+              @for (shortcut of group.shortcuts; track shortcut.label) {
+                <div
+                  class="flex min-h-8 items-center gap-3 border-border py-1 text-[13px] not-last:border-b"
+                >
+                  <dt class="text-fg">{{ shortcut.label }}</dt>
+                  <dd class="ml-auto flex shrink-0 items-center gap-1.5">
+                    <span class="sr-only">{{ shortcut.spoken }}</span>
+                    @for (combo of shortcut.combos; track $index) {
+                      @if (!$first) {
+                        <span class="text-[12px] text-fg-faint" aria-hidden="true">/</span>
+                      }
+                      <span uiKbdGroup aria-hidden="true">
+                        @for (key of combo; track $index) {
+                          <kbd uiKbd>{{ key }}</kbd>
+                        }
+                      </span>
+                    }
+                  </dd>
+                </div>
               }
-            </dd>
-          </div>
+            </dl>
+          </section>
         }
-      </dl>
-    </section>
-  }
+      </div>
+    }
+  </div>
+  <div uiDialogFooter variant="bar">
+    <ui-kbd-hint [keys]="escapeKeys" label="Fermer" i18n-label="@@admin.shell.hint.close" />
+  </div>
 </ng-template>

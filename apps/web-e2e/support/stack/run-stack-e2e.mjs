@@ -63,7 +63,8 @@ export function composeArguments(project, args) {
  *
  * @description
  * Builds isolated acceptance artifacts, creates a fresh database and administrator, and runs Chromium
- * journeys. Credentials and the generated TOTP enrollment remain in process memory. The finally block
+ * journeys. The generated password remains in process memory; the administrator starts without a second
+ * factor and the journeys enroll one through the admin API (D17). The finally block
  * removes only the randomly named test project and its image tags, including on bootstrap or browser
  * failure. Existing resources and tags are refused before any build starts.
  *
@@ -148,15 +149,15 @@ export function runStackAcceptance(execute = spawnSync) {
       ],
       { stdio: ['ignore', 'pipe', 'pipe'] },
     );
-    const secret = /Secret \(manual entry\): ([A-Z2-7]+)/.exec(output)?.[1];
-    if (!secret) throw new Error('Bootstrap did not return a TOTP enrollment.');
+    if (!output.includes('acceptance@localhost.test')) {
+      throw new Error('Bootstrap did not create the acceptance administrator.');
+    }
     const testEnv = {
       ...env,
       BASE_URL: 'http://localhost:18080',
       MAILPIT_URL: 'http://localhost:18025',
       STACK_EMAIL: 'acceptance@localhost.test',
       STACK_PASSWORD: env.IDENTITY_BOOTSTRAP_PASSWORD,
-      STACK_TOTP_SECRET: secret,
     };
     run(
       process.execPath,

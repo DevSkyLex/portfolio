@@ -1,5 +1,6 @@
 import {
   AccountLockedError,
+  TwoFactorStateError,
   WeakPasswordError,
 } from '@internal/identity-domain/lib/errors/domain-error';
 
@@ -80,11 +81,24 @@ export interface AdminAccountProps {
    * @readonly
    *
    * @description
-   * Base32 secret used to verify time-based one-time passwords.
+   * Active Base32 secret of the one-time code, or `null` while the second factor is off: the login then
+   * asks for the password only (D17).
    *
-   * @type {string}
+   * @type {string | null}
    */
-  readonly totpSecret: string;
+  readonly totpSecret: string | null;
+
+  /**
+   * Property pendingTotpSecret
+   * @readonly
+   *
+   * @description
+   * Secret handed out by the last enrollment start and not confirmed yet, or `null`; it never verifies a
+   * login until a code generated from it is confirmed.
+   *
+   * @type {string | null}
+   */
+  readonly pendingTotpSecret: string | null;
 
   /**
    * Property lastTotpStep
@@ -144,7 +158,8 @@ export function assertPasswordPolicy(password: string): void {
  * @class AdminAccount
  *
  * @description
- * Holds the administrator's credentials and sign-in state, including lockout and TOTP replay rules.
+ * Holds the administrator's credentials and sign-in state, including lockout, TOTP replay rules and the
+ * enrollment of the optional second factor (D17).
  */
 export class AdminAccount {
   // #region Constructor
@@ -167,18 +182,21 @@ export class AdminAccount {
    * @static
    *
    * @description
-   * Creates a new account, normalizing its email and initializing the TOTP replay and lockout state.
+   * Creates a new account, normalizing its email, with the second factor off (it is enrolled later from
+   * the admin, D17) and no accepted TOTP step or lock.
    *
-   * @param {Omit<AdminAccountProps, 'lastTotpStep' | 'failedAttempts' | 'lockedUntil'>} props - Persisted credentials before sign-in state is initialized.
+   * @param {Pick<AdminAccountProps, 'id' | 'email' | 'passwordHash'>} props - Identifier, address and password verifier.
    *
-   * @returns {AdminAccount} New account with zero accepted TOTP steps and no active lock.
+   * @returns {AdminAccount} New password-only account.
    */
   public static create(
-    props: Omit<AdminAccountProps, 'lastTotpStep' | 'failedAttempts' | 'lockedUntil'>,
+    props: Pick<AdminAccountProps, 'id' | 'email' | 'passwordHash'>,
   ): AdminAccount {
     return new AdminAccount({
       ...props,
       email: props.email.trim().toLowerCase(),
+      totpSecret: null,
+      pendingTotpSecret: null,
       lastTotpStep: 0,
       failedAttempts: 0,
       lockedUntil: null,
@@ -245,12 +263,38 @@ export class AdminAccount {
    * @method totpSecret
    *
    * @description
-   * Returns the base32 secret consumed by the TOTP verifier.
+   * Returns the active base32 secret consumed by the TOTP verifier.
    *
-   * @returns {string} Account TOTP secret.
+   * @returns {string | null} Active secret, or `null` while the second factor is off.
    */
-  public get totpSecret(): string {
+  public get totpSecret(): string | null {
     return this.props.totpSecret;
+  }
+
+  /**
+   * Method pendingTotpSecret
+   * @method pendingTotpSecret
+   *
+   * @description
+   * Returns the secret awaiting confirmation by `enableTwoFactor`.
+   *
+   * @returns {string | null} Pending secret, or `null` without an enrollment in progress.
+   */
+  public get pendingTotpSecret(): string | null {
+    return this.props.pendingTotpSecret;
+  }
+
+  /**
+   * Method isTwoFactorEnabled
+   * @method isTwoFactorEnabled
+   *
+   * @description
+   * Tells whether the login asks for a one-time code after the password.
+   *
+   * @returns {boolean} Whether an active secret is set.
+   */
+  public get isTwoFactorEnabled(): boolean {
+    return this.props.totpSecret !== null;
   }
 
   /**
@@ -331,17 +375,91 @@ export class AdminAccount {
   }
 
   /**
-   * Method succeededOnTrustedDevice
-   * @method succeededOnTrustedDevice
+   * Method succeededWithoutCode
+   * @method succeededWithoutCode
    *
    * @description
-   * Returns authenticated state after a correct password on a trusted device: lockout state is cleared
-   * like a full success, while the accepted TOTP step is left unchanged since no code was checked.
+   * Returns authenticated state after a correct password that opens the session without a code (second
+   * factor off, or a trusted device): lockout state is cleared like a full success, while the accepted
+   * TOTP step is left unchanged since no code was checked.
    *
    * @returns {AdminAccount} Updated account state.
    */
-  public succeededOnTrustedDevice(): AdminAccount {
+  public succeededWithoutCode(): AdminAccount {
     return new AdminAccount({ ...this.props, failedAttempts: 0, lockedUntil: null });
+  }
+
+  /**
+   * Method startTwoFactorSetup
+   * @method startTwoFactorSetup
+   *
+   * @description
+   * Records a new pending secret, replacing any previous one; the active state does not change until it
+   * is confirmed.
+   *
+   * @param {string} secret - Newly generated base32 secret.
+   *
+   * @returns {AdminAccount} State with the pending secret.
+   *
+   * @throws {TwoFactorStateError} When the second factor is already on.
+   */
+  public startTwoFactorSetup(secret: string): AdminAccount {
+    if (this.isTwoFactorEnabled) {
+      throw new TwoFactorStateError();
+    }
+    return new AdminAccount({ ...this.props, pendingTotpSecret: secret });
+  }
+
+  /**
+   * Method enableTwoFactor
+   * @method enableTwoFactor
+   *
+   * @description
+   * Activates the pending secret once a code generated from it was verified, clears it and records the
+   * code's step so that the same code cannot open a login afterwards.
+   *
+   * @param {number} totpStep - Verified, fresh step of the confirmation code.
+   *
+   * @returns {AdminAccount} State with the second factor on.
+   *
+   * @throws {TwoFactorStateError} When the second factor is already on or no enrollment is pending.
+   */
+  public enableTwoFactor(totpStep: number): AdminAccount {
+    const pending: string | null = this.props.pendingTotpSecret;
+    if (this.isTwoFactorEnabled || pending === null) {
+      throw new TwoFactorStateError();
+    }
+    return new AdminAccount({
+      ...this.props,
+      totpSecret: pending,
+      pendingTotpSecret: null,
+      lastTotpStep: totpStep,
+    });
+  }
+
+  /**
+   * Method disableTwoFactor
+   * @method disableTwoFactor
+   *
+   * @description
+   * Removes the active and pending secrets after both factors were verified. The replay step is reset:
+   * it belonged to the deleted secret, and keeping it would refuse a new secret's code in the same
+   * 30-second step as the removal.
+   *
+   * @returns {AdminAccount} Password-only state.
+   *
+   * @throws {TwoFactorStateError} When the second factor is off.
+   */
+  public disableTwoFactor(): AdminAccount {
+    if (!this.isTwoFactorEnabled) {
+      throw new TwoFactorStateError();
+    }
+    return new AdminAccount({
+      ...this.props,
+      totpSecret: null,
+      pendingTotpSecret: null,
+      lastTotpStep: 0,
+    });
   }
 
   /**

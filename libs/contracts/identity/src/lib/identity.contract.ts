@@ -213,4 +213,6 @@ export const IDENTITY_ERROR_CODES = {
   invalidSession: 'identity.invalid-session',
   locked: 'identity.locked',
   unauthorized: 'auth.unauthorized',
+  /** An MCP access token lacks a scope the operation needs (403, D45). */
+  insufficientScope: 'auth.insufficient-scope',
 } as const;

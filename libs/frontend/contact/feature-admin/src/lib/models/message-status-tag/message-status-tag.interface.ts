@@ -5,7 +5,7 @@ import type { BadgeVariant } from '@vfortin/ui';
  * @interface MessageStatusTag
  *
  * @description
- * How a message status renders in the reading pane: a French label on a status badge (D37).
+ * How a message status renders in the reading pane: a localized label on a status badge (D37).
  */
 export interface MessageStatusTag {
   // #region Properties
@@ -14,7 +14,7 @@ export interface MessageStatusTag {
    * @readonly
    *
    * @description
-   * French label of the status.
+   * Localized label of the status.
    *
    * @type {string}
    */

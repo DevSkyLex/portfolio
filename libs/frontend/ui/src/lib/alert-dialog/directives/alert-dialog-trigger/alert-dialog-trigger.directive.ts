@@ -33,6 +33,8 @@ export class AlertDialogContentDirective {
    *
    * @description
    * Optional panel classes passed to the alert dialog service.
+   * Bind it on the template (`[class]="'p-2'"`): Angular never passes a static `class` attribute of an
+   * `<ng-template>` to an input.
    *
    * @type {InputSignal<string>}
    */

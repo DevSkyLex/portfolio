@@ -1,0 +1,100 @@
+<!-- Below 1024 px the top bar already names the section: the bar would repeat the title. -->
+<header
+  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[1024px]:hidden"
+>
+  <ui-sidebar-trigger class="-ml-2" />
+  <span class="font-medium text-fg" aria-current="page" i18n="@@admin.information.title"
+    >Informations</span
+  >
+</header>
+
+<div class="flex flex-1 flex-col">
+  <ui-page-header>
+    <h1 uiPageHeaderTitle i18n="@@admin.information.title">Informations</h1>
+    @if (store.profile(); as profile) {
+      <p uiPageHeaderMeta>
+        <span i18n="@@admin.information.meta"
+          >Textes de l’accueil et du À propos, liens publics</span
+        >
+        <span class="text-fg-faint" aria-hidden="true">·</span>
+        <span i18n="@@admin.information.version">Version {{ profile.version }}</span>
+      </p>
+    } @else {
+      <p uiPageHeaderMeta>
+        <ng-container i18n="@@admin.information.meta"
+          >Textes de l’accueil et du À propos, liens publics</ng-container
+        >
+      </p>
+    }
+  </ui-page-header>
+
+  <!-- The project editor's centred 920 px column, holding the setting sections (D36). -->
+  <div
+    class="@container/settings mx-auto flex w-full max-w-[920px] min-w-0 flex-1 flex-col gap-8 px-6 py-8 @max-[640px]:px-4 @max-[640px]:py-6"
+  >
+    @if (store.conflict()) {
+      <div uiAlert variant="warning">
+        <ng-icon [svg]="icons.conflict" size="16" aria-hidden="true" />
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.information.conflict.title">
+          Les informations ont été modifiées ailleurs depuis leur ouverture.
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p i18n="@@admin.information.conflict.description">
+            Recharger remplace vos modifications.
+          </p>
+          <button
+            uiBtn
+            variant="secondary"
+            size="xs"
+            type="button"
+            (click)="reload()"
+            i18n="@@admin.information.conflict.reload"
+          >
+            Recharger
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (values(); as initial) {
+      <!-- Stretched to the page bottom, so the save bar sticks to the viewport even on a short form. -->
+      <content-profile-form
+        class="flex-1"
+        [values]="initial"
+        [pending]="store.writing()"
+        [serverErrors]="store.writeError()?.fieldErrors ?? []"
+        (submitted)="save($event)"
+      />
+    } @else if (store.loadCallState().error; as failure) {
+      <div uiAlert variant="danger">
+        <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.information.loadError">
+          Impossible de charger les informations
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p>{{ failure.message }}</p>
+          <button
+            uiBtn
+            variant="secondary"
+            size="xs"
+            type="button"
+            (click)="reload()"
+            i18n="@@admin.information.retry"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    } @else {
+      <span class="sr-only" role="status" i18n="@@admin.information.loading"
+        >Chargement des informations…</span
+      >
+      <div class="flex flex-col gap-6" aria-hidden="true">
+        <span uiSkeleton class="h-5 w-40"></span>
+        <span uiSkeleton class="h-16 w-full"></span>
+        <span uiSkeleton class="h-16 w-full"></span>
+        <span uiSkeleton class="h-24 w-full"></span>
+      </div>
+    }
+  </div>
+</div>

@@ -39,7 +39,7 @@ export class MenubarDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'inline-flex h-11 items-center gap-1 rounded-field border border-line bg-void p-1',
+      'inline-flex h-9 items-center gap-0.5 rounded-lg border border-border bg-surface p-[3px]',
       this.class(),
     ),
   );
@@ -89,10 +89,10 @@ export class MenubarTriggerDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'inline-flex h-full items-center rounded-option px-3 text-control whitespace-nowrap text-star-muted outline-none select-none',
+      'inline-flex h-full items-center rounded-sm px-2.5 text-[13px] font-medium whitespace-nowrap text-fg-muted outline-none select-none',
       'transition-[background-color,color] duration-150 ease-orbit motion-reduce:transition-none',
-      'hover:bg-star/5 hover:text-star focus-visible:bg-star/5 focus-visible:text-star aria-expanded:bg-star/5 aria-expanded:text-star',
-      'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-signal/55',
+      'hover:bg-surface-hover hover:text-fg focus-visible:bg-surface-hover focus-visible:text-fg aria-expanded:bg-surface-hover aria-expanded:text-fg',
+      'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/55',
       'aria-disabled:pointer-events-none aria-disabled:opacity-50',
       this.class(),
     ),

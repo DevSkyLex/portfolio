@@ -4,6 +4,8 @@ import {
   effect,
   untracked,
   DestroyRef,
+  Injector,
+  LOCALE_ID,
   computed,
   inject,
   input,
@@ -12,7 +14,11 @@ import {
   type InputSignal,
   type WritableSignal,
   type Signal,
+  type TemplateRef,
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import {
@@ -24,28 +30,44 @@ import {
   lucideTriangleAlert,
 } from '@ng-icons/lucide';
 import {
+  type AdminMedia,
   type AdminProject,
   type ProjectDraft,
+  AdminMediaApiService,
   AdminProjectsStore,
   toProjectDraft,
 } from '@vfortin/content-web-data-access/admin';
+import { firstValueFrom } from 'rxjs';
 import {
   AlertDescriptionDirective,
   AlertDirective,
   AlertTitleDirective,
-  BadgeDirective,
   ButtonDirective,
   ConfirmDialogService,
-  SheetContentDirective,
+  PAGE_HEADER_IMPORTS,
+  ResizableHandleComponent,
+  ResizableLayoutService,
+  ResizablePanelDirective,
+  ResizablePanelGroupDirective,
   SheetHeaderDirective,
+  SheetService,
   SheetTitleDirective,
-  SheetTriggerDirective,
+  SidebarTriggerComponent,
   SkeletonDirective,
   ToastService,
+  type DialogRef,
+  type PanelSize,
 } from '@vfortin/ui';
+import {
+  PROJECT_EDITOR_LAYOUT,
+  PROJECT_EDITOR_NARROW_QUERY,
+} from '@internal/content-web-feature-admin/lib/constants/project-editor-layout.constants';
 import { ProjectPropertiesPanelComponent } from '@internal/content-web-feature-admin/lib/ui/components/project-properties-panel/project-properties-panel.component';
 import { ProjectFormComponent } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/project-form.component';
 import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/project-form-values.model';
+import type { ArticleImageUpload } from '@internal/content-web-feature-admin/lib/ui/components/article-editor/models/article-image-upload.type';
+import { projectPublicPath } from '@internal/content-web-feature-admin/lib/utils/project-public-path/project-public-path.utils';
+import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/utils/site-rebuild/site-rebuild.utils';
 
 /**
  * Component AdminProjectEditPageComponent
@@ -53,9 +75,14 @@ import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/
  *
  * @description
  * Project editor route: loads the project, saves the form's values with `If-Match`, toggles the
- * publication of a clean form and saves on Ctrl/Cmd+S (D36). Each request's outcome is a toast; a
- * version conflict stays an inline alert offering to reload. The properties panel sits beside the form,
- * or in a right sheet opened from the title bar below 1180 px.
+ * publication of a clean form and saves on Ctrl/Cmd+S (D36). Each request's outcome is a toast, which
+ * carries the rebuild notice when the public site changes (a published save, a publication or an
+ * unpublication, not a draft save); a version conflict stays an inline alert offering to reload. It uploads the article and cover images
+ * (D40) and keeps the uploaded media beside the project's, so that a new image shows before saving.
+ * The properties panel, which also holds the form's shared settings, sits beside the form behind a
+ * separator whose position is remembered per viewer, or in a right sheet opened from the title bar
+ * below 1180 px. While it loads, skeletons hold the header and first fields in place; a missing
+ * project (404) links back to the list, any other failure offers to try again.
  */
 @Component({
   selector: 'content-admin-project-edit-page',
@@ -63,16 +90,18 @@ import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/
     AlertDescriptionDirective,
     AlertDirective,
     AlertTitleDirective,
-    BadgeDirective,
     ButtonDirective,
     NgIcon,
+    PAGE_HEADER_IMPORTS,
     ProjectFormComponent,
     ProjectPropertiesPanelComponent,
+    ResizableHandleComponent,
+    ResizablePanelDirective,
+    ResizablePanelGroupDirective,
     RouterLink,
-    SheetContentDirective,
     SheetHeaderDirective,
     SheetTitleDirective,
-    SheetTriggerDirective,
+    SidebarTriggerComponent,
     SkeletonDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -134,6 +163,93 @@ export class AdminProjectEditPageComponent {
   private readonly toasts: ToastService = inject<ToastService>(ToastService);
 
   /**
+   * Property localeId
+   * @readonly
+   *
+   * @description
+   * Locale of the running build, which picks the public page « Voir la page » opens.
+   *
+   * @type {string}
+   */
+  private readonly localeId: string = inject<string>(LOCALE_ID);
+
+  /**
+   * Property saveFirst
+   * @readonly
+   *
+   * @description
+   * Title of the publication button while the form holds unsaved changes.
+   *
+   * @type {string}
+   */
+  protected readonly saveFirst: string = $localize`:@@admin.project.publish.saveFirst:Enregistrez d’abord les modifications.`;
+
+  /**
+   * Property mediaApi
+   * @readonly
+   *
+   * @description
+   * Uploads the images of the article and the cover.
+   *
+   * @type {AdminMediaApiService}
+   */
+  private readonly mediaApi: AdminMediaApiService =
+    inject<AdminMediaApiService>(AdminMediaApiService);
+
+  /**
+   * Property uploaded
+   * @readonly
+   *
+   * @description
+   * Media uploaded on this page, by id, until a saved project lists them.
+   *
+   * @type {WritableSignal<ReadonlyMap<string, AdminMedia>>}
+   */
+  private readonly uploaded: WritableSignal<ReadonlyMap<string, AdminMedia>> = signal<
+    ReadonlyMap<string, AdminMedia>
+  >(new Map<string, AdminMedia>());
+
+  /**
+   * Property media
+   * @readonly
+   *
+   * @description
+   * Media known to the editor: the project's and the ones uploaded since it loaded.
+   *
+   * @type {Signal<ReadonlyMap<string, AdminMedia>>}
+   */
+  protected readonly media: Signal<ReadonlyMap<string, AdminMedia>> = computed<
+    ReadonlyMap<string, AdminMedia>
+  >((): ReadonlyMap<string, AdminMedia> => {
+    const known: Map<string, AdminMedia> = new Map<string, AdminMedia>(this.uploaded());
+    for (const item of this.project()?.media ?? []) known.set(item.id, item);
+    return known;
+  });
+
+  /**
+   * Property upload
+   * @readonly
+   *
+   * @description
+   * Image upload given to the form: stores the file, remembers the media and resolves to it, or
+   * rejects with a localized reason (too large, unsupported format, unreachable service).
+   *
+   * @type {ArticleImageUpload}
+   */
+  protected readonly upload: ArticleImageUpload = async (file: File): Promise<AdminMedia> => {
+    try {
+      const media: AdminMedia = await firstValueFrom(this.mediaApi.upload(file));
+      this.uploaded.update(
+        (known: ReadonlyMap<string, AdminMedia>): ReadonlyMap<string, AdminMedia> =>
+          new Map<string, AdminMedia>(known).set(media.id, media),
+      );
+      return media;
+    } catch (error) {
+      throw new Error(this.uploadFailure(error));
+    }
+  };
+
+  /**
    * Property project
    * @readonly
    *
@@ -176,6 +292,134 @@ export class AdminProjectEditPageComponent {
   );
 
   /**
+   * Property document
+   * @readonly
+   *
+   * @description
+   * Document whose window answers the narrow layout query.
+   *
+   * @type {Document}
+   */
+  private readonly document: Document = inject<Document>(DOCUMENT);
+
+  /**
+   * Property layouts
+   * @readonly
+   *
+   * @description
+   * Per-viewer storage of the split between the form and the properties panel.
+   *
+   * @type {ResizableLayoutService}
+   */
+  private readonly layouts: ResizableLayoutService =
+    inject<ResizableLayoutService>(ResizableLayoutService);
+
+  /**
+   * Property splitLayout
+   * @readonly
+   *
+   * @description
+   * Default split, bounds and storage key of the form and the properties panel.
+   */
+  protected readonly splitLayout: typeof PROJECT_EDITOR_LAYOUT = PROJECT_EDITOR_LAYOUT;
+
+  /**
+   * Property panelWidth
+   * @readonly
+   *
+   * @description
+   * Last properties panel width in pixels, read from storage before the first render so the panel
+   * starts at its remembered width (320 px by default, or after a percentage layout stored before),
+   * and kept in step with each save so the panels created again for another project reuse it.
+   *
+   * @type {WritableSignal<number>}
+   */
+  protected readonly panelWidth: WritableSignal<number> = signal<number>(
+    this.layouts.readPixels(PROJECT_EDITOR_LAYOUT),
+  );
+
+  /**
+   * Property panelDefault
+   * @readonly
+   *
+   * @description
+   * Properties panel width bound to its panel, as a pixel size; the form takes the rest.
+   *
+   * @type {Signal<PanelSize>}
+   */
+  protected readonly panelDefault: Signal<PanelSize> = computed<PanelSize>(
+    (): PanelSize => `${this.panelWidth()}px` as const,
+  );
+
+  /**
+   * Property narrow
+   * @readonly
+   *
+   * @description
+   * Whether the properties move to the sheet, which removes the separator; `false` where `matchMedia`
+   * is unavailable.
+   *
+   * @type {WritableSignal<boolean>}
+   */
+  protected readonly narrow: WritableSignal<boolean> = signal<boolean>(false);
+
+  /**
+   * Property sheets
+   * @readonly
+   *
+   * @description
+   * Opens the properties sheet below 1180 px.
+   *
+   * @type {SheetService}
+   */
+  private readonly sheets: SheetService = inject<SheetService>(SheetService);
+
+  /**
+   * Property injector
+   * @readonly
+   *
+   * @description
+   * Page injector handed to the sheet, whose content renders the page's form settings.
+   *
+   * @type {Injector}
+   */
+  private readonly injector: Injector = inject<Injector>(Injector);
+
+  /**
+   * Property propertiesTemplate
+   * @readonly
+   *
+   * @description
+   * Content of the properties sheet.
+   *
+   * @type {Signal<TemplateRef<unknown> | undefined>}
+   */
+  private readonly propertiesTemplate: Signal<TemplateRef<unknown> | undefined> = viewChild<
+    TemplateRef<unknown> | undefined
+  >('properties');
+
+  /**
+   * Property propertiesSheet
+   *
+   * @description
+   * Open properties sheet, `null` while closed.
+   *
+   * @type {DialogRef<unknown> | null}
+   */
+  private propertiesSheet: DialogRef<unknown> | null = null;
+
+  /**
+   * Property propertiesOpen
+   * @readonly
+   *
+   * @description
+   * Whether the properties sheet is open, for the trigger's `aria-expanded`.
+   *
+   * @type {WritableSignal<boolean>}
+   */
+  protected readonly propertiesOpen: WritableSignal<boolean> = signal<boolean>(false);
+
+  /**
    * Property icons
    * @readonly
    *
@@ -210,6 +454,21 @@ export class AdminProjectEditPageComponent {
   private readonly form: Signal<ProjectFormComponent | undefined> = viewChild<
     ProjectFormComponent | undefined
   >(ProjectFormComponent);
+
+  /**
+   * Property settings
+   * @readonly
+   *
+   * @description
+   * Shared settings of the form (cover, site, technologies, home-page feature), which the properties
+   * panel renders while they stay bound to the form; `null` until the form exists.
+   *
+   * @type {Signal<TemplateRef<unknown> | null>}
+   */
+  protected readonly settings: Signal<TemplateRef<unknown> | null> =
+    computed<TemplateRef<unknown> | null>(
+      (): TemplateRef<unknown> | null => this.form()?.settings() ?? null,
+    );
   // #endregion
 
   // #region Constructor
@@ -235,11 +494,92 @@ export class AdminProjectEditPageComponent {
         });
       });
     });
-    destroy.onDestroy((): void => this.store.cancelRead());
+    destroy.onDestroy((): void => {
+      this.store.cancelRead();
+      this.propertiesSheet?.close();
+    });
+    this.watchWidth(destroy);
+    this.followTitle();
   }
   // #endregion
 
   // #region Methods
+  /**
+   * Method publicPath
+   * @method publicPath
+   *
+   * @description
+   * Public page of the published project, in the admin's language.
+   *
+   * @param {AdminProject} project - Edited project.
+   *
+   * @returns {string} Root-relative path.
+   */
+  protected publicPath(project: AdminProject): string {
+    return projectPublicPath(project.slug, this.localeId);
+  }
+
+  /**
+   * Method openProperties
+   * @method openProperties
+   *
+   * @description
+   * Opens the properties in a narrow right sheet whose title takes the focus first, as the inbox's
+   * reading sheet does: the cover button would otherwise be the first stop.
+   */
+  protected openProperties(): void {
+    const template: TemplateRef<unknown> | undefined = this.propertiesTemplate();
+    if (!template || this.propertiesSheet) return;
+    const sheet: DialogRef<unknown> = this.sheets.open(template, {
+      side: 'right',
+      class: 'max-w-80 gap-6 p-5',
+      autoFocus: 'first-heading',
+      injector: this.injector,
+    });
+    this.propertiesSheet = sheet;
+    this.propertiesOpen.set(true);
+    sheet.closed.subscribe((): void => {
+      this.propertiesSheet = null;
+      this.propertiesOpen.set(false);
+    });
+  }
+
+  /**
+   * Method saveSplit
+   * @method saveSplit
+   *
+   * @description
+   * Remembers the properties panel width after a drag, a key press or a reset on the separator; a
+   * width not measured yet is not saved.
+   *
+   * @param {number | undefined} width - Properties panel width in pixels.
+   */
+  protected saveSplit(width: number | undefined): void {
+    if (!width) return;
+    this.panelWidth.set(Math.round(width));
+    this.layouts.writePixels(PROJECT_EDITOR_LAYOUT, width);
+  }
+
+  /**
+   * Method resetSplit
+   * @method resetSplit
+   *
+   * @description
+   * Restores the default panel width (320 px) on a double click of the separator, then saves it.
+   *
+   * @param {ResizablePanelGroupDirective} group - Group of the form and the properties panel.
+   * @param {ResizableHandleComponent} handle - Separator between them.
+   */
+  protected resetSplit(
+    group: ResizablePanelGroupDirective,
+    handle: ResizableHandleComponent,
+  ): void {
+    // The delta applies to the form, before the handle: the panel grows when the form shrinks.
+    const width: number = PROJECT_EDITOR_LAYOUT.pixels.default;
+    group.resizePixels(handle, (group.pixelSizes()[1] ?? width) - width);
+    group.commit();
+  }
+
   /**
    * Method canLeave
    *
@@ -252,10 +592,10 @@ export class AdminProjectEditPageComponent {
     if (this.store.writing()) return false;
     if (!this.dirty()) return true;
     const accepted: boolean = await this.confirmations.confirm({
-      title: 'Quitter sans enregistrer ?',
-      description: 'Les modifications de ce projet seront perdues.',
-      confirmLabel: 'Quitter',
-      cancelLabel: 'Continuer la modification',
+      title: $localize`:@@admin.project.leave.confirmTitle:Quitter sans enregistrer ?`,
+      description: $localize`:@@admin.project.unsaved.lost:Les modifications de ce projet seront perdues.`,
+      confirmLabel: $localize`:@@admin.project.leave.confirmLabel:Quitter`,
+      cancelLabel: $localize`:@@admin.project.unsaved.keepEditing:Continuer la modification`,
       tone: 'danger',
     });
     return accepted && !this.store.writing();
@@ -333,11 +673,13 @@ export class AdminProjectEditPageComponent {
     const saved: AdminProject | null = await this.store.save(project, values);
     if (saved) {
       this.project.set(saved);
-      this.toasts.success(
-        saved.status === 'published'
-          ? 'Enregistré. Le site public sera reconstruit dans quelques minutes.'
-          : 'Enregistré (brouillon).',
-      );
+      if (saved.status === 'published') {
+        this.toasts.success($localize`:@@admin.project.toast.saved:Enregistré.`, {
+          description: withSiteRebuildNotice(),
+        });
+      } else {
+        this.toasts.success($localize`:@@admin.project.toast.savedDraft:Enregistré (brouillon).`);
+      }
     } else {
       this.reportFailure();
     }
@@ -361,11 +703,9 @@ export class AdminProjectEditPageComponent {
     if (
       project.status === 'published' &&
       !(await this.confirmations.confirm({
-        title: `Dépublier « ${project.title.fr} » ?`,
-        description:
-          'Le projet repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).',
-        confirmLabel: 'Dépublier',
-        cancelLabel: 'Annuler',
+        title: $localize`:@@admin.projects.unpublish.confirmTitle:Dépublier « ${project.title.fr}:title: » ?`,
+        description: $localize`:@@admin.projects.unpublish.confirmDescription:Le projet repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).`,
+        confirmLabel: $localize`:@@admin.projects.action.unpublish:Dépublier`,
         tone: 'danger',
       }))
     ) {
@@ -379,12 +719,41 @@ export class AdminProjectEditPageComponent {
       this.project.set(updated);
       this.toasts.success(
         updated.status === 'published'
-          ? 'Publié. Le site public sera reconstruit dans quelques minutes.'
-          : 'Retiré du site public.',
+          ? $localize`:@@admin.project.toast.published:Publié.`
+          : $localize`:@@admin.project.toast.unpublished:Retiré du site public.`,
+        {
+          description: withSiteRebuildNotice(),
+        },
       );
     } else {
       this.reportFailure();
     }
+  }
+
+  /**
+   * Method uploadFailure
+   *
+   * @description
+   * Localized reason of a refused upload, from the media problem codes (`MEDIA_ERROR_CODES`; the browser
+   * imports no value from the contracts, D10).
+   *
+   * @param {unknown} error - Failure of the upload request.
+   *
+   * @returns {string} Readable reason.
+   */
+  private uploadFailure(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse))
+      return $localize`:@@admin.project.upload.unexpected:Une erreur inattendue est survenue.`;
+    const code: unknown = (error.error as { code?: unknown } | null)?.code;
+    if (error.status === 413 || code === 'content.media-too-large')
+      return $localize`:@@admin.project.upload.tooLarge:L’image dépasse 10 Mo.`;
+    if (error.status === 415 || code === 'content.media-unsupported')
+      return $localize`:@@admin.project.upload.unsupported:Format non pris en charge : JPEG, PNG, WebP, AVIF ou GIF.`;
+    if (error.status === 0)
+      return $localize`:@@admin.project.upload.offline:La connexion est indisponible. Réessayez.`;
+    return error.status >= 500
+      ? $localize`:@@admin.project.upload.server:Le service ne répond pas. Réessayez dans un moment.`
+      : $localize`:@@admin.project.upload.rejected:L’image a été refusée.`;
   }
 
   /**
@@ -401,12 +770,64 @@ export class AdminProjectEditPageComponent {
     if (!error || this.store.conflict()) return;
     // CONTENT_ADMIN_ERROR_CODES.incomplete: the browser imports no value from the contracts (D10).
     if (error.code === 'content.project-incomplete') {
-      this.toasts.error('Un projet publié doit rester complet.', {
-        description: 'Complétez les deux langues ou dépubliez le projet avant de retirer un texte.',
-      });
+      this.toasts.error(
+        $localize`:@@admin.project.toast.incomplete:Un projet publié doit rester complet.`,
+        {
+          description: $localize`:@@admin.project.toast.incompleteHint:Complétez les deux langues ou dépubliez le projet avant de retirer un texte.`,
+        },
+      );
       return;
     }
     this.toasts.error(error.message);
+  }
+
+  /**
+   * Method followTitle
+   * @method followTitle
+   *
+   * @description
+   * Names the document after the project once it has loaded (« Movah — Projets — Administration »),
+   * and after a missing project (« Projet introuvable — … »). The route's static title covers the
+   * loading time and the other failures: the router sets it at the end of the navigation, before the
+   * project answers, so this later title wins until the next navigation.
+   */
+  private followTitle(): void {
+    const title: Title = inject<Title>(Title);
+    effect((): void => {
+      const current: AdminProject | null = this.project();
+      const missing: boolean = !current && this.store.loadCallState().error?.status === 404;
+      if (current || missing) {
+        title.setTitle(
+          current
+            ? $localize`:@@admin.project.documentTitle:${current.title.fr}:project: — Projets — Administration`
+            : $localize`:@@admin.project.notFound.documentTitle:Projet introuvable — Projets — Administration`,
+        );
+      }
+    });
+  }
+
+  /**
+   * Method watchWidth
+   * @method watchWidth
+   *
+   * @description
+   * Follows the properties sheet breakpoint until the page is destroyed. The admin renders in the
+   * browser only (D18); the optional calls cover environments without `matchMedia`.
+   *
+   * @param {DestroyRef} destroyRef - Lifetime of the page, which removes the listener.
+   */
+  private watchWidth(destroyRef: DestroyRef): void {
+    const query: MediaQueryList | undefined = this.document.defaultView?.matchMedia?.(
+      PROJECT_EDITOR_NARROW_QUERY,
+    );
+    if (!query) {
+      return;
+    }
+    this.narrow.set(query.matches);
+    const listener: (event: MediaQueryListEvent) => void = (event: MediaQueryListEvent): void =>
+      this.narrow.set(event.matches);
+    query.addEventListener('change', listener);
+    destroyRef.onDestroy(() => query.removeEventListener('change', listener));
   }
   // #endregion
 }

@@ -39,4 +39,6 @@
 
 - name: Switch to the new release
   ansible.builtin.command: bash {{ app_root }}/scripts/publish-site.sh {{ release }}
+  environment:
+    SITE_ROOT: '{{ site_root }}'
   changed_when: true

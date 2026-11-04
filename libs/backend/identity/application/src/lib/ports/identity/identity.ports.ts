@@ -84,7 +84,7 @@ export interface AdminAccountRepository {
    * @method save
    *
    * @description
-   * Persists updated lockout or accepted-TOTP state for an existing account.
+   * Persists updated lockout, accepted-TOTP and second-factor state for an existing account.
    *
    * @param {AdminAccount} account - Updated account state.
    *
@@ -324,6 +324,20 @@ export interface TrustedDeviceRepository {
    * @returns {Promise<void>} Completion after persistence.
    */
   save(device: TrustedDevice): Promise<void>;
+
+  /**
+   * Method deleteByAccount
+   * @method deleteByAccount
+   *
+   * @description
+   * Removes every device trusted by the account, whatever its expiry, so that none skips a one-time code
+   * enrolled later.
+   *
+   * @param {string} accountId - Account whose devices are forgotten.
+   *
+   * @returns {Promise<number>} Number of devices deleted.
+   */
+  deleteByAccount(accountId: string): Promise<number>;
 
   /**
    * Method deleteExpired

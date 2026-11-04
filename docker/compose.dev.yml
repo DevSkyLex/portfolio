@@ -128,6 +128,17 @@ services:
         .export({format:'pem',type:'pkcs8'}), {mode: 0o400}); fs.chownSync(f, 1000, 1000); console.log('Key dev-1 created'); }
     volumes: ['identity-keys:/run/identity-keys']
 
+  # Uploaded images (D40): a new named volume belongs to root; hand it to the service user once.
+  media-init:
+    <<: [*hardening, *image-content]
+    restart: 'no'
+    user: root
+    cap_add: [CHOWN]
+    network_mode: none
+    healthcheck: { disable: true }
+    command: ['node', '-e', "require('fs').chownSync('/srv/media', 1000, 1000)"]
+    volumes: ['media:/srv/media']
+
   identity-migrate:
     <<: [*job, *image-identity]
     command: ['node', 'cli.js', 'migrate']
@@ -180,9 +191,16 @@ services:
       CONTENT_PORT: '3101'
       SERVICE_PORT: '3101'
       CONTENT_DATABASE_URL_FILE: /run/secrets/content_database_url
+      # Served by Nginx (/media/), as in production: CONTENT_MEDIA_SERVE stays off.
+      CONTENT_MEDIA_DIR: /srv/media
+      # SEO dashboard (D47): no Google source locally, its sections answer "not-configured".
+      SEO_SITE_ORIGIN: http://localhost:8080
       NODE_ENV: production
     secrets: [content_database_url]
-    depends_on: { content-migrate: { condition: service_completed_successfully } }
+    volumes: ['media:/srv/media']
+    depends_on:
+      media-init: { condition: service_completed_successfully }
+      content-migrate: { condition: service_completed_successfully }
 
   contact-service:
     <<: [*service, *image-contact]
@@ -210,6 +228,7 @@ services:
       - ./nginx/snippets:/etc/nginx/snippets:ro
       - ./nginx/dev/security-headers.conf:/etc/nginx/snippets/security-headers.conf:ro
       - ../dist/apps/web:/srv/site/current:ro
+      - media:/srv/media:ro
     healthcheck:
       test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:8081/health']
       interval: 10s
@@ -244,6 +263,7 @@ networks:
 volumes:
   pgdata: {}
   identity-keys: {}
+  media: {}
 
 secrets:
   postgres_password: { file: ./dev/secrets/postgres_password }

@@ -1,0 +1,127 @@
+<form
+  class="flex flex-1 flex-col"
+  novalidate
+  [id]="'edit-legal-' + kind() + '-form'"
+  (submit)="onSubmit($event)"
+>
+  @let lang = shown();
+  @let headingId = 'edit-legal-' + kind() + '-title';
+  <section class="flex flex-col gap-4 pb-10 @max-[640px]:pb-8" [attr.aria-labelledby]="headingId">
+    <div class="flex flex-col gap-1.5">
+      <h2 class="flex items-baseline gap-1 text-[14px]/5 font-semibold text-fg" [id]="headingId">
+        {{ texts().tab }}
+        <span class="text-danger-ink" aria-hidden="true">*</span>
+      </h2>
+      <p class="max-w-[65ch] text-[13px]/5 text-fg-muted">{{ texts().description }}</p>
+      <p class="max-w-[65ch] text-[12px]/4.5 text-fg-muted" i18n="@@admin.legal.form.languages">
+        En français et en anglais, publiés sur {{ texts().path }} et /en{{ texts().path }} : le
+        sélecteur au bout de la barre d’outils change la langue du document.
+      </p>
+    </div>
+    <div class="flex flex-col gap-2">
+      <!--
+        Both editors stay alive, the other language hidden: each keeps its state and undo history.
+        Each toolbar ends with the language toggle, bound to the same shown language.
+      -->
+      @for (locale of locales; track locale) {
+        @let id = 'edit-legal-' + kind() + '-' + locale;
+        @let localeMessage = error(locale);
+        <div class="flex flex-col gap-2" [hidden]="locale !== lang">
+          <content-article-editor
+            [controlId]="id"
+            [label]="editorLabel(locale)"
+            [describedBy]="localeMessage ? id + '-error' : null"
+            [language]="locale"
+            [formField]="legalForm[locale]"
+          >
+            <content-locale-switch
+              articleToolbarEnd
+              compact
+              [attached]="false"
+              [label]="texts().tab"
+              [states]="localeStates()"
+              [value]="lang"
+              (valueChange)="shown.set($event)"
+            />
+          </content-article-editor>
+          @if (localeMessage) {
+            <p uiFieldError class="flex items-start gap-2" [id]="id + '-error'">
+              <ng-icon
+                class="mt-0.5 shrink-0"
+                [svg]="icons.alert"
+                size="16"
+                strokeWidth="2.25"
+                aria-hidden="true"
+              />
+              <span>{{ localeMessage }}</span>
+            </p>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Floating bar sized to its content and centred under the form, as in the project editor (D43). -->
+  <div
+    class="sticky bottom-4 z-10 mx-auto mt-auto flex w-fit max-w-full items-center gap-3 rounded-xl border border-border bg-surface-float p-1.5 pl-3.5 shadow-float"
+  >
+    <span
+      #status
+      class="flex min-w-0 items-center gap-2 text-[13px]/5 text-fg-muted outline-none"
+      tabindex="-1"
+      data-slot="save-status"
+    >
+      @if (dirty()) {
+        <span class="size-1.5 shrink-0 rounded-full bg-warning-ink" aria-hidden="true"></span>
+        <span class="truncate text-fg max-sm:sr-only" i18n="@@admin.legal.form.unsaved"
+          >Modifications non enregistrées</span
+        >
+      } @else {
+        <ng-icon
+          class="shrink-0 text-success-ink"
+          [svg]="icons.saved"
+          size="14"
+          aria-hidden="true"
+        />
+        <span class="truncate max-sm:sr-only" i18n="@@admin.legal.form.saved"
+          >Tout est enregistré</span
+        >
+      }
+    </span>
+    <span class="h-5 w-px shrink-0 bg-border" aria-hidden="true"></span>
+    <span class="flex shrink-0 items-center gap-1.5">
+      <button
+        uiBtn
+        variant="ghost"
+        size="sm"
+        class="h-8 rounded-sm px-3 text-[13px]"
+        type="button"
+        i18n-aria-label="@@admin.legal.form.discardLabel"
+        aria-label="Abandonner les modifications"
+        [disabled]="pending() || !dirty()"
+        (click)="discard()"
+      >
+        <ng-container i18n="@@admin.legal.form.discard">Abandonner</ng-container>
+      </button>
+      <button
+        uiBtn
+        size="sm"
+        class="h-8 gap-2 rounded-sm pr-2 pl-3 text-[13px]"
+        type="submit"
+        [disabled]="!canSave()"
+      >
+        @if (pending()) {
+          <ng-container i18n="@@admin.legal.form.saving">Enregistrement…</ng-container>
+        } @else {
+          <ng-container i18n="@@admin.legal.form.save">Enregistrer</ng-container>
+        }
+        <kbd
+          uiKbd
+          class="h-4 min-w-0 rounded-2xs border-0 bg-current/12 px-1 text-[10px]/4 font-normal text-current max-sm:hidden"
+          aria-hidden="true"
+          >{{ modifier.key }} S</kbd
+        >
+      </button>
+    </span>
+  </div>
+</form>

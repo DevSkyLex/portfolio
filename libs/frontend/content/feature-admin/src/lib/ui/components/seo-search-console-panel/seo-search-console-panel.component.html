@@ -1,0 +1,96 @@
+<div class="grid grid-cols-2 gap-3 @min-[48rem]/dashboard:grid-cols-4">
+  @for (kpi of kpis(); track kpi.id) {
+    <content-seo-kpi-tile
+      [label]="kpi.label"
+      [value]="kpi.value"
+      [delta]="kpi.delta"
+      [comparison]="comparison()"
+    />
+  }
+</div>
+
+<div class="grid gap-3 @min-[48rem]/dashboard:grid-cols-2">
+  <div uiCard variant="outline" class="min-w-0 gap-4 p-4">
+    <h3
+      class="text-[13px]/5 font-medium text-fg"
+      i18n="@@admin.dashboard.searchConsole.clicksPerDay"
+    >
+      Clics par jour
+    </h3>
+    <ui-area-chart
+      label="Clics par jour"
+      i18n-label="@@admin.dashboard.searchConsole.clicksPerDay"
+      valueHeader="Clics"
+      i18n-valueHeader="@@admin.dashboard.searchConsole.clicks"
+      [points]="clicks()"
+      [formatTick]="format.compact"
+      [stale]="stale()"
+    />
+  </div>
+  <div uiCard variant="outline" class="min-w-0 gap-4 p-4">
+    <h3
+      class="text-[13px]/5 font-medium text-fg"
+      i18n="@@admin.dashboard.searchConsole.impressionsPerDay"
+    >
+      Impressions par jour
+    </h3>
+    <ui-area-chart
+      label="Impressions par jour"
+      i18n-label="@@admin.dashboard.searchConsole.impressionsPerDay"
+      valueHeader="Impressions"
+      i18n-valueHeader="@@admin.dashboard.searchConsole.impressions"
+      [points]="impressions()"
+      [formatTick]="format.compact"
+      [stale]="stale()"
+    />
+  </div>
+</div>
+
+<div class="grid gap-3 @min-[72rem]/dashboard:grid-cols-2">
+  <div class="flex min-w-0 flex-col gap-2">
+    <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.searchConsole.topQueries">
+      Requêtes principales
+    </h3>
+    <ui-data-table
+      density="compact"
+      caption="Requêtes principales"
+      i18n-caption="@@admin.dashboard.searchConsole.topQueries"
+      [class]="stale() ? 'opacity-50' : ''"
+      [data]="data().queries"
+      [columns]="queryColumns"
+      [rowKey]="rowKey"
+      [searchable]="false"
+      [columnMenu]="false"
+      [paginated]="false"
+    />
+  </div>
+  <div class="flex min-w-0 flex-col gap-2">
+    <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.searchConsole.topPages">
+      Pages principales
+    </h3>
+    <ui-data-table
+      density="compact"
+      caption="Pages principales"
+      i18n-caption="@@admin.dashboard.searchConsole.topPages"
+      [class]="stale() ? 'opacity-50' : ''"
+      [data]="data().pages"
+      [columns]="pageColumns"
+      [rowKey]="rowKey"
+      [searchable]="false"
+      [columnMenu]="false"
+      [paginated]="false"
+    />
+  </div>
+</div>
+
+<div uiCard variant="outline" class="gap-4 p-4">
+  <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.searchConsole.devices">
+    Clics par appareil
+  </h3>
+  <ui-bar-list
+    label="Clics par appareil"
+    i18n-label="@@admin.dashboard.searchConsole.devices"
+    [items]="devices()"
+    [stale]="stale()"
+  />
+</div>

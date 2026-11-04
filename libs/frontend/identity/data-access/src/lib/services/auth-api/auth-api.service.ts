@@ -40,8 +40,8 @@ export class AuthApiService {
    * @method login
    *
    * @description
-   * First login step: opens the session at once on a trusted device, otherwise returns the challenge
-   * of the one-time code.
+   * First login step: opens the session at once when the second factor is disabled or this browser
+   * is a trusted device, otherwise returns the challenge of the one-time code.
    *
    * @param {Credentials} credentials - E-mail, password and "remember me" choice.
    *

@@ -1,4 +1,5 @@
-import type { Project } from '@vfortin/content-domain';
+import { type Project, ProjectSeo } from '@vfortin/content-domain';
+import { eq } from 'drizzle-orm';
 import { PUBLISHED_LOCALES, VersionMismatchError } from '@vfortin/content-application';
 import { fileURLToPath } from 'node:url';
 import { seedContent } from '@internal/content-adapters-out/lib/seed/content.seed';
@@ -7,7 +8,10 @@ import {
   migrateContentDatabase,
   openContentDatabase,
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
-import { siteBuildRequests } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
+import {
+  projects as projectRows,
+  siteBuildRequests,
+} from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
 import {
   DrizzleContentUnitOfWork,
   DrizzleProjectRepository,
@@ -65,6 +69,41 @@ describe('Content administration (Postgres via PGlite)', (): void => {
     expect((await repository.get('project-movah'))?.status).toBe('draft');
     await expect(repository.get('absent')).resolves.toBeNull();
     expect((await repository.list()).map((p): string => p.id)).toContain('project-movah');
+  });
+
+  it('stores the search texts as trimmed jsonb, seeded rows starting from the empty default', async (): Promise<void> => {
+    const repository: DrizzleProjectRepository = new DrizzleProjectRepository(handle.db);
+    const project: Project | null = await repository.get('project-movah');
+    if (!project) throw new Error('project missing');
+    expect(project.snapshot().seo.toProps()).toEqual({ title: {}, description: {}, keywords: {} });
+    project.revise(
+      {
+        ...project.snapshot(),
+        seo: ProjectSeo.of({
+          title: { fr: ' Movah, suivi de séries en Flutter ', en: '' },
+          description: { en: 'A Flutter app to track series.' },
+          keywords: { fr: [' Flutter ', 'suivi de séries'], en: [] },
+        }),
+      },
+      PUBLISHED_LOCALES,
+    );
+    await expect(repository.save(project, 1)).resolves.toBe(2);
+    const [row] = await handle.db
+      .select({ seo: projectRows.seo, seoKeywords: projectRows.seoKeywords })
+      .from(projectRows)
+      .where(eq(projectRows.id, 'project-movah'));
+    expect(row?.seo).toEqual({
+      title: { fr: 'Movah, suivi de séries en Flutter' },
+      description: { en: 'A Flutter app to track series.' },
+    });
+    expect(row?.seoKeywords).toEqual({ fr: ['Flutter', 'suivi de séries'] });
+    const reread: Project | null = await repository.get('project-movah');
+    expect(reread?.snapshot().seo.in('en')).toEqual({
+      title: null,
+      description: 'A Flutter app to track series.',
+      keywords: [],
+    });
+    expect(reread?.snapshot().seo.in('fr').keywords).toEqual(['Flutter', 'suivi de séries']);
   });
 
   it('rolls back the change if the rebuild request fails (same transaction)', async (): Promise<void> => {

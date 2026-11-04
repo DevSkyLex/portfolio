@@ -1,3 +1,4 @@
+import type { AdminProjectDto } from '@vfortin/content-contracts';
 import type { ProjectDraft } from '@internal/content-web-data-access/lib/admin/models/project-draft/project-draft.interface';
 import { toAdminProject } from '@internal/content-web-data-access/lib/admin/adapters/admin-project/admin-project.adapter';
 import { provideHttpClient } from '@angular/common/http';
@@ -8,7 +9,10 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import type { AdminProject } from '@internal/content-web-data-access/lib/admin/models/admin-project/admin-project.type';
-import { toProjectDraft } from '@internal/content-web-data-access/lib/admin/utils/project-draft/project-draft.utils';
+import {
+  toProjectDraft,
+  toRevisionRequest,
+} from '@internal/content-web-data-access/lib/admin/utils/project-draft/project-draft.utils';
 import { AdminProjectsStore } from '@internal/content-web-data-access/lib/admin/state/admin-projects/admin-projects.store';
 
 /**
@@ -50,7 +54,7 @@ const project: (id: string, version?: number, status?: AdminProject['status']) =
   title: t(`Titre ${id}`, `Title ${id}`),
   summary: t('Résumé', 'Summary'),
   lead: t('Chapô', 'Lead'),
-  periodLabel: t('2026', '2026'),
+  period: { start: { year: 2026, month: null }, end: null },
   client: t('Client', 'Client'),
   role: t('Rôle', 'Role'),
   place: t('Lieu', 'Place'),
@@ -58,14 +62,15 @@ const project: (id: string, version?: number, status?: AdminProject['status']) =
   techs: ['angular'],
   featured: false,
   article: {
-    context: [t('Un.', 'One.')],
-    work: [],
-    workList: [],
-    choices: [],
-    result: [],
-    lessons: [],
-    captions: [],
+    fr: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Un.' }] }] },
+    en: {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'One.' }] }],
+    },
   },
+  cover: null,
+  media: [],
+  seo: { title: {}, description: {}, keywords: { fr: [], en: [] } },
   missing: [],
 });
 
@@ -183,6 +188,22 @@ describe('AdminProjectsStore', (): void => {
     await expect(unpublishing).resolves.toBeNull();
     expect(store.conflict()).toBe(true);
   });
+
+  it('features a project through a revision of its own values, with If-Match', async (): Promise<void> => {
+    const { store, backend } = setup();
+    const published: AdminProject = project('a', 6, 'published');
+    const featuring: Promise<AdminProject | null> = store.feature(published, true);
+    const call: TestRequest = backend.expectOne(`${BASE}/a`);
+    expect(call.request.method).toBe('PUT');
+    expect(call.request.headers.get('if-match')).toBe('"6"');
+    // The rest of the revision is the project as loaded: only the feature changes.
+    expect(call.request.body).toEqual({
+      ...toRevisionRequest(toProjectDraft(published)),
+      featured: true,
+    });
+    call.flush({ ...project('a', 7, 'published'), featured: true });
+    await expect(featuring).resolves.toMatchObject({ featured: true, status: 'published' });
+  });
   it('discards stale success and failure after a newer project read or owner cancellation', async (): Promise<void> => {
     const { store, backend } = setup();
     const first: Promise<AdminProject | null> = store.loadOne('a');
@@ -203,15 +224,59 @@ describe('AdminProjectsStore', (): void => {
 
 describe('toAdminProject', (): void => {
   it('projects transport optional values and owns nested mutable collections', (): void => {
-    const dto: Omit<AdminProject, 'title'> & { title: { fr: string; en: undefined } } = {
+    const media: { id: string; src: string; width: number; height: number } = {
+      id: '3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90',
+      src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp',
+      width: 1200,
+      height: 800,
+    };
+    const dto: AdminProjectDto = {
       ...project('a'),
       title: { fr: 'Titre', en: undefined },
+      article: {
+        fr: {
+          type: 'doc',
+          content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Un.' }] }],
+        },
+      },
+      cover: { media: media.id, alt: { fr: 'Couverture', en: undefined } },
+      media: [media],
+      seo: {
+        title: { fr: 'Titre SEO', en: undefined },
+        description: { en: 'Description.' },
+        keywords: { fr: ['Flutter'] },
+      },
     };
     const view: AdminProject = toAdminProject(dto);
+    expect(view.seo).toEqual({
+      title: { fr: 'Titre SEO' },
+      description: { en: 'Description.' },
+      keywords: { fr: ['Flutter'], en: [] },
+    });
+    expect(Object.hasOwn(view.seo.title, 'en')).toBe(false);
+    expect(Object.hasOwn(view.seo.description, 'fr')).toBe(false);
+    const empty: { title: object; description: object; keywords: object } = {
+      title: {},
+      description: {},
+      keywords: { fr: [], en: [] },
+    };
+    // A content service older than the SEO contract answers without it, or without keywords.
+    const older: Partial<AdminProjectDto> = { ...dto };
+    delete older.seo;
+    expect(toAdminProject(older as AdminProjectDto).seo).toEqual(empty);
+    const withoutKeywords: unknown = { ...dto, seo: { title: {}, description: {} } };
+    expect(toAdminProject(withoutKeywords as AdminProjectDto).seo).toEqual(empty);
     expect(Object.hasOwn(view.title, 'en')).toBe(false);
+    expect(view.article.en).toBeNull();
+    expect(view.cover).toEqual({ media: media.id, alt: { fr: 'Couverture' } });
     dto.techs.push('changed');
-    dto.article.context.push({ fr: 'New paragraph' });
+    dto.article.fr.content.push({ type: 'horizontalRule' });
+    media.width = 1;
     expect(view.techs).not.toContain('changed');
-    expect(view.article.context).toHaveLength(1);
+    expect(view.article.fr.content).toHaveLength(1);
+    expect(view.media).toEqual([{ ...media, width: 1200 }]);
+    expect(
+      toAdminProject({ ...dto, article: { ...dto.article, en: dto.article.fr } }).article.en,
+    ).toEqual(dto.article.fr);
   });
 });

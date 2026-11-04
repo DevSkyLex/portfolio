@@ -338,7 +338,6 @@ export function specTypecheckViolations(
 const LIGHTWEIGHT_ENTRIES: Readonly<Record<string, readonly string[]>> = {
   '@vfortin/content-web-data-access': ['/src/lib/admin/'],
   '@vfortin/identity-web-data-access/http': ['/src/lib/state/'],
-  '@vfortin/contact-web-data-access/links': [],
 };
 
 /**
@@ -383,6 +382,48 @@ export function lightweightEntryPointViolations(workspace: Workspace): Violation
     }
     if (failure)
       violations.push({ rule: 'lightweight-entry-reachability', subject: entry, detail: failure });
+  }
+  return violations;
+}
+
+/**
+ * Constant PACKAGE_OWNERS
+ *
+ * @description
+ * Heavy or native packages confined to the one project that needs them (D40): the rich-text editor
+ * stays in the lazy content administration, image decoding in the content persistence adapters and
+ * the QR code encoder in the identity feature, behind the lazy security page (D17).
+ */
+const PACKAGE_OWNERS: readonly { readonly pattern: RegExp; readonly root: string }[] = [
+  { pattern: /^(?:@tiptap\/|prosemirror-)/, root: 'libs/frontend/content/feature-admin/' },
+  { pattern: /^sharp(?:\/|$)/, root: 'libs/backend/content/adapters-out/' },
+  { pattern: /^uqr(?:\/|$)/, root: 'libs/frontend/identity/feature/' },
+];
+
+/**
+ * Function packageOwnerViolations
+ *
+ * @description
+ * Rejects an import of a confined package outside its owning project, specs included, so that the
+ * editor cannot reach a public bundle and the native image library cannot reach another service.
+ *
+ * @param {Workspace} workspace - Normalized source graph.
+ * @returns {Violation[]} Imports of a confined package outside its owner.
+ */
+export function packageOwnerViolations(workspace: Workspace): Violation[] {
+  const violations: Violation[] = [];
+  for (const file of workspace.files) {
+    for (const ref of file.imports) {
+      const owner: { readonly pattern: RegExp; readonly root: string } | undefined =
+        PACKAGE_OWNERS.find(({ pattern }): boolean => pattern.test(ref.specifier));
+      if (owner && !file.path.startsWith(owner.root)) {
+        violations.push({
+          rule: 'package-owner',
+          subject: `${file.path}:${ref.line}`,
+          detail: `${ref.specifier} is confined to ${owner.root}`,
+        });
+      }
+    }
   }
   return violations;
 }

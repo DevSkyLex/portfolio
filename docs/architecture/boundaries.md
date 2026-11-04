@@ -33,7 +33,7 @@ The `@nx/enforce-module-boundaries` rule is configured in `eslint.config.mjs`. N
 
 A context reads nothing from another context except its `contracts`. The frontend never reaches `domain`, `application` or the adapters: no web layer allows them. On the web side only `data-access` reads contracts and Zod, so the browser bundle stays free of Zod (D10).
 
-Secondary entry points are the only public deep imports, each justified by a decision: `@vfortin/web-shell/server` and `@vfortin/content-web-data-access/server` (D10); `@vfortin/identity-web-data-access/http`, `@vfortin/contact-web-data-access/links` and `@vfortin/content-web-data-access/admin` (D18); `@vfortin/identity-web-data-access/session`, `@vfortin/content-web-data-access/navigation` and `@vfortin/contact-web-data-access/summary` (D38). A new one is added to `SECONDARY_ENTRY_POINTS` in `tools/architecture/src/support/rules.ts` with its reason.
+Secondary entry points are the only public deep imports, each justified by a decision: `@vfortin/web-shell/server` and `@vfortin/content-web-data-access/server` (D10); `@vfortin/identity-web-data-access/http` and `@vfortin/content-web-data-access/admin` (D18); `@vfortin/identity-web-data-access/session`, `@vfortin/content-web-data-access/navigation` and `@vfortin/contact-web-data-access/summary` (D38). A new one is added to `SECONDARY_ENTRY_POINTS` in `tools/architecture/src/support/rules.ts` with its reason.
 
 Inside a project, source imports use `@internal/<project-name>/*`, mapped to that project's `src/*` (D34). The web application also uses `@internal/web-snapshot/*` for its generated content snapshots outside `src`. These aliases are private to their owning project: they are not entry points and cannot be imported by another project. Public `@vfortin/*` aliases remain the only way to cross library boundaries. A project does not import its own public barrel.
 
@@ -59,7 +59,7 @@ summary ports. They import only the three D38 data-access secondaries; concrete 
 remain behind owner providers. Inbox mutations invalidate the owner's summary immediately, and errors
 remain explicit rather than turning into zero counts or empty search results.
 
-The content data-access root, contact links and identity HTTP entries have source-level eager
+The content data-access root and identity HTTP entries have source-level eager
 reachability checks: they may not statically reach Zod, NgRx, Angular SSR or their separated admin/state
 files. The check follows re-exports, public/private aliases and relative references; erased types and
 dynamic imports are distinct. It does not model Angular's template-level deferred import rewriting or
@@ -119,7 +119,7 @@ erased type re-exports as runtime dependencies.
 
 The architecture target also depends on `test-tooling`, which verifies the local explicit-type ESLint
 policy. Browser preview and disposable-stack lifecycle tests belong to `web-e2e:test-tooling`; snapshot
-collection tests belong to `web:test-snapshot`. CI runs these owner targets separately.
+collection and sitemap generator tests belong to `web:test-snapshot`. CI runs these owner targets separately.
 
 ## Backend file names
 

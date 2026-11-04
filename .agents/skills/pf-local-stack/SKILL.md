@@ -17,7 +17,7 @@ or a production configuration review. Those targets have different lifecycle own
   `traefik_proxy`. Services and Postgres stay off the shared edge; the database network is internal.
   Keep the project/router names, `APP_HOST`, internal `APP_PORT`, reviewed `TRUSTED_PROXIES` and image
   tag contract documented together. Do not broaden trusted proxies to an entire shared/private network.
-- Preserve Nginx's localized static routes, French-only CSR admin redirects, true 404s, CSP, cache and
+- Preserve Nginx's localized static routes, per-locale CSR admin (`/admin/`, `/en/admin/`), true 404s, CSP, cache and
   robots headers, forwarded HTTPS/client address and request IDs. A new location can alter inherited
   headers. The preview server models application route/header behavior, not the entire Nginx edge.
 - Service image and network changes must preserve the existing non-root, read-only filesystem,

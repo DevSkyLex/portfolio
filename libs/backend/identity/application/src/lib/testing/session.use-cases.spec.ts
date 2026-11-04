@@ -4,6 +4,7 @@ import {
   AdminAccount,
   LoginChallenge,
   TrustedDevice,
+  TwoFactorStateError,
   WeakPasswordError,
   type AdminAccountProps,
   type LoginChallengeProps,
@@ -15,8 +16,17 @@ import {
   ChallengeExpiredError,
   InvalidCredentialsError,
   InvalidSessionError,
+  PasswordMismatchError,
+  TotpInvalidError,
 } from '@internal/identity-application/lib/errors/application-error';
 import { BootstrapAdmin } from '@internal/identity-application/lib/use-cases/bootstrap-admin/bootstrap-admin.use-case';
+import { DisableTwoFactor } from '@internal/identity-application/lib/use-cases/disable-two-factor/disable-two-factor.use-case';
+import { EnableTwoFactor } from '@internal/identity-application/lib/use-cases/enable-two-factor/enable-two-factor.use-case';
+import { GetTwoFactorStatus } from '@internal/identity-application/lib/use-cases/get-two-factor-status/get-two-factor-status.use-case';
+import {
+  StartTwoFactorSetup,
+  type TwoFactorEnrollment,
+} from '@internal/identity-application/lib/use-cases/start-two-factor-setup/start-two-factor-setup.use-case';
 import {
   Login,
   type LoginCommand,
@@ -80,6 +90,10 @@ interface SessionFixtures {
   readonly verifyCode: VerifyLoginCode;
   readonly refresh: RefreshSession;
   readonly logout: Logout;
+  readonly startSetup: StartTwoFactorSetup;
+  readonly enable: EnableTwoFactor;
+  readonly disable: DisableTwoFactor;
+  readonly status: GetTwoFactorStatus;
   advance(ms: number): void;
   challenge(command?: Partial<LoginCommand>): Promise<string>;
   signIn(options?: {
@@ -95,9 +109,11 @@ interface SessionFixtures {
  * @description
  * Creates an in-memory identity store, deterministic session services, a bootstrapped administrator and the use cases exercised by the specifications.
  *
+ * @param {boolean} twoFactor - Whether the administrator has enrolled the one-time code (secret `SECRET`, step 0 accepted).
+ *
  * @returns {Promise<SessionFixtures>} Test fixtures with a mutable clock, spies and helpers.
  */
-async function setup(): Promise<SessionFixtures> {
+async function setup(twoFactor: boolean = true): Promise<SessionFixtures> {
   const store: InMemoryIdentityStore = new InMemoryIdentityStore();
   let n: number = 0;
   let counter: number = 0;
@@ -120,10 +136,14 @@ async function setup(): Promise<SessionFixtures> {
   const bootstrap: BootstrapAdmin = new BootstrapAdmin(
     store.accountRepository,
     fakeHasher,
-    fakeTotp,
     services.ids,
   );
   await bootstrap.execute('moi@exemple.fr', 'a-strong-password');
+  if (twoFactor) {
+    const created: AdminAccount | undefined = [...store.accounts.values()][0];
+    if (!created) throw new Error('account missing');
+    store.accounts.set(created.id, created.startTwoFactorSetup('SECRET').enableTwoFactor(0));
+  }
   const login: Login = new Login(store, services, fakeHasher, clock, 'h:decoy');
   const verifyCode: VerifyLoginCode = new VerifyLoginCode(store, services, fakeTotp, clock);
   /**
@@ -184,6 +204,10 @@ async function setup(): Promise<SessionFixtures> {
     signIn,
     refresh: new RefreshSession(store, services, clock),
     logout: new Logout(store, services.codec, clock),
+    startSetup: new StartTwoFactorSetup(store, fakeHasher, fakeTotp, clock),
+    enable: new EnableTwoFactor(store, fakeTotp, clock),
+    disable: new DisableTwoFactor(store, fakeHasher, fakeTotp, clock),
+    status: new GetTwoFactorStatus(store),
   };
 }
 
@@ -653,32 +677,250 @@ describe('Logout', (): void => {
 });
 
 describe('BootstrapAdmin', (): void => {
-  it('creates the account only once, with a normalized address and a provisioning URI', async (): Promise<void> => {
-    const { bootstrap, store } = await setup();
-    expect(account(store)).toMatchObject({ email: 'moi@exemple.fr', totpSecret: 'SECRET' });
+  it('creates the account only once, with a normalized address and no second factor', async (): Promise<void> => {
+    const { bootstrap, store } = await setup(false);
+    expect(account(store)).toMatchObject({
+      email: 'moi@exemple.fr',
+      totpSecret: null,
+      pendingTotpSecret: null,
+    });
     await expect(bootstrap.execute('b@exemple.fr', 'another-password')).rejects.toBeInstanceOf(
       AlreadyBootstrappedError,
     );
   });
 
-  it('applies the password policy and returns the TOTP enrolment', async (): Promise<void> => {
+  it('applies the password policy and returns the address only', async (): Promise<void> => {
     const store: InMemoryIdentityStore = new InMemoryIdentityStore();
-    const bootstrap: BootstrapAdmin = new BootstrapAdmin(
-      store.accountRepository,
-      fakeHasher,
-      fakeTotp,
-      {
-        next: (): string => 'a1',
-      },
-    );
+    const bootstrap: BootstrapAdmin = new BootstrapAdmin(store.accountRepository, fakeHasher, {
+      next: (): string => 'a1',
+    });
     await expect(bootstrap.execute('moi@exemple.fr', 'short')).rejects.toBeInstanceOf(
       WeakPasswordError,
     );
     await expect(bootstrap.execute(' Moi@Exemple.fr', 'a-strong-password')).resolves.toEqual({
       email: 'moi@exemple.fr',
-      totpSecret: 'SECRET',
-      provisioningUri: 'otpauth://totp/Portfolio:moi@exemple.fr?secret=SECRET',
     });
     expect(store.accounts.get('a1')).toBeInstanceOf(AdminAccount);
+  });
+});
+
+describe('Login without a second factor', (): void => {
+  it('opens the session after the password alone and resets the failures', async (): Promise<void> => {
+    const { login, store } = await setup(false);
+    withFailures(store, 3);
+    const session: Session = sessionOf(await login.execute({ ...good, remember: false }));
+    expect(session.persistent).toBe(false);
+    expect(session.access.token).toMatch(/^jwt-id-1-/);
+    expect(account(store)).toMatchObject({ failedAttempts: 0, lastTotpStep: 0 });
+    expect(store.challenges.size).toBe(0);
+    expect(store.families.size).toBe(1);
+  });
+
+  it('opens a remembered session and ignores a device cookie', async (): Promise<void> => {
+    const { login } = await setup(false);
+    const session: Session = sessionOf(
+      await login.execute({ ...good, deviceToken: 'unknown-device' }),
+    );
+    expect(session.persistent).toBe(true);
+    expect(session.refreshExpiresAt).toEqual(new Date(START + 30 * DAY));
+  });
+
+  it('still counts a wrong password and locks the account', async (): Promise<void> => {
+    const { login, store } = await setup(false);
+    for (let i: number = 0; i < 5; i++) {
+      await expect(login.execute({ ...good, password: 'wrong' })).rejects.toBeInstanceOf(
+        InvalidCredentialsError,
+      );
+    }
+    await expect(login.execute(good)).rejects.toBeInstanceOf(AccountLockedError);
+    expect(store.families.size).toBe(0);
+  });
+
+  it('refuses a challenge opened before the second factor was turned off', async (): Promise<void> => {
+    const { challenge, verifyCode, disable } = await setup();
+    const value: string = await challenge();
+    await disable.execute({ accountId: 'id-1', password: good.password, totp: 'step-5' });
+    await expect(
+      verifyCode.execute({ challenge: value, totp: 'step-10', trustDevice: false }),
+    ).rejects.toBeInstanceOf(ChallengeExpiredError);
+  });
+});
+
+describe('StartTwoFactorSetup', (): void => {
+  it('checks the password under the account lock and stores a pending secret', async (): Promise<void> => {
+    const { startSetup, store } = await setup(false);
+    store.locked.length = 0;
+    const enrollment: TwoFactorEnrollment = await startSetup.execute({
+      accountId: 'id-1',
+      password: good.password,
+    });
+    expect(enrollment).toEqual({
+      secret: 'SECRET',
+      provisioningUri: 'otpauth://totp/Portfolio:moi@exemple.fr?secret=SECRET',
+    });
+    expect(store.locked).toEqual(['account:id-1']);
+    expect(account(store)).toMatchObject({ totpSecret: null, pendingTotpSecret: 'SECRET' });
+  });
+
+  it('replaces a previous pending secret', async (): Promise<void> => {
+    const { startSetup, store } = await setup(false);
+    await startSetup.execute({ accountId: 'id-1', password: good.password });
+    vi.spyOn(fakeTotp, 'generateSecret').mockReturnValueOnce('NEWER');
+    await startSetup.execute({ accountId: 'id-1', password: good.password });
+    expect(account(store)?.pendingTotpSecret).toBe('NEWER');
+  });
+
+  it('counts a wrong password towards the lockout, then answers like a locked login', async (): Promise<void> => {
+    const { startSetup, store, login } = await setup(false);
+    await expect(
+      startSetup.execute({ accountId: 'id-1', password: 'wrong' }),
+    ).rejects.toBeInstanceOf(PasswordMismatchError);
+    expect(account(store)).toMatchObject({ failedAttempts: 1, pendingTotpSecret: null });
+    for (let i: number = 1; i < 5; i++) {
+      await expect(
+        startSetup.execute({ accountId: 'id-1', password: 'wrong' }),
+      ).rejects.toBeInstanceOf(PasswordMismatchError);
+    }
+    await expect(
+      startSetup.execute({ accountId: 'id-1', password: good.password }),
+    ).rejects.toBeInstanceOf(AccountLockedError);
+    await expect(login.execute(good)).rejects.toBeInstanceOf(AccountLockedError);
+  });
+
+  it('refuses while the second factor is on, and for an unknown account', async (): Promise<void> => {
+    const { startSetup } = await setup();
+    await expect(
+      startSetup.execute({ accountId: 'id-1', password: good.password }),
+    ).rejects.toBeInstanceOf(TwoFactorStateError);
+    await expect(
+      startSetup.execute({ accountId: 'absent', password: good.password }),
+    ).rejects.toBeInstanceOf(InvalidSessionError);
+  });
+});
+
+describe('EnableTwoFactor', (): void => {
+  it('activates the pending secret with a fresh code, then the login asks for it', async (): Promise<void> => {
+    const { startSetup, enable, store, login, status } = await setup(false);
+    await startSetup.execute({ accountId: 'id-1', password: good.password });
+    await expect(enable.execute({ accountId: 'id-1', totp: 'SECRET:step-7' })).resolves.toBe(
+      undefined,
+    );
+    expect(account(store)).toMatchObject({
+      totpSecret: 'SECRET',
+      pendingTotpSecret: null,
+      lastTotpStep: 7,
+    });
+    await expect(status.execute('id-1')).resolves.toEqual({ enabled: true });
+    expect((await login.execute(good)).status).toBe('totp-required');
+  });
+
+  it('refuses a code of another secret or a replayed step, without counting a failure', async (): Promise<void> => {
+    const { startSetup, enable, store } = await setup(false);
+    await startSetup.execute({ accountId: 'id-1', password: good.password });
+    await expect(
+      enable.execute({ accountId: 'id-1', totp: 'OTHER:step-7' }),
+    ).rejects.toBeInstanceOf(TotpInvalidError);
+    await expect(enable.execute({ accountId: 'id-1', totp: 'wrong' })).rejects.toBeInstanceOf(
+      TotpInvalidError,
+    );
+    await expect(enable.execute({ accountId: 'id-1', totp: 'step-0' })).rejects.toBeInstanceOf(
+      TotpInvalidError,
+    );
+    expect(account(store)).toMatchObject({
+      totpSecret: null,
+      pendingTotpSecret: 'SECRET',
+      failedAttempts: 0,
+    });
+  });
+
+  it('refuses without a pending setup, while active, and for an unknown account', async (): Promise<void> => {
+    const { enable } = await setup(false);
+    await expect(enable.execute({ accountId: 'id-1', totp: 'step-7' })).rejects.toBeInstanceOf(
+      TwoFactorStateError,
+    );
+    await expect(enable.execute({ accountId: 'absent', totp: 'step-7' })).rejects.toBeInstanceOf(
+      InvalidSessionError,
+    );
+    const active: SessionFixtures = await setup();
+    await expect(
+      active.enable.execute({ accountId: 'id-1', totp: 'step-7' }),
+    ).rejects.toBeInstanceOf(TwoFactorStateError);
+  });
+});
+
+describe('DisableTwoFactor', (): void => {
+  it('removes the secret and forgets every trusted device of the account', async (): Promise<void> => {
+    const { signIn, disable, store, login, status } = await setup();
+    await signIn({ trustDevice: true });
+    store.devices.set(
+      '#other',
+      TrustedDevice.trust({ id: 'd', accountId: 'other', tokenHash: '#other' }, new Date(START)),
+    );
+    await disable.execute({ accountId: 'id-1', password: good.password, totp: 'step-11' });
+    expect(account(store)).toMatchObject({
+      totpSecret: null,
+      pendingTotpSecret: null,
+      lastTotpStep: 0,
+    });
+    expect([...store.devices.keys()]).toEqual(['#other']);
+    await expect(status.execute('id-1')).resolves.toEqual({ enabled: false });
+    expect((await login.execute(good)).status).toBe('authenticated');
+  });
+
+  it('lets a new secret be enabled in the same step as the removal', async (): Promise<void> => {
+    const { signIn, disable, startSetup, enable, store } = await setup();
+    await signIn();
+    await disable.execute({ accountId: 'id-1', password: good.password, totp: 'step-11' });
+    await startSetup.execute({ accountId: 'id-1', password: good.password });
+    await expect(enable.execute({ accountId: 'id-1', totp: 'SECRET:step-11' })).resolves.toBe(
+      undefined,
+    );
+    expect(account(store)).toMatchObject({ totpSecret: 'SECRET', lastTotpStep: 11 });
+  });
+
+  it('counts a wrong password or a wrong or replayed code towards the lockout', async (): Promise<void> => {
+    const { signIn, disable, store } = await setup();
+    await signIn();
+    await expect(
+      disable.execute({ accountId: 'id-1', password: 'wrong', totp: 'step-11' }),
+    ).rejects.toBeInstanceOf(PasswordMismatchError);
+    await expect(
+      disable.execute({ accountId: 'id-1', password: good.password, totp: 'wrong' }),
+    ).rejects.toBeInstanceOf(TotpInvalidError);
+    await expect(
+      disable.execute({ accountId: 'id-1', password: good.password, totp: 'step-10' }),
+    ).rejects.toBeInstanceOf(TotpInvalidError);
+    expect(account(store)).toMatchObject({ failedAttempts: 3, totpSecret: 'SECRET' });
+  });
+
+  it('answers a locked account like a locked login, even with both factors right', async (): Promise<void> => {
+    const { disable, store } = await setup();
+    withFailures(store, 4);
+    await expect(
+      disable.execute({ accountId: 'id-1', password: 'wrong', totp: 'step-1' }),
+    ).rejects.toBeInstanceOf(PasswordMismatchError);
+    await expect(
+      disable.execute({ accountId: 'id-1', password: good.password, totp: 'step-1' }),
+    ).rejects.toBeInstanceOf(AccountLockedError);
+    expect(account(store)?.totpSecret).toBe('SECRET');
+  });
+
+  it('refuses while the second factor is off, and for an unknown account', async (): Promise<void> => {
+    const { disable } = await setup(false);
+    await expect(
+      disable.execute({ accountId: 'id-1', password: good.password, totp: 'step-1' }),
+    ).rejects.toBeInstanceOf(TwoFactorStateError);
+    await expect(
+      disable.execute({ accountId: 'absent', password: good.password, totp: 'step-1' }),
+    ).rejects.toBeInstanceOf(InvalidSessionError);
+  });
+});
+
+describe('GetTwoFactorStatus', (): void => {
+  it('reports the state, and refuses an unknown account', async (): Promise<void> => {
+    const { status, startSetup } = await setup(false);
+    await startSetup.execute({ accountId: 'id-1', password: good.password });
+    await expect(status.execute('id-1')).resolves.toEqual({ enabled: false });
+    await expect(status.execute('absent')).rejects.toBeInstanceOf(InvalidSessionError);
   });
 });

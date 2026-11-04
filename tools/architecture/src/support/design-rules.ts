@@ -23,9 +23,9 @@ export interface DesignViolation {
    * @description
    * Stable identifier of the rule.
    *
-   * @type {'palette-colour' | 'raw-colour' | 'centred-text'}
+   * @type {'palette-colour' | 'raw-colour' | 'ink-state' | 'centred-text'}
    */
-  readonly rule: 'palette-colour' | 'raw-colour' | 'centred-text';
+  readonly rule: 'palette-colour' | 'raw-colour' | 'ink-state' | 'centred-text';
 
   /**
    * Property file
@@ -58,7 +58,7 @@ export interface DesignViolation {
  * Tailwind utility prefixes that take a colour; the value after the prefix must be a token.
  */
 const COLOUR_UTILITIES: RegExp =
-  /^(?:bg|text|border(?:-[trblxyse])?|ring|ring-offset|outline|fill|stroke|decoration|accent|caret|divide|placeholder|from|via|to|shadow|inset-shadow)-(.+)$/;
+  /^(?:bg|text|border(?:-[trblxyse])?|ring|ring-offset|inset-ring|outline|fill|stroke|decoration|accent|caret|divide|placeholder|from|via|to|shadow|inset-shadow)-(.+)$/;
 
 /**
  * Constant TAILWIND_PALETTE
@@ -76,6 +76,15 @@ const TAILWIND_PALETTE: RegExp =
  * CSS keywords allowed as colours: they reuse a colour already resolved from a token.
  */
 const KEYWORD_COLOURS: Set<string> = new Set(['current', 'transparent', 'inherit']);
+
+/**
+ * Constant INK_STATE
+ *
+ * @description
+ * A faint ink background (`bg-fg/5`): hover, pressed and selected states take `surface-hover` and
+ * `surface-selected` instead (D41), so that every state shares one tint.
+ */
+const INK_STATE: RegExp = /^!?bg-fg\/(?:[0-9]|1[0-2])(?:\.\d+)?!?$/;
 
 /**
  * Constant RAW_COLOUR
@@ -138,8 +147,8 @@ export function themeColourTokens(themeCss: string): ReadonlySet<string> {
  * Function colourViolations
  *
  * @description
- * Flags colour utilities that name a Tailwind palette colour instead of a token, and raw colours in
- * arbitrary values.
+ * Flags colour utilities that name a Tailwind palette colour instead of a token, raw colours in
+ * arbitrary values and faint ink states that belong to `surface-hover` / `surface-selected` (D41).
  *
  * @param {string} file - Workspace-relative path, reported in the violations.
  * @param {string} text - Source of the file.
@@ -165,6 +174,9 @@ export function colourViolations(
     }
     if (/^[a-z-]+-\[/.test(utility) && RAW_COLOUR.test(utility)) {
       violations.push({ rule: 'raw-colour', file, token: raw });
+    }
+    if (INK_STATE.test(raw.slice(raw.lastIndexOf(':') + 1))) {
+      violations.push({ rule: 'ink-state', file, token: raw });
     }
   }
   return violations;

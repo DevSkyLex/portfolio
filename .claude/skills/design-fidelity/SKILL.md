@@ -20,7 +20,7 @@ Codex counterpart: `.codex/references/design-fidelity.md`; change one, change bo
   transcribed in `libs/frontend/design-tokens/src/theme.css`, which is what the code uses.
 - Plain-page constraints agreed on the mockup: one hierarchy, factual copy, no eyebrow labels, numbering,
   slogan titles, repeated contact calls or bracket placeholders; at most one motion accent per section;
-  equal visual gaps between sections; one 10 px radius for buttons, selects and fields.
+  equal visual gaps between sections; radii from the D43 scale (8 px for buttons, selects and fields, 12 px for cards).
 
 ## Serve both pages
 

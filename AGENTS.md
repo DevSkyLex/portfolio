@@ -46,7 +46,7 @@ procedures, never over the hard limits.
   bounded responsibility with explicit files and checks. Reviewers and auditors are read-only.
 - **Language**: code, comments, docs, prompts, tests, logs, routes, commits and PR text in English;
   public UI copy is French source with explicit `@@` ids and English targets in
-  `apps/web/src/locale/messages.en.xlf`; the admin UI is French only.
+  `apps/web/src/locale/messages.en.xlf`, the admin UI included (`@@admin.<area>.<key>`, D18).
 - **Hard limits** (never without the user's explicit request in this conversation; the hooks refuse most
   of them): no commit unless asked; no push to `main`, merge into it or `gh pr merge` (`main` deploys); no
   deployment (deploy or site-build workflows, Ansible playbooks, `docker/compose.prod.yml`, deployment

@@ -7,9 +7,9 @@ deploy_user: deploy
 # here is revoked on the next provisioning. Provisioning refuses an empty list.
 deploy_authorized_keys: []
 
-app_root: "{{ lookup('ansible.builtin.env', 'VPS_APP_DIR') | default('/srv/portfolio', true) }}"
-site_root: /srv/site
-backup_root: /srv/backups
+app_root: "{{ lookup('ansible.builtin.env', 'VPS_APP_DIR') | default('/srv/apps/portfolio/production', true) }}"
+site_root: '{{ app_root }}/site'
+backup_root: '{{ app_root }}/backups'
 
 registry: ghcr.io/devskylex
 site_build_repository: DevSkyLex/portfolio

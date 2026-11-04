@@ -1,0 +1,61 @@
+<form class="flex flex-col gap-5" novalidate (submit)="onSubmit($event)">
+  <div uiDialogHeader variant="bar">
+    <h2 uiDialogTitle class="font-sans text-[16px]/6 font-semibold">
+      {{ title }}
+    </h2>
+  </div>
+  @let hrefError = error();
+  <ui-field
+    size="sm"
+    i18n-label="@@admin.article.linkDialog.href"
+    label="Adresse"
+    controlId="link-href"
+    i18n-hint="@@admin.article.linkDialog.hrefHint"
+    hint="En https:// ou mailto:."
+    [required]="true"
+    [error]="hrefError"
+  >
+    <input
+      uiInput
+      size="sm"
+      class="font-mono text-[13px]"
+      id="link-href"
+      type="url"
+      placeholder="https://"
+      aria-required="true"
+      [attr.aria-describedby]="hrefError ? 'link-href-error' : 'link-href-hint'"
+      [attr.aria-invalid]="hrefError ? 'true' : null"
+      [formField]="link.href"
+    />
+  </ui-field>
+  <div uiDialogFooter variant="bar">
+    <ui-kbd-hint [keys]="[escapeKey]" i18n-label="@@admin.article.dialog.cancel" label="Annuler" />
+    <div class="ml-auto flex flex-wrap items-center gap-2">
+      @if (data.removable) {
+        <button
+          uiBtn
+          variant="ghost"
+          size="sm"
+          class="h-8 rounded-sm px-3 text-[13px]"
+          type="button"
+          i18n="@@admin.article.linkDialog.remove"
+          (click)="remove()"
+        >
+          Retirer le lien
+        </button>
+      }
+      <button uiBtn uiDialogClose variant="ghost" size="sm" class="h-8 rounded-sm px-3 text-[13px]">
+        <ng-container i18n="@@admin.article.dialog.cancel">Annuler</ng-container>
+      </button>
+      <button
+        uiBtn
+        size="sm"
+        class="h-8 rounded-sm px-3 text-[13px]"
+        type="submit"
+        i18n="@@admin.article.dialog.apply"
+      >
+        Appliquer
+      </button>
+    </div>
+  </div>
+</form>

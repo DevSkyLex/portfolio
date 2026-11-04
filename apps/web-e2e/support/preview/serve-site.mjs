@@ -1,4 +1,4 @@
-// Built-site preview for browser tests. Mirrors static/admin routing and cache headers from
+// Built-site preview for browser tests. Mirrors static/admin/media routing and cache headers from
 // docker/nginx/snippets/site.conf; APIs answer 404 because this server has no services.
 import { createReadStream, existsSync, realpathSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -21,9 +21,13 @@ const TYPES = {
   '.webp': 'image/webp',
   '.avif': 'image/avif',
   '.txt': 'text/plain; charset=utf-8',
-  '.xml': 'application/xml',
+  // Nginx mime.types and `charset utf-8` (docker/nginx/snippets/site.conf): sitemap.xml (D42).
+  '.xml': 'text/xml; charset=utf-8',
   '.webmanifest': 'application/manifest+json',
 };
+
+/** Uploaded image names (D40), the only files served under `/media/`. */
+const MEDIA_NAME = /^\/media\/[0-9a-f-]{36}(?:-960)?\.webp$/;
 
 /**
  * Resolves regular files within the root, including after symlink resolution, so adjacent files
@@ -69,13 +73,37 @@ function send(request, response, file, status, headers) {
 }
 
 /**
- * Creates an unbound preview server. Callers own its lifecycle. It models static/admin routes and
- * caching, not Nginx TLS, rate limits, compression, maintenance mode or API proxying.
+ * Answers the localized prerendered not-found page with its real status.
+ * @param {import('node:http').IncomingMessage} request - Incoming preview request.
+ * @param {import('node:http').ServerResponse} response - Outgoing response.
+ * @param {string} root - Absolute real site root.
+ * @param {string} pathname - Decoded request path.
+ * @returns {void}
+ */
+function sendNotFound(request, response, root, pathname) {
+  const errorPath = pathname.startsWith('/en/')
+    ? 'en/error/404/index.html'
+    : 'error/404/index.html';
+  const notFound = siteFile(root, errorPath);
+  if (notFound) send(request, response, notFound, 404, { 'cache-control': 'no-store' });
+  else {
+    response.writeHead(404, { 'cache-control': 'no-store' });
+    response.end();
+  }
+}
+
+/**
+ * Creates an unbound preview server. Callers own its lifecycle. It models static/admin/media routes
+ * and caching, not Nginx TLS, rate limits, compression, maintenance mode or API proxying.
  * @param {string} directory - Browser output containing the CSR shell and prerendered pages.
+ * @param {{ mediaDirectory?: string }} [options] - Directory of uploaded images served at `/media/`;
+ *   without it (or when it does not exist) every `/media/` path answers 404.
  * @returns {import('node:http').Server} Server ready to bind to a caller-selected port.
  */
-export function createSiteServer(directory) {
+export function createSiteServer(directory, { mediaDirectory } = {}) {
   const root = realpathSync(resolve(directory));
+  const media =
+    mediaDirectory && existsSync(mediaDirectory) ? realpathSync(resolve(mediaDirectory)) : null;
   return createServer((request, response) => {
     let pathname;
     try {
@@ -96,13 +124,31 @@ export function createSiteServer(directory) {
       );
       return;
     }
-    if (pathname === '/admin' || pathname === '/en/admin' || pathname.startsWith('/en/admin/')) {
-      response.writeHead(301, { location: '/admin/' });
+    if (pathname.startsWith('/media/')) {
+      const image =
+        media && MEDIA_NAME.test(pathname)
+          ? siteFile(media, pathname.slice('/media/'.length))
+          : null;
+      if (image)
+        send(request, response, image, 200, {
+          'cache-control': 'public, max-age=31536000, immutable',
+          'x-content-type-options': 'nosniff',
+        });
+      else sendNotFound(request, response, root, pathname);
+      return;
+    }
+    if (pathname === '/admin' || pathname === '/en/admin') {
+      response.writeHead(301, { location: `${pathname}/` });
       response.end();
       return;
     }
-    if (pathname.startsWith('/admin/')) {
-      const index = siteFile(root, 'index.csr.html');
+    // Each locale build serves its own client-rendered administration (French at /admin/, English
+    // at /en/admin/).
+    if (pathname.startsWith('/admin/') || pathname.startsWith('/en/admin/')) {
+      const index = siteFile(
+        root,
+        pathname.startsWith('/en/') ? 'en/index.csr.html' : 'index.csr.html',
+      );
       if (index)
         send(request, response, index, 200, {
           'cache-control': 'no-store',
@@ -125,7 +171,10 @@ export function createSiteServer(directory) {
       const hashed = /-[A-Za-z0-9_-]{8}\.(?:js|css|woff2|png|jpe?g|webp|avif|svg|ico)$/.test(
         pathname,
       );
+      // The unhashed administration stylesheet of each locale (D31) is revalidated like the pages.
       const asset =
+        pathname !== '/admin.css' &&
+        pathname !== '/en/admin.css' &&
         /\.(?:js|css|woff2?|png|jpe?g|webp|avif|gif|svg|ico|txt|xml|webmanifest)$/i.test(pathname);
       send(request, response, found, 200, {
         'cache-control': hashed
@@ -136,22 +185,17 @@ export function createSiteServer(directory) {
       });
       return;
     }
-    const errorPath = pathname.startsWith('/en/')
-      ? 'en/error/404/index.html'
-      : 'error/404/index.html';
-    const notFound = siteFile(root, errorPath);
-    if (notFound) send(request, response, notFound, 404, { 'cache-control': 'no-store' });
-    else {
-      response.writeHead(404, { 'cache-control': 'no-store' });
-      response.end();
-    }
+    sendNotFound(request, response, root, pathname);
   });
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const directory = process.argv[2] ?? 'dist/apps/web/browser';
   const port = Number(process.argv[3] ?? 4200);
-  createSiteServer(directory).listen(port, '127.0.0.1', () =>
-    console.log(`Site served on http://localhost:${port} (${directory})`),
+  // Uploaded images, for instance the content service's CONTENT_MEDIA_DIR (optional).
+  const mediaDirectory = process.env['MEDIA_DIR'] || undefined;
+  const served = mediaDirectory ? `${directory}, media ${mediaDirectory}` : directory;
+  createSiteServer(directory, { mediaDirectory }).listen(port, '127.0.0.1', () =>
+    console.log(`Site served on http://localhost:${port} (${served})`),
   );
 }

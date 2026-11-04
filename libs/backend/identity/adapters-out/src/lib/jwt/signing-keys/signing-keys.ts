@@ -1,4 +1,10 @@
-import type { AccessToken, TokenSigner } from '@vfortin/identity-application';
+import type {
+  AccessToken,
+  ResourceTokenClaims,
+  ResourceTokenSigner,
+  TokenSigner,
+} from '@vfortin/identity-application';
+import { formatScopes } from '@vfortin/identity-domain';
 import { SignJWT } from 'jose';
 import {
   type KeyObject,
@@ -284,6 +290,78 @@ export class JoseTokenSigner implements TokenSigner {
       .setJti(randomUUID())
       .sign(this.keys.signing.key);
     return { token, expiresIn: ACCESS_TTL_SECONDS };
+  }
+  // #endregion
+}
+
+/**
+ * Constant RESOURCE_ACCESS_TTL_SECONDS
+ *
+ * @description
+ * Lifetime of an MCP access token, in seconds (D45): as short as the administrator's, since revoking a
+ * connected application only stops its refreshes; `@vfortin/backend-auth` checks the same age.
+ *
+ * @type {number}
+ */
+export const RESOURCE_ACCESS_TTL_SECONDS = 300 as const;
+
+/**
+ * Class JoseResourceTokenSigner
+ * @class JoseResourceTokenSigner
+ * @implements ResourceTokenSigner
+ *
+ * @description
+ * Signs MCP access tokens (RFC 9068) with the identity keys: `typ: at+jwt`, EdDSA, `aud` the resource
+ * (RFC 8707), `client_id` and `scope`, and neither `role` nor `sid`, so the administrator guard
+ * refuses them on two counts (audience and shape).
+ */
+export class JoseResourceTokenSigner implements ResourceTokenSigner {
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Stores the signing key and the issuer.
+   *
+   * @param {SigningKeys} keys - Current private key and key identifier.
+   * @param {string} issuer - Issuer claim.
+   */
+  public constructor(
+    private readonly keys: SigningKeys,
+    private readonly issuer: string,
+  ) {}
+  // #endregion
+
+  // #region Methods
+  /**
+   * Method sign
+   * @method sign
+   *
+   * @description
+   * Signs a token for the administrator, the client, the scopes and the resource.
+   *
+   * @param {ResourceTokenClaims} claims - Token statements.
+   * @param {Date} now - Issuance time.
+   *
+   * @returns {Promise<AccessToken>} Signed token and its lifetime.
+   */
+  public async sign(claims: ResourceTokenClaims, now: Date): Promise<AccessToken> {
+    const issuedAt: number = Math.floor(now.getTime() / 1000);
+    const token: string = await new SignJWT({
+      client_id: claims.clientId,
+      scope: formatScopes(claims.scopes),
+    })
+      .setProtectedHeader({ alg: 'EdDSA', kid: this.keys.signing.kid, typ: ACCESS_TOKEN_TYPE })
+      .setSubject(claims.accountId)
+      .setIssuer(this.issuer)
+      .setAudience(claims.resource)
+      .setIssuedAt(issuedAt)
+      .setNotBefore(issuedAt)
+      .setExpirationTime(issuedAt + RESOURCE_ACCESS_TTL_SECONDS)
+      .setJti(randomUUID())
+      .sign(this.keys.signing.key);
+    return { token, expiresIn: RESOURCE_ACCESS_TTL_SECONDS };
   }
   // #endregion
 }

@@ -90,7 +90,7 @@ npx nx run-many -t serve -p content-service contact-service identity-service
 npx nx serve web
 ```
 
-The web development server uses port 4200; content, contact and identity use ports 3101, 3102 and 3103 respectively. See the individual service examples and [operations documentation](docs/operations/deployment.md) for configuration.
+The web development server uses port 4200; content, contact and identity use ports 3101, 3102 and 3103 respectively. Restart `npx nx serve web` after a change of the build options in `apps/web/project.json` (styles included: the admin's `admin.css` entry is only served by a server started after it was added, see [generators](docs/workspace/generators.md)). See the individual service examples and [operations documentation](docs/operations/deployment.md) for configuration.
 
 ## Verify changes
 

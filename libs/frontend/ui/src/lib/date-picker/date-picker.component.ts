@@ -410,8 +410,8 @@ export class DatePickerComponent implements FormValueControl<Date | null> {
     cn(
       inputVariants({ size: this.size() }),
       'inline-flex cursor-pointer items-center justify-between gap-3 text-left',
-      this.open() && 'border-signal/55',
-      !this.value() && 'text-star-faint',
+      this.open() && 'border-accent/55',
+      !this.value() && 'text-fg-faint',
     ),
   );
   // #endregion

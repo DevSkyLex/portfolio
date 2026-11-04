@@ -1,0 +1,63 @@
+<form class="flex flex-col gap-5" novalidate (submit)="submit($event)">
+  @let codeError = error();
+  <ui-field
+    size="sm"
+    label="Code à six chiffres"
+    i18n-label="@@admin.identity.code.label"
+    controlId="two-factor-enable-totp"
+    hint="Le code affiché par l’application pour ce compte."
+    i18n-hint="@@admin.security.enable.codeHint"
+    [required]="true"
+    [error]="codeError"
+  >
+    <ui-input-otp
+      controlId="two-factor-enable-totp"
+      ariaLabel="Code à six chiffres"
+      i18n-ariaLabel="@@admin.identity.code.label"
+      [ariaDescribedby]="codeError ? 'two-factor-enable-totp-error' : 'two-factor-enable-totp-hint'"
+      [formField]="codeForm.totp"
+      (completed)="submit()"
+    >
+      <div uiInputOtpGroup>
+        <ui-input-otp-slot [index]="0" />
+        <ui-input-otp-slot [index]="1" />
+        <ui-input-otp-slot [index]="2" />
+      </div>
+      <ui-input-otp-separator />
+      <div uiInputOtpGroup>
+        <ui-input-otp-slot [index]="3" />
+        <ui-input-otp-slot [index]="4" />
+        <ui-input-otp-slot [index]="5" />
+      </div>
+    </ui-input-otp>
+  </ui-field>
+  <div uiDialogFooter variant="bar">
+    <ui-kbd-hint [keys]="escapeKeys" label="Annuler" i18n-label="@@admin.security.cancelHint" />
+    <div class="ml-auto flex flex-wrap items-center gap-2">
+      <button
+        uiBtn
+        variant="ghost"
+        size="sm"
+        class="h-8 rounded-sm px-3 text-[13px]"
+        type="button"
+        (click)="cancelled.emit()"
+        i18n="@@admin.security.cancel"
+      >
+        Annuler
+      </button>
+      <button
+        uiBtn
+        size="sm"
+        class="h-8 rounded-sm px-3 text-[13px]"
+        type="submit"
+        [disabled]="pending()"
+      >
+        @if (pending()) {
+          <ng-container i18n="@@admin.security.enable.submitting">Activation…</ng-container>
+        } @else {
+          <ng-container i18n="@@admin.security.enable.submit">Activer</ng-container>
+        }
+      </button>
+    </div>
+  </div>
+</form>

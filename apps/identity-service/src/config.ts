@@ -16,8 +16,13 @@ const IdentityServiceConfigSchema = z.object({
   IDENTITY_KEYS_DIR: z.string().min(1),
   /** Key that signs new tokens; the directory's other keys stay published. */
   IDENTITY_SIGNING_KID: z.string().regex(/^[\w-]{1,64}$/),
-  /** Token issuer, verified by the other services. */
+  /** Token issuer, verified by the other services, and OAuth authorization server issuer (D45). */
   IDENTITY_ISSUER: z.url(),
+  /**
+   * MCP resource the OAuth server issues tokens for (RFC 8707, D45); defaults to the issuer's origin
+   * followed by `/api/content/mcp`.
+   */
+  IDENTITY_MCP_RESOURCE: z.url().optional(),
   /** `Secure` cookie: can only be disabled for HTTP development. */
   IDENTITY_COOKIE_SECURE: z
     .enum(['true', 'false'])

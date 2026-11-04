@@ -63,9 +63,9 @@ Load a skill with the `Skill` tool when its subject comes up, not before reading
 
 ## Judge
 
-- Typography (Unbounded titles, Host Grotesk body, Martian Mono details; sizes and line heights),
-  spacing (equal gaps between sections), grid alignment, radii (one 10 px radius for buttons, selects and
-  fields; pills for header links and tags), borders on `--line`, focus style (solid border plus a faint
+- Typography (Geist titles and body, Geist Mono details, D21; sizes and line heights),
+  spacing (equal gaps between sections), grid alignment, radii (the D43 scale: 8 px for buttons, selects and
+  fields, 12 px for cards; pills for header links and tags), borders on `--line`, focus style (solid border plus a faint
   ring), header bar behaviour, footer structure.
 - Plain-page constraints from the mockup review: no eyebrow labels, no numbering, no slogan titles, no
   repeated contact calls, no bracket placeholders, at most one motion accent per section.

@@ -1,0 +1,43 @@
+{
+  "kind": "experience",
+  "version": 4,
+  "totalItems": 2,
+  "member": [
+    {
+      "id": "object-as-a-service",
+      "kind": "experience",
+      "position": 0,
+      "version": 2,
+      "title": {
+        "fr": "Développeur web fullstack, Object as a Service",
+        "en": "Full-stack web developer, Object as a Service"
+      },
+      "place": { "fr": "Clerlande, à distance", "en": "Clerlande, remote" },
+      "description": {
+        "fr": "Front-end Angular et back-end Django d’IOTPlatform.",
+        "en": "The Angular front end and Django back end of IOTPlatform."
+      },
+      "start": { "year": 2023, "month": 9 },
+      "end": null,
+      "techs": ["angular", "django"]
+    },
+    {
+      "id": "kodoka",
+      "kind": "experience",
+      "position": 1,
+      "version": 1,
+      "title": {
+        "fr": "Développeur web fullstack, Kodoka",
+        "en": "Full-stack web developer, Kodoka"
+      },
+      "place": { "fr": "Joué-lès-Tours", "en": "Joué-lès-Tours" },
+      "description": {
+        "fr": "Un CRM sur mesure avec CodeIgniter 4.",
+        "en": "A custom CRM built with CodeIgniter 4."
+      },
+      "start": { "year": 2023, "month": 3 },
+      "end": { "year": 2023, "month": 4 },
+      "techs": ["codeigniter", "php"]
+    }
+  ]
+}

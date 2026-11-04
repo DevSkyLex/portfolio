@@ -4,6 +4,9 @@ import {
   LocalizedText,
 } from '@internal/content-domain/lib/values/localized-text/localized-text';
 import { Slug } from '@internal/content-domain/lib/values/slug/slug';
+import type { ArticleDocument } from '@internal/content-domain/lib/values/article-document/article-document';
+import type { ProjectPeriod } from '@internal/content-domain/lib/values/project-period/project-period';
+import type { ProjectSeo } from '@internal/content-domain/lib/values/project-seo/project-seo';
 
 /**
  * Type ProjectStatus
@@ -19,72 +22,58 @@ export type ProjectStatus = 'draft' | 'published';
  * @interface ProjectArticle
  *
  * @description
- * Localized case-study paragraphs grouped by their public presentation section.
+ * Case study as one rich document per language (D40): French is required, English is optional until
+ * publication.
  */
 export interface ProjectArticle {
   // #region Properties
   /**
-   * Property context
+   * Property fr
    * @readonly
    *
    * @description
-   * Context paragraphs explaining the initial situation.
+   * French source document.
    */
-  readonly context: readonly LocalizedText[];
+  readonly fr: ArticleDocument;
 
   /**
-   * Property work
+   * Property en
    * @readonly
    *
    * @description
-   * Narrative paragraphs describing the work performed.
+   * English document, absent until translated.
    */
-  readonly work: readonly LocalizedText[];
+  readonly en?: ArticleDocument | undefined;
+  // #endregion
+}
+
+/**
+ * Interface ProjectCover
+ * @interface ProjectCover
+ *
+ * @description
+ * Cover image shown at the top of the article and on the home cards (D40): an uploaded media and its
+ * alternative text, which a draft may still lack in either language.
+ */
+export interface ProjectCover {
+  // #region Properties
+  /**
+   * Property media
+   * @readonly
+   *
+   * @description
+   * Identifier of the uploaded media.
+   */
+  readonly media: string;
 
   /**
-   * Property workList
+   * Property alt
    * @readonly
    *
    * @description
-   * Itemized work descriptions rendered as a list.
+   * Alternative text per language; blank or absent text is reported by `missingFor`.
    */
-  readonly workList: readonly LocalizedText[];
-
-  /**
-   * Property choices
-   * @readonly
-   *
-   * @description
-   * Paragraphs explaining implementation choices.
-   */
-  readonly choices: readonly LocalizedText[];
-
-  /**
-   * Property result
-   * @readonly
-   *
-   * @description
-   * Paragraphs describing project outcomes.
-   */
-  readonly result: readonly LocalizedText[];
-
-  /**
-   * Property lessons
-   * @readonly
-   *
-   * @description
-   * Reflections and lessons learned from the project.
-   */
-  readonly lessons: readonly LocalizedText[];
-
-  /**
-   * Property captions
-   * @readonly
-   *
-   * @description
-   * Localized captions associated with case-study media.
-   */
-  readonly captions: readonly LocalizedText[];
+  readonly alt: { readonly fr: string; readonly en?: string | undefined };
   // #endregion
 }
 
@@ -143,13 +132,13 @@ export interface ProjectProps {
   readonly lead: LocalizedText;
 
   /**
-   * Property periodLabel
+   * Property period
    * @readonly
    *
    * @description
-   * Localized display label for the project's period.
+   * Start and end of the project, months or whole years (D46); the public label is written from it.
    */
-  readonly periodLabel: LocalizedText;
+  readonly period: ProjectPeriod;
 
   /**
    * Property client
@@ -240,6 +229,24 @@ export interface ProjectProps {
    * Localized body of the case study.
    */
   readonly article: ProjectArticle;
+
+  /**
+   * Property cover
+   * @readonly
+   *
+   * @description
+   * Cover image, or `null` when the project shows the tinted placeholder.
+   */
+  readonly cover: ProjectCover | null;
+
+  /**
+   * Property seo
+   * @readonly
+   *
+   * @description
+   * Optional search title and description per language; never part of publication completeness.
+   */
+  readonly seo: ProjectSeo;
   // #endregion
 }
 
@@ -256,7 +263,7 @@ export type ProjectRevision = Pick<
   | 'title'
   | 'summary'
   | 'lead'
-  | 'periodLabel'
+  | 'period'
   | 'client'
   | 'role'
   | 'place'
@@ -264,21 +271,9 @@ export type ProjectRevision = Pick<
   | 'techs'
   | 'featured'
   | 'article'
+  | 'cover'
+  | 'seo'
 >;
-
-/**
- * Constant ARTICLE_SECTIONS
- *
- * @description
- * Required `context`, `work`, `choices`, `result` and `lessons` sections checked for translations before publication.
- */
-const ARTICLE_SECTIONS: readonly ['context', 'work', 'choices', 'result', 'lessons'] = [
-  'context',
-  'work',
-  'choices',
-  'result',
-  'lessons',
-] as const;
 
 /**
  * Constant TECH_KEY
@@ -315,7 +310,7 @@ export class Project {
    * @method rehydrate
    *
    * @description
-   * Rebuilds persisted state and rejects invalid positions, versions, HTTPS URL strings containing no whitespace or duplicate tech keys.
+   * Rebuilds persisted state and rejects invalid positions, versions, HTTPS URL strings containing no whitespace, duplicate tech keys or a cover without media.
    * The returned aggregate copies the technology list to avoid retaining its mutable input array.
    *
    * @param {ProjectProps} props - Persisted project state.
@@ -339,6 +334,9 @@ export class Project {
     }
     if (new Set(props.techs).size !== props.techs.length) {
       throw new InvalidValueError('techs', 'a tech appears twice');
+    }
+    if (props.cover !== null && props.cover.media.trim() === '') {
+      throw new InvalidValueError('cover', 'a media identifier is expected');
     }
     return new Project({ ...props, techs: [...props.techs] });
   }
@@ -426,11 +424,14 @@ export class Project {
    * @method missingFor
    *
    * @description
-   * Lists required translation paths that are absent for the supplied publication locales.
-   * Article sections with no paragraphs are reported as incomplete as well.
+   * Lists, per supplied locale, the paths still to fill in before publication: the short fields
+   * (`title.en`…), `article.<locale>` when that document is absent or empty,
+   * `article.<locale>.figures` when one of its figures lacks alternative text and
+   * `cover.alt.<locale>` when a cover lacks it. The search texts are optional and never listed; the
+   * period has no text and is always set (D46).
    *
    * @param {readonly Locale[]} locales - Locales required by the publishing site.
-   * @returns {string[]} Missing field paths, empty when all required text is present.
+   * @returns {string[]} Missing field paths, empty when all required content is present.
    */
   public missingFor(locales: readonly Locale[]): string[] {
     const missing: string[] = [];
@@ -438,7 +439,6 @@ export class Project {
       title: this.props.title,
       summary: this.props.summary,
       lead: this.props.lead,
-      periodLabel: this.props.periodLabel,
       client: this.props.client,
       role: this.props.role,
       place: this.props.place,
@@ -449,17 +449,40 @@ export class Project {
           missing.push(`${field}.${locale}`);
         }
       }
-      for (const section of ARTICLE_SECTIONS) {
-        const paragraphs: readonly LocalizedText[] = this.props.article[section];
-        if (
-          paragraphs.length === 0 ||
-          paragraphs.some((p: LocalizedText): boolean => !p.isCompleteFor(locale))
-        ) {
-          missing.push(`article.${section}.${locale}`);
-        }
+      const document: ArticleDocument | undefined = this.props.article[locale];
+      if (document === undefined || document.isEmpty()) {
+        missing.push(`article.${locale}`);
+      }
+      if (document !== undefined && document.figuresMissingAlt().length > 0) {
+        missing.push(`article.${locale}.figures`);
+      }
+      const cover: ProjectCover | null = this.props.cover;
+      if (cover !== null && (cover.alt[locale] ?? '').trim() === '') {
+        missing.push(`cover.alt.${locale}`);
       }
     }
     return missing;
+  }
+
+  /**
+   * Method mediaIds
+   * @method mediaIds
+   *
+   * @description
+   * Lists the media the project references, without duplicates: the cover first, then the figures of
+   * the French and English documents.
+   *
+   * @returns {string[]} Referenced media identifiers.
+   */
+  public mediaIds(): string[] {
+    const { article, cover } = this.props;
+    return [
+      ...new Set([
+        ...(cover === null ? [] : [cover.media]),
+        ...article.fr.mediaIds(),
+        ...(article.en?.mediaIds() ?? []),
+      ]),
+    ];
   }
 
   /**
@@ -467,7 +490,7 @@ export class Project {
    * @method publish
    *
    * @description
-   * Marks the project published only when required fields and the required `context`, `work`, `choices`, `result` and `lessons` sections are complete.
+   * Marks the project published only when `missingFor` reports nothing for the supplied locales.
    *
    * @param {readonly Locale[]} locales - Locales required for publication.
    * @throws {DomainError} When any required translation is incomplete.
@@ -505,7 +528,7 @@ export class Project {
       title: revision.title,
       summary: revision.summary,
       lead: revision.lead,
-      periodLabel: revision.periodLabel,
+      period: revision.period,
       client: revision.client,
       role: revision.role,
       place: revision.place,
@@ -513,6 +536,8 @@ export class Project {
       techs: revision.techs,
       featured: revision.featured,
       article: revision.article,
+      cover: revision.cover,
+      seo: revision.seo,
     });
     if (this.isPublished()) {
       const missing: string[] = next.missingFor(publishedLocales);

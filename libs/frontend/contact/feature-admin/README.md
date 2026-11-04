@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`contact-web-feature-admin` owns the French inbox under `/admin/messages`: filtering, pagination,
+`contact-web-feature-admin` owns the inbox under `/admin/messages` (`/en/admin/messages` in English): filtering, pagination,
 selection, read/archive transitions, erasure confirmations and keyboard actions. The page coordinates
 an owner store; dataviews and detail components render values and emit intent.
 
@@ -28,7 +28,8 @@ duplicate unread-count queries.
 - Destructive erasure uses accessible confirmation and respects pending state.
 - Message bodies render as text, never trusted HTML; transport details stay in data access.
 - Keyboard actions operate on active selection and do not intercept typing in form controls.
-- Pages are French only, client-rendered and excluded from the public initial feature graph.
+- Pages are localized (`@@admin.inbox.*`, D18), client-rendered and excluded from the public initial
+  feature graph.
 
 ## Validation
 

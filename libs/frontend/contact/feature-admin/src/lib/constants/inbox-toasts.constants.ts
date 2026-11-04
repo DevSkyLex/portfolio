@@ -7,5 +7,4 @@
  *
  * @type {string}
  */
-export const INBOX_CONFLICT_MESSAGE =
-  'Ce message a changé entre-temps ; la liste a été rechargée.' as const;
+export const INBOX_CONFLICT_MESSAGE: string = $localize`:@@admin.inbox.toast.conflict:Ce message a changé entre-temps ; la liste a été rechargée.`;

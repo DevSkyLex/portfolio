@@ -1,5 +1,13 @@
 {
+  "/.well-known/oauth-authorization-server/api/auth": {
+    "target": "http://localhost:3103",
+    "secure": false,
+    "pathRewrite": {
+      "^/\\.well-known/oauth-authorization-server/api/auth$": "/api/auth/.well-known/oauth-authorization-server"
+    }
+  },
   "/api/auth": { "target": "http://localhost:3103", "secure": false },
   "/api/content": { "target": "http://localhost:3101", "secure": false },
-  "/api/contact": { "target": "http://localhost:3102", "secure": false }
+  "/api/contact": { "target": "http://localhost:3102", "secure": false },
+  "/media": { "target": "http://localhost:3101", "secure": false }
 }

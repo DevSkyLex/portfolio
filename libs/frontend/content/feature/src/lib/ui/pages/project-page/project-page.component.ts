@@ -4,40 +4,46 @@ import {
   DOCUMENT,
   DestroyRef,
   ElementRef,
-  afterNextRender,
+  afterRenderEffect,
   computed,
   effect,
   inject,
   input,
-  signal,
-  type Signal,
+  linkedSignal,
   type InputSignal,
+  type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import { lucideArrowLeft, lucideArrowRight, lucideSquareArrowOutUpRight } from '@ng-icons/lucide';
-import { SiteContentService } from '@vfortin/content-web-data-access';
-import { AsciiPlanetComponent, TechIconComponent, techDefinition } from '@vfortin/content-web-ui';
+import { PageSeoService, SiteContentService } from '@vfortin/content-web-data-access';
+import {
+  ARTICLE_TYPOGRAPHY,
+  ArticleBlocksComponent,
+  AsciiPlanetComponent,
+  TechIconComponent,
+  imageSrcset,
+  techDefinition,
+} from '@vfortin/content-web-ui';
 import { RevealDirective, ScrollProgressDirective } from '@vfortin/ui';
 import { PROJECT_ARROW_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-arrow-classes.constants';
 import { PROJECT_ENTER_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-enter-classes.constants';
 import { PROJECT_REVEAL_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-reveal-classes.constants';
 import { PROJECT_VISUAL_TINTS } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-visual-tints.constants';
-import type { ProjectSectionId } from '@internal/content-web-feature/lib/ui/pages/project-page/models/project-section-id/project-section-id.type';
-import type { ProjectTocEntry } from '@internal/content-web-feature/lib/ui/pages/project-page/models/project-toc-entry/project-toc-entry.interface';
 
 /**
  * Component ProjectPageComponent
  * @class ProjectPageComponent
  *
  * @description
- * Renders the selected case study, maintains its section table of contents, and links to adjacent articles.
+ * Renders the selected case study from its article document (D40): the introduction, one section per
+ * level-2 heading with its table-of-contents entry and scrollspy, and links to adjacent articles.
  */
 @Component({
   selector: 'content-project-page',
   imports: [
+    ArticleBlocksComponent,
     AsciiPlanetComponent,
     NgIcon,
     RevealDirective,
@@ -97,6 +103,23 @@ export class ProjectPageComponent {
   >(() => this.content.project(this.slug()));
 
   /**
+   * Property sections
+   * @readonly
+   *
+   * @description
+   * Sections of the current article; a new array whenever the route moves to another project, which
+   * restarts the scrollspy.
+   *
+   * @type {Signal<NonNullable<ReturnType<SiteContentService['project']>>['sections']>}
+   */
+  protected readonly sections: Signal<
+    NonNullable<ReturnType<SiteContentService['project']>>['sections']
+  > = computed<NonNullable<ReturnType<SiteContentService['project']>>['sections']>(
+    (): NonNullable<ReturnType<SiteContentService['project']>>['sections'] =>
+      this.project()?.sections ?? [],
+  );
+
+  /**
    * Property neighbours
    * @readonly
    *
@@ -114,7 +137,8 @@ export class ProjectPageComponent {
    * @readonly
    *
    * @description
-   * Placeholder background selected by the project's index in the full content order.
+   * Placeholder background, used without a cover, selected by the project's index in the full content
+   * order.
    *
    * @type {Signal<string | undefined>}
    */
@@ -128,11 +152,14 @@ export class ProjectPageComponent {
    * @readonly
    *
    * @description
-   * Section currently marked in the table of contents, initialized to the first article section.
+   * Identifier of the section marked in the table of contents; back on the first section whenever the
+   * article changes, `null` for an article without sections.
    *
-   * @type {WritableSignal<ProjectSectionId>}
+   * @type {WritableSignal<string | null>}
    */
-  protected readonly active: WritableSignal<ProjectSectionId> = signal<ProjectSectionId>('context');
+  protected readonly active: WritableSignal<string | null> = linkedSignal<string | null>(
+    (): string | null => this.sections()[0]?.id ?? null,
+  );
 
   /**
    * Property icons
@@ -154,37 +181,15 @@ export class ProjectPageComponent {
   };
 
   /**
-   * Property labels
+   * Property typography
    * @readonly
    *
    * @description
-   * Localized section labels shared by article headings and the table of contents.
+   * Classes of the article nodes, shared with the renderer and the administrator editor.
    *
-   * @type {Readonly<Record<ProjectSectionId, string>>}
+   * @type {typeof ARTICLE_TYPOGRAPHY}
    */
-  protected readonly labels: Readonly<Record<ProjectSectionId, string>> = {
-    context: $localize`:@@project.context:Contexte`,
-    work: $localize`:@@project.work:Ce que j'ai fait`,
-    choices: $localize`:@@project.choices:Choix techniques`,
-    result: $localize`:@@project.result:Résultat`,
-    lessons: $localize`:@@project.lessons:Ce que je retiens`,
-  };
-
-  /**
-   * Property toc
-   * @readonly
-   *
-   * @description
-   * Ordered section identifiers and labels rendered as table-of-contents links.
-   *
-   * @type {readonly ProjectTocEntry[]}
-   */
-  protected readonly toc: readonly ProjectTocEntry[] = (
-    Object.keys(this.labels) as ProjectSectionId[]
-  ).map((id: ProjectSectionId): { id: ProjectSectionId; label: string } => ({
-    id,
-    label: this.labels[id],
-  }));
+  protected readonly typography: typeof ARTICLE_TYPOGRAPHY = ARTICLE_TYPOGRAPHY;
 
   /**
    * Property enter
@@ -226,29 +231,25 @@ export class ProjectPageComponent {
    * @constructor
    *
    * @description
-   * Updates the document title when the article resolves, starts the scrollspy after rendering, and resets the active section when the route slug changes.
+   * Writes the article's search and sharing metadata (D42) whenever the route moves to another
+   * project, prerendering included, and removes them when the page leaves; in the browser, observes the
+   * rendered sections again after every change of article.
    */
   public constructor() {
-    const title: Title = inject<Title>(Title);
+    const seo: PageSeoService = inject<PageSeoService>(PageSeoService);
     effect((): void => {
       const project: ReturnType<SiteContentService['project']> = this.project();
-      if (project) {
-        title.setTitle(`${project.title} — Valentin Fortin`);
-      }
+      if (project) seo.project(project);
     });
+    inject<DestroyRef>(DestroyRef).onDestroy((): void => seo.clear());
 
     const document: Document = inject<Document>(DOCUMENT);
-    const destroyRef: DestroyRef = inject<DestroyRef>(DestroyRef);
-    afterNextRender((): void => {
+    // Runs after the sections of the current article are in the DOM; the cleanup releases the
+    // observer of the previous article, and the last one on destruction.
+    afterRenderEffect((onCleanup: (cleanup: () => void) => void): void => {
+      if (this.sections().length === 0) return;
       const window: (Window & typeof globalThis) | null = document.defaultView;
-      if (!window) return;
-      destroyRef.onDestroy(this.spy(window));
-    });
-
-    // Another project in the same component: back to the first section.
-    effect((): void => {
-      this.slug();
-      this.active.set('context');
+      if (window) onCleanup(this.spy(window));
     });
   }
   // #endregion
@@ -270,6 +271,23 @@ export class ProjectPageComponent {
   }
 
   /**
+   * Method srcset
+   * @method srcset
+   *
+   * @description
+   * Lists the renditions of the cover shown at the top of the article.
+   *
+   * @param {NonNullable<NonNullable<ReturnType<SiteContentService['project']>>['cover']>} image - Project cover.
+   *
+   * @returns {string | null} `srcset` value, or `null` without a 960 px rendition.
+   */
+  protected srcset(
+    image: NonNullable<NonNullable<ReturnType<SiteContentService['project']>>['cover']>,
+  ): string | null {
+    return imageSrcset(image);
+  }
+
+  /**
    * Method spy
    * @method spy
    *
@@ -287,7 +305,7 @@ export class ProjectPageComponent {
       (entries: IntersectionObserverEntry[]): void => {
         if (root.scrollHeight <= window.innerHeight + 40) return;
         for (const entry of entries) {
-          if (entry.isIntersecting) this.active.set(entry.target.id as ProjectSectionId);
+          if (entry.isIntersecting) this.active.set(entry.target.id);
         }
       },
       { rootMargin: '-40% 0px -55% 0px' },

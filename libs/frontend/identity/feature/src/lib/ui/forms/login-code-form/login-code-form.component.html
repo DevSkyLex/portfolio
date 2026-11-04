@@ -8,6 +8,7 @@
   <ui-input-otp
     controlId="login-totp"
     ariaLabel="Code à six chiffres"
+    i18n-ariaLabel="@@admin.identity.code.label"
     [formField]="codeForm.totp"
     (completed)="submit()"
   >
@@ -30,11 +31,15 @@
       controlId="login-trust-device"
       [formField]="codeForm.trustDevice"
     />
-    <label class="cursor-pointer text-star" for="login-trust-device">
+    <label class="cursor-pointer text-fg" for="login-trust-device" i18n="@@admin.login.trustDevice">
       Faire confiance à cet appareil
     </label>
   </div>
   <button uiBtn class="h-10 w-full text-[14px]" type="submit" [disabled]="pending()">
-    {{ pending() ? 'Vérification…' : 'Vérifier' }}
+    @if (pending()) {
+      <ng-container i18n="@@admin.login.verifying">Vérification…</ng-container>
+    } @else {
+      <ng-container i18n="@@admin.login.verify">Vérifier</ng-container>
+    }
   </button>
 </form>

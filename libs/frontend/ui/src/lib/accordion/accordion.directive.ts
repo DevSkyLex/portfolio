@@ -343,7 +343,7 @@ export class AccordionItemDirective {
    * Item border class combined with caller classes.
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('border-b border-line', this.class()),
+    cn('border-b border-border', this.class()),
   );
   // #endregion
 
@@ -446,9 +446,9 @@ export class AccordionTriggerDirective implements FocusableOption {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'flex w-full flex-1 items-center justify-between gap-4 rounded-option border border-transparent py-4 text-left text-control text-star',
-      'transition-[color,border-color] duration-(--dur-pop) ease-orbit hover:text-star-muted',
-      'outline-4 outline-offset-0 outline-transparent focus-visible:border-star/55 focus-visible:outline-star/12',
+      'flex w-full flex-1 items-center justify-between gap-4 rounded-sm border border-transparent py-4 text-left text-control text-fg',
+      'transition-[color,border-color] duration-(--dur-pop) ease-orbit hover:text-fg-muted',
+      'outline-4 outline-offset-0 outline-transparent focus-visible:border-fg/55 focus-visible:outline-fg/12',
       'disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none',
       this.class(),
     ),
@@ -548,7 +548,7 @@ export class AccordionIconComponent {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'inline-flex shrink-0 text-star-muted transition-transform duration-(--dur-roll) ease-orbit motion-reduce:transition-none',
+      'inline-flex shrink-0 text-fg-muted transition-transform duration-(--dur-roll) ease-orbit motion-reduce:transition-none',
       this.item.open() && 'rotate-180',
       this.class(),
     ),
@@ -615,7 +615,7 @@ export class AccordionContentComponent {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('pb-4 text-small text-star-muted', this.class()),
+    cn('pb-4 text-small text-fg-muted', this.class()),
   );
   // #endregion
 }

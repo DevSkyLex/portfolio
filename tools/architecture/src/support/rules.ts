@@ -115,7 +115,6 @@ export const SECONDARY_ENTRY_POINTS: Readonly<Record<string, string>> = {
   '@vfortin/web-shell/server': 'D10: @angular/ssr only in the server bundle',
   '@vfortin/content-web-data-access/server': 'D10: Zod snapshot validation only at prerender time',
   '@vfortin/identity-web-data-access/http': 'D18: interceptor without the session store',
-  '@vfortin/contact-web-data-access/links': 'D18: contact details without the contact stores',
   '@vfortin/content-web-data-access/admin':
     'D18: project editor without weighing on the public bundle',
   '@vfortin/content-web-data-access/navigation': 'D38: owner-provided project navigation port',

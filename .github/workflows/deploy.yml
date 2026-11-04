@@ -141,6 +141,9 @@ jobs:
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       CONTACT_MAIL_FROM: ${{ vars.CONTACT_MAIL_FROM }}
       CONTACT_NOTIFY_TO: ${{ vars.CONTACT_NOTIFY_TO }}
+      SEO_SEARCH_CONSOLE_PROPERTY: ${{ vars.SEO_SEARCH_CONSOLE_PROPERTY }}
+      SEO_GA4_PROPERTY_ID: ${{ vars.SEO_GA4_PROPERTY_ID }}
+      SEO_WEB_VITALS_URLS: ${{ vars.SEO_WEB_VITALS_URLS }}
     steps:
       # Images take minutes: a newer commit may have reached main meanwhile, and its own run deploys it.
       - name: Still the head of main

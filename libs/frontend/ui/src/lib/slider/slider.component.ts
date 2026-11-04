@@ -290,9 +290,9 @@ export class SliderComponent implements FormValueControl<number> {
    */
   protected readonly thumbClasses: Signal<string> = computed<string>((): string =>
     cn(
-      'absolute top-1/2 block size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-star bg-void rtl:translate-x-1/2',
+      'absolute top-1/2 block size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-fg bg-surface rtl:translate-x-1/2',
       'transition-[border-color,outline-color,scale] duration-(--dur-pop) ease-orbit motion-reduce:transition-none',
-      'outline-4 outline-offset-0 outline-transparent focus-visible:border-signal focus-visible:outline-signal/12',
+      'outline-2 outline-offset-0 outline-transparent focus-visible:border-accent focus-visible:outline-accent/12',
       !this.disabled() && 'hover:scale-110',
       this.invalid() && 'border-danger focus-visible:border-danger focus-visible:outline-danger/12',
     ),

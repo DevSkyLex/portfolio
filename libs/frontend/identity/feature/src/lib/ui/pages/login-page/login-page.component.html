@@ -1,23 +1,24 @@
-<main
-  class="relative isolate flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 py-20"
->
-  <div
-    class="absolute top-0 left-1/2 -z-1 h-80 w-[720px] max-w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-aurora-violet/12 blur-[100px]"
-    aria-hidden="true"
-  ></div>
+<main class="relative flex min-h-dvh flex-col items-center justify-center px-6 py-20">
   <a
-    class="absolute top-5 left-5 inline-flex h-8 items-center gap-1.5 rounded-option px-2 text-[13px] text-star-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-star/5 hover:text-star focus-visible:outline-signal/55"
+    class="absolute top-5 left-5 inline-flex h-8 items-center gap-1.5 rounded-sm px-2 text-[13px] text-fg-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-surface-hover hover:text-fg focus-visible:outline-accent/55"
     routerLink="/"
   >
     <ng-icon [svg]="icons.back" size="14" aria-hidden="true" />
-    Retour au site
+    <ng-container i18n="@@admin.login.backToSite">Retour au site</ng-container>
   </a>
 
   <div class="flex w-full max-w-[360px] flex-col gap-8">
     @if (step() === 'credentials') {
       <div class="flex flex-col gap-1.5">
-        <h1 class="text-[22px]/7 font-semibold tracking-[-0.01em] text-star">Administration</h1>
-        <p class="text-[14px]/5 text-star-muted">Connexion réservée au propriétaire du site.</p>
+        <h1
+          class="text-[22px]/7 font-semibold tracking-[-0.01em] text-fg"
+          i18n="@@admin.login.title"
+        >
+          Administration
+        </h1>
+        <p class="text-[14px]/5 text-fg-muted" i18n="@@admin.login.intro">
+          Connexion réservée au propriétaire du site.
+        </p>
       </div>
 
       <identity-credentials-form
@@ -28,12 +29,15 @@
       />
     } @else {
       <div class="flex flex-col gap-1.5">
-        <h1 class="text-[22px]/7 font-semibold tracking-[-0.01em] text-star">
+        <h1
+          class="text-[22px]/7 font-semibold tracking-[-0.01em] text-fg"
+          i18n="@@admin.login.code.title"
+        >
           Code de vérification
         </h1>
-        <p class="text-[14px]/5 text-star-muted">
-          Saisissez le code à six chiffres de votre application d'authentification pour
-          <span class="text-star">{{ credentials()?.email }}</span
+        <p class="text-[14px]/5 text-fg-muted" i18n="@@admin.login.code.intro">
+          Saisissez le code à six chiffres de votre application d’authentification pour
+          <span class="text-fg">{{ credentials()?.email }}</span
           >.
         </p>
       </div>
@@ -45,12 +49,12 @@
       />
 
       <button
-        class="-ml-2 inline-flex h-8 cursor-pointer items-center gap-1.5 self-start rounded-option px-2 text-[13px] text-star-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-star/5 hover:text-star focus-visible:outline-signal/55"
+        class="-ml-2 inline-flex h-8 cursor-pointer items-center gap-1.5 self-start rounded-sm px-2 text-[13px] text-fg-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-surface-hover hover:text-fg focus-visible:outline-accent/55"
         type="button"
         (click)="back()"
       >
         <ng-icon [svg]="icons.back" size="14" aria-hidden="true" />
-        Changer de compte
+        <ng-container i18n="@@admin.login.changeAccount">Changer de compte</ng-container>
       </button>
     }
   </div>

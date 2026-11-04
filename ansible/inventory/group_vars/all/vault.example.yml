@@ -12,6 +12,12 @@ vault_contact_smtp_url: CHANGE_ME
 vault_contact_client_key_secret: CHANGE_ME
 # Fine-grained GitHub token with Actions: write on the site repository only.
 vault_site_build_token: CHANGE_ME
+# SEO dashboard (D47), optional (leave empty to disable the section). Google Cloud service account
+# key, the JSON file as downloaded, pasted as a block (`vault_seo_google_credentials: |`); the
+# account needs read access to the Search Console property and the GA4 property.
+vault_seo_google_credentials: ''
+# PageSpeed Insights API key, restricted to the PageSpeed Insights API.
+vault_seo_pagespeed_api_key: ''
 # Ed25519 token signing keys (openssl genpkey -algorithm ed25519); all are published in the JWKS,
 # `identity_signing_kid` selects the one that signs.
 vault_identity_signing_keys:

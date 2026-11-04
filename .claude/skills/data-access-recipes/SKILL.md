@@ -51,16 +51,21 @@ stable `code`, `title`, optional `errors` per field. `toStoreError` turns any fa
   (`libs/frontend/identity/data-access/src/lib/http/interceptors/auth/auth.interceptor.ts`), exported through the
   light entry `@vfortin/identity-web-data-access/http`, which loads the session store on the first admin
   call (D18). Refresh happens through the `HttpOnly` cookie on `/api/auth`.
-- Light consumers use secondary entries: `@vfortin/contact-web-data-access/links` (contact links without
-  the stores), `@vfortin/content-web-data-access/server` (snapshot validation, server only).
+- Light consumers use secondary entries: `@vfortin/content-web-data-access/server` (snapshot
+  validation, server only). The public links and legal documents are content (D44): the shell passes
+  them to the contact and legal features, which read no content library.
 
 ## Public content
 
-The public site never fetches content live. `npx nx run web:content-snapshot`
+The production site never fetches content live. `npx nx run web:content-snapshot`
 (`apps/web/scripts/fetch-content-snapshot.mjs`, content service running) writes
 `apps/web/content-snapshot/{fr,en}.json`; the build prerenders from it (D7) and validates it with the
 contract at prerender (D10). `SiteContentService`
 (`libs/frontend/content/data-access/src/lib/services/site-content/site-content.service.ts`) exposes it.
+Only `nx serve web` reads the content API: the `development` configuration replaces
+`apps/web/src/environments/content-snapshot.ts` with `content-snapshot.development.ts` (`fileReplacements`),
+which falls back on the committed snapshot when the service is down. Docker stack:
+`node apps/web/scripts/local-refresh.mjs` (`docs/operations/deployment.md`).
 
 ## Tests
 

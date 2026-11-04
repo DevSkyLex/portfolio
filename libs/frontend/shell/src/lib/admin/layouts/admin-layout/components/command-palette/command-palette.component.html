@@ -1,21 +1,39 @@
 <ng-template #palette>
   <ui-command class="rounded-none border-0 bg-transparent focus-within:outline-transparent">
     <ui-command-input
+      class="min-h-13"
       placeholder="Rechercher une page, un projet ou une action…"
-      ariaLabel="Rechercher une commande"
+      i18n-placeholder="@@admin.shell.palette.placeholder"
     />
-    <div uiCommandList class="max-h-[min(24rem,60dvh)] border-t border-line">
-      <p uiCommandEmpty>Aucun résultat.</p>
-      <ui-command-group heading="Aller à">
+    <div uiCommandList class="max-h-[min(32rem,60dvh)]">
+      <!-- Options follow it once the query matches again: the compact inline layout. -->
+      <div uiCommandEmpty class="px-0 py-0">
+        <div uiEmpty layout="inline" class="px-2.5">
+          <div uiEmptyHeader>
+            <div uiEmptyMedia variant="icon">
+              <ng-icon [svg]="icons.search" size="16" />
+            </div>
+            <p uiEmptyTitle i18n="@@admin.shell.palette.empty">Aucun résultat</p>
+            <p uiEmptyDescription i18n="@@admin.shell.palette.emptyHint">
+              Cherchez une section, le titre d’un projet ou une action, comme «&nbsp;Voir le
+              site&nbsp;».
+            </p>
+          </div>
+        </div>
+      </div>
+      <ui-command-group heading="Aller à" i18n-heading="@@admin.shell.palette.goTo">
         @for (link of links(); track link.path) {
           <div uiCommandItem class="gap-2.5" (selected)="choosePage(link.path)">
-            <ng-icon class="text-star-muted" [svg]="link.icon" size="16" aria-hidden="true" />
+            <ng-icon class="text-fg-muted" [svg]="link.icon" size="16" aria-hidden="true" />
             {{ link.label }}
           </div>
         }
       </ui-command-group>
       @if (projects().length > 0) {
-        <ui-command-group heading="Projets">
+        <ui-command-group
+          heading="Ouvrir un projet"
+          i18n-heading="@@admin.shell.palette.openProject"
+        >
           @for (project of projects(); track project.id) {
             <div
               uiCommandItem
@@ -24,7 +42,7 @@
               (selected)="choosePage(project.path)"
             >
               <ng-icon
-                [class]="project.status === 'published' ? 'text-success-ink' : 'text-star-faint'"
+                [class]="project.status === 'published' ? 'text-success-ink' : 'text-fg-faint'"
                 [svg]="project.status === 'published' ? icons.published : icons.draft"
                 size="16"
                 aria-hidden="true"
@@ -34,20 +52,46 @@
           }
         </ui-command-group>
       }
-      <ui-command-group heading="Actions">
+      <ui-command-group heading="Actions" i18n-heading="@@admin.shell.palette.actions">
         <div uiCommandItem class="gap-2.5" (selected)="chooseSite()">
-          <ng-icon class="text-star-muted" [svg]="icons.site" size="16" aria-hidden="true" />
-          Voir le site
+          <ng-icon class="text-fg-muted" [svg]="icons.site" size="16" aria-hidden="true" />
+          <ng-container i18n="@@admin.shell.viewSite">Voir le site</ng-container>
         </div>
         <div uiCommandItem class="gap-2.5" (selected)="chooseShortcuts()">
-          <ng-icon class="text-star-muted" [svg]="icons.keyboard" size="16" aria-hidden="true" />
-          Raccourcis clavier
+          <ng-icon class="text-fg-muted" [svg]="icons.keyboard" size="16" aria-hidden="true" />
+          <ng-container i18n="@@admin.shell.shortcuts.title">Raccourcis clavier</ng-container>
         </div>
         <div uiCommandItem class="gap-2.5" (selected)="chooseLogout()">
-          <ng-icon class="text-star-muted" [svg]="icons.logout" size="16" aria-hidden="true" />
-          Se déconnecter
+          <ng-icon class="text-fg-muted" [svg]="icons.logout" size="16" aria-hidden="true" />
+          <ng-container i18n="@@admin.shell.logout">Se déconnecter</ng-container>
         </div>
       </ui-command-group>
     </div>
   </ui-command>
+  <!-- Keyboard hints only: hidden on the narrow, touch-first screens. -->
+  <div uiDialogFooter variant="bar" class="gap-x-3 px-3 max-sm:hidden">
+    <ui-kbd-hint
+      [keys]="['↑', '↓']"
+      label="Naviguer"
+      i18n-label="@@admin.shell.hint.navigate"
+      spokenKeys="Flèches haut et bas"
+      i18n-spokenKeys="@@admin.shell.hint.arrows"
+    />
+    <ui-kbd-hint
+      [keys]="['↵']"
+      label="Ouvrir"
+      i18n-label="@@admin.shell.hint.open"
+      spokenKeys="Entrée"
+      i18n-spokenKeys="@@admin.shell.hint.enter"
+    />
+    <ui-kbd-hint [keys]="escapeKeys" label="Fermer" i18n-label="@@admin.shell.hint.close" />
+    <ui-kbd-hint
+      class="ml-auto"
+      [keys]="['?']"
+      label="Raccourcis"
+      i18n-label="@@admin.shell.hint.shortcuts"
+      spokenKeys="Point d’interrogation"
+      i18n-spokenKeys="@@admin.shell.shortcuts.spoken.questionMark"
+    />
+  </div>
 </ng-template>

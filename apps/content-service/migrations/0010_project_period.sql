@@ -1,0 +1,1 @@
+ALTER TABLE "content"."projects" ADD COLUMN "period" jsonb;

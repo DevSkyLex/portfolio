@@ -7,7 +7,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
  * Defines circular avatar sizing, border, and fallback typography for the three supported sizes.
  */
 export const avatarVariants = cva(
-  'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-line-strong bg-void-sunk font-mono text-star-muted select-none',
+  'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-strong bg-surface-sunk font-mono text-fg-muted select-none',
   {
     variants: {
       size: {

@@ -54,7 +54,7 @@ Load a skill with the `Skill` tool when its subject comes up, not before reading
 
 ## Surfaces, in order of preference
 
-1. **The suite** (`apps/web-e2e/playwright.config.mts`): it serves `dist/apps/web/browser` with
+1. **The suite** (`apps/web-e2e/playwright.config.mts`): it serves `dist/apps/web-e2e-site/browser` (`web:e2e-site`, the production build with a placeholder GA4 id, D48) with
    `node apps/web-e2e/support/preview/serve-site.mjs` on `E2E_PORT` (default 4200, validated integer 1–65535),
    reproducing Nginx routing (D25). The Nx target builds first. Projects: chromium, firefox, webkit,
    Mobile Chrome. This standalone suite has no API services and covers public flows and unauthenticated

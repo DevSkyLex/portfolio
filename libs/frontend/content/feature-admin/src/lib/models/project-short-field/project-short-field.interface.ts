@@ -25,7 +25,7 @@ export interface ProjectShortField {
    * @readonly
    *
    * @description
-   * French label shared by both languages.
+   * Label in the admin's language, shared by both content languages of the field.
    *
    * @type {string}
    */

@@ -18,6 +18,7 @@ import type {
   ContentTransaction,
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
 import { toProject } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
+import { DrizzleMediaRepository } from '@internal/content-adapters-out/lib/persistence/repositories/media/drizzle-media.repository';
 import {
   contentRevision,
   projects,
@@ -97,13 +98,14 @@ export class DrizzleProjectRepository implements ProjectRepository {
   public async save(project: Project, expectedVersion: number): Promise<number> {
     const p: ProjectProps = project.snapshot();
     const article: ProjectArticle = p.article;
+    const { keywords, ...seoTexts } = p.seo.toProps();
     const updated: { version: number }[] = await this.db
       .update(projects)
       .set({
         title: props(p.title),
         summary: props(p.summary),
         lead: props(p.lead),
-        periodLabel: props(p.periodLabel),
+        period: p.period.toProps(),
         client: props(p.client),
         role: props(p.role),
         place: props(p.place),
@@ -111,15 +113,23 @@ export class DrizzleProjectRepository implements ProjectRepository {
         techs: [...p.techs],
         featured: p.featured,
         status: p.status,
-        article: {
-          context: article.context.map(props),
-          work: article.work.map(props),
-          workList: article.workList.map(props),
-          choices: article.choices.map(props),
-          result: article.result.map(props),
-          lessons: article.lessons.map(props),
-          captions: article.captions.map(props),
-        },
+        article:
+          article.en === undefined
+            ? { fr: article.fr.toProps() }
+            : { fr: article.fr.toProps(), en: article.en.toProps() },
+        cover:
+          p.cover === null
+            ? null
+            : {
+                media: p.cover.media,
+                alt:
+                  p.cover.alt.en === undefined
+                    ? { fr: p.cover.alt.fr }
+                    : { fr: p.cover.alt.fr, en: p.cover.alt.en },
+              },
+        // Texts and keywords live in separate columns (migration 0005).
+        seo: seoTexts,
+        seoKeywords: keywords,
         version: sql`${projects.version} + 1`,
       })
       // Optimistic locking: no row updated if someone saved in the meantime.
@@ -296,7 +306,7 @@ export class DrizzleSiteBuildRequestRepository implements SiteBuildRequestReposi
  * @class DrizzleContentUnitOfWork
  *
  * @description
- * Runs project and rebuild outbox changes in one transaction.
+ * Runs project, media and rebuild outbox changes in one transaction.
  */
 export class DrizzleContentUnitOfWork implements ContentUnitOfWork {
   // #region Constructor
@@ -319,7 +329,8 @@ export class DrizzleContentUnitOfWork implements ContentUnitOfWork {
    * @template T - Value returned by the transaction callback.
    *
    * @description
-   * Executes the supplied callback with project and outbox repositories bound to one transaction.
+   * Executes the supplied callback with project, media and outbox repositories bound to one
+   * transaction.
    *
    * @param {(repositories: ContentRepositories) => Promise<T>} work - Atomic operation.
    * @returns {Promise<T>} Callback result after transaction completion.
@@ -329,6 +340,7 @@ export class DrizzleContentUnitOfWork implements ContentUnitOfWork {
       work({
         projects: new DrizzleProjectRepository(tx),
         buildRequests: new DrizzleSiteBuildRequestRepository(tx),
+        media: new DrizzleMediaRepository(tx),
       }),
     );
   }

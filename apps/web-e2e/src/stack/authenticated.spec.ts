@@ -47,22 +47,60 @@ async function assertAdminAccessibility(page: Page): Promise<void> {
 }
 
 test.describe('isolated stack acceptance @stack', (): void => {
-  test.skip(!process.env['STACK_TOTP_SECRET'], 'Requires the isolated e2e-stack runner.');
-  test('authenticates with TOTP, rotates cookies, protects editor revisions and delivers contact notifications', async ({
+  test.skip(!process.env['STACK_PASSWORD'], 'Requires the isolated e2e-stack runner.');
+  test('enrolls and authenticates with TOTP, rotates cookies, protects editor revisions and delivers contact notifications', async ({
     page,
   }: {
     page: Page;
   }): Promise<void> => {
     test.setTimeout(180_000);
+    const email: string = process.env['STACK_EMAIL'] ?? '';
+    const password: string = process.env['STACK_PASSWORD'] ?? '';
+
+    // The bootstrap creates a password-only account (D17): the password alone opens a session.
+    const passwordOnly: APIResponse<unknown> = await page.request.post('/api/auth/login', {
+      data: { email, password, remember: false },
+    });
+    expect(passwordOnly.status()).toBe(200);
+    const opened: { status: string; accessToken: string } = (await passwordOnly.json()) as {
+      status: string;
+      accessToken: string;
+    };
+    expect(opened.status).toBe('authenticated');
+    const bearer: { authorization: string } = { authorization: `Bearer ${opened.accessToken}` };
+    const before: APIResponse<unknown> = await page.request.get('/api/auth/totp', {
+      headers: bearer,
+    });
+    expect(await before.json()).toEqual({ enabled: false });
+    const setup: APIResponse<unknown> = await page.request.post('/api/auth/totp/setup', {
+      headers: bearer,
+      data: { password },
+    });
+    expect(setup.status()).toBe(200);
+    expect(setup.headers()['cache-control']).toBe('no-store');
+    // `stackTotp` reads the enrollment from this worker's environment; it stays in memory.
+    process.env['STACK_TOTP_SECRET'] = ((await setup.json()) as { secret: string }).secret;
+    const enabled: APIResponse<unknown> = await page.request.post('/api/auth/totp/enable', {
+      headers: bearer,
+      data: { totp: stackTotp() },
+    });
+    expect(enabled.status()).toBe(200);
+    expect(await enabled.json()).toEqual({ enabled: true });
+    const enrolledStep: number = Math.floor(Date.now() / 30_000);
+    const closed: APIResponse<unknown> = await page.request.post('/api/auth/logout', {
+      headers: { 'x-csrf': '1' },
+    });
+    expect(closed.status()).toBe(204);
+    // The confirmation code is spent (replay protection): the login needs the next period's code.
+    await expect
+      .poll((): number => Math.floor(Date.now() / 30_000), { timeout: 35_000, intervals: [1_000] })
+      .toBeGreaterThan(enrolledStep);
+
     await page.goto('/admin/login');
     await expect(page.getByRole('heading', { name: 'Administration', exact: true })).toBeVisible();
     await assertAdminAccessibility(page);
-    await page
-      .getByLabel('Adresse e-mail', { exact: false })
-      .fill(process.env['STACK_EMAIL'] ?? '');
-    await page
-      .getByLabel('Mot de passe', { exact: false })
-      .fill(process.env['STACK_PASSWORD'] ?? '');
+    await page.getByLabel('Adresse e-mail', { exact: false }).fill(email);
+    await page.getByLabel('Mot de passe', { exact: false }).fill(password);
     await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Code de vérification' })).toBeVisible();
     const authenticated: Promise<Response> = page.waitForResponse(
@@ -72,7 +110,11 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await page.getByRole('textbox', { name: 'Code à six chiffres' }).fill(stackTotp());
     const login: Response = await authenticated;
     expect(login.status()).toBe(200);
-    await expect(page).toHaveURL(/\/admin\/projects$/);
+    // The administration lands on the « Tableau de bord » (D47).
+    await expect(page).toHaveURL(/\/admin\/dashboard$/);
+    await expect(page.getByRole('heading', { name: 'Tableau de bord', exact: true })).toBeVisible();
+    await assertAdminAccessibility(page);
+    await page.goto('/admin/projects');
     await expect(page.getByRole('heading', { name: 'Projets', exact: true })).toBeVisible();
     await assertAdminAccessibility(page);
     const session: APIResponse<unknown> = await page.request.post('/api/auth/refresh', {
@@ -147,7 +189,7 @@ test.describe('isolated stack acceptance @stack', (): void => {
       'title',
       'summary',
       'lead',
-      'periodLabel',
+      'period',
       'client',
       'role',
       'place',
@@ -231,9 +273,17 @@ test.describe('isolated stack acceptance @stack', (): void => {
       .getByRole('navigation', { name: 'Administration', exact: true })
       .getByRole('link', { name: /Messages/ });
     await expect(messageLink).toContainText('1');
-    await page.getByRole('button', { name: 'Tous', exact: true }).click();
+    // « Tous » is the default tab; a message shown for a second is marked read on its own.
+    await expect(page.getByRole('tab', { name: 'Tous', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    const read: Promise<Response> = page.waitForResponse(
+      (response: Response): boolean =>
+        response.url().endsWith('/read') && response.request().method() === 'POST',
+    );
     await page
-      .getByRole('list', { name: 'Messages reçus' })
+      .getByRole('list', { name: 'Tous les messages' })
       .getByRole('button', { name: /Acceptance sender/ })
       .click();
     const detail: Locator = page.getByRole('article', {
@@ -242,12 +292,8 @@ test.describe('isolated stack acceptance @stack', (): void => {
     });
     await expect(detail.getByText(content, { exact: true })).toBeVisible();
     await assertAdminAccessibility(page);
-    const read: Promise<Response> = page.waitForResponse(
-      (response: Response): boolean =>
-        response.url().endsWith('/read') && response.request().method() === 'POST',
-    );
-    await detail.getByRole('button', { name: 'Marquer comme lu', exact: true }).click();
     expect((await read).status()).toBe(200);
+    await expect(detail.getByRole('button', { name: 'Marquer comme lu' })).toHaveCount(0);
     await expect(messageLink).toHaveText('Messages');
     const archived: Promise<Response> = page.waitForResponse(
       (response: Response): boolean =>
@@ -255,10 +301,10 @@ test.describe('isolated stack acceptance @stack', (): void => {
     );
     await detail.getByRole('button', { name: 'Archiver', exact: true }).click();
     expect((await archived).status()).toBe(200);
-    await page.getByRole('button', { name: 'Archivés', exact: true }).click();
+    await page.getByRole('tab', { name: 'Archivés', exact: true }).click();
     await expect(
       page
-        .getByRole('list', { name: 'Messages reçus' })
+        .getByRole('list', { name: 'Messages archivés' })
         .getByRole('button', { name: /Acceptance sender/ }),
     ).toBeVisible();
     await page.route('**/api/auth/logout', (route: Route): Promise<void> => route.abort('failed'));
@@ -266,7 +312,7 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await expect(
       page.getByText('La déconnexion n’a pas été confirmée. Réessayez.', { exact: true }),
     ).toBeVisible();
-    await expect(page).toHaveURL(/\/admin\/messages$/);
+    await expect(page).toHaveURL(/\/admin\/messages\?status=archived$/);
     await page.unroute('**/api/auth/logout');
     await page.getByRole('button', { name: 'Se déconnecter', exact: true }).click();
     await expect(page).toHaveURL(/\/admin\/login$/);

@@ -12,6 +12,14 @@ npx nx run web-e2e:e2e-stack
 npx nx run web-e2e:test-tooling
 ```
 
+`npx nx e2e web-e2e` depends on `web:e2e-site`, which builds `web:build:e2e` into
+`dist/apps/web-e2e-site` and writes its `sitemap.xml` and `robots.txt`: the production configuration with
+the placeholder GA4 measurement id of `apps/web/src/environments/audience-measurement.e2e.ts` (D48), so
+the consent banner and the Google tag loader are exercised. `consent.spec.ts` answers every Google host
+itself (nothing leaves the machine) and checks the banner, refusal, acceptance with Consent Mode v2,
+« Personnaliser », withdrawal and axe; every other spec starts with a stored refusal
+(`storageState` in `playwright.config.mts`) so the banner covers nothing.
+
 Set `E2E_PORT` to an available dedicated localhost port when 4200 is occupied. It must be an integer
 between 1 and 65535; the same value configures the browser URL, readiness probe and preview server.
 With `BASE_URL` set, tests use that existing endpoint and do not start a preview server.
@@ -22,8 +30,9 @@ participate in Nx affected selection along with the browser specs.
 
 The stack target requires Docker Compose supporting `!override` and the Chromium Playwright browser.
 CI installs Chromium before the target. The runner builds and prunes the three services, builds web,
-starts the isolated stack, seeds content and creates an administrator. Its generated password and TOTP
-enrollment are passed to the browser process in memory. No service `.env`, private development
+starts the isolated stack, seeds content and creates a password-only administrator. Its generated
+password is passed to the browser process in memory; the journeys enroll the one-time code through the
+admin API before testing the code login (D17). No service `.env`, private development
 secret file or existing administrator is read or reset.
 
 ## Isolation and ownership
@@ -37,7 +46,8 @@ keys, seed and bootstrap reuse the three service images instead of creating sepa
 Existing image tags are refused before building; ambient Compose env files, project names and profiles
 cannot redirect the runner's generated namespace. BuildKit caches are retained.
 
-`@stack` journeys cover two-step credentials/TOTP login, cookie refresh, project navigation and dirty
+`@stack` journeys cover the password-only login, one-time code enrollment, the two-step login once it
+is enabled, cookie refresh, project navigation and dirty
 draft decisions, real form saves, visible optimistic revision conflicts and reload, UI publication,
 public form submission and notification delivery, UI inbox transitions with immediate sidebar counts,
 and failed logout followed by retry. Axe checks include login, project list/editor and inbox, rejecting

@@ -1,5 +1,7 @@
-import type { ArticleSection } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/article-section.model';
+import type { ArticleDocumentDraft, ProjectPeriod } from '@vfortin/content-web-data-access/admin';
 import type { BilingualText } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/bilingual-text.interface';
+import type { ProjectCoverFormValues } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/project-cover-form-values.interface';
+import type { ProjectSeoFormValues } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/project-seo-form-values.interface';
 
 /**
  * Interface ProjectFormValues
@@ -41,14 +43,14 @@ export interface ProjectFormValues {
   lead: BilingualText;
 
   /**
-   * Property periodLabel
+   * Property period
    *
    * @description
-   * Localized project period text.
+   * Start and end of the project, months or whole years (D46), `null` until chosen; required.
    *
-   * @type {BilingualText}
+   * @type {ProjectPeriod | null}
    */
-  periodLabel: BilingualText;
+  period: ProjectPeriod | null;
 
   /**
    * Property client
@@ -94,11 +96,11 @@ export interface ProjectFormValues {
    * Property techs
    *
    * @description
-   * Technology catalogue keys entered as a comma-separated list.
+   * Technology catalogue keys, one tag each in the editor.
    *
-   * @type {string}
+   * @type {string[]}
    */
-  techs: string;
+  techs: string[];
 
   /**
    * Property featured
@@ -114,10 +116,30 @@ export interface ProjectFormValues {
    * Property article
    *
    * @description
-   * Localized values for each article section, with paragraphs separated by blank lines.
+   * Article document of each language (D40); an unwritten English article is an empty document.
    *
-   * @type {Record<ArticleSection, BilingualText>}
+   * @type {{ fr: ArticleDocumentDraft; en: ArticleDocumentDraft }}
    */
-  article: Record<ArticleSection, BilingualText>;
+  article: { fr: ArticleDocumentDraft; en: ArticleDocumentDraft };
+
+  /**
+   * Property cover
+   *
+   * @description
+   * Cover image and its alternative texts; an empty `media` means no cover.
+   *
+   * @type {ProjectCoverFormValues}
+   */
+  cover: ProjectCoverFormValues;
+
+  /**
+   * Property seo
+   *
+   * @description
+   * Search title and description of each language; empty texts fall back on the title and summary.
+   *
+   * @type {ProjectSeoFormValues}
+   */
+  seo: ProjectSeoFormValues;
   // #endregion
 }

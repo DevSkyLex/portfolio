@@ -25,6 +25,12 @@ import {
   type InputGroupSize,
   inputGroupVariants,
 } from '@internal/ui/lib/input-group/constants/input-group.variants';
+import { reflectFieldInvalid } from '@internal/ui/lib/field/utils/field-invalid/field-invalid.utils';
+import {
+  INPUT_GROUP_CONTROL_CLASSES,
+  INPUT_GROUP_TEXTAREA_CLASSES,
+} from '@internal/ui/lib/input/constants/input-group-control.constants';
+import { INPUT_GROUP_HOST } from '@internal/ui/lib/input/tokens/input-group-host.token';
 
 /**
  * Directive InputGroupInputDirective
@@ -73,13 +79,24 @@ export class InputGroupInputDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-4 text-star placeholder:text-star-faint',
-      'outline-none focus-visible:outline-none disabled:cursor-not-allowed',
-      'group-data-[size=lg]/input-group:px-5 group-data-[size=sm]/input-group:px-3',
-      this.element.tagName === 'TEXTAREA' && 'min-h-24 w-full resize-none py-3',
+      INPUT_GROUP_CONTROL_CLASSES,
+      this.element.tagName === 'TEXTAREA' && INPUT_GROUP_TEXTAREA_CLASSES,
       this.class(),
     ),
   );
+  // #endregion
+
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Exposes the enclosing `ui-field`'s error as `aria-invalid` on the control.
+   */
+  public constructor() {
+    reflectFieldInvalid();
+  }
   // #endregion
 
   // #region Methods
@@ -107,6 +124,7 @@ export class InputGroupInputDirective {
  */
 @Directive({
   selector: '[uiInputGroup]',
+  providers: [{ provide: INPUT_GROUP_HOST, useValue: true }],
   host: {
     role: 'group',
     'data-slot': 'input-group',
@@ -162,6 +180,18 @@ export class InputGroupDirective {
    */
   private readonly control: Signal<InputGroupInputDirective | undefined> =
     contentChild<InputGroupInputDirective>(InputGroupInputDirective, { descendants: true });
+
+  /**
+   * Property element
+   * @readonly
+   *
+   * @description
+   * Group element, searched for a control rendered inside a catalogue component (`ui-autocomplete`),
+   * which content queries do not reach.
+   *
+   * @type {HTMLElement}
+   */
+  private readonly element: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   // #endregion
 
   // #region Methods
@@ -170,12 +200,18 @@ export class InputGroupDirective {
    * @method focusControl
    *
    * @description
-   * Focuses the projected input when the group contains a control; an empty group is a no-op.
+   * Focuses the group's control: the projected `uiInputGroupInput`, else the first element marked as
+   * the group control (a `uiInput` in the group); an empty group is a no-op.
    *
    * @returns {void}
    */
   public focusControl(): void {
-    this.control()?.focus();
+    const control: InputGroupInputDirective | undefined = this.control();
+    if (control) {
+      control.focus();
+      return;
+    }
+    this.element.querySelector<HTMLElement>('[data-slot="input-group-control"]')?.focus();
   }
   // #endregion
 }
@@ -305,7 +341,7 @@ export class InputGroupTextDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'inline-flex items-center gap-2 text-sm text-star-muted [&_ng-icon]:pointer-events-none',
+      'inline-flex items-center gap-2 text-sm text-fg-muted [&_ng-icon]:pointer-events-none',
       this.class(),
     ),
   );

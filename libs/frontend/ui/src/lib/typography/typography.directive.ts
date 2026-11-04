@@ -76,7 +76,7 @@ export class DisplayDirective extends TypographyStyle {
    *
    * @type {string}
    */
-  protected readonly base: string = 'font-display text-hero-sm text-balance text-star md:text-hero';
+  protected readonly base: string = 'font-display text-hero-sm text-balance text-fg md:text-hero';
   // #endregion
 }
 
@@ -100,7 +100,7 @@ export class H1Directive extends TypographyStyle {
    * @type {string}
    */
   protected readonly base: string =
-    'scroll-m-24 font-display text-d1-sm text-balance text-star md:text-d1';
+    'scroll-m-24 font-display text-d1-sm text-balance text-fg md:text-d1';
   // #endregion
 }
 
@@ -124,7 +124,7 @@ export class H2Directive extends TypographyStyle {
    * @type {string}
    */
   protected readonly base: string =
-    'scroll-m-24 font-display text-d2-sm text-balance text-star md:text-d2';
+    'scroll-m-24 font-display text-d2-sm text-balance text-fg md:text-d2';
   // #endregion
 }
 
@@ -147,7 +147,7 @@ export class H3Directive extends TypographyStyle {
    *
    * @type {string}
    */
-  protected readonly base: string = 'scroll-m-24 font-display text-d3 text-balance text-star';
+  protected readonly base: string = 'scroll-m-24 font-display text-d3 text-balance text-fg';
   // #endregion
 }
 
@@ -170,7 +170,7 @@ export class H4Directive extends TypographyStyle {
    *
    * @type {string}
    */
-  protected readonly base: string = 'scroll-m-24 text-lg/[26px] font-semibold text-star';
+  protected readonly base: string = 'scroll-m-24 text-lg/[26px] font-semibold text-fg';
   // #endregion
 }
 
@@ -216,7 +216,7 @@ export class LeadDirective extends TypographyStyle {
    *
    * @type {string}
    */
-  protected readonly base: string = 'text-lead-sm text-pretty text-star-muted md:text-lead';
+  protected readonly base: string = 'text-lead-sm text-pretty text-fg-muted md:text-lead';
   // #endregion
 }
 
@@ -239,7 +239,7 @@ export class LargeDirective extends TypographyStyle {
    *
    * @type {string}
    */
-  protected readonly base: string = 'text-lg/[26px] font-semibold text-star';
+  protected readonly base: string = 'text-lg/[26px] font-semibold text-fg';
   // #endregion
 }
 
@@ -285,7 +285,7 @@ export class MutedDirective extends TypographyStyle {
    *
    * @type {string}
    */
-  protected readonly base: string = 'text-small text-star-muted';
+  protected readonly base: string = 'text-small text-fg-muted';
   // #endregion
 }
 
@@ -308,7 +308,7 @@ export class OverlineDirective extends TypographyStyle {
    *
    * @type {string}
    */
-  protected readonly base: string = 'font-mono text-label text-star-faint uppercase';
+  protected readonly base: string = 'font-mono text-label text-fg-faint uppercase';
   // #endregion
 }
 
@@ -355,7 +355,7 @@ export class BlockquoteDirective extends TypographyStyle {
    * @type {string}
    */
   protected readonly base: string =
-    'border-l-2 border-line-strong pl-6 text-lead-sm text-star-muted not-first:mt-6';
+    'border-l-2 border-border-strong pl-6 text-lead-sm text-fg-muted not-first:mt-6';
   // #endregion
 }
 
@@ -379,7 +379,7 @@ export class InlineCodeDirective extends TypographyStyle {
    * @type {string}
    */
   protected readonly base: string =
-    'rounded-sm bg-void-raised px-1.5 py-0.5 font-mono text-[0.85em] text-star';
+    'rounded-xs bg-surface-raised px-1.5 py-0.5 font-mono text-[0.85em] text-fg';
   // #endregion
 }
 
@@ -403,7 +403,7 @@ export class ListDirective extends TypographyStyle {
    * @type {string}
    */
   protected readonly base: string = cn(
-    'ml-6 text-body not-first:mt-6 marker:text-star-faint [&>li]:not-first:mt-2',
+    'ml-6 text-body not-first:mt-6 marker:text-fg-faint [&>li]:not-first:mt-2',
     inject<ElementRef<HTMLElement>>(ElementRef).nativeElement.tagName === 'OL'
       ? 'list-decimal'
       : 'list-disc',

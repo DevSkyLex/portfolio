@@ -7,7 +7,7 @@
  * @type {string}
  */
 export const CONTACT_LINK_CLASS =
-  'inline-flex min-h-9 items-center text-[17px]/5 text-star underline decoration-transparent decoration-1 underline-offset-[6px] transition-[text-decoration-color] duration-(--dur-pop) ease-orbit hover:decoration-current focus-visible:decoration-current motion-reduce:transition-none' as const;
+  'inline-flex min-h-9 items-center text-[17px]/5 text-fg underline decoration-transparent decoration-1 underline-offset-[6px] transition-[text-decoration-color] duration-(--dur-pop) ease-orbit hover:decoration-current focus-visible:decoration-current motion-reduce:transition-none' as const;
 
 /**
  * Constant CONTACT_REVEAL_CLASS

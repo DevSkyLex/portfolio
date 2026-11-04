@@ -23,7 +23,7 @@ import { PROJECTS_DECO } from '@internal/content-web-feature/lib/ui/sections/pro
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section
-      class="@container relative bg-void pt-40 shadow-[0_-1px_0_var(--void)] before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-[min(640px,70vh)] before:bg-[linear-gradient(to_bottom,transparent_0%,color-mix(in_srgb,var(--void)_6%,transparent)_18%,color-mix(in_srgb,var(--void)_18%,transparent)_34%,color-mix(in_srgb,var(--void)_36%,transparent)_50%,color-mix(in_srgb,var(--void)_58%,transparent)_66%,color-mix(in_srgb,var(--void)_80%,transparent)_82%,color-mix(in_srgb,var(--void)_94%,transparent)_93%,var(--void)_100%)] @max-[768px]:before:h-[360px]"
+      class="@container relative bg-surface pt-40 shadow-[0_-1px_0_var(--surface)] before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-[min(640px,70vh)] before:bg-[linear-gradient(to_bottom,transparent_0%,color-mix(in_srgb,var(--surface)_6%,transparent)_18%,color-mix(in_srgb,var(--surface)_18%,transparent)_34%,color-mix(in_srgb,var(--surface)_36%,transparent)_50%,color-mix(in_srgb,var(--surface)_58%,transparent)_66%,color-mix(in_srgb,var(--surface)_80%,transparent)_82%,color-mix(in_srgb,var(--surface)_94%,transparent)_93%,var(--surface)_100%)] @max-[768px]:before:h-[360px]"
       id="projects"
       uiSectionFx
       aria-labelledby="projects-title"

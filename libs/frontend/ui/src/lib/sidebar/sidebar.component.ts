@@ -21,7 +21,10 @@ import { NgIcon } from '@ng-icons/core';
 import { lucidePanelLeft } from '@ng-icons/lucide';
 import { ButtonDirective } from '@internal/ui/lib/button/button.directive';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
-import { SIDEBAR_TOGGLE_LABEL } from '@internal/ui/lib/sidebar/constants/sidebar.constants';
+import { ModifierKeyService } from '@internal/ui/lib/kbd/services/modifier-key/modifier-key.service';
+import type { SidebarControl } from '@internal/ui/lib/sidebar/models/sidebar/sidebar-control.interface';
+import { SIDEBAR_CONTROL } from '@internal/ui/lib/sidebar/tokens/sidebar-control/sidebar-control.token';
+import { TooltipDirective } from '@internal/ui/lib/tooltip/tooltip.directive';
 import { SidebarService } from '@internal/ui/lib/sidebar/services/sidebar/sidebar.service';
 import type { SidebarCollapsible } from '@internal/ui/lib/sidebar/models/sidebar/sidebar-collapsible.type';
 import type { SidebarSide } from '@internal/ui/lib/sidebar/models/sidebar/sidebar-side.type';
@@ -51,7 +54,7 @@ import type { SidebarVariant } from '@internal/ui/lib/sidebar/models/sidebar/sid
     <ng-template #content><ng-content /></ng-template>
     <ng-template #drawer>
       <div
-        class="flex h-full w-72 max-w-[85vw] flex-col border-line bg-void-raised text-star"
+        class="flex h-full w-72 max-w-[85vw] flex-col border-border bg-surface-raised text-fg"
         data-slot="sidebar"
         data-mobile="true"
         [class.border-r]="side() === 'left'"
@@ -239,8 +242,8 @@ export class SidebarComponent {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     this.collapsible() === 'none'
-      ? cn('flex h-full w-(--sidebar-width) flex-col bg-void-raised text-star', this.class())
-      : cn('group/sidebar peer/sidebar hidden text-star md:block', this.class()),
+      ? cn('flex h-full w-(--sidebar-width) flex-col bg-surface-raised text-fg', this.class())
+      : cn('group/sidebar peer/sidebar hidden text-fg md:block', this.class()),
   );
 
   /**
@@ -283,7 +286,7 @@ export class SidebarComponent {
         ? 'p-2 group-data-[collapsible=icon]/sidebar:w-[calc(var(--sidebar-width-icon)+1rem+2px)]'
         : cn(
             'group-data-[collapsible=icon]/sidebar:w-(--sidebar-width-icon)',
-            this.side() === 'left' ? 'border-r border-line' : 'border-l border-line',
+            this.side() === 'left' ? 'border-r border-border' : 'border-l border-border',
           ),
     ),
   );
@@ -299,8 +302,8 @@ export class SidebarComponent {
    */
   protected readonly innerClasses: Signal<string> = computed<string>((): string =>
     cn(
-      'flex h-full w-full flex-col bg-void-raised',
-      this.variant() === 'floating' && 'rounded-card border border-line shadow-float',
+      'flex h-full w-full flex-col bg-surface-raised',
+      this.variant() === 'floating' && 'rounded-xl border border-border shadow-float',
     ),
   );
   // #endregion
@@ -365,39 +368,62 @@ export class SidebarComponent {
  * @class SidebarTriggerComponent
  *
  * @description
- * Provides a labelled button that toggles desktop expansion or the mobile drawer.
+ * Labelled icon button that collapses or expands the sidebar provided under `SIDEBAR_CONTROL`
+ * (`uiSidebarProvider`, or an application layout with its own sidebar), wherever it sits below the
+ * provider, as shadcn's `SidebarTrigger`. Its name follows the state (« Réduire » or « Déployer la
+ * barre latérale »), it reflects `aria-expanded` and `aria-controls`, and its tooltip below it shows
+ * the name with the provider's shortcut caps. It renders nothing without a provider or while the
+ * provider reports the toggle unavailable (a layout whose sidebar is a top bar).
  */
 @Component({
   selector: 'ui-sidebar-trigger',
-  imports: [ButtonDirective, NgIcon],
+  imports: [ButtonDirective, NgIcon, TooltipDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': 'classes()', 'data-slot': 'sidebar-trigger' },
-  template: `<button
-    uiBtn
-    type="button"
-    variant="ghost"
-    size="sm"
-    class="w-9 px-0"
-    [attr.aria-label]="label()"
-    [attr.aria-expanded]="sidebar.expanded()"
-    [attr.aria-controls]="sidebar.isMobile() ? null : sidebar.sidebarId"
-    (click)="sidebar.toggle()"
-  >
-    <ng-icon class="rtl:-scale-x-100" [svg]="icons.panel" size="16" aria-hidden="true" />
-  </button>`,
+  template: `@if (control?.available()) {
+    <button
+      uiBtn
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      [attr.aria-label]="currentLabel()"
+      [attr.aria-expanded]="control.expanded()"
+      [attr.aria-controls]="control.controls()"
+      [attr.aria-keyshortcuts]="keys().length ? modifier.ariaKeys(keys()) : null"
+      [uiTooltip]="currentLabel()"
+      tooltipPosition="bottom"
+      [tooltipShortcut]="modifier.caps(keys())"
+      (click)="control.toggle()"
+    >
+      <ng-icon class="rtl:-scale-x-100" [svg]="icons.panel" size="16" aria-hidden="true" />
+    </button>
+  }`,
 })
 export class SidebarTriggerComponent {
   // #region Properties
   /**
-   * Property sidebar
+   * Property control
    * @readonly
    *
    * @description
-   * Provider state exposed by the trigger's expanded and control relationships.
+   * Sidebar state of the nearest provider, `null` outside any provider.
    *
-   * @type {SidebarService}
+   * @type {SidebarControl | null}
    */
-  protected readonly sidebar: SidebarService = inject<SidebarService>(SidebarService);
+  protected readonly control: SidebarControl | null = inject<SidebarControl>(SIDEBAR_CONTROL, {
+    optional: true,
+  });
+
+  /**
+   * Property modifier
+   * @readonly
+   *
+   * @description
+   * Spells the shortcut caps and `aria-keyshortcuts` for the platform (`Ctrl` or `⌘`).
+   *
+   * @type {ModifierKeyService}
+   */
+  protected readonly modifier: ModifierKeyService = inject<ModifierKeyService>(ModifierKeyService);
 
   /**
    * Property icons
@@ -413,15 +439,30 @@ export class SidebarTriggerComponent {
   } as const;
 
   /**
-   * Property label
+   * Property collapseLabel
    * @readonly
    *
    * @description
-   * Accessible name for the sidebar toggle button.
+   * Accessible name and tooltip while the sidebar is expanded.
    *
    * @type {InputSignal<string>}
    */
-  public readonly label: InputSignal<string> = input<string>(SIDEBAR_TOGGLE_LABEL());
+  public readonly collapseLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.sidebar.collapse:Réduire la barre latérale`,
+  );
+
+  /**
+   * Property expandLabel
+   * @readonly
+   *
+   * @description
+   * Accessible name and tooltip while the sidebar is collapsed.
+   *
+   * @type {InputSignal<string>}
+   */
+  public readonly expandLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.sidebar.expand:Déployer la barre latérale`,
+  );
 
   /**
    * Property class
@@ -435,16 +476,43 @@ export class SidebarTriggerComponent {
   public readonly class: InputSignal<string> = input<string>('');
 
   /**
+   * Property currentLabel
+   * @readonly
+   *
+   * @description
+   * Name of the action the button performs in the current state.
+   *
+   * @type {Signal<string>}
+   */
+  protected readonly currentLabel: Signal<string> = computed<string>((): string =>
+    this.control?.expanded() ? this.collapseLabel() : this.expandLabel(),
+  );
+
+  /**
+   * Property keys
+   * @readonly
+   *
+   * @description
+   * Provider's toggle shortcut, empty without one.
+   *
+   * @type {Signal<readonly string[]>}
+   */
+  protected readonly keys: Signal<readonly string[]> = computed<readonly string[]>(
+    (): readonly string[] => this.control?.shortcut() ?? [],
+  );
+
+  /**
    * Property classes
    * @readonly
    *
    * @description
-   * Inline layout classes merged with caller-provided trigger classes.
+   * Inline layout classes merged with caller-provided trigger classes; the host leaves the layout
+   * (and its flex gap) while the toggle is unavailable.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('inline-flex', this.class()),
+    cn(this.control?.available() ? 'inline-flex' : 'hidden', this.class()),
   );
   // #endregion
 }

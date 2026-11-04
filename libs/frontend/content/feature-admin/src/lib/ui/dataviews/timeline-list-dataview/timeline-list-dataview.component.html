@@ -1,0 +1,144 @@
+<ui-data-table
+  density="compact"
+  activatable
+  selectable
+  resizableColumns
+  stickyHeader
+  emptyLayout="fill"
+  [columnWidthsKey]="widthsKey()"
+  class="[--data-table-sticky-top:3rem]"
+  [caption]="texts().section"
+  [columnMenu]="false"
+  [framed]="false"
+  [data]="entries()"
+  [columns]="columns"
+  [facets]="facets()"
+  [rowKey]="key"
+  [rowLabel]="name"
+  [searchPredicate]="search"
+  [pageSizeOptions]="pageSizes"
+  [loading]="loading()"
+  [labels]="labels()"
+  [(state)]="state"
+  [(selection)]="selection"
+  (rowActivated)="entryOpened.emit($event)"
+>
+  <ng-template uiDataTableCell="periode" [uiDataTableCellRows]="entries()" let-entry>
+    <span class="text-[13px] text-fg-muted tabular-nums">{{ period(entry.start, entry.end) }}</span>
+  </ng-template>
+
+  <ng-template uiDataTableCell="intitule" [uiDataTableCellRows]="entries()" let-entry>
+    <div class="flex w-0 min-w-full items-baseline gap-2.5">
+      <a
+        class="truncate font-medium text-fg outline-2 outline-offset-2 outline-transparent focus-visible:rounded-xs focus-visible:outline-accent/55"
+        [routerLink]="[entry.id]"
+        >{{ entry.title.fr }}</a
+      >
+      <span class="truncate text-[12px] text-fg-faint @min-[641px]:hidden">{{
+        period(entry.start, entry.end)
+      }}</span>
+    </div>
+  </ng-template>
+
+  <ng-template uiDataTableCell="lieu" [uiDataTableCellRows]="entries()" let-entry>
+    @if (entry.place.fr) {
+      <span class="block w-0 min-w-full truncate text-fg-muted">{{ entry.place.fr }}</span>
+    } @else {
+      <ui-data-table-empty-cell />
+    }
+  </ng-template>
+
+  <ng-template uiDataTableCell="technos" [uiDataTableCellRows]="entries()" let-entry>
+    <div class="flex w-0 min-w-full items-center gap-1 overflow-hidden">
+      @if (!entry.techs.length) {
+        <ui-data-table-empty-cell />
+      }
+      @for (tech of entry.techs.slice(0, 3); track tech) {
+        <span uiBadge variant="outline" class="h-5 px-1.5 font-mono text-[11px] font-normal">{{
+          tech
+        }}</span>
+      }
+      @if (entry.techs.length > 3) {
+        <span class="text-[12px] text-fg-faint" [title]="entry.techs.slice(3).join(', ')"
+          >+{{ entry.techs.length - 3 }}</span
+        >
+      }
+    </div>
+  </ng-template>
+
+  <ng-template uiDataTableCell="actions" [uiDataTableCellRows]="entries()" let-entry>
+    <button
+      uiBtn
+      variant="ghost"
+      size="icon-xs"
+      type="button"
+      uiTooltip="Actions"
+      i18n-uiTooltip="@@admin.timeline.row.actionsTooltip"
+      align="end"
+      [attr.aria-label]="actionsLabel(entry)"
+      [attr.data-entry-actions]="entry.id"
+      [uiDropdownMenuTrigger]="actions"
+    >
+      <ng-icon [svg]="icons.more" size="16" aria-hidden="true" />
+    </button>
+    <ng-template #actions>
+      <div uiDropdownMenuContent class="min-w-44">
+        <a uiDropdownMenuItem [routerLink]="[entry.id]">
+          <ng-icon [svg]="icons.edit" size="14" aria-hidden="true" />
+          <ng-container i18n="@@admin.timeline.action.edit">Modifier</ng-container>
+        </a>
+        <div uiDropdownMenuSeparator></div>
+        <button
+          uiDropdownMenuItem
+          type="button"
+          [disabled]="writing()"
+          (triggered)="deleteRequested.emit(entry)"
+        >
+          <ng-icon class="text-danger-ink" [svg]="icons.remove" size="14" aria-hidden="true" />
+          <ng-container i18n="@@admin.timeline.action.delete">Supprimer</ng-container>
+        </button>
+      </div>
+    </ng-template>
+  </ng-template>
+
+  <ng-template uiDataTableEmpty let-layout>
+    <div uiEmpty [layout]="layout">
+      <div uiEmptyHeader>
+        <div uiEmptyMedia variant="icon">
+          <ng-icon [svg]="texts().icon" size="16" />
+        </div>
+        <p uiEmptyTitle>{{ texts().empty }}</p>
+        <p uiEmptyDescription>{{ texts().emptyHint }}</p>
+      </div>
+      <div uiEmptyContent>
+        <a uiBtn size="xs" routerLink="new">{{ texts().create }}</a>
+      </div>
+    </div>
+  </ng-template>
+</ui-data-table>
+
+<ui-selection-bar
+  label="Actions sur la sélection"
+  i18n-label="@@admin.timeline.selection.label"
+  clearLabel="Effacer la sélection"
+  i18n-clearLabel="@@admin.timeline.selection.clear"
+  [clearHint]="clearHint"
+  [count]="selection().length"
+  [countLabel]="selectedCount"
+  [returnFocus]="returnFocus()"
+  (cleared)="selection.set([])"
+>
+  <button
+    uiBtn
+    variant="ghost"
+    size="sm"
+    type="button"
+    class="h-8 rounded-sm px-2.5 text-[13px]"
+    data-bulk-action="delete"
+    [disabled]="writing()"
+    (click)="deleteManyRequested.emit(selection())"
+  >
+    <ng-icon class="text-danger-ink" [svg]="icons.remove" size="14" aria-hidden="true" />
+    <ng-container i18n="@@admin.timeline.action.delete">Supprimer</ng-container>
+  </button>
+</ui-selection-bar>

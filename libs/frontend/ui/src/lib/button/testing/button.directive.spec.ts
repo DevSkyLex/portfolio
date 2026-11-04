@@ -2,6 +2,7 @@ import type { Mock } from 'vitest';
 import { Component } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { ButtonDirective } from '@internal/ui/lib/button/button.directive';
+import { buttonVariants } from '@internal/ui/lib/button/constants/button.variants';
 
 /**
  * Component HostComponent
@@ -21,10 +22,42 @@ describe('ButtonDirective', () => {
     const fixture: ComponentFixture<HostComponent> = TestBed.createComponent(HostComponent);
     await fixture.whenStable();
     const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
-    expect(button.className).toContain('hover:border-line-hover');
+    expect(button.className).toContain('hover:border-border-hover');
     expect(button.className).toContain('h-9');
     expect(button.className).toContain('w-full');
     expect(button.getAttribute('data-slot')).toBe('button');
+  });
+
+  it('takes the radius of its height and keeps the narrow ghost padding off the xs size', () => {
+    const classes = (
+      size: 'xs' | 'sm' | 'lg',
+      variant: 'ghost' | 'primary' = 'primary',
+    ): string[] => buttonVariants({ size, variant }).split(' ');
+    expect(classes('sm')).toEqual(expect.arrayContaining(['h-9', 'rounded-md']));
+    expect(classes('xs')).toEqual(expect.arrayContaining(['h-7', 'rounded-sm', 'px-2.5']));
+    expect(classes('lg')).toEqual(expect.arrayContaining(['h-14', 'rounded-lg']));
+    expect(classes('xs', 'ghost')).not.toContain('px-3');
+    expect(classes('sm', 'ghost')).toContain('px-3');
+  });
+
+  it('offers square icon sizes on the small-control radius', () => {
+    expect(buttonVariants({ size: 'icon-xs', variant: 'ghost' }).split(' ')).toEqual(
+      expect.arrayContaining(['size-7', 'rounded-sm', 'px-0']),
+    );
+    expect(buttonVariants({ size: 'icon-sm', variant: 'ghost' }).split(' ')).toEqual(
+      expect.arrayContaining(['size-8', 'rounded-sm', 'px-0']),
+    );
+    expect(buttonVariants({ size: 'icon-sm', variant: 'ghost' })).not.toContain('px-3');
+  });
+
+  it('keeps the medium weight when a caller resizes the text, and a quiet disabled fill', () => {
+    const classes: string[] = buttonVariants({ size: 'xs', variant: 'primary' }).split(' ');
+    expect(classes).toEqual(expect.arrayContaining(['font-medium', 'text-[13px]']));
+    expect(classes).toEqual(
+      expect.arrayContaining(['disabled:bg-fill-disabled', 'aria-disabled:bg-fill-disabled']),
+    );
+    expect(classes).not.toContain('disabled:bg-border-field');
+    expect(buttonVariants({ variant: 'danger' })).toContain('disabled:bg-fill-disabled');
   });
 
   describe('ripple', () => {

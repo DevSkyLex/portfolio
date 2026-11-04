@@ -492,7 +492,7 @@ export class PaginationEllipsisComponent {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('flex size-9 items-center justify-center text-star-faint', this.class()),
+    cn('flex size-9 items-center justify-center text-fg-faint', this.class()),
   );
   // #endregion
 }

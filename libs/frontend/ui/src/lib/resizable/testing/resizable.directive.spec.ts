@@ -6,7 +6,12 @@ import {
   ResizablePanelGroupDirective,
 } from '@internal/ui/lib/resizable/resizable.directive';
 import {
+  boundaryRange,
+  fitPanelSizes,
   initialPanelSizes,
+  panelRange,
+  percentOf,
+  pixelsOf,
   resizePanels,
 } from '@internal/ui/lib/resizable/utils/resizable/resizable.utils';
 
@@ -128,5 +133,134 @@ describe('Resizable', (): void => {
     await fixture.whenStable();
     expect(handle.hasAttribute('data-dragging')).toBe(false);
     expect(fixture.componentInstance.layout).toEqual([40, 60]);
+  });
+});
+
+describe('resizable pixel utils', (): void => {
+  it('converts pixel sizes once the group is measured', (): void => {
+    expect(pixelsOf('232px')).toBe(232);
+    expect(pixelsOf(20)).toBeUndefined();
+    expect(percentOf('250px', 1000)).toBe(25);
+    expect(percentOf('250px', 0)).toBeUndefined();
+    expect(percentOf(40, 0)).toBe(40);
+    expect(panelRange('200px', '360px', 1000)).toEqual({ min: 20, max: 36 });
+    expect(panelRange('200px', '360px', 0)).toEqual({ min: 0, max: 100 });
+    expect(panelRange('600px', '360px', 1000)).toEqual({ min: 60, max: 60 });
+  });
+
+  it('pins the targeted panels within their bounds and shares the rest', (): void => {
+    const ranges: { min: number; max: number }[] = [
+      { min: 20, max: 36 },
+      { min: 0, max: 100 },
+    ];
+    expect(fitPanelSizes([50, 50], [23.2, undefined], ranges)).toEqual([23.2, 76.8]);
+    expect(fitPanelSizes([50, 50], [10, undefined], ranges)).toEqual([20, 80]);
+    expect(fitPanelSizes([50, 50], [undefined, undefined], ranges)).toEqual([50, 50]);
+    expect(
+      boundaryRange([30, 70], 0, [
+        { min: 20, max: 36 },
+        { min: 70, max: 100 },
+      ]),
+    ).toEqual({
+      min: 20,
+      max: 30,
+    });
+  });
+});
+
+/**
+ * Component PixelHostComponent
+ * @class PixelHostComponent
+ *
+ * @description
+ * Sidebar sized in pixels whose splitter lies inside it, beside a flexible page.
+ */
+@Component({
+  imports: [ResizablePanelGroupDirective, ResizablePanelDirective, ResizableHandleComponent],
+  template: `<div uiResizablePanelGroup>
+    <aside uiResizablePanel defaultSize="232px" minSize="200px" maxSize="360px">
+      Nav
+      <ui-resizable-handle label="Resize" step="16px" />
+    </aside>
+    <main uiResizablePanel>Main</main>
+  </div>`,
+})
+class PixelHostComponent {}
+
+describe('Resizable pixel sizes', (): void => {
+  let width: number = 1160;
+  let observed: (() => void) | null = null;
+
+  beforeEach((): void => {
+    width = 1160;
+    observed = null;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ): DOMRect {
+      return this.getAttribute('data-slot') === 'resizable-panel-group'
+        ? new DOMRect(0, 0, width, 600)
+        : new DOMRect(0, 0, 0, 0);
+    });
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        public constructor(callback: () => void) {
+          observed = callback;
+        }
+
+        public observe(): void {
+          // The test calls the callback itself.
+        }
+
+        public disconnect(): void {
+          observed = null;
+        }
+      },
+    );
+  });
+
+  afterEach((): void => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('keeps the pixel width when the group changes size and steps by pixels', async (): Promise<void> => {
+    const fixture: ComponentFixture<PixelHostComponent> =
+      TestBed.createComponent(PixelHostComponent);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const aside: HTMLElement = element.querySelector('aside') as HTMLElement;
+    const handle: HTMLElement = element.querySelector('ui-resizable-handle') as HTMLElement;
+    expect(aside.style.flex).toBe('20 1 0px');
+    expect(handle.getAttribute('aria-valuemin')).toBe('17');
+    expect(handle.getAttribute('aria-valuemax')).toBe('31');
+    expect(aside.classList).toContain('relative');
+    expect(handle.classList).toContain('absolute');
+    expect(handle.classList).toContain('end-0');
+    expect(handle.classList).not.toContain('relative');
+
+    handle.dispatchEvent(key('ArrowRight'));
+    await fixture.whenStable();
+    expect(Number.parseFloat(aside.style.flex)).toBeCloseTo((248 / 1160) * 100, 5);
+
+    width = 2000;
+    observed?.();
+    await fixture.whenStable();
+    expect(Number.parseFloat(aside.style.flex)).toBeCloseTo(12.4, 5);
+    expect(handle.getAttribute('aria-valuemin')).toBe('10');
+    expect(handle.getAttribute('aria-valuemax')).toBe('18');
+
+    handle.dispatchEvent(key('Home'));
+    await fixture.whenStable();
+    expect(Number.parseFloat(aside.style.flex)).toBeCloseTo(10, 5);
+  });
+
+  it('lays a pixel default out as a fixed basis before the group is measured', async (): Promise<void> => {
+    width = 0;
+    const fixture: ComponentFixture<PixelHostComponent> =
+      TestBed.createComponent(PixelHostComponent);
+    await fixture.whenStable();
+    const aside: HTMLElement = fixture.nativeElement.querySelector('aside') as HTMLElement;
+    expect(aside.style.flex).toBe('0 0 232px');
   });
 });

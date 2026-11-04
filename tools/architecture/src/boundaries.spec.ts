@@ -422,11 +422,6 @@ describe('allowed imports (controls)', (): void => {
       SHELL,
       '@vfortin/identity-web-data-access/http',
     ],
-    [
-      'shell to the contact details (secondary entry point)',
-      SHELL,
-      '@vfortin/contact-web-data-access/links',
-    ],
     ['content admin to its data access', CONTENT_ADMIN, '@vfortin/content-web-data-access'],
     [
       'content admin to the editor (secondary entry point)',

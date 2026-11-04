@@ -49,8 +49,8 @@ Load a skill with the `Skill` tool when its subject comes up, not before reading
 
 - Budgets in `apps/web/project.json`: initial 500 kB warning / 1 MB error, component styles 4 kB / 8 kB.
   Ask for the `npx nx build web` output (and `--stats-json` when a regression needs attribution).
-- `libs/frontend/ui/package.json` keeps `"sideEffects": false` (D26); the whole catalogue's Tailwind
-  classes stay in `styles.css` by design.
+- `libs/frontend/ui/package.json` keeps `"sideEffects": false` (D26); the public `styles.css` scans only
+  the sources the public pages reach and the admin's classes live in the lazy `admin.css` (D31).
 - The public bundle never contains Zod (snapshot validation is server-side, D10), NgRx or the session
   store (the admin interceptor loads them lazily, D18) or `@angular/ssr` (only `@vfortin/web-shell/server`).
   Admin routes stay lazy (`libs/frontend/shell/src/lib/admin/admin.routes.ts`).

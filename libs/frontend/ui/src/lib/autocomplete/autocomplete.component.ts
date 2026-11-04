@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   model,
   type InputSignal,
@@ -13,6 +14,7 @@ import type { FormValueControl } from '@angular/forms/signals';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import { ComboboxBase } from '@internal/ui/lib/combobox/directives/combobox-base/combobox-base';
 import { InputDirective } from '@internal/ui/lib/input/input.directive';
+import { INPUT_GROUP_HOST } from '@internal/ui/lib/input/tokens/input-group-host.token';
 import { normalizeText } from '@internal/ui/lib/menu-panel/utils/menu-panel/menu-panel.utils';
 import { menuOptionVariants } from '@internal/ui/lib/menu-panel/constants/menu-option.variants';
 import type { Suggestion } from '@internal/ui/lib/autocomplete/models/autocomplete/suggestion.interface';
@@ -30,13 +32,28 @@ import type { Suggestion } from '@internal/ui/lib/autocomplete/models/autocomple
   imports: [CdkConnectedOverlay, InputDirective],
   templateUrl: './autocomplete.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'relative block', 'data-slot': 'autocomplete' },
+  host: {
+    '[class]': 'group ? "relative flex min-w-0 flex-1 self-stretch" : "relative block"',
+    'data-slot': 'autocomplete',
+  },
 })
 export class AutocompleteComponent
   extends ComboboxBase<Suggestion>
   implements FormValueControl<string>
 {
   // #region Properties
+  /**
+   * Property group
+   * @readonly
+   *
+   * @description
+   * Enclosing input group: the host fills its row and the inner `uiInput` becomes the group control,
+   * so addons (a language switch, a button) sit in the same frame.
+   *
+   * @type {boolean}
+   */
+  protected readonly group: boolean = inject<true>(INPUT_GROUP_HOST, { optional: true }) ?? false;
+
   /**
    * Property value
    * @readonly
@@ -114,7 +131,7 @@ export class AutocompleteComponent
    * @type {Signal<string>}
    */
   protected override readonly fieldClasses: Signal<string> = computed<string>(() =>
-    cn('aria-expanded:border-signal/55 aria-expanded:hover:border-signal/55', this.class()),
+    cn('aria-expanded:border-accent/55 aria-expanded:hover:border-accent/55', this.class()),
   );
 
   /**

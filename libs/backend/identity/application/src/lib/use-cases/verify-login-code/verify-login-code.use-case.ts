@@ -176,7 +176,8 @@ export class VerifyLoginCode {
           throw new ChallengeExpiredError();
         }
         const account: AdminAccount | null = await accounts.lockById(challenge.accountId);
-        if (account === null) {
+        // The second factor turned off since the challenge opened: the password step must run again.
+        if (account === null || account.totpSecret === null) {
           throw new ChallengeExpiredError();
         }
         account.assertCanAttempt(now);

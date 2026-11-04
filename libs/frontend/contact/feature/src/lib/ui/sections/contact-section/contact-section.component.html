@@ -1,5 +1,5 @@
 <section
-  class="@container/contact relative scroll-mt-24 bg-void pt-80 pb-40 shadow-[0_-1px_0_var(--void)] @max-[768px]:pt-100 @max-[768px]:pb-16"
+  class="@container/contact relative scroll-mt-24 bg-surface pt-80 pb-40 shadow-[0_-1px_0_var(--surface)] @max-[768px]:pt-100 @max-[768px]:pb-16"
   id="contact"
   uiSectionFx
   aria-labelledby="contact-title"
@@ -14,35 +14,29 @@
       class="grid items-start gap-12 @min-[960px]/contact:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] @min-[960px]/contact:gap-16"
     >
       <div class="flex flex-col gap-6" [class]="reveal" uiReveal>
-        <p class="max-w-measure text-body text-star-muted" i18n="@@contact.lead">
+        <p class="max-w-measure text-body text-fg-muted" i18n="@@contact.lead">
           Pour un poste, une mission ou une question.
         </p>
-        <ul class="flex flex-col" role="list">
-          <li>
-            <a [class]="link" [href]="'mailto:' + links.email">
-              <ng-icon
-                class="mr-2.5"
-                [svg]="icons.mail"
-                size="16"
-                strokeWidth="2.25"
-                aria-hidden="true"
-              />
-              {{ links.email }}
-            </a>
-          </li>
-          <li>
-            <a [class]="link" [href]="links.github">
-              <ng-icon class="mr-2.5" [svg]="icons.github" size="16" aria-hidden="true" />
-              GitHub
-            </a>
-          </li>
-          <li>
-            <a [class]="link" [href]="links.linkedin">
-              <ng-icon class="mr-2.5" [svg]="icons.linkedin" size="16" aria-hidden="true" />
-              LinkedIn
-            </a>
-          </li>
-        </ul>
+        @if (links().length > 0) {
+          <ul class="flex flex-col" role="list">
+            @for (item of links(); track item.href) {
+              <li>
+                <a [class]="link" [href]="item.href">
+                  <ng-icon
+                    class="mr-2.5"
+                    [svg]="linkIcons[item.kind]"
+                    size="16"
+                    [strokeWidth]="
+                      item.kind === 'email' || item.kind === 'website' ? 2.25 : undefined
+                    "
+                    aria-hidden="true"
+                  />
+                  {{ item.label }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
       </div>
 
       <div class="@container relative z-1 [--rd:80ms]" [class]="reveal" uiReveal>
@@ -60,17 +54,17 @@
               <ng-icon [svg]="icons.check" size="24" strokeWidth="1.875" />
             </span>
             <h3
-              class="animate-fade-up font-display text-d3 text-star [animation-delay:80ms] motion-reduce:animate-none"
+              class="animate-fade-up font-display text-d3 text-fg [animation-delay:80ms] motion-reduce:animate-none"
               i18n="@@contact.sent.title"
             >
               Message envoyé
             </h3>
             <p
-              class="animate-fade-up text-body text-star-muted [animation-delay:160ms] motion-reduce:animate-none"
+              class="animate-fade-up text-body text-fg-muted [animation-delay:160ms] motion-reduce:animate-none"
               i18n="@@contact.sent.body"
             >
               Merci {{ firstName() }}. Je vous réponds à
-              <span class="font-mono text-data text-star">{{ store.sentTo() }}</span
+              <span class="font-mono text-data text-fg">{{ store.sentTo() }}</span
               >.
             </p>
             <button

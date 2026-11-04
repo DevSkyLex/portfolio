@@ -1,0 +1,367 @@
+@let state = toolbar();
+<div
+  class="@container/page rounded-lg border border-border-field bg-surface transition-colors duration-(--dur-pop) ease-orbit focus-within:border-border-hover data-invalid:border-danger motion-reduce:transition-none"
+  [attr.data-invalid]="invalid() && touched() ? '' : null"
+  [attr.data-disabled]="locked() ? '' : null"
+>
+  <!-- One pixel above the toolbar: once it slides under the 48 px page bar, the toolbar is stuck. -->
+  <div #stuckSentinel class="-mb-px h-px" aria-hidden="true"></div>
+  <div
+    #bar
+    class="sticky top-12 z-10 flex flex-wrap items-center gap-1 rounded-t-lg border-b border-border bg-surface-raised p-[3px] data-stuck:rounded-t-none"
+    [attr.data-stuck]="stuck() ? '' : null"
+    role="toolbar"
+    i18n-aria-label="@@admin.article.toolbar.label"
+    aria-label="Mise en forme"
+    aria-orientation="horizontal"
+    (focusin)="onToolbarFocus($event)"
+  >
+    <div
+      uiToggleGroup
+      required
+      size="sm"
+      class="gap-0.5"
+      i18n-aria-label="@@admin.article.toolbar.blockType"
+      aria-label="Type de bloc"
+      [disabled]="locked() || state.block === null"
+      [value]="state.block"
+      (valueChange)="setBlock($event)"
+    >
+      <button
+        uiToggleGroupItem
+        value="paragraph"
+        class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+        i18n-aria-label="@@admin.article.toolbar.paragraph"
+        aria-label="Paragraphe"
+        i18n-uiTooltip="@@admin.article.toolbar.paragraph"
+        uiTooltip="Paragraphe"
+        [tooltipShortcut]="shortcuts.paragraph.caps"
+        [attr.aria-keyshortcuts]="shortcuts.paragraph.aria"
+      >
+        <ng-icon [svg]="icons.paragraph" size="16" aria-hidden="true" />
+      </button>
+      <button
+        uiToggleGroupItem
+        value="h2"
+        class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+        i18n-aria-label="@@admin.article.toolbar.h2.label"
+        aria-label="Titre de section"
+        i18n-uiTooltip="@@admin.article.toolbar.h2.tooltip"
+        uiTooltip="Titre 2, au sommaire"
+        [tooltipShortcut]="shortcuts.h2.caps"
+        [attr.aria-keyshortcuts]="shortcuts.h2.aria"
+        [disabled]="!state.can.heading"
+      >
+        <ng-icon [svg]="icons.h2" size="16" aria-hidden="true" />
+      </button>
+      <button
+        uiToggleGroupItem
+        value="h3"
+        class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+        i18n-aria-label="@@admin.article.toolbar.h3.label"
+        aria-label="Sous-titre"
+        i18n-uiTooltip="@@admin.article.toolbar.h3.tooltip"
+        uiTooltip="Titre 3"
+        [tooltipShortcut]="shortcuts.h3.caps"
+        [attr.aria-keyshortcuts]="shortcuts.h3.aria"
+        [disabled]="!state.can.heading"
+      >
+        <ng-icon [svg]="icons.h3" size="16" aria-hidden="true" />
+      </button>
+    </div>
+
+    <span class="mx-1 h-5 w-px bg-border" aria-hidden="true"></span>
+
+    <button
+      uiToggle
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+      i18n-aria-label="@@admin.article.toolbar.bold"
+      aria-label="Gras"
+      i18n-uiTooltip="@@admin.article.toolbar.bold"
+      uiTooltip="Gras"
+      [tooltipShortcut]="shortcuts.bold.caps"
+      [attr.aria-keyshortcuts]="shortcuts.bold.aria"
+      [pressed]="state.active.bold"
+      [disabled]="locked() || !state.can.bold"
+      (click)="run('bold')"
+    >
+      <ng-icon [svg]="icons.bold" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiToggle
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+      i18n-aria-label="@@admin.article.toolbar.italic"
+      aria-label="Italique"
+      i18n-uiTooltip="@@admin.article.toolbar.italic"
+      uiTooltip="Italique"
+      [tooltipShortcut]="shortcuts.italic.caps"
+      [attr.aria-keyshortcuts]="shortcuts.italic.aria"
+      [pressed]="state.active.italic"
+      [disabled]="locked() || !state.can.italic"
+      (click)="run('italic')"
+    >
+      <ng-icon [svg]="icons.italic" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiToggle
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+      i18n-aria-label="@@admin.article.toolbar.code"
+      aria-label="Code"
+      i18n-uiTooltip="@@admin.article.toolbar.code"
+      uiTooltip="Code"
+      [tooltipShortcut]="shortcuts.code.caps"
+      [attr.aria-keyshortcuts]="shortcuts.code.aria"
+      [pressed]="state.active.code"
+      [disabled]="locked() || !state.can.code"
+      (click)="run('code')"
+    >
+      <ng-icon [svg]="icons.code" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiToggle
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+      i18n-aria-label="@@admin.article.toolbar.link"
+      aria-label="Lien"
+      i18n-uiTooltip="@@admin.article.toolbar.link"
+      uiTooltip="Lien"
+      aria-haspopup="dialog"
+      [pressed]="state.active.link"
+      [disabled]="locked() || !state.can.link"
+      (click)="editLink()"
+    >
+      <ng-icon [svg]="icons.link" size="16" aria-hidden="true" />
+    </button>
+
+    <span class="mx-1 h-5 w-px bg-border" aria-hidden="true"></span>
+
+    <button
+      uiToggle
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+      i18n-aria-label="@@admin.article.toolbar.bulletList"
+      aria-label="Liste à puces"
+      i18n-uiTooltip="@@admin.article.toolbar.bulletList"
+      uiTooltip="Liste à puces"
+      [tooltipShortcut]="shortcuts.bulletList.caps"
+      [attr.aria-keyshortcuts]="shortcuts.bulletList.aria"
+      [pressed]="state.active.bulletList"
+      [disabled]="locked() || !state.can.bulletList"
+      (click)="run('bulletList')"
+    >
+      <ng-icon [svg]="icons.bulletList" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiToggle
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+      i18n-aria-label="@@admin.article.toolbar.orderedList"
+      aria-label="Liste numérotée"
+      i18n-uiTooltip="@@admin.article.toolbar.orderedList"
+      uiTooltip="Liste numérotée"
+      [tooltipShortcut]="shortcuts.orderedList.caps"
+      [attr.aria-keyshortcuts]="shortcuts.orderedList.aria"
+      [pressed]="state.active.orderedList"
+      [disabled]="locked() || !state.can.orderedList"
+      (click)="run('orderedList')"
+    >
+      <ng-icon [svg]="icons.orderedList" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiToggle
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+      i18n-aria-label="@@admin.article.toolbar.blockquote"
+      aria-label="Citation"
+      i18n-uiTooltip="@@admin.article.toolbar.blockquote"
+      uiTooltip="Citation"
+      [tooltipShortcut]="shortcuts.blockquote.caps"
+      [attr.aria-keyshortcuts]="shortcuts.blockquote.aria"
+      [pressed]="state.active.blockquote"
+      [disabled]="locked() || !state.can.blockquote"
+      (click)="run('blockquote')"
+    >
+      <ng-icon [svg]="icons.blockquote" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiToggle
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2 aria-pressed:text-accent"
+      i18n-aria-label="@@admin.article.toolbar.codeBlock"
+      aria-label="Bloc de code"
+      i18n-uiTooltip="@@admin.article.toolbar.codeBlock"
+      uiTooltip="Bloc de code"
+      [tooltipShortcut]="shortcuts.codeBlock.caps"
+      [attr.aria-keyshortcuts]="shortcuts.codeBlock.aria"
+      [pressed]="state.active.codeBlock"
+      [disabled]="locked() || !state.can.codeBlock"
+      (click)="run('codeBlock')"
+    >
+      <ng-icon [svg]="icons.codeBlock" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiBtn
+      variant="ghost"
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2"
+      type="button"
+      i18n-aria-label="@@admin.article.toolbar.horizontalRule"
+      aria-label="Séparateur"
+      i18n-uiTooltip="@@admin.article.toolbar.horizontalRule"
+      uiTooltip="Séparateur"
+      [disabled]="locked() || !state.can.horizontalRule"
+      (click)="run('horizontalRule')"
+    >
+      <ng-icon [svg]="icons.horizontalRule" size="16" aria-hidden="true" />
+    </button>
+
+    <span class="mx-1 h-5 w-px bg-border" aria-hidden="true"></span>
+
+    <input
+      #picker
+      class="hidden"
+      type="file"
+      multiple
+      tabindex="-1"
+      aria-hidden="true"
+      [accept]="accept"
+      (change)="pick(picker)"
+    />
+    <button
+      uiBtn
+      variant="ghost"
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2"
+      type="button"
+      i18n-aria-label="@@admin.article.toolbar.image.label"
+      aria-label="Image"
+      i18n-uiTooltip="@@admin.article.toolbar.image.tooltip"
+      uiTooltip="Image : choisir, glisser ou coller un fichier"
+      [disabled]="locked() || !upload()"
+      (click)="picker.click()"
+    >
+      <ng-icon [svg]="icons.image" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiBtn
+      variant="ghost"
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2"
+      type="button"
+      i18n-aria-label="@@admin.article.toolbar.figure.label"
+      aria-label="Texte alternatif et légende"
+      i18n-uiTooltip="@@admin.article.toolbar.figure.tooltip"
+      uiTooltip="Texte alternatif et légende de l’image sélectionnée (ou double-clic)"
+      aria-haspopup="dialog"
+      [disabled]="locked() || state.figure === null"
+      (click)="editFigure(state.figure)"
+    >
+      <ng-icon [svg]="icons.figure" size="16" aria-hidden="true" />
+    </button>
+
+    <span class="mx-1 h-5 w-px bg-border" aria-hidden="true"></span>
+
+    <button
+      uiBtn
+      variant="ghost"
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2"
+      type="button"
+      i18n-aria-label="@@admin.article.toolbar.undo.label"
+      aria-label="Annuler la modification"
+      i18n-uiTooltip="@@admin.article.toolbar.undo.tooltip"
+      uiTooltip="Annuler"
+      [tooltipShortcut]="shortcuts.undo.caps"
+      [attr.aria-keyshortcuts]="shortcuts.undo.aria"
+      [disabled]="locked() || !state.can.undo"
+      (click)="run('undo')"
+    >
+      <ng-icon [svg]="icons.undo" size="16" aria-hidden="true" />
+    </button>
+    <button
+      uiBtn
+      variant="ghost"
+      size="sm"
+      class="h-8 min-w-8 rounded-sm px-2"
+      type="button"
+      i18n-aria-label="@@admin.article.toolbar.redo.label"
+      aria-label="Rétablir la modification"
+      i18n-uiTooltip="@@admin.article.toolbar.redo.tooltip"
+      uiTooltip="Rétablir"
+      [tooltipShortcut]="shortcuts.redo.caps"
+      [attr.aria-keyshortcuts]="shortcuts.redo.aria"
+      [disabled]="locked() || !state.can.redo"
+      (click)="run('redo')"
+    >
+      <ng-icon [svg]="icons.redo" size="16" aria-hidden="true" />
+    </button>
+
+    <!-- Last of the commands, so that appearing in a code block it moves no other button. -->
+    @if (state.active.codeBlock) {
+      @let languageLabel = languageName(state.codeLanguage);
+      <span class="mx-1 h-5 w-px bg-border" aria-hidden="true"></span>
+      <button
+        uiBtn
+        variant="ghost"
+        size="sm"
+        class="h-8 gap-1.5 rounded-sm px-2 text-[13px] font-medium text-fg"
+        type="button"
+        data-slot="code-language"
+        [attr.aria-label]="languageAriaLabel(languageLabel)"
+        [disabled]="locked()"
+        [uiDropdownMenuTrigger]="languageMenu"
+      >
+        {{ languageLabel }}
+        <ng-icon
+          class="shrink-0 text-fg-muted"
+          [svg]="icons.chevron"
+          size="14"
+          aria-hidden="true"
+        />
+      </button>
+      <ng-template #languageMenu>
+        <div uiDropdownMenuContent class="max-h-80 min-w-44 overflow-y-auto">
+          <div
+            uiDropdownMenuRadioGroup
+            [value]="state.codeLanguage ?? ''"
+            (valueChange)="setCodeLanguage($event)"
+          >
+            @for (option of languages; track option.value) {
+              <button uiDropdownMenuRadioItem type="button" [value]="option.value">
+                <ui-dropdown-menu-item-indicator />
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        </div>
+      </ng-template>
+    }
+
+    <span class="ml-auto flex items-center gap-1.5 pr-1 text-[12px] text-fg-muted" role="status">
+      @if (uploads() > 0) {
+        <ng-icon
+          class="animate-spin motion-reduce:animate-none"
+          [svg]="icons.busy"
+          size="14"
+          aria-hidden="true"
+        />
+        <ng-container i18n="@@admin.article.uploading">Envoi de l’image…</ng-container>
+      }
+    </span>
+    <!-- Far end, after the upload status: its buttons join the toolbar's single tab stop. -->
+    <ng-content select="[articleToolbarEnd]" />
+  </div>
+  <!--
+    Highlighted code: each run carries the classes of its innermost coloured scope (`ARTICLE_LOWLIGHT`),
+    drawn in the colours of the public article's token kinds (`ARTICLE_TYPOGRAPHY.codeTokens`, from the
+    service's `SCOPE_KINDS`); a sub-scope (`title class_`) outranks its first class, and `\_` keeps the
+    underscore highlight.js gives sub-scopes.
+  -->
+  <div
+    #surface
+    class="text-fg [&_:is(.hljs-comment,.hljs-quote)]:text-fg-faint [&_:is(.hljs-comment,.hljs-quote)]:italic [&_:is(.hljs-keyword,.hljs-doctag,.hljs-section,.hljs-template-tag,.hljs-variable.language\_)]:text-aurora-violet [&_:is(.hljs-name,.hljs-selector-tag)]:text-danger-ink [&_:is(.hljs-number,.hljs-literal,.hljs-symbol,.hljs-variable.constant\_,.hljs-attr,.hljs-attribute,.hljs-selector-id,.hljs-selector-class,.hljs-selector-attr,.hljs-selector-pseudo)]:text-warning-ink [&_:is(.hljs-operator,.hljs-punctuation,.hljs-bullet,.hljs-tag,.hljs-meta)]:text-fg-muted [&_:is(.hljs-string,.hljs-regexp,.hljs-char,.hljs-code,.hljs-link)]:text-success-ink [&_:is(.hljs-title,.hljs-function)]:text-info-ink [&_:is(.hljs-title.class\_,.hljs-class,.hljs-type,.hljs-built\_in)]:text-aurora-blue [&_:is(.hljs-variable,.hljs-template-variable,.hljs-property)]:text-aurora-pink"
+  ></div>
+</div>

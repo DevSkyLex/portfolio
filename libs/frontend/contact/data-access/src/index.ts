@@ -1,12 +1,4 @@
 /**
- * Export CONTACT_LINKS
- *
- * @description
- * Public email and profile links consumed by the shell without contact data-access state.
- */
-export { CONTACT_LINKS } from '@internal/contact-web-data-access/lib/constants/contact-links.constants';
-
-/**
  * Export contact form model
  *
  * @description

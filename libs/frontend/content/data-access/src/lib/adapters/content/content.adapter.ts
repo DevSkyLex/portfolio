@@ -1,5 +1,8 @@
 import type { ContentSnapshot, ProjectDto, TimelineEntryDto } from '@vfortin/content-contracts';
 import type { ProjectArticle, SiteContent, TimelineStep } from '@vfortin/content-web-model';
+import { toArticle } from '@internal/content-web-data-access/lib/adapters/article/article.adapter';
+import { toLegalDocument } from '@internal/content-web-data-access/lib/adapters/legal-document/legal-document.adapter';
+import { toSiteLinks } from '@internal/content-web-data-access/lib/adapters/site-link/site-link.adapter';
 
 /**
  * Function yearOf
@@ -70,7 +73,7 @@ function toTimelineStep(entry: TimelineEntryDto, locale: SiteContent['locale']):
  *
  * @param {ProjectDto} dto - Validated project data returned by the content contract.
  *
- * @returns {ProjectArticle} Public project article with the API article sections preserved.
+ * @returns {ProjectArticle} Public project article, its document split into an introduction and sections.
  */
 function toProjectArticle(dto: ProjectDto): ProjectArticle {
   return {
@@ -88,7 +91,15 @@ function toProjectArticle(dto: ProjectDto): ProjectArticle {
       dto.siteUrl === null
         ? null
         : { url: dto.siteUrl, label: new URL(dto.siteUrl).hostname.replace(/^www\./, '') },
-    ...dto.article,
+    cover: dto.cover,
+    seo: {
+      title: dto.seo.title,
+      description: dto.seo.description,
+      // Only the prerender validates the snapshot (D10); a raw snapshot given to
+      // `provideContentSnapshots` without the keywords field reads as having none.
+      keywords: (dto.seo as Partial<ProjectDto['seo']>).keywords ?? [],
+    },
+    ...toArticle(dto.article),
   };
 }
 
@@ -106,11 +117,15 @@ export function toSiteContent(snapshot: ContentSnapshot): SiteContent {
   return {
     locale: snapshot.locale,
     revision: snapshot.revision,
-    profile: snapshot.profile,
+    profile: { ...snapshot.profile, links: toSiteLinks(snapshot.profile.links) },
     projects: snapshot.projects.map(toProjectArticle),
     timeline: snapshot.timeline.map((entry): TimelineStep =>
       toTimelineStep(entry, snapshot.locale),
     ),
     skills: snapshot.skills,
+    legal: {
+      notice: toLegalDocument(snapshot.legal.notice),
+      privacy: toLegalDocument(snapshot.legal.privacy),
+    },
   };
 }

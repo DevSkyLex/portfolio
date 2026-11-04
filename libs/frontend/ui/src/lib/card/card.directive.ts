@@ -128,7 +128,7 @@ export class CardTitleDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('text-lg/[26px] font-semibold text-balance text-star', this.class()),
+    cn('text-lg/[26px] font-semibold text-balance text-fg', this.class()),
   );
   // #endregion
 }
@@ -167,7 +167,7 @@ export class CardDescriptionDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('text-small text-pretty text-star-muted', this.class()),
+    cn('text-small text-pretty text-fg-muted', this.class()),
   );
   // #endregion
 }

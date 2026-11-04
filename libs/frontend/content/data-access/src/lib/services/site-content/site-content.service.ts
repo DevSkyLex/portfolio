@@ -1,9 +1,15 @@
 import { Injectable, LOCALE_ID, computed, inject, type Signal } from '@angular/core';
 import type { ContentSnapshot } from '@vfortin/content-contracts';
-import type { ProjectArticle, SiteContent } from '@vfortin/content-web-model';
+import type {
+  LegalDocument,
+  LegalDocumentKind,
+  ProjectArticle,
+  SiteContent,
+} from '@vfortin/content-web-model';
 import { toSiteContent } from '@internal/content-web-data-access/lib/adapters/content/content.adapter';
 import type { ContentSnapshots } from '@internal/content-web-data-access/lib/models/content-snapshots/content-snapshots.type';
 import type { ProjectNeighbours } from '@internal/content-web-data-access/lib/models/project-neighbours/project-neighbours.interface';
+import { SiteLinksService } from '@internal/content-web-data-access/lib/services/site-links/site-links.service';
 import { CONTENT_SNAPSHOT_VALIDATOR } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshot-validator.token';
 import { CONTENT_SNAPSHOTS } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshots.token';
 import { articleOrder } from '@internal/content-web-data-access/lib/utils/article-order/article-order.utils';
@@ -60,6 +66,8 @@ export class SiteContentService {
       ((value: unknown): ContentSnapshot => value as ContentSnapshot);
     this.content = toSiteContent(validate(snapshot));
     this.articles = articleOrder(this.content.projects);
+    // The layout reads the links without the snapshot (error pages): hand them over once read.
+    inject<SiteLinksService>(SiteLinksService).publish(this.content.profile.links);
   }
   // #endregion
 
@@ -159,6 +167,21 @@ export class SiteContentService {
   // #endregion
 
   // #region Methods
+  /**
+   * Method legal
+   * @method legal
+   *
+   * @description
+   * Returns the legal notice or the privacy policy of the active locale.
+   *
+   * @param {LegalDocumentKind} kind - Document.
+   *
+   * @returns {LegalDocument} Legal document.
+   */
+  public legal(kind: LegalDocumentKind): LegalDocument {
+    return this.content.legal[kind];
+  }
+
   /**
    * Method project
    * @method project

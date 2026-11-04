@@ -24,7 +24,7 @@ import { SectionFxDirective } from '@vfortin/ui';
         experienceLabel="Expérience"
       >
         <h2
-          class="font-display text-[64px] leading-[68px] font-semibold tracking-[-0.035em] text-star @max-3xl:text-[36px] @max-3xl:leading-[42px]"
+          class="font-display text-[64px] leading-[68px] font-semibold tracking-[-0.035em] text-fg @max-3xl:text-[36px] @max-3xl:leading-[42px]"
           id="journey-title"
           i18n="@@section.timeline"
         >

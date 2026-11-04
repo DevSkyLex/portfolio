@@ -56,6 +56,18 @@ export interface AdminInboxState {
   readonly total: number;
 
   /**
+   * Property allTotal
+   * @readonly
+   *
+   * @description
+   * Messages of every status, whatever the active filter; `null` until a count or an unfiltered list
+   * answers, then the last known figure (a failed count never turns it into zero).
+   *
+   * @type {number | null}
+   */
+  readonly allTotal: number | null;
+
+  /**
    * Property loadCallState
    * @readonly
    *
@@ -76,5 +88,16 @@ export interface AdminInboxState {
    * @type {CallState}
    */
   readonly writeCallState: CallState;
+
+  /**
+   * Property countCallState
+   * @readonly
+   *
+   * @description
+   * Lifecycle and normalized error for counting the messages of every status.
+   *
+   * @type {CallState}
+   */
+  readonly countCallState: CallState;
   // #endregion
 }

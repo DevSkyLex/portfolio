@@ -61,6 +61,8 @@ Full stack in Docker (production Postgres roles, Mailpit, Nginx): `docker/compos
 
 The Angular development server serves a single locale (`localize: ["fr"]` in the `development` configuration); the production build produces FR and EN.
 
+The development server reads the build options of `apps/web/project.json` once, at start: restart `npx nx serve web` after a change there, in particular of the `styles` entries. The administration stylesheet `admin.css` is such an entry (non-injected, D31); a server started before it existed answers `/admin.css` with the SPA `index.html`, and the admin renders unstyled while the console reports `Administration stylesheet admin.css loaded without any CSS rule`.
+
 ## Backend tests against Postgres
 
 ```bash

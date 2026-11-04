@@ -223,6 +223,8 @@ export class DialogContentDirective {
    *
    * @description
    * Additional classes applied to the dialog panel.
+   * Bind it on the template (`[class]="'p-2'"`): Angular never passes a static `class` attribute of an
+   * `<ng-template>` to an input.
    *
    * @type {InputSignal<string>}
    */

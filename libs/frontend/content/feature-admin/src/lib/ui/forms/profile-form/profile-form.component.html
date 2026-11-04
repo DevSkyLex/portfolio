@@ -1,0 +1,465 @@
+<form id="edit-profile-form" class="flex flex-1 flex-col" novalidate (submit)="onSubmit($event)">
+  @if (summary(); as message) {
+    <div uiAlert variant="danger" class="mb-8">
+      <ng-icon [svg]="icons.alert" size="16" aria-hidden="true" />
+      <p uiAlertTitle class="text-[13px]/5">{{ message }}</p>
+    </div>
+  }
+
+  <section
+    class="grid grid-cols-1 gap-x-10 gap-y-4 pb-10 @max-[640px]:pb-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
+    aria-labelledby="edit-profile-intro"
+  >
+    <div class="flex flex-col gap-1.5">
+      <h2
+        class="text-[14px]/5 font-semibold text-fg"
+        id="edit-profile-intro"
+        i18n="@@admin.profile.intro.title"
+      >
+        Présentation
+      </h2>
+      <p class="max-w-[65ch] text-[13px]/5 text-fg-muted" i18n="@@admin.profile.intro.description">
+        Textes de l’accueil et de la section À propos, en français et en anglais : le sélecteur
+        accolé à chaque champ change sa langue.
+      </p>
+    </div>
+    <fieldset uiFieldSet class="gap-6" [disabled]="pending()">
+      @for (field of texts; track field.key) {
+        @let lang = language(field.key);
+        @let id = 'edit-profile-' + field.key + '-' + lang;
+        @let state = profileForm[field.key][lang];
+        @let message = error(state());
+        @let count = length(state().value());
+        <ui-field
+          size="sm"
+          [required]="true"
+          [label]="field.label"
+          [hint]="field.hint"
+          [controlId]="id"
+          [error]="message"
+        >
+          <!-- The language toggle sits in a strip joined under the textarea. -->
+          <div class="flex w-full min-w-0 flex-col">
+            <textarea
+              uiInput
+              size="sm"
+              multiline
+              class="relative rounded-b-none text-[14px] focus:z-10"
+              aria-required="true"
+              [rows]="field.rows"
+              [id]="id"
+              [attr.aria-label]="inLanguage(field.label, lang)"
+              [attr.lang]="lang === 'en' ? 'en' : null"
+              [attr.aria-describedby]="describedBy(id, message, [id + '-count'])"
+              [attr.aria-invalid]="message ? 'true' : null"
+              [formField]="profileForm[field.key][lang]"
+            ></textarea>
+            <div
+              class="-mt-px flex justify-end rounded-b-md border border-border-field bg-surface-field p-1"
+            >
+              <content-locale-switch
+                compact
+                [attached]="false"
+                [label]="field.label"
+                [states]="localeStates(field.key)"
+                [value]="lang"
+                (valueChange)="show(field.key, $event)"
+              />
+            </div>
+          </div>
+          <span
+            uiFieldAside
+            [class]="
+              count > field.max
+                ? 'ml-auto shrink-0 font-mono text-[12px]/5 text-danger-ink'
+                : 'ml-auto shrink-0 font-mono text-[12px]/5 text-fg-faint'
+            "
+            [id]="id + '-count'"
+            ><span class="sr-only" i18n="@@admin.profile.characters">Caractères : </span
+            >{{ count }}/{{ field.max }}</span
+          >
+        </ui-field>
+      }
+    </fieldset>
+  </section>
+
+  <section
+    class="grid grid-cols-1 gap-x-10 gap-y-4 border-t border-border py-10 @max-[640px]:py-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
+    aria-labelledby="edit-profile-facts"
+  >
+    <div class="flex flex-col gap-1.5">
+      <h2
+        class="text-[14px]/5 font-semibold text-fg"
+        id="edit-profile-facts"
+        i18n="@@admin.profile.facts.title"
+      >
+        Repères
+      </h2>
+      <p class="max-w-[65ch] text-[13px]/5 text-fg-muted" i18n="@@admin.profile.facts.description">
+        Libellés et valeurs sous le texte À propos, dans cet ordre ({{ limits.facts }} au plus).
+      </p>
+    </div>
+    <fieldset uiFieldSet class="gap-0" [disabled]="pending()">
+      <!-- Rows reorder by dragging their grip, or with its arrow keys. -->
+      <div uiSortableList [disabled]="pending()" (moved)="reorder('facts', $event)">
+        @for (fact of profileForm.facts; track $index; let i = $index) {
+          @let factKey = 'facts.' + i;
+          @let lang = language(factKey);
+          @let labelId = 'edit-profile-fact-' + i + '-label-' + lang;
+          @let valueId = 'edit-profile-fact-' + i + '-value-' + lang;
+          @let factName = rowLabel('fact', i);
+          @let labelError = error(fact.label[lang]());
+          @let valueError = error(fact.value[lang]());
+          <div
+            class="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,2fr)_auto] items-start gap-x-2 gap-y-3 border-b border-border py-4 first:pt-0 @max-[640px]/settings:grid-cols-1"
+            role="group"
+            [uiSortableItem]="i"
+            [attr.aria-label]="factName"
+          >
+            <button
+              uiBtn
+              uiSortableHandle
+              variant="ghost"
+              size="icon-sm"
+              type="button"
+              class="mt-[30px] text-fg-faint hover:text-fg @max-[640px]/settings:mt-0"
+              i18n-uiTooltip="@@admin.profile.reorder"
+              uiTooltip="Glisser, ou flèches haut et bas"
+              [id]="'edit-profile-fact-' + i + '-handle'"
+              [attr.aria-label]="rowLabel('moveFact', i)"
+              [disabled]="pending()"
+            >
+              <ng-icon [svg]="icons.grip" size="16" aria-hidden="true" />
+            </button>
+            <!-- A fact is one bilingual pair: its selector, joined to the value, switches both texts. -->
+            <ui-field
+              size="sm"
+              i18n-label="@@admin.profile.label"
+              label="Libellé"
+              [required]="true"
+              [controlId]="labelId"
+              [error]="labelError"
+            >
+              <input
+                uiInput
+                size="sm"
+                class="text-[14px]"
+                aria-required="true"
+                [id]="labelId"
+                [attr.aria-label]="factFieldLabel('label', i, lang)"
+                [attr.lang]="lang === 'en' ? 'en' : null"
+                [attr.aria-describedby]="describedBy(labelId, labelError)"
+                [attr.aria-invalid]="labelError ? 'true' : null"
+                [formField]="fact.label[lang]"
+              />
+            </ui-field>
+            <ui-field
+              size="sm"
+              i18n-label="@@admin.profile.fact.value"
+              label="Valeur"
+              [required]="true"
+              [controlId]="valueId"
+              [error]="valueError"
+            >
+              <div class="flex w-full min-w-0 items-start">
+                <input
+                  uiInput
+                  size="sm"
+                  class="relative min-w-0 flex-1 rounded-e-none text-[14px] focus:z-10"
+                  aria-required="true"
+                  [id]="valueId"
+                  [attr.aria-label]="factFieldLabel('value', i, lang)"
+                  [attr.lang]="lang === 'en' ? 'en' : null"
+                  [attr.aria-describedby]="describedBy(valueId, valueError)"
+                  [attr.aria-invalid]="valueError ? 'true' : null"
+                  [formField]="fact.value[lang]"
+                />
+                <content-locale-switch
+                  [label]="factName"
+                  [states]="localeStates(factKey)"
+                  [value]="lang"
+                  (valueChange)="show(factKey, $event)"
+                />
+              </div>
+            </ui-field>
+            <!-- 20 px label + 8 px gap + 2 px: the 32 px button centres on the 36 px controls. -->
+            <span class="flex items-center gap-1 pt-[30px] @max-[640px]/settings:pt-0">
+              <button
+                uiBtn
+                variant="ghost"
+                size="icon-sm"
+                type="button"
+                [attr.aria-label]="rowLabel('removeFact', i)"
+                [disabled]="pending()"
+                (click)="remove('facts', i)"
+              >
+                <ng-icon
+                  class="text-danger-ink"
+                  [svg]="icons.remove"
+                  size="14"
+                  aria-hidden="true"
+                />
+              </button>
+            </span>
+          </div>
+        } @empty {
+          <div uiEmpty appearance="dashed" class="mb-4">
+            <div uiEmptyHeader>
+              <div uiEmptyMedia variant="icon">
+                <ng-icon [svg]="icons.facts" size="16" />
+              </div>
+              <p uiEmptyTitle i18n="@@admin.profile.facts.empty.title">Aucun repère</p>
+              <p uiEmptyDescription i18n="@@admin.profile.facts.empty.description">
+                La section À propos n’en affiche pas.
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="pt-4">
+        <button
+          uiBtn
+          variant="secondary"
+          size="xs"
+          type="button"
+          [disabled]="pending() || profileForm.facts.length >= limits.facts"
+          i18n="@@admin.profile.facts.add"
+          (click)="addFact()"
+        >
+          Ajouter un repère
+        </button>
+      </div>
+    </fieldset>
+  </section>
+
+  <section
+    class="grid grid-cols-1 gap-x-10 gap-y-4 border-t border-border py-10 @max-[640px]:py-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
+    aria-labelledby="edit-profile-links"
+  >
+    <div class="flex flex-col gap-1.5">
+      <h2
+        class="text-[14px]/5 font-semibold text-fg"
+        id="edit-profile-links"
+        i18n="@@admin.profile.links.title"
+      >
+        Liens
+      </h2>
+      <p class="max-w-[65ch] text-[13px]/5 text-fg-muted" i18n="@@admin.profile.links.description">
+        E-mail et profils publics, dans la section Contact et le pied de page, dans cet ordre.
+      </p>
+      <p
+        class="mt-1.5 max-w-[65ch] text-[12px]/4.5 text-fg-muted"
+        i18n="@@admin.profile.links.hint"
+      >
+        Communs aux deux langues. Sans libellé, un lien affiche le nom du service, l’adresse e-mail
+        ou le domaine du site.
+      </p>
+    </div>
+    <fieldset uiFieldSet class="gap-0" [disabled]="pending()">
+      <div uiSortableList [disabled]="pending()" (moved)="reorder('links', $event)">
+        @for (link of profileForm.links; track $index; let i = $index) {
+          @let kindId = 'edit-profile-link-' + i + '-kind';
+          @let urlId = 'edit-profile-link-' + i + '-url';
+          @let labelId = 'edit-profile-link-' + i + '-label';
+          @let kindError = error(link.kind());
+          @let urlError = error(link.url());
+          @let labelError = error(link.label());
+          @let option = kindOption(link.kind().value());
+          <div
+            class="grid grid-cols-[auto_9rem_minmax(0,3fr)_minmax(0,2fr)_auto] items-start gap-x-2 gap-y-3 border-b border-border py-4 first:pt-0 @max-[640px]/settings:grid-cols-1"
+            role="group"
+            [uiSortableItem]="i"
+            [attr.aria-label]="rowLabel('link', i)"
+          >
+            <button
+              uiBtn
+              uiSortableHandle
+              variant="ghost"
+              size="icon-sm"
+              type="button"
+              class="mt-[30px] text-fg-faint hover:text-fg @max-[640px]/settings:mt-0"
+              i18n-uiTooltip="@@admin.profile.reorder"
+              uiTooltip="Glisser, ou flèches haut et bas"
+              [id]="'edit-profile-link-' + i + '-handle'"
+              [attr.aria-label]="rowLabel('moveLink', i)"
+              [disabled]="pending()"
+            >
+              <ng-icon [svg]="icons.grip" size="16" aria-hidden="true" />
+            </button>
+            <div class="flex min-w-0 flex-col gap-2">
+              <span
+                class="text-[13px]/5 font-medium text-fg"
+                [id]="kindId + '-label'"
+                i18n="@@admin.profile.link.kind"
+                >Type</span
+              >
+              <ui-select
+                size="sm"
+                class="text-[13px]"
+                [triggerId]="kindId"
+                [ariaLabelledby]="kindId + '-label'"
+                [ariaDescribedby]="kindError ? kindId + '-error' : undefined"
+                [formField]="link.kind"
+              >
+                @for (kind of kinds; track kind.value) {
+                  <ui-select-option [value]="kind.value">{{ kind.label }}</ui-select-option>
+                }
+              </ui-select>
+              @if (kindError) {
+                <p uiFieldError class="text-[12px]/4" [id]="kindId + '-error'">{{ kindError }}</p>
+              }
+            </div>
+            <ui-field
+              size="sm"
+              [label]="urlLabel(option.value)"
+              [required]="true"
+              [controlId]="urlId"
+              [error]="urlError"
+            >
+              <input
+                uiInput
+                size="sm"
+                class="font-mono text-[13px]"
+                aria-required="true"
+                autocomplete="off"
+                spellcheck="false"
+                [type]="option.value === 'email' ? 'email' : 'url'"
+                [placeholder]="option.placeholder"
+                [id]="urlId"
+                [attr.aria-describedby]="describedBy(urlId, urlError)"
+                [attr.aria-invalid]="urlError ? 'true' : null"
+                [formField]="link.url"
+              />
+            </ui-field>
+            <ui-field
+              size="sm"
+              i18n-label="@@admin.profile.label"
+              label="Libellé"
+              [controlId]="labelId"
+              [error]="labelError"
+            >
+              <input
+                uiInput
+                size="sm"
+                class="text-[14px]"
+                [placeholder]="labelPlaceholder(option)"
+                [id]="labelId"
+                [attr.aria-describedby]="describedBy(labelId, labelError)"
+                [attr.aria-invalid]="labelError ? 'true' : null"
+                [formField]="link.label"
+              />
+            </ui-field>
+            <!-- 20 px label + 8 px gap + 2 px: the 32 px button centres on the 36 px controls. -->
+            <span class="flex items-center gap-1 pt-[30px] @max-[640px]/settings:pt-0">
+              <button
+                uiBtn
+                variant="ghost"
+                size="icon-sm"
+                type="button"
+                [attr.aria-label]="rowLabel('removeLink', i)"
+                [disabled]="pending()"
+                (click)="remove('links', i)"
+              >
+                <ng-icon
+                  class="text-danger-ink"
+                  [svg]="icons.remove"
+                  size="14"
+                  aria-hidden="true"
+                />
+              </button>
+            </span>
+          </div>
+        } @empty {
+          <div uiEmpty appearance="dashed" class="mb-4">
+            <div uiEmptyHeader>
+              <div uiEmptyMedia variant="icon">
+                <ng-icon [svg]="icons.links" size="16" />
+              </div>
+              <p uiEmptyTitle i18n="@@admin.profile.links.empty.title">Aucun lien</p>
+              <p uiEmptyDescription i18n="@@admin.profile.links.empty.description">
+                La section Contact et le pied de page n’en affichent pas.
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="pt-4">
+        <button
+          uiBtn
+          variant="secondary"
+          size="xs"
+          type="button"
+          [disabled]="pending() || profileForm.links.length >= limits.links"
+          i18n="@@admin.profile.links.add"
+          (click)="addLink()"
+        >
+          Ajouter un lien
+        </button>
+      </div>
+    </fieldset>
+  </section>
+
+  <!-- Floating bar sized to its content and centred under the form, as in the project editor (D43). -->
+  <div
+    class="sticky bottom-4 z-10 mx-auto mt-auto flex w-fit max-w-full items-center gap-3 rounded-xl border border-border bg-surface-float p-1.5 pl-3.5 shadow-float"
+  >
+    <span
+      #status
+      class="flex min-w-0 items-center gap-2 text-[13px]/5 text-fg-muted outline-none"
+      tabindex="-1"
+      data-slot="save-status"
+    >
+      @if (dirty()) {
+        <span class="size-1.5 shrink-0 rounded-full bg-warning-ink" aria-hidden="true"></span>
+        <span class="truncate text-fg max-sm:sr-only" i18n="@@admin.profile.form.unsaved"
+          >Modifications non enregistrées</span
+        >
+      } @else {
+        <ng-icon
+          class="shrink-0 text-success-ink"
+          [svg]="icons.saved"
+          size="14"
+          aria-hidden="true"
+        />
+        <span class="truncate max-sm:sr-only" i18n="@@admin.profile.form.saved"
+          >Tout est enregistré</span
+        >
+      }
+    </span>
+    <span class="h-5 w-px shrink-0 bg-border" aria-hidden="true"></span>
+    <span class="flex shrink-0 items-center gap-1.5">
+      <button
+        uiBtn
+        variant="ghost"
+        size="sm"
+        class="h-8 rounded-sm px-3 text-[13px]"
+        type="button"
+        i18n-aria-label="@@admin.profile.form.discardLabel"
+        aria-label="Abandonner les modifications"
+        [disabled]="pending() || !dirty()"
+        (click)="discard()"
+      >
+        <ng-container i18n="@@admin.profile.form.discard">Abandonner</ng-container>
+      </button>
+      <button
+        uiBtn
+        size="sm"
+        class="h-8 gap-2 rounded-sm pr-2 pl-3 text-[13px]"
+        type="submit"
+        [disabled]="!canSave()"
+      >
+        @if (pending()) {
+          <ng-container i18n="@@admin.profile.form.saving">Enregistrement…</ng-container>
+        } @else {
+          <ng-container i18n="@@admin.profile.form.save">Enregistrer</ng-container>
+        }
+        <kbd
+          uiKbd
+          class="h-4 min-w-0 rounded-2xs border-0 bg-current/12 px-1 text-[10px]/4 font-normal text-current max-sm:hidden"
+          aria-hidden="true"
+          >{{ modifier.key }} S</kbd
+        >
+      </button>
+    </span>
+  </div>
+</form>

@@ -18,6 +18,7 @@ import {
 } from '@internal/ui/lib/sidebar/constants/sidebar-menu-button.variants';
 import { booleanAttribute } from '@internal/ui/lib/boolean-attribute/boolean-attribute.utils';
 import { SIDEBAR_TOGGLE_LABEL } from '@internal/ui/lib/sidebar/constants/sidebar.constants';
+import { SIDEBAR_CONTROL } from '@internal/ui/lib/sidebar/tokens/sidebar-control/sidebar-control.token';
 
 /**
  * Directive SidebarProviderDirective
@@ -30,7 +31,7 @@ import { SIDEBAR_TOGGLE_LABEL } from '@internal/ui/lib/sidebar/constants/sidebar
 @Directive({
   selector: '[uiSidebarProvider]',
   exportAs: 'uiSidebarProvider',
-  providers: [SidebarService],
+  providers: [SidebarService, { provide: SIDEBAR_CONTROL, useExisting: SidebarService }],
   host: {
     '[class]': 'classes()',
     'data-slot': 'sidebar-wrapper',
@@ -132,10 +133,10 @@ export class SidebarProviderDirective {
    * @constructor
    *
    * @description
-   * Connects the scoped sidebar service to the provider-owned open model.
+   * Connects the scoped sidebar service to the provider-owned open model and shortcut switch.
    */
   public constructor() {
-    this.sidebar.connect(this.open);
+    this.sidebar.connect(this.open, this.shortcut);
   }
   // #endregion
 
@@ -227,7 +228,7 @@ export class SidebarRailDirective {
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
       'absolute inset-y-0 z-20 hidden w-4 cursor-ew-resize transition-transform duration-(--dur-roll) ease-orbit motion-reduce:transition-none md:flex',
-      "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:content-[''] hover:after:bg-line-strong",
+      "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:content-[''] hover:after:bg-border-strong",
       'group-data-[side=left]/sidebar:-right-4 group-data-[side=right]/sidebar:left-0 group-data-[side=right]/sidebar:-translate-x-full',
       'group-data-[collapsible=offcanvas]/sidebar:translate-x-0 group-data-[collapsible=offcanvas]/sidebar:after:left-full',
       this.class(),
@@ -350,7 +351,7 @@ export class SidebarContentDirective {
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
       'flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]/sidebar:overflow-hidden',
-      '[scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--star)_24%,transparent)_transparent]',
+      '[scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--fg)_24%,transparent)_transparent]',
       this.class(),
     ),
   );
@@ -432,7 +433,7 @@ export class SidebarGroupLabelDirective {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
-      'flex h-8 shrink-0 items-center px-2 font-mono text-label text-star-faint uppercase',
+      'flex h-8 shrink-0 items-center px-2 font-mono text-label text-fg-faint uppercase',
       'transition-[margin,opacity] duration-(--dur-roll) ease-orbit motion-reduce:transition-none',
       'group-data-[collapsible=icon]/sidebar:-mt-8 group-data-[collapsible=icon]/sidebar:opacity-0',
       this.class(),
@@ -639,8 +640,8 @@ export class SidebarMenuBadgeDirective {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
-      'pointer-events-none absolute top-1/2 right-1 flex h-5 min-w-5 -translate-y-1/2 items-center justify-center rounded-option px-1',
-      'font-mono text-label text-star-muted tabular-nums select-none peer-data-active/menu-button:text-star',
+      'pointer-events-none absolute top-1/2 right-1 flex h-5 min-w-5 -translate-y-1/2 items-center justify-center rounded-xs px-1',
+      'font-mono text-label text-fg-muted tabular-nums select-none peer-data-active/menu-button:text-fg',
       'group-data-[collapsible=icon]/sidebar:hidden',
       this.class(),
     ),
@@ -686,7 +687,7 @@ export class SidebarSeparatorDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('mx-2 h-px w-auto shrink-0 border-0 bg-line', this.class()),
+    cn('mx-2 h-px w-auto shrink-0 border-0 bg-border', this.class()),
   );
   // #endregion
 }
@@ -727,8 +728,8 @@ export class SidebarInsetDirective {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
-      'relative flex w-full min-w-0 flex-1 flex-col bg-void',
-      'md:peer-data-[variant=inset]/sidebar:m-2 md:peer-data-[variant=inset]/sidebar:ml-0 md:peer-data-[variant=inset]/sidebar:rounded-card md:peer-data-[variant=inset]/sidebar:border md:peer-data-[variant=inset]/sidebar:border-line',
+      'relative flex w-full min-w-0 flex-1 flex-col bg-surface',
+      'md:peer-data-[variant=inset]/sidebar:m-2 md:peer-data-[variant=inset]/sidebar:ml-0 md:peer-data-[variant=inset]/sidebar:rounded-xl md:peer-data-[variant=inset]/sidebar:border md:peer-data-[variant=inset]/sidebar:border-border',
       'md:peer-data-[variant=inset]/sidebar:peer-data-[state=collapsed]/sidebar:ml-2',
       this.class(),
     ),

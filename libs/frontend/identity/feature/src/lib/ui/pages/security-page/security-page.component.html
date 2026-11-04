@@ -1,0 +1,343 @@
+<!-- Below 1024 px the top bar already names the section: the bar would repeat the title. -->
+<header
+  class="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[1024px]:hidden"
+>
+  <ui-sidebar-trigger class="-ml-2" />
+  <span class="font-medium text-fg" aria-current="page" i18n="@@admin.security.title"
+    >Sécurité</span
+  >
+</header>
+
+<ui-page-header>
+  <h1 uiPageHeaderTitle i18n="@@admin.security.title">Sécurité</h1>
+  <p uiPageHeaderMeta i18n="@@admin.security.meta">
+    Protection de la connexion au compte administrateur.
+  </p>
+</ui-page-header>
+
+<!-- The project editor's centred 920 px column; spacing alone divides the sections. -->
+<div
+  class="@container/settings mx-auto flex w-full max-w-[920px] min-w-0 flex-col px-6 py-8 @max-[640px]:px-4 @max-[640px]:py-6"
+>
+  <section
+    class="group/section grid grid-cols-1 gap-x-10 gap-y-4 pb-10 @max-[640px]:pb-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
+    aria-labelledby="two-factor-title"
+  >
+    <!-- Beside the rows the title starts on the first row's line, beside an alert on its top. -->
+    <div
+      class="flex flex-col gap-1.5 @3xl/settings:pt-4 @3xl/settings:group-has-[[data-slot=alert]]/section:pt-0"
+    >
+      <h2
+        id="two-factor-title"
+        class="text-[14px]/5 font-semibold text-fg"
+        i18n="@@admin.security.twoFactor.title"
+      >
+        Double authentification
+      </h2>
+      <p
+        class="max-w-[65ch] text-[13px]/5 text-fg-muted"
+        i18n="@@admin.security.twoFactor.description"
+      >
+        Après le mot de passe, la connexion demande un code à six chiffres généré par une
+        application d’authentification (TOTP).
+      </p>
+      <p
+        class="mt-1.5 max-w-[65ch] text-[12px]/4.5 text-fg-muted"
+        i18n="@@admin.security.twoFactor.compatibility"
+      >
+        Compatible avec Google Authenticator, Microsoft Authenticator, 1Password, Bitwarden et toute
+        application TOTP.
+      </p>
+    </div>
+
+    <div class="flex min-w-0 flex-col gap-3">
+      @if (store.loadCallState().error; as error) {
+        <div uiAlert variant="danger" class="px-3 py-2.5 text-[13px]/5">
+          <ng-icon [svg]="icons.error" size="14" aria-hidden="true" />
+          <p class="col-start-2">{{ error.message }}</p>
+          <div class="col-start-2 mt-1.5">
+            <button
+              uiBtn
+              size="xs"
+              variant="secondary"
+              type="button"
+              [disabled]="store.loading()"
+              (click)="store.load()"
+              i18n="@@admin.security.retry"
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- After a failed first read the alert alone stands for the rows. -->
+      @if (store.enabled() === false) {
+        <div uiEmpty appearance="dashed">
+          <div uiEmptyHeader>
+            <div uiEmptyMedia variant="icon">
+              <ng-icon [svg]="icons.shield" size="16" />
+            </div>
+            <p uiEmptyTitle i18n="@@admin.security.twoFactor.offTitle">
+              Double authentification désactivée
+            </p>
+            <p uiEmptyDescription i18n="@@admin.security.twoFactor.offDescription">
+              La connexion ne demande que le mot de passe. Activez un code à six chiffres, généré
+              par votre application d’authentification.
+            </p>
+          </div>
+          <div uiEmptyContent>
+            <button
+              uiBtn
+              size="sm"
+              class="text-[13px]"
+              type="button"
+              [disabled]="store.writing()"
+              (click)="openEnable()"
+              i18n="@@admin.security.twoFactor.enable"
+            >
+              Activer
+            </button>
+          </div>
+        </div>
+      } @else if (store.enabled() !== null || !store.loadCallState().error) {
+        <div class="flex flex-col">
+          <!-- Tile, title line and action share the row's top; below 640 px the action wraps. -->
+          <div class="flex flex-wrap items-start gap-x-4 gap-y-3 py-4">
+            <span
+              class="grid size-9 shrink-0 place-items-center rounded-md border border-border bg-surface-raised text-fg-muted @max-[640px]:hidden"
+              aria-hidden="true"
+            >
+              <ng-icon [svg]="icons.shield" size="16" />
+            </span>
+            <div class="flex min-w-0 flex-1 flex-col gap-1 @max-[640px]:basis-full">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h3 class="text-[14px]/5 font-medium text-fg" i18n="@@admin.security.twoFactor.app">
+                  Application d’authentification
+                </h3>
+                @if (store.enabled() === true) {
+                  <span
+                    uiBadge
+                    variant="success"
+                    [dot]="true"
+                    i18n="@@admin.security.twoFactor.onBadge"
+                    >Activée</span
+                  >
+                }
+              </div>
+              @if (store.enabled() === null) {
+                <div class="flex h-5 items-center" role="status">
+                  <span class="sr-only" i18n="@@admin.security.loading">Chargement…</span>
+                  <span uiSkeleton class="h-3 w-64 max-w-full rounded-full"></span>
+                </div>
+              } @else if (store.enabled()) {
+                <p
+                  class="max-w-[65ch] text-[13px]/5 text-fg-muted"
+                  i18n="@@admin.security.twoFactor.onDescription"
+                >
+                  Chaque connexion depuis un appareil non approuvé demande le code de votre
+                  application.
+                </p>
+              }
+            </div>
+            @if (store.enabled() === true) {
+              <!-- Danger ghost (the menus' danger option, D37); on its own line its text aligns with the row's. -->
+              <button
+                uiBtn
+                variant="ghost"
+                size="sm"
+                class="shrink-0 text-[13px] text-danger-ink hover:bg-danger/10 hover:text-danger-ink focus-visible:border-danger/55 focus-visible:outline-danger/12 @max-[640px]:-ml-3"
+                type="button"
+                [disabled]="store.writing()"
+                (click)="openDisable()"
+                i18n="@@admin.security.twoFactor.disable"
+              >
+                Désactiver
+              </button>
+            } @else {
+              <span uiSkeleton class="h-9 w-24 shrink-0 rounded-md"></span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section
+    class="grid grid-cols-1 gap-x-10 gap-y-4 pt-10 pb-10 @max-[640px]:pt-8 @max-[640px]:pb-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
+    aria-labelledby="trusted-devices-title"
+  >
+    <div class="flex flex-col gap-1.5 @3xl/settings:pt-4">
+      <h2
+        id="trusted-devices-title"
+        class="text-[14px]/5 font-semibold text-fg"
+        i18n="@@admin.security.devices.title"
+      >
+        Appareils approuvés
+      </h2>
+      <p
+        class="max-w-[65ch] text-[13px]/5 text-fg-muted"
+        i18n="@@admin.security.devices.description"
+      >
+        Après le code, un appareil peut être approuvé pour 30 jours : la connexion n’y demande plus
+        que le mot de passe.
+      </p>
+    </div>
+
+    <!-- The devices depend on the status: nothing is shown while a failed read leaves it unknown. -->
+    @if (store.enabled() === false) {
+      <div uiEmpty appearance="dashed">
+        <div uiEmptyHeader>
+          <div uiEmptyMedia variant="icon">
+            <ng-icon [svg]="icons.devices" size="16" />
+          </div>
+          <p uiEmptyTitle i18n="@@admin.security.devices.emptyTitle">Aucun appareil approuvé</p>
+          <p uiEmptyDescription i18n="@@admin.security.devices.emptyDescription">
+            Une fois la double authentification activée, l’écran du code propose de faire confiance
+            à l’appareil pendant 30 jours.
+          </p>
+        </div>
+      </div>
+    } @else if (store.enabled() !== null || !store.loadCallState().error) {
+      <div class="flex min-w-0 flex-col self-start">
+        <div class="flex items-start gap-x-4 py-4">
+          <span
+            class="grid size-9 shrink-0 place-items-center rounded-md border border-border bg-surface-raised text-fg-muted @max-[640px]:hidden"
+            aria-hidden="true"
+          >
+            <ng-icon [svg]="icons.devices" size="16" />
+          </span>
+          <div class="flex min-w-0 flex-1 flex-col gap-1">
+            @if (store.enabled() === null) {
+              <div class="flex h-5 items-center">
+                <span uiSkeleton class="h-3 w-48 max-w-full rounded-full"></span>
+              </div>
+              <div class="flex h-5 items-center">
+                <span uiSkeleton class="h-3 w-80 max-w-full rounded-full"></span>
+              </div>
+            } @else if (store.enabled()) {
+              <h3
+                class="text-[14px]/5 font-medium text-fg"
+                i18n="@@admin.security.devices.rowTitle"
+              >
+                Approbation à la connexion
+              </h3>
+              <p
+                class="max-w-[65ch] text-[13px]/5 text-fg-muted"
+                i18n="@@admin.security.devices.rowDescription"
+              >
+                Un navigateur approuvé avec « Faire confiance à cet appareil » se connecte sans code
+                pendant 30 jours. Désactiver la double authentification oublie tous les appareils
+                approuvés.
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+
+  <identity-connected-applications-section />
+</div>
+
+<ng-template #enroll>
+  <div uiDialogHeader variant="bar">
+    <h2
+      uiDialogTitle
+      class="font-sans text-[16px]/6 font-semibold"
+      i18n="@@admin.security.enable.title"
+    >
+      Activer la double authentification
+    </h2>
+    @if (material()) {
+      <p uiDialogDescription class="text-[13px]/5" i18n="@@admin.security.enable.scanDescription">
+        Scannez le QR code avec votre application d’authentification, ou saisissez la clé à la main,
+        puis entrez le code qu’elle affiche.
+      </p>
+    } @else {
+      <p
+        uiDialogDescription
+        class="text-[13px]/5"
+        i18n="@@admin.security.enable.passwordDescription"
+      >
+        Une nouvelle clé est générée après la confirmation du mot de passe.
+      </p>
+    }
+  </div>
+  @if (material(); as enrollment) {
+    <div class="flex items-start gap-4 max-sm:flex-col">
+      <identity-qr-code
+        class="size-40 shrink-0 overflow-hidden rounded-lg border border-border"
+        label="QR code de la clé, à scanner avec l’application d’authentification"
+        i18n-label="@@admin.security.enable.qrLabel"
+        [value]="enrollment.provisioningUri"
+      />
+      <div class="flex min-w-0 flex-col gap-1.5">
+        <p
+          class="text-[13px]/5 font-medium text-fg"
+          id="two-factor-secret-label"
+          i18n="@@admin.security.enable.keyLabel"
+        >
+          Clé
+        </p>
+        <div class="flex items-start gap-1">
+          <code
+            class="min-w-0 font-mono text-[13px]/6 break-words text-fg"
+            aria-labelledby="two-factor-secret-label"
+            >{{ secretGroups() }}</code
+          >
+          <button
+            uiBtn
+            variant="ghost"
+            size="icon-xs"
+            class="shrink-0"
+            type="button"
+            aria-label="Copier la clé"
+            i18n-aria-label="@@admin.security.enable.copyKey"
+            uiTooltip="Copier la clé"
+            i18n-uiTooltip="@@admin.security.enable.copyKeyTooltip"
+            (click)="copySecret()"
+          >
+            <ng-icon [svg]="icons.copy" size="14" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </div>
+    <identity-two-factor-code-form
+      [pending]="store.writing()"
+      [codeError]="codeError()"
+      (submitted)="confirmCode($event)"
+      (cancelled)="close()"
+    />
+  } @else {
+    <identity-two-factor-password-form
+      [pending]="store.writing()"
+      [passwordError]="passwordError()"
+      (submitted)="confirmPassword($event)"
+      (cancelled)="close()"
+    />
+  }
+</ng-template>
+
+<ng-template #remove>
+  <div uiDialogHeader variant="bar">
+    <h2
+      uiDialogTitle
+      class="font-sans text-[16px]/6 font-semibold"
+      i18n="@@admin.security.disable.title"
+    >
+      Désactiver la double authentification
+    </h2>
+    <p uiDialogDescription class="text-[13px]/5" i18n="@@admin.security.disable.description">
+      La connexion ne demandera plus que le mot de passe. La clé est supprimée et les appareils
+      approuvés sont oubliés.
+    </p>
+  </div>
+  <identity-two-factor-disable-form
+    [pending]="store.writing()"
+    [passwordError]="passwordError()"
+    [codeError]="codeError()"
+    (submitted)="confirmDisable($event)"
+    (cancelled)="close()"
+  />
+</ng-template>

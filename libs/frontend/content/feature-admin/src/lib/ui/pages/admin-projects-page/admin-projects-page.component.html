@@ -1,44 +1,31 @@
-<content-project-list-toolbar [count]="store.projects().length" [(query)]="query" [(view)]="view" />
+<content-project-list-toolbar />
 
-<p
-  class="flex items-center gap-2 border-b border-line px-6 py-2.5 text-[13px] text-star-faint @max-[640px]:px-4"
->
-  <ng-icon class="shrink-0 text-info-ink" [svg]="icons.info" size="14" aria-hidden="true" />
-  Une modification d'un projet publié reconstruit le site public (quelques minutes).
-</p>
+<ui-page-header>
+  <h1 uiPageHeaderTitle>
+    <ng-container i18n="@@admin.projects.title">Projets</ng-container>
+    @let total = store.projects().length;
+    <span class="text-[14px] font-normal text-fg-faint tabular-nums" data-slot="project-count">
+      {{ countLabel() }}
+      <span class="sr-only"
+        ><ng-container i18n="@@admin.projects.count.noun">{total, plural,
+          =0 {projet}
+          =1 {projet}
+          other {projets}
+        }</ng-container></span
+      ></span
+    >
+  </h1>
+</ui-page-header>
 
-@if (store.loading() && store.projects().length === 0) {
-  <div class="flex flex-col" role="status">
-    <span class="sr-only">Chargement…</span>
-    @for (row of [1, 2, 3, 4]; track row) {
-      <div class="flex h-11 items-center gap-3 border-b border-line px-6" aria-hidden="true">
-        <span uiSkeleton class="size-3.5 rounded-full"></span>
-        <span uiSkeleton class="h-3 w-48 rounded-full"></span>
-      </div>
-    }
-  </div>
-} @else if (groups().length === 0) {
-  <div uiEmpty class="gap-4 px-6 py-16 md:px-6 md:py-16 @max-[640px]:px-4">
-    <div uiEmptyHeader>
-      <div uiEmptyMedia variant="icon" class="size-10">
-        <ng-icon [svg]="icons.empty" size="20" />
-      </div>
-      @if (store.projects().length === 0) {
-        <p uiEmptyTitle class="font-sans text-[14px] font-medium">Aucun projet</p>
-        <p uiEmptyDescription class="text-[13px]">
-          Les projets du service de contenu apparaissent ici.
-        </p>
-      } @else {
-        <p uiEmptyTitle class="font-sans text-[14px] font-medium">Aucun projet ne correspond</p>
-        <p uiEmptyDescription class="text-[13px]">Modifiez la recherche ou le filtre.</p>
-      }
-    </div>
-  </div>
-} @else {
-  <content-project-list-dataview
-    [groups]="groups()"
-    [writing]="store.writing()"
-    (publishRequested)="publish($event)"
-    (unpublishRequested)="unpublish($event)"
-  />
-}
+<content-project-list-dataview
+  [projects]="store.projects()"
+  [loading]="store.loading()"
+  [writing]="store.writing() || bulkRunning()"
+  [state]="tableState()"
+  [(selection)]="selection"
+  (stateChange)="changeState($event)"
+  (bulkRequested)="bulk($event)"
+  (projectOpened)="open($event)"
+  (publishRequested)="publish($event)"
+  (unpublishRequested)="unpublish($event)"
+/>

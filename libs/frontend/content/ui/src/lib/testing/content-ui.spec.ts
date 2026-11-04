@@ -20,6 +20,7 @@ const project: ProjectSummary = {
   periodLabel: 'Depuis 2026',
   techs: ['flutter', 'ci-cd', 'unknown'],
   featured: true,
+  cover: null,
 };
 
 /**

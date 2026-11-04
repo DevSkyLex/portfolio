@@ -173,8 +173,8 @@ function readPalette(el: Element): Palette {
       g('--aurora-blue', [79, 128, 255]),
       g('--aurora-cyan', [79, 230, 255]),
     ],
-    star: g('--star', [238, 237, 251]),
-    signal: g('--signal', [79, 230, 255]),
+    star: g('--fg', [238, 237, 251]),
+    signal: g('--accent', [79, 230, 255]),
   };
 }
 
@@ -747,8 +747,8 @@ function startPlanetGL(
 
   const theme: () => void = (): void => {
     pal = readPalette(el);
-    voidC = parseColor(cssValue('--void', '#05050b', el)) ?? [5, 5, 11];
-    lensC = parseColor(cssValue('--signal', '#4fe6ff', el)) ?? pal.stops[3];
+    voidC = parseColor(cssValue('--surface', '#05050b', el)) ?? [5, 5, 11];
+    lensC = parseColor(cssValue('--accent', '#4fe6ff', el)) ?? pal.stops[3];
 
     // Select the glyph contrast treatment from the background luminance for light and dark themes.
     day = (0.2126 * voidC[0] + 0.7152 * voidC[1] + 0.0722 * voidC[2]) / 255 > 0.5 ? 1 : 0;

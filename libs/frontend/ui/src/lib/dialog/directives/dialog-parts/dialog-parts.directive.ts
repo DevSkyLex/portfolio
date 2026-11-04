@@ -13,9 +13,15 @@ import {
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import { injectDialogContainer } from '@internal/ui/lib/dialog/components/dialog-container/dialog-container.component';
 import {
+  type DialogFooterVariant,
+  dialogFooterVariants,
+} from '@internal/ui/lib/dialog/constants/dialog-footer.variants';
+import {
+  type DialogHeaderVariant,
+  dialogHeaderVariants,
+} from '@internal/ui/lib/dialog/constants/dialog-header.variants';
+import {
   dialogDescriptionClasses,
-  dialogFooterClasses,
-  dialogHeaderClasses,
   dialogTitleClasses,
 } from '@internal/ui/lib/dialog/constants/dialog-parts.constants';
 
@@ -54,14 +60,31 @@ export function linkDialogDescription(prefix: string): string {
  * @class DialogHeaderDirective
  *
  * @description
- * Applies the shared dialog header spacing and close-button clearance to projected content.
+ * Applies the shared dialog header spacing and close-button clearance to projected content, or the
+ * edge-to-edge header bar with `variant="bar"`.
  */
 @Directive({
   selector: '[uiDialogHeader]',
-  host: { '[class]': 'classes()', 'data-slot': 'dialog-header' },
+  host: {
+    '[class]': 'classes()',
+    'data-slot': 'dialog-header',
+    '[attr.data-variant]': 'variant()',
+  },
 })
 export class DialogHeaderDirective {
   // #region Properties
+  /**
+   * Property variant
+   * @readonly
+   *
+   * @description
+   * Header layout: `default` stays inside the panel padding, `bar` reaches the panel's top and side
+   * edges above a hairline, with the close button centred on its first line.
+   *
+   * @type {InputSignal<DialogHeaderVariant>}
+   */
+  public readonly variant: InputSignal<DialogHeaderVariant> = input<DialogHeaderVariant>('default');
+
   /**
    * Property class
    * @readonly
@@ -78,12 +101,12 @@ export class DialogHeaderDirective {
    * @readonly
    *
    * @description
-   * Shared header layout combined with caller classes.
+   * Selected header layout combined with caller classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn(dialogHeaderClasses, this.class()),
+    cn(dialogHeaderVariants({ variant: this.variant() }), this.class()),
   );
   // #endregion
 }
@@ -193,14 +216,31 @@ export class DialogDescriptionDirective {
  * @class DialogFooterDirective
  *
  * @description
- * Applies the shared responsive action layout to projected dialog footer content.
+ * Applies the shared footer layout to projected dialog footer content: the responsive action row by
+ * default, or the edge-to-edge footer bar with `variant="bar"`.
  */
 @Directive({
   selector: '[uiDialogFooter]',
-  host: { '[class]': 'classes()', 'data-slot': 'dialog-footer' },
+  host: {
+    '[class]': 'classes()',
+    'data-slot': 'dialog-footer',
+    '[attr.data-variant]': 'variant()',
+  },
 })
 export class DialogFooterDirective {
   // #region Properties
+  /**
+   * Property variant
+   * @readonly
+   *
+   * @description
+   * Footer layout: `actions` keeps the buttons inside the panel padding, `bar` reaches the panel
+   * edges with keyboard hints at the start and actions at the end.
+   *
+   * @type {InputSignal<DialogFooterVariant>}
+   */
+  public readonly variant: InputSignal<DialogFooterVariant> = input<DialogFooterVariant>('actions');
+
   /**
    * Property class
    * @readonly
@@ -217,12 +257,12 @@ export class DialogFooterDirective {
    * @readonly
    *
    * @description
-   * Responsive footer alignment combined with caller classes.
+   * Selected footer layout combined with caller classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn(dialogFooterClasses, this.class()),
+    cn(dialogFooterVariants({ variant: this.variant() }), this.class()),
   );
   // #endregion
 }

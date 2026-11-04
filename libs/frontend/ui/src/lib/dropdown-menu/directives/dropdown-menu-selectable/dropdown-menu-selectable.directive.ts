@@ -158,7 +158,7 @@ export class DropdownMenuRadioItemDirective {
    * @readonly
    *
    * @description
-   * Additional classes merged with the inset radio-row appearance.
+   * Additional classes merged with the radio-row appearance.
    *
    * @type {InputSignal<string>}
    */
@@ -181,12 +181,12 @@ export class DropdownMenuRadioItemDirective {
    * @readonly
    *
    * @description
-   * Inset radio option styling combined with caller classes.
+   * Radio option styling (no start inset: the check sits at the end) combined with caller classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn(menuOptionVariants({ inset: true }), this.class()),
+    cn(menuOptionVariants(), this.class()),
   );
 
   // #region Constructor

@@ -12,55 +12,66 @@
   --dur-wipe: 560ms;
   --dur-reveal: 900ms;
   --dur-pulse: 2400ms;
-  --void: #05050b;
-  --void-raised: #0e0e19;
-  --void-sunk: #020207;
-  --void-glass: rgb(14 14 25 / 0.62);
-  --star: #eeedfb;
-  --star-muted: #aaa8c8;
-  --star-faint: #7f7da3;
-  --line: #1d1c2e;
-  --line-strong: #62608a;
   /*
-   * Interactive states, derived from the ink and the strong line so both themes follow:
-   * every control (field, select, outline button, toggle, checkbox) rests on --line-field and takes
-   * --line-hover under the pointer; transparent controls tint with the ink (bg-star/5, /8 pressed);
-   * raised surfaces take --void-hover; filled ink buttons soften to --star-hover.
+   * Colour roles (D41). Surfaces are near-neutral, text is neutral, the aurora is the only hue, besides
+   * the status families. Every state derives from these roles so both themes follow:
+   * - surfaces: page `surface`, `surface-raised` (cards, dialogs), `surface-sunk`, `surface-glass`
+   *   (translucent bars), `surface-float` (floating bars, menus, listboxes, popovers and tooltips) and
+   *   `surface-field` (the rest of every text field): both raised in the dark theme, white in the light
+   *   one (owner review, D41); `surface-hover` under the pointer and `surface-selected` for the current
+   *   or pressed entry are translucent ink, so they read the same on any surface;
+   * - text: `fg`, `fg-muted`, `fg-faint` (4.5:1 or more on every surface);
+   * - borders: `border` (hairlines), `border-strong`, `border-field` (rest of every control, lighter in
+   *   the light theme) and `border-hover` (control under the pointer);
+   * - fills: `fill` (filled ink button), `fill-hover` and `fill-disabled`; `on-fill` is the text on
+   *   `fill`, on the aurora and on every status fill.
    */
-  --line-field: color-mix(in srgb, var(--line-strong) 42%, var(--void));
-  --line-hover: color-mix(in srgb, var(--line-strong) 68%, var(--void));
-  --void-hover: color-mix(in srgb, var(--star) 6%, var(--void-raised));
-  --star-hover: color-mix(in srgb, var(--star) 86%, var(--void));
+  --surface: #0a0a0b;
+  --surface-raised: #131316;
+  --surface-sunk: #060607;
+  --surface-glass: color-mix(in srgb, var(--surface-raised) 62%, transparent);
+  --surface-float: var(--surface-raised);
+  --surface-field: var(--surface-raised);
+  --surface-hover: color-mix(in srgb, var(--fg) 4%, transparent);
+  /* 5 % in the dark theme: a light ink reads brighter on near-black than the same share does on white. */
+  --surface-selected: color-mix(in srgb, var(--fg) 5%, transparent);
+  --fg: #ededef;
+  --fg-muted: #a1a1aa;
+  --fg-faint: #82828b;
+  --border: #232327;
+  --border-strong: #63636c;
+  --border-field: color-mix(in srgb, var(--border-strong) 42%, var(--surface));
+  --border-hover: color-mix(in srgb, var(--border-strong) 68%, var(--surface));
+  --fill: var(--fg);
+  /*
+   * The hover fill moves away from the disabled fill: a dimmer ink read as a disabled control, so the
+   * dark theme brightens to white and the light theme lifts the ink a single step. A disabled filled
+   * button rests on `fill-disabled`, a quiet control surface (D37, D41).
+   */
+  --fill-hover: #ffffff;
+  --fill-disabled: var(--border-field);
+  --on-fill: var(--surface);
+  /* Brand palette; `accent` (the aurora cyan) marks focus, selection and the planet lens, never a status. */
   --aurora-pink: #ff4fae;
   --aurora-violet: #9b6dff;
   --aurora-blue: #4f80ff;
   --aurora-cyan: #4fe6ff;
-  --on-aurora: #05050b;
-  /* Brand accent: focus rings, selection and the planet lens; never a status. */
-  --signal: var(--aurora-cyan);
-  --signal-ink: #6eebff;
-  --on-signal: #05050b;
+  --accent: var(--aurora-cyan);
   /*
-   * Status colours (D37), tuned to the aurora night: success green, warning amber, danger red, info
-   * the aurora blue. `<status>` fills dots, icons and buttons; `<status>-ink` is text (4.5:1 or more on
-   * void, raised and an 8 % tint of itself); `on-<status>` is text on a `<status>` fill.
+   * Status colours (D37): `<status>` fills dots, icons and buttons; `<status>-ink` is text (4.5:1 or more
+   * on every surface and on an 8 % tint of itself); the text on a `<status>` fill is `on-fill`.
    */
   --success: #2fbf84;
   --success-ink: #4fd69b;
-  --on-success: #05050b;
   --warning: #f0a43a;
   --warning-ink: #f7b860;
-  --on-warning: #05050b;
   --danger: #ff5c6c;
   --danger-ink: #ff8590;
-  --on-danger: #05050b;
   --info: var(--aurora-blue);
   --info-ink: #8aa9ff;
-  --on-info: #05050b;
-  --focus: var(--signal);
-  --scrim: rgb(2 2 7 / 0.66);
-  --shadow-float: 0 24px 48px -16px rgb(2 2 7 / 0.9);
-  --glow: 0 0 32px 0 rgb(155 109 255 / 0.45);
+  --scrim: color-mix(in srgb, var(--surface-sunk) 66%, transparent);
+  --shadow-float: 0 24px 48px -16px color-mix(in srgb, var(--surface-sunk) 90%, transparent);
+  --glow: 0 0 32px 0 color-mix(in srgb, var(--aurora-violet) 45%, transparent);
   --aurora: linear-gradient(
     90deg,
     var(--aurora-pink) 0%,
@@ -86,36 +97,37 @@
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --void: #ffffff;
-  --void-raised: #f6f6fa;
-  --void-sunk: #eeeef4;
-  --void-glass: rgb(255 255 255 / 0.72);
-  --star: #121222;
-  --star-muted: #4a4964;
-  --star-faint: #64637f;
-  --line: #e7e6f0;
-  --line-strong: #7d7c99;
+  --surface: #ffffff;
+  --surface-raised: #f6f6f7;
+  --surface-sunk: #eeeef0;
+  --surface-glass: color-mix(in srgb, var(--surface) 72%, transparent);
+  --surface-float: #ffffff;
+  --surface-field: #ffffff;
+  --fg: #141416;
+  --fg-muted: #4b4b53;
+  --fg-faint: #65656e;
+  --surface-selected: color-mix(in srgb, var(--fg) 7%, transparent);
+  --border: #e6e6e9;
+  --border-strong: #7c7c86;
+  /* A white field reads by a light rim; the 42 % mix of the dark theme drew a dark grey frame here. */
+  --border-field: color-mix(in srgb, var(--border-strong) 32%, var(--surface));
+  --fill-hover: #2e2e33;
+  --fill-disabled: #e7e7e9;
+  --on-fill: #ffffff;
   --aurora-pink: #c8156f;
   --aurora-violet: #6a3fe6;
   --aurora-blue: #2257e0;
   --aurora-cyan: #007f99;
-  --on-aurora: #ffffff;
-  --signal-ink: #006d84;
-  --on-signal: #ffffff;
   --success: #0d7f57;
   --success-ink: #0a6b49;
-  --on-success: #ffffff;
   --warning: #b45309;
   --warning-ink: #9a4508;
-  --on-warning: #ffffff;
   --danger: #d1243b;
   --danger-ink: #b51d32;
-  --on-danger: #ffffff;
   --info-ink: #1d48c0;
-  --on-info: #ffffff;
-  --scrim: rgb(11 11 22 / 0.32);
-  --shadow-float: 0 16px 32px -16px rgb(11 11 22 / 0.25);
-  --glow: 0 0 24px 0 rgb(106 63 230 / 0.25);
+  --scrim: color-mix(in srgb, var(--fg) 32%, transparent);
+  --shadow-float: 0 16px 32px -16px color-mix(in srgb, var(--fg) 25%, transparent);
+  --glow: 0 0 24px 0 color-mix(in srgb, var(--aurora-violet) 25%, transparent);
 }
 
 @custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
@@ -133,50 +145,48 @@
 }
 
 @theme inline {
-  --color-void: var(--void);
-  --color-void-raised: var(--void-raised);
-  --color-void-sunk: var(--void-sunk);
-  --color-void-glass: var(--void-glass);
-  --color-void-hover: var(--void-hover);
-  --color-star: var(--star);
-  --color-star-hover: var(--star-hover);
-  --color-star-muted: var(--star-muted);
-  --color-star-faint: var(--star-faint);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-line-field: var(--line-field);
-  --color-line-hover: var(--line-hover);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-surface-glass: var(--surface-glass);
+  --color-surface-float: var(--surface-float);
+  --color-surface-field: var(--surface-field);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-selected: var(--surface-selected);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-faint: var(--fg-faint);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-field: var(--border-field);
+  --color-border-hover: var(--border-hover);
+  --color-fill: var(--fill);
+  --color-fill-hover: var(--fill-hover);
+  --color-fill-disabled: var(--fill-disabled);
+  --color-on-fill: var(--on-fill);
   --color-aurora-pink: var(--aurora-pink);
   --color-aurora-violet: var(--aurora-violet);
   --color-aurora-blue: var(--aurora-blue);
   --color-aurora-cyan: var(--aurora-cyan);
-  --color-on-aurora: var(--on-aurora);
-  --color-signal: var(--signal);
-  --color-signal-ink: var(--signal-ink);
-  --color-on-signal: var(--on-signal);
+  --color-accent: var(--accent);
   --color-success: var(--success);
   --color-success-ink: var(--success-ink);
-  --color-on-success: var(--on-success);
   --color-warning: var(--warning);
   --color-warning-ink: var(--warning-ink);
-  --color-on-warning: var(--on-warning);
   --color-danger: var(--danger);
   --color-danger-ink: var(--danger-ink);
-  --color-on-danger: var(--on-danger);
   --color-info: var(--info);
   --color-info-ink: var(--info-ink);
-  --color-on-info: var(--on-info);
-  --color-focus: var(--focus);
   --color-scrim: var(--scrim);
   --shadow-float: var(--shadow-float);
   --shadow-glow: var(--glow);
 }
 
 @theme {
-  --font-display: 'Unbounded Variable', 'Unbounded', system-ui, sans-serif;
-  --font-sans:
-    'Host Grotesk Variable', 'Host Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'Martian Mono Variable', 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Geist for headings and text, Geist Mono for details (D21): one legible family across the site. */
+  --font-display: 'Geist Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Geist Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Type scale of the mockup (orbite.css .t-* / .m-*); -sm variants apply below 768px. */
   --text-hero: 96px;
@@ -230,14 +240,26 @@
   --text-code: 14px;
   --text-code--line-height: 22px;
 
-  --radius-field: 10px;
-  --radius-option: 6px;
-  --radius-card: 16px;
+  /*
+   * Radius scale by element size (D43); Tailwind's default radii are cleared so only these exist.
+   * 2xs: hairline details and items nested in an xs chip; xs: kbd, badges, checkboxes, chips, inline
+   * code; sm: small controls (h-7, h-8), menu options, sidebar entries, tab triggers; md: fields and
+   * buttons (h-9 to h-11), select triggers, input groups; lg: menus, select lists, popovers,
+   * toolbars, the save bar; xl: cards, dialogs, sheets, toasts, large previews.
+   * An element hugging a rounded container with a gap of 8 px or less takes the container's radius
+   * minus that gap, measured edge to edge with the border: menus pad 3 px inside a 1 px border, so
+   * lg = sm + 4. With a generous padding (16 px or more) each element keeps its own size step.
+   */
+  --radius-*: initial;
+  --radius-2xs: 2px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
 
   --container-content: 1200px;
   --container-measure: 68ch;
-
-  --radius-sm: 4px;
 
   --ease-orbit: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-orbit-in-out: cubic-bezier(0.76, 0, 0.24, 1);
@@ -259,7 +281,20 @@
   --animate-wheel: wheel 1800ms cubic-bezier(0.65, 0, 0.35, 1) infinite;
   /* Hero copy leaving on scroll (v2-hero-out), driven by a view timeline. */
   --animate-hero-out: hero-out linear both;
+  /*
+   * Skeleton sweep (uiSkeleton): a band of a 200 %-wide gradient crosses the placeholder from left to
+   * right, then rests off-screen for two thirds of the cycle.
+   */
+  --animate-shimmer: shimmer 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
   @keyframes fade-up {
     from {
       opacity: 0;

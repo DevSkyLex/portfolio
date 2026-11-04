@@ -11,7 +11,10 @@ import { type Observable, firstValueFrom } from 'rxjs';
 import type { AdminProject } from '@internal/content-web-data-access/lib/admin/models/admin-project/admin-project.type';
 import type { AdminProjectsState } from '@internal/content-web-data-access/lib/admin/state/admin-projects/models/admin-projects-state/admin-projects-state.interface';
 import type { ProjectDraft } from '@internal/content-web-data-access/lib/admin/models/project-draft/project-draft.interface';
-import { toRevisionRequest } from '@internal/content-web-data-access/lib/admin/utils/project-draft/project-draft.utils';
+import {
+  toProjectDraft,
+  toRevisionRequest,
+} from '@internal/content-web-data-access/lib/admin/utils/project-draft/project-draft.utils';
 import { AdminProjectsApiService } from '@internal/content-web-data-access/lib/admin/services/admin-projects/admin-projects.service';
 
 /**
@@ -160,6 +163,27 @@ export const AdminProjectsStore = signalStore(
         },
         unpublish(project: AdminProject): Promise<AdminProject | null> {
           return write(api.unpublish(project.id, project.version));
+        },
+        /**
+         * Method feature
+         *
+         * @description
+         * Sets the home-page feature of a project through a revision of its own current values
+         * (`If-Match` on its version), the editor's round trip; status and position are kept (D36).
+         *
+         * @param {AdminProject} project - Project in its latest loaded version.
+         * @param {boolean} featured - Wanted feature.
+         *
+         * @returns {Promise<AdminProject | null>} Revised project, or `null` on failure.
+         */
+        feature(project: AdminProject, featured: boolean): Promise<AdminProject | null> {
+          return write(
+            api.revise(
+              project.id,
+              project.version,
+              toRevisionRequest({ ...toProjectDraft(project), featured }),
+            ),
+          );
         },
       };
     },

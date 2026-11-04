@@ -193,6 +193,27 @@ describe('admin: login', () => {
     expect(TestBed.inject<Router>(Router).url).toBe('/admin/messages');
   });
 
+  it('enters the administration at once when the account has no second factor', async () => {
+    const backend: HttpTestingController = setup();
+    const harness: RouterTestingHarness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/admin/login');
+    const root: HTMLElement = harness.routeNativeElement as HTMLElement;
+    fill(root, validCredentials);
+    submitForm(root);
+    await flush();
+    backend
+      .expectOne('/api/auth/login')
+      .flush({ status: 'authenticated', accessToken: 'jwt', expiresIn: 300 });
+    await flush();
+    await harness.fixture.whenStable();
+    expect(TestBed.inject<Router>(Router).url).toBe('/admin');
+    expect(root.textContent).not.toContain('Code de vérification');
+    backend.expectNone('/api/auth/login/totp');
+    expect(TestBed.inject<InstanceType<typeof SessionStore>>(SessionStore).authenticated()).toBe(
+      true,
+    );
+  });
+
   it('asks for the code on a second screen and sends it as soon as six digits are in', async () => {
     const backend: HttpTestingController = setup();
     const harness: RouterTestingHarness = await RouterTestingHarness.create();
@@ -345,19 +366,42 @@ describe('LoginPageComponent', () => {
     );
   });
 
-  it('asks for the e-mail and the password without calling the API', async () => {
+  it('asks for the e-mail and the password under their fields without calling the API', async () => {
     const backend: HttpTestingController = setup();
     const harness: RouterTestingHarness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/admin/login');
     const root: HTMLElement = harness.routeNativeElement as HTMLElement;
+    submitForm(root);
+    await flush();
+    await harness.fixture.whenStable();
+    backend.expectNone('/api/auth/login');
+    expect(root.querySelector('#login-email-error')?.textContent).toContain(
+      'Renseignez votre adresse e-mail.',
+    );
+    expect(root.querySelector('#login-password-error')?.textContent).toContain(
+      'Renseignez votre mot de passe.',
+    );
+    // No summary repeats the field errors.
+    expect(root.querySelector('[data-slot="alert"]')).toBeNull();
+    expect(document.activeElement?.id).toBe('login-email');
+    // A plain product-tool page: no decorative glow behind the form.
+    expect(root.querySelector('[class*="blur-"]')).toBeNull();
+    // Dense admin field: 13 px label, and the field's error marks its input invalid.
+    expect(root.querySelector('label[for="login-email"]')?.className).toContain('text-[13px]/5');
+    expect(root.querySelector('#login-email')?.getAttribute('aria-invalid')).toBe('true');
+    expect(root.querySelector('#login-password')?.getAttribute('aria-invalid')).toBe('true');
+
     fill(root, { 'login-email': 'me@example.com' });
     submitForm(root);
     await flush();
     await harness.fixture.whenStable();
     backend.expectNone('/api/auth/login');
-    expect(root.querySelector('[role="alert"]')?.textContent).toContain(
-      'Renseignez l’adresse e-mail et le mot de passe.',
+    expect(root.querySelector('#login-email-error')).toBeNull();
+    expect(root.querySelector('#login-email')?.hasAttribute('aria-invalid')).toBe(false);
+    expect(root.querySelector('#login-password')?.getAttribute('aria-describedby')).toBe(
+      'login-password-error',
     );
+    expect(document.activeElement?.id).toBe('login-password');
   });
 
   it('shows the readable error of a rejection other than invalid credentials', async () => {

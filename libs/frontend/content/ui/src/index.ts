@@ -64,3 +64,21 @@ export { AsciiPlanetComponent } from '@internal/content-web-ui/lib/planet/compon
  * Exposes the progressive paragraph component to library consumers.
  */
 export { ScrollWordsComponent } from '@internal/content-web-ui/lib/about/components/scroll-words/scroll-words.component';
+
+/**
+ * Constant article typography export
+ *
+ * @description
+ * Exposes the classes of the article document nodes, shared by the public renderer and the
+ * administrator editor (D40).
+ */
+export { ARTICLE_TYPOGRAPHY } from '@internal/content-web-ui/lib/article/constants/article-typography.constants';
+
+/**
+ * Constant article renderer exports
+ *
+ * @description
+ * Exposes the renderer of article documents and the `srcset` helper of uploaded images (D40).
+ */
+export { ArticleBlocksComponent } from '@internal/content-web-ui/lib/article/components/article-blocks/article-blocks.component';
+export { imageSrcset } from '@internal/content-web-ui/lib/article/utils/image-srcset/image-srcset.utils';

@@ -1,0 +1,159 @@
+{
+  "range": "28d",
+  "refresh": {
+    "running": false,
+    "startedAt": "2026-11-04T05:30:00.000Z",
+    "finishedAt": "2026-11-04T05:30:41.000Z",
+    "nextAllowedAt": null
+  },
+  "searchConsole": {
+    "status": "ok",
+    "fetchedAt": "2026-11-04T05:30:12.000Z",
+    "data": {
+      "window": {
+        "range": "28d",
+        "current": { "start": "2026-10-05", "end": "2026-11-01" },
+        "previous": { "start": "2026-09-07", "end": "2026-10-04" }
+      },
+      "totals": { "clicks": 42, "impressions": 1830, "ctr": 0.0229, "position": 18.4 },
+      "previous": { "clicks": 30, "impressions": 1402, "ctr": 0.0214, "position": 21.9 },
+      "daily": [
+        { "date": "2026-10-05", "clicks": 2, "impressions": 61, "ctr": 0.0328, "position": 17.2 },
+        { "date": "2026-10-06", "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 }
+      ],
+      "queries": [
+        {
+          "key": "valentin fortin",
+          "clicks": 21,
+          "impressions": 64,
+          "ctr": 0.3281,
+          "position": 1.3
+        }
+      ],
+      "pages": [
+        {
+          "key": "https://valentin-fortin.pro/",
+          "clicks": 30,
+          "impressions": 900,
+          "ctr": 0.0333,
+          "position": 12.1
+        }
+      ],
+      "devices": [
+        { "key": "DESKTOP", "clicks": 25, "impressions": 1100, "ctr": 0.0227, "position": 16.8 },
+        { "key": "MOBILE", "clicks": 17, "impressions": 730, "ctr": 0.0233, "position": 20.8 }
+      ]
+    }
+  },
+  "analytics": {
+    "status": "error",
+    "fetchedAt": "2026-11-03T05:30:09.000Z",
+    "attemptedAt": "2026-11-04T05:30:09.000Z",
+    "error": {
+      "code": "permission-denied",
+      "message": "Google refused the request (403 PERMISSION_DENIED): User does not have sufficient permissions for this property."
+    },
+    "data": {
+      "window": {
+        "range": "28d",
+        "current": { "start": "2026-10-05", "end": "2026-11-01" },
+        "previous": { "start": "2026-09-07", "end": "2026-10-04" }
+      },
+      "totals": {
+        "activeUsers": 118,
+        "sessions": 160,
+        "views": 402,
+        "engagementRate": 0.61,
+        "averageEngagementSeconds": 74.5
+      },
+      "previous": {
+        "activeUsers": 97,
+        "sessions": 133,
+        "views": 351,
+        "engagementRate": 0.58,
+        "averageEngagementSeconds": 66
+      },
+      "daily": [{ "date": "2026-10-05", "activeUsers": 4, "sessions": 5, "views": 12 }],
+      "pages": [{ "path": "/", "views": 210, "activeUsers": 95 }],
+      "channels": [{ "key": "Organic Search", "sessions": 70, "activeUsers": 61 }],
+      "countries": [{ "key": "France", "sessions": 121, "activeUsers": 90 }]
+    }
+  },
+  "webVitals": {
+    "status": "ok",
+    "fetchedAt": "2026-11-04T05:30:41.000Z",
+    "data": {
+      "rows": [
+        {
+          "url": "https://valentin-fortin.pro/",
+          "strategy": "mobile",
+          "measure": {
+            "field": {
+              "scope": "origin",
+              "lcp": { "p75": 2100, "category": "good" },
+              "inp": { "p75": 180, "category": "good" },
+              "cls": { "p75": 0.02, "category": "good" }
+            },
+            "lab": { "performanceScore": 91, "lcpMs": 2380, "cls": 0, "tbtMs": 120 }
+          },
+          "error": null
+        },
+        {
+          "url": "https://valentin-fortin.pro/",
+          "strategy": "desktop",
+          "measure": null,
+          "error": {
+            "code": "timeout",
+            "message": "PageSpeed Insights did not answer within 90 seconds."
+          }
+        }
+      ]
+    }
+  },
+  "audit": {
+    "generatedAt": "2026-11-04T09:12:00.000Z",
+    "projects": [
+      {
+        "id": "movah",
+        "slug": "movah",
+        "title": "Movah",
+        "pages": {
+          "fr": {
+            "path": "/projects/movah",
+            "title": "Movah — Valentin Fortin",
+            "description": "Application mobile de suivi de séries et de films.",
+            "keywords": ["flutter", "supabase"],
+            "keywordsSource": "techs"
+          },
+          "en": {
+            "path": "/en/projects/movah",
+            "title": "Movah, a series and film tracker",
+            "description": "Mobile application tracking series and films, synchronized across devices.",
+            "keywords": ["series tracker"],
+            "keywordsSource": "custom"
+          }
+        },
+        "issues": [
+          { "code": "cover-missing", "severity": "warning", "locale": null },
+          { "code": "search-title-missing", "severity": "info", "locale": "fr" },
+          {
+            "code": "search-title-too-short",
+            "severity": "warning",
+            "locale": "fr",
+            "length": 23,
+            "limit": 30
+          },
+          { "code": "keywords-missing", "severity": "info", "locale": "fr" },
+          {
+            "code": "translation-missing",
+            "severity": "error",
+            "locale": "en",
+            "fields": ["lead.en"]
+          }
+        ]
+      }
+    ],
+    "sitemap": { "pages": 4, "urls": 8 },
+    "totals": { "published": 1, "drafts": 2, "issues": { "error": 1, "warning": 2, "info": 2 } }
+  }
+}

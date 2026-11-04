@@ -1,4 +1,4 @@
-import { ARTICLE_SECTIONS } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/article-section.model';
+import { emptyArticleDocument } from '@vfortin/content-web-data-access/admin';
 import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/project-form-values.model';
 
 /**
@@ -13,21 +13,18 @@ export const EMPTY_PROJECT_DRAFT: ProjectFormValues = {
   title: { fr: '', en: '' },
   summary: { fr: '', en: '' },
   lead: { fr: '', en: '' },
-  periodLabel: { fr: '', en: '' },
+  period: null,
   client: { fr: '', en: '' },
   role: { fr: '', en: '' },
   place: { fr: '', en: '' },
   siteUrl: '',
-  techs: '',
+  techs: [],
   featured: false,
-  article: Object.fromEntries(
-    ARTICLE_SECTIONS.map(
-      (
-        section: 'choices' | 'result' | 'work' | 'context' | 'workList' | 'lessons' | 'captions',
-      ): [
-        'choices' | 'result' | 'work' | 'context' | 'workList' | 'lessons' | 'captions',
-        { fr: string; en: string },
-      ] => [section, { fr: '', en: '' }],
-    ),
-  ) as ProjectFormValues['article'],
+  article: { fr: emptyArticleDocument(), en: emptyArticleDocument() },
+  cover: { media: '', alt: { fr: '', en: '' } },
+  seo: {
+    title: { fr: '', en: '' },
+    description: { fr: '', en: '' },
+    keywords: { fr: [], en: [] },
+  },
 };

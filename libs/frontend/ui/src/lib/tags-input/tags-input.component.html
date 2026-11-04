@@ -1,0 +1,52 @@
+@if (value().length > 0) {
+  <!-- `contents`: the tags and the input wrap together in the box. -->
+  <div class="contents" role="list" [attr.aria-label]="ariaLabel()">
+    @for (tag of value(); track $index) {
+      <span
+        uiBadge
+        role="listitem"
+        variant="outline"
+        data-slot="tags-input-tag"
+        [class]="tagClasses()"
+        [attr.data-invalid]="flashed() === $index || null"
+      >
+        <span class="truncate">{{ tag }}</span>
+        @if (!disabled()) {
+          <button
+            type="button"
+            tabindex="-1"
+            data-slot="tags-input-remove"
+            class="inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-2xs text-fg-faint outline-none hover:bg-surface-hover hover:text-fg focus-visible:bg-surface-hover focus-visible:text-fg"
+            [attr.aria-label]="removeLabel() + ' ' + tag"
+            (click)="onRemoveClick($index)"
+            (keydown)="onTagKeydown($event, $index)"
+          >
+            <ng-icon [svg]="icons.remove" size="12" strokeWidth="2.25" aria-hidden="true" />
+          </button>
+        }
+      </span>
+    }
+  </div>
+}
+<input
+  #control
+  type="text"
+  autocomplete="off"
+  spellcheck="false"
+  data-slot="tags-input-control"
+  [class]="inputClasses()"
+  [id]="controlId()"
+  [disabled]="disabled()"
+  [placeholder]="value().length > 0 ? '' : placeholder()"
+  [attr.maxlength]="maxTagLength() ?? null"
+  [attr.name]="name() || null"
+  [attr.form]="form() ?? null"
+  [attr.aria-required]="required() || null"
+  [attr.aria-invalid]="showInvalid() || null"
+  [attr.aria-labelledby]="ariaLabelledby() ?? null"
+  [attr.aria-describedby]="ariaDescribedby() ?? null"
+  (keydown)="onInputKeydown($event)"
+  (input)="onInput($event)"
+  (paste)="onPaste($event)"
+/>
+<p class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement() }}</p>

@@ -68,7 +68,7 @@ class PlanetStubComponent {
  * @description
  * Minimal French content snapshot that supplies hero copy while all unrelated public collections remain empty.
  *
- * @type {{ locale: string; revision: number; profile: { heroIntro: string; aboutStatement: string; aboutLead: string; facts: never[] }; projects: never[]; timeline: never[]; skills: never[] }}
+ * @type {{ locale: string; revision: number; profile: { heroIntro: string; aboutStatement: string; aboutLead: string; facts: never[] }; projects: never[]; timeline: never[]; skills: never[]; legal: object }}
  */
 const snapshot = {
   locale: 'fr',
@@ -77,6 +77,16 @@ const snapshot = {
   projects: [],
   timeline: [],
   skills: [],
+  legal: {
+    notice: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+    privacy: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+  },
 } as const;
 
 describe('HeroSectionComponent', (): void => {

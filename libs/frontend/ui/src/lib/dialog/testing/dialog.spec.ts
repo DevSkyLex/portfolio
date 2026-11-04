@@ -203,7 +203,20 @@ describe('Dialog', () => {
 
     expect(panel()?.getAttribute('aria-label')).toBe('Greeting');
     expect(panel()?.textContent).toContain('Hello');
+    // The medium catalogue width by default.
+    expect(panel()?.classList).toContain('max-w-lg');
     panel()?.querySelector<HTMLButtonElement>('p + button')?.click();
     expect(result).toBe(42);
+  });
+
+  it('opens at the small width on request', async () => {
+    TestBed.inject<DialogService>(DialogService).open(ProgrammaticComponent, {
+      data: 'Hello',
+      ariaLabel: 'Greeting',
+      size: 'sm',
+    });
+    await TestBed.inject<ApplicationRef>(ApplicationRef).whenStable();
+    expect(panel()?.classList).toContain('max-w-[420px]');
+    expect(panel()?.classList).not.toContain('max-w-lg');
   });
 });

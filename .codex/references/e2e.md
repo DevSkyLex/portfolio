@@ -7,7 +7,7 @@ Rule: [e2e](../rules/e2e.md). The authoritative runner contract is
 ## The suites
 
 - `apps/web-e2e/playwright.config.mts` uses `nxE2EPreset`, with specs in `apps/web-e2e/src/`.
-  Standalone acceptance serves `dist/apps/web/browser` through `apps/web-e2e/support/preview/serve-site.mjs`.
+  Standalone acceptance serves `dist/apps/web-e2e-site/browser` (`web:e2e-site`, the production build with a placeholder GA4 id, D48) through `apps/web-e2e/support/preview/serve-site.mjs`.
   D25 covers static routing, localized 404 responses, admin redirects and cache/robots headers;
   it does not claim TLS, proxy, compression or rate-limit parity.
 - `npx nx e2e web-e2e` builds web through its task dependency. Its projects are `chromium`, `firefox`,

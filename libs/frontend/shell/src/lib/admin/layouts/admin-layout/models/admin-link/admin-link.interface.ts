@@ -23,7 +23,7 @@ export interface AdminLink {
    * @readonly
    *
    * @description
-   * French label of the section (D18).
+   * Localized label of the section (French source, English target).
    *
    * @type {string}
    */

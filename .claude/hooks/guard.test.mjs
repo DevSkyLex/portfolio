@@ -71,7 +71,7 @@ for (const [file, text] of [
   ['libs/contracts/contact/src/lib/contact-message.contract.ts', "import { z } from 'zod/mini';"],
   [
     'apps/web/src/styles.css',
-    "@import 'tailwindcss';\n@layer base {\n  html {\n    color: var(--star);\n  }\n}",
+    "@import 'tailwindcss';\n@layer base {\n  html {\n    color: var(--fg);\n  }\n}",
   ],
   [
     'apps/web/src/locale/messages.en.xlf',

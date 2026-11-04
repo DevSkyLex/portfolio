@@ -12,7 +12,7 @@ export interface AdminShortcut {
    * @readonly
    *
    * @description
-   * French description of what the shortcut does (D18).
+   * Localized description of what the shortcut does.
    *
    * @type {string}
    */

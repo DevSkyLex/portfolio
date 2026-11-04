@@ -28,15 +28,16 @@ import type { LoginCodeFormValues } from '@internal/identity-web-feature/lib/ui/
  * @class LoginPageComponent
  *
  * @description
- * Two-screen login of the sole administrator (D17, D36): e-mail and password first, then the
- * one-time code unless this browser is a trusted device; navigates to a safe admin destination.
+ * Login of the sole administrator (D17, D36): e-mail and password first, then the one-time code
+ * only when the account enabled it and this browser is not a trusted device; navigates to a safe
+ * admin destination.
  */
 @Component({
   selector: 'identity-login-page',
   imports: [CredentialsFormComponent, LoginCodeFormComponent, NgIcon, RouterLink],
   providers: [LoginFlowStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block bg-void' },
+  host: { class: 'block bg-surface' },
   templateUrl: './login-page.component.html',
 })
 export class LoginPageComponent {
@@ -147,7 +148,7 @@ export class LoginPageComponent {
    * @readonly
    *
    * @description
-   * French rejection shown above the current form, or `null` when there is none.
+   * Localized rejection shown above the current form, or `null` when there is none.
    *
    * @type {WritableSignal<string | null>}
    */
@@ -160,8 +161,8 @@ export class LoginPageComponent {
    * @method signIn
    *
    * @description
-   * First step: sends the credentials; opens the admin on a trusted device, otherwise shows the code
-   * screen.
+   * First step: sends the credentials; opens the admin when the session is open at once (second
+   * factor disabled or trusted device), otherwise shows the code screen.
    *
    * @param {CredentialsFormValues} values - Valid values of the credentials form.
    *
@@ -176,7 +177,9 @@ export class LoginPageComponent {
     if (!this.session.isCurrentIntent(ticket)) return;
     if (outcome.kind === 'failed') {
       this.failure.set(
-        outcome.error.status === 401 ? 'Adresse ou mot de passe incorrect.' : outcome.error.message,
+        outcome.error.status === 401
+          ? $localize`:@@admin.login.error.credentials:Adresse ou mot de passe incorrect.`
+          : outcome.error.message,
       );
       return;
     }
@@ -218,10 +221,16 @@ export class LoginPageComponent {
     // IDENTITY_ERROR_CODES.challengeExpired: the browser imports no value from the contracts (D10).
     if (error.code === 'identity.challenge-expired') {
       this.back();
-      this.failure.set('La vérification a expiré. Reconnectez-vous.');
+      this.failure.set(
+        $localize`:@@admin.login.error.challengeExpired:La vérification a expiré. Reconnectez-vous.`,
+      );
       return;
     }
-    this.failure.set(error.status === 401 ? 'Code incorrect. Réessayez.' : error.message);
+    this.failure.set(
+      error.status === 401
+        ? $localize`:@@admin.login.error.code:Code incorrect. Réessayez.`
+        : error.message,
+    );
     this.codeForm()?.clear();
   }
 

@@ -247,7 +247,7 @@ describe('DropdownMenu', () => {
     const rows: HTMLElement[] = [
       ...document.querySelectorAll<HTMLElement>('[role="menu"] [role="menuitem"]'),
     ];
-    expect(rows.map((row) => [row.textContent?.trim(), row.classList.contains('pl-8')])).toEqual([
+    expect(rows.map((row) => [row.textContent?.trim(), row.classList.contains('pl-7')])).toEqual([
       ['Zoom', true],
       ['Plein écran', false],
       ['Partager', true],

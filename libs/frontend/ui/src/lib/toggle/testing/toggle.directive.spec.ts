@@ -37,7 +37,7 @@ describe('ToggleDirective', (): void => {
     const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
     expect(button.type).toBe('button');
     expect(button.getAttribute('aria-pressed')).toBe('false');
-    expect(button.className).toContain('border-line');
+    expect(button.className).toContain('border-border');
     expect(button.className).toContain('h-9');
 
     button.click();

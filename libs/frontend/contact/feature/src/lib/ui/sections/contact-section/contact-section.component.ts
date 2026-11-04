@@ -9,14 +9,15 @@ import {
   afterNextRender,
   computed,
   inject,
+  input,
   signal,
+  type InputSignal,
 } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
 import { bootstrapLinkedin } from '@ng-icons/bootstrap-icons';
-import { lucideCheck, lucideMail } from '@ng-icons/lucide';
-import { simpleGithub } from '@ng-icons/simple-icons';
+import { lucideCheck, lucideGlobe, lucideMail } from '@ng-icons/lucide';
+import { simpleGithub, simpleMalt } from '@ng-icons/simple-icons';
 import {
-  CONTACT_LINKS,
   ContactFormStore,
   type ContactFormStoreType,
   type ContactRequest,
@@ -36,6 +37,8 @@ import {
   CONTACT_REVEAL_CLASS,
 } from '@internal/contact-web-feature/lib/ui/sections/contact-section/constants/contact-section-classes.constants';
 import { ContactFormComponent } from '@internal/contact-web-feature/lib/ui/forms/contact-form/contact-form.component';
+import type { ContactLink } from '@internal/contact-web-feature/lib/ui/sections/contact-section/models/contact-link.interface';
+import type { ContactLinkKind } from '@internal/contact-web-feature/lib/ui/sections/contact-section/models/contact-link-kind.type';
 import type { ContactFormValues } from '@internal/contact-web-feature/lib/ui/forms/contact-form/models/contact-form-values.model';
 
 /**
@@ -64,6 +67,18 @@ import type { ContactFormValues } from '@internal/contact-web-feature/lib/ui/for
 })
 export class ContactSectionComponent {
   // #region Properties
+  /**
+   * Property links
+   * @readonly
+   *
+   * @description
+   * E-mail and profile links shown beside the form, in display order; the shell passes the
+   * snapshot's.
+   *
+   * @type {InputSignal<readonly ContactLink[]>}
+   */
+  public readonly links: InputSignal<readonly ContactLink[]> = input<readonly ContactLink[]>([]);
+
   /**
    * Property store
    * @readonly
@@ -122,34 +137,32 @@ export class ContactSectionComponent {
   protected readonly deco: typeof CONTACT_DECO = CONTACT_DECO;
 
   /**
-   * Property links
-   * @readonly
-   *
-   * @description
-   * Email and profile destinations displayed beside the contact form.
-   *
-   * @type {typeof CONTACT_LINKS}
-   */
-  protected readonly links: typeof CONTACT_LINKS = CONTACT_LINKS;
-
-  /**
    * Property icons
    * @readonly
    *
    * @description
    * Icons of the contact links and of the confirmation.
    */
-  protected readonly icons: {
-    readonly mail: typeof lucideMail;
-    readonly github: string;
-    readonly linkedin: typeof bootstrapLinkedin;
-    readonly check: typeof lucideCheck;
-  } = {
-    mail: lucideMail,
-    github: simpleGithub.replace(/<title>[^<]*<\/title>/, ''),
-    linkedin: bootstrapLinkedin,
+  protected readonly icons: { readonly check: typeof lucideCheck } = {
     check: lucideCheck,
   } as const;
+
+  /**
+   * Property linkIcons
+   * @readonly
+   *
+   * @description
+   * Icon of each link kind; the brand logos lose their `<title>`, the label beside them naming them.
+   *
+   * @type {Readonly<Record<ContactLinkKind, string>>}
+   */
+  protected readonly linkIcons: Readonly<Record<ContactLinkKind, string>> = {
+    email: lucideMail,
+    github: simpleGithub.replace(/<title>[^<]*<\/title>/, ''),
+    linkedin: bootstrapLinkedin,
+    malt: simpleMalt.replace(/<title>[^<]*<\/title>/, ''),
+    website: lucideGlobe,
+  };
 
   /**
    * Property reveal

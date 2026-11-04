@@ -36,25 +36,30 @@ const TOKENS: ReadonlySet<string> = themeColourTokens(
  * Constant CENTRED_TEXT_ALLOWED
  *
  * @description
- * Files where centred text is inherent: calendar cells and the per-column alignment of the data table.
+ * Files where centred text is inherent: calendar cells, the per-column alignment of the data table, and
+ * the catalogue empty state (`uiEmpty`), centred by the owner's decision (D36 empty state revision).
+ * Consumers of `uiEmpty` inherit its alignment and never centre text themselves.
  */
 const CENTRED_TEXT_ALLOWED: string[] = [
   'libs/frontend/ui/src/lib/calendar/calendar.component.html',
   'libs/frontend/ui/src/lib/data-table/constants/data-table.constants.ts',
+  'libs/frontend/ui/src/lib/empty/constants/empty.variants.ts',
+  'libs/frontend/ui/src/lib/empty/empty.directive.ts',
 ];
 
 describe('design rules', (): void => {
   it('reads the token palette, status families included', (): void => {
     for (const token of [
-      'void',
-      'star-muted',
-      'line-field',
-      'signal',
+      'surface',
+      'surface-hover',
+      'fg-muted',
+      'border-field',
+      'accent',
       'success-ink',
       'warning',
       'danger-ink',
       'info',
-      'on-danger',
+      'on-fill',
     ]) {
       expect(TOKENS.has(token)).toBe(true);
     }
@@ -62,12 +67,12 @@ describe('design rules', (): void => {
 
   it('strips variants, important marks and opacity from class tokens', (): void => {
     expect(
-      classTokens('class="hover:bg-star/5 @max-[640px]:text-center [&>a]:text-star-muted!"'),
+      classTokens('class="hover:bg-fg/24 @max-[640px]:text-center [&>a]:text-fg-muted!"'),
     ).toEqual(
       expect.arrayContaining([
-        { raw: 'hover:bg-star/5', utility: 'bg-star' },
+        { raw: 'hover:bg-fg/24', utility: 'bg-fg' },
         { raw: '@max-[640px]:text-center', utility: 'text-center' },
-        { raw: '[&>a]:text-star-muted!', utility: 'text-star-muted' },
+        { raw: '[&>a]:text-fg-muted!', utility: 'text-fg-muted' },
       ]),
     );
   });
@@ -89,10 +94,20 @@ describe('design rules', (): void => {
     expect(
       colourViolations(
         'fixture.html',
-        '<p class="text-star bg-void-raised border-line-field text-success-ink bg-danger/8 text-current bg-current/12 text-small text-d3 border-b text-[13px]/5 bg-[color-mix(in_srgb,var(--star)_6%,var(--void-raised))]">',
+        '<p class="text-fg bg-surface-raised border-border-field text-success-ink bg-danger/8 text-current bg-current/12 text-small text-d3 border-b text-[13px]/5 bg-[color-mix(in_srgb,var(--fg)_6%,var(--surface-raised))]">',
         TOKENS,
       ),
     ).toEqual([]);
+  });
+
+  it('rejects faint ink states, which take surface-hover or surface-selected (D41)', (): void => {
+    expect(
+      colourViolations(
+        'fixture.html',
+        '<a class="hover:bg-fg/5 aria-selected:bg-fg/8 bg-fg/24 hover:bg-surface-hover">',
+        TOKENS,
+      ).map((v: DesignViolation): string => v.token),
+    ).toEqual(['hover:bg-fg/5', 'aria-selected:bg-fg/8']);
   });
 
   it('rejects centred text outside the allowed files', (): void => {
@@ -102,6 +117,28 @@ describe('design rules', (): void => {
     expect(
       centredTextViolations(CENTRED_TEXT_ALLOWED[0] ?? '', 'text-center', CENTRED_TEXT_ALLOWED),
     ).toEqual([]);
+  });
+
+  it('allows centred text in the empty-state parts only, not in their consumers or siblings', (): void => {
+    for (const file of [
+      'libs/frontend/ui/src/lib/empty/constants/empty.variants.ts',
+      'libs/frontend/ui/src/lib/empty/empty.directive.ts',
+    ]) {
+      expect(centredTextViolations(file, "'text-center'", CENTRED_TEXT_ALLOWED)).toEqual([]);
+    }
+    for (const file of [
+      'libs/frontend/ui/src/lib/empty/constants/empty-media.variants.ts',
+      'libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html',
+      'libs/frontend/shell/src/lib/admin/layouts/admin-layout/components/command-palette/command-palette.component.html',
+    ]) {
+      expect(
+        centredTextViolations(
+          file,
+          '<p uiEmptyDescription class="text-center">',
+          CENTRED_TEXT_ALLOWED,
+        ).map((v: DesignViolation): string => v.token),
+      ).toEqual(['text-center']);
+    }
   });
 
   describe('on the frontend', (): void => {

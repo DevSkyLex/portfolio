@@ -56,5 +56,28 @@ export interface ConfirmDialogOptions {
    * @type {'default' | 'danger' | undefined}
    */
   readonly tone?: 'default' | 'danger';
+
+  /**
+   * Property restoreFocus
+   *
+   * @description
+   * Element focused once the confirmation closes, whatever had the focus when it opened (the row's
+   * "Actions" button after "Dépublier" chosen in its menu, for instance). Ignored when it has left the
+   * document by then.
+   *
+   * @type {HTMLElement | null | undefined}
+   */
+  readonly restoreFocus?: HTMLElement | null;
+
+  /**
+   * Property opener
+   *
+   * @description
+   * Fallback focused on closing when no `restoreFocus` is given and the element focused at opening has
+   * left the document, after the trigger of the menu that held it (a removed menu item).
+   *
+   * @type {HTMLElement | null | undefined}
+   */
+  readonly opener?: HTMLElement | null;
   // #endregion
 }

@@ -78,7 +78,7 @@ export class SeparatorDirective {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
-      'm-0 shrink-0 border-0 bg-line',
+      'm-0 shrink-0 border-0 bg-border',
       this.orientation() === 'horizontal' ? 'h-px w-full' : 'h-full min-h-4 w-px self-stretch',
       this.class(),
     ),

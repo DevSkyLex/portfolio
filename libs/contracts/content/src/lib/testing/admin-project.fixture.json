@@ -4,24 +4,205 @@
   "status": "published",
   "version": 3,
   "position": 0,
-  "title": { "fr": "Movah", "en": "Movah" },
-  "summary": { "fr": "Une application mobile.", "en": "A mobile app." },
-  "lead": { "fr": "Flutter sur Android et iOS.", "en": "Flutter on Android and iOS." },
-  "periodLabel": { "fr": "Depuis juillet 2026", "en": "Since July 2026" },
-  "client": { "fr": "Projet personnel", "en": "Personal project" },
-  "role": { "fr": "Conception et développement", "en": "Design and development" },
-  "place": { "fr": "Android et iOS", "en": "Android and iOS" },
+  "title": {
+    "fr": "Movah",
+    "en": "Movah"
+  },
+  "summary": {
+    "fr": "Une application mobile.",
+    "en": "A mobile app."
+  },
+  "lead": {
+    "fr": "Flutter sur Android et iOS.",
+    "en": "Flutter on Android and iOS."
+  },
+  "period": {
+    "start": { "year": 2026, "month": 7 },
+    "end": null
+  },
+  "client": {
+    "fr": "Projet personnel",
+    "en": "Personal project"
+  },
+  "role": {
+    "fr": "Conception et développement",
+    "en": "Design and development"
+  },
+  "place": {
+    "fr": "Android et iOS",
+    "en": "Android and iOS"
+  },
   "siteUrl": "https://movah.app",
   "techs": ["flutter", "dart", "supabase"],
   "featured": true,
   "article": {
-    "context": [{ "fr": "Contexte.", "en": "Context." }],
-    "work": [{ "fr": "Travail.", "en": "Work." }],
-    "workList": [],
-    "choices": [{ "fr": "Choix.", "en": "Choices." }],
-    "result": [{ "fr": "Résultat.", "en": "Result." }],
-    "lessons": [{ "fr": "Leçon." }],
-    "captions": []
+    "fr": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2,
+            "textAlign": null
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Contexte"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Une application "
+            },
+            {
+              "type": "text",
+              "text": "mobile",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " publiée sur "
+            },
+            {
+              "type": "text",
+              "text": "le store",
+              "marks": [
+                {
+                  "type": "link",
+                  "attrs": {
+                    "href": "https://movah.app",
+                    "target": "_blank",
+                    "rel": "noopener noreferrer nofollow",
+                    "class": null
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Suivi des séries."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "figure",
+          "attrs": {
+            "media": "3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90",
+            "alt": "Écran du calendrier",
+            "caption": "Le calendrier des sorties."
+          }
+        },
+        {
+          "type": "codeBlock",
+          "attrs": {
+            "language": null
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "flutter run"
+            }
+          ]
+        },
+        {
+          "type": "paragraph"
+        }
+      ]
+    },
+    "en": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Context"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "A mobile app."
+            }
+          ]
+        },
+        {
+          "type": "figure",
+          "attrs": {
+            "media": "3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90",
+            "alt": "Release calendar screen",
+            "caption": "The release calendar."
+          }
+        }
+      ]
+    }
   },
-  "missing": ["article.lessons.en"]
+  "missing": ["cover.alt.en"],
+  "cover": {
+    "media": "8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f",
+    "alt": {
+      "fr": "Accueil de Movah"
+    }
+  },
+  "media": [
+    {
+      "id": "8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f",
+      "src": "/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp",
+      "width": 2400,
+      "height": 1350
+    },
+    {
+      "id": "3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90",
+      "src": "/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp",
+      "width": 1200,
+      "height": 900
+    }
+  ],
+  "seo": {
+    "title": {
+      "fr": "Movah, suivi de séries en Flutter"
+    },
+    "description": {
+      "fr": "Application mobile Flutter et Supabase pour suivre ses séries, films et anime.",
+      "en": "A Flutter and Supabase mobile app to keep track of series, films and anime."
+    },
+    "keywords": {
+      "fr": ["Flutter", "suivi de séries"]
+    }
+  }
 }

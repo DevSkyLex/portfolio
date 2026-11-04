@@ -1,4 +1,11 @@
 import { z } from 'zod/mini';
+import {
+  PublicArticleDocumentSchema,
+  PublicImageSchema,
+} from '@internal/content-contracts/lib/article-document.contract';
+import { ProfileLinkDtoSchema } from '@internal/content-contracts/lib/admin-profile.contract';
+import { LegalDocumentsSchema } from '@internal/content-contracts/lib/legal-document.contract';
+import { PublicProjectSeoSchema } from '@internal/content-contracts/lib/project-seo.contract';
 
 /**
  * Constant ContentLocaleSchema
@@ -79,15 +86,9 @@ export const ProjectDtoSchema = z.object({
   siteUrl: z.nullable(z.url()),
   techs: z.array(TechKeySchema),
   featured: z.boolean(),
-  article: z.object({
-    context: z.array(z.string()),
-    work: z.array(z.string()),
-    workList: z.array(z.string()),
-    choices: z.array(z.string()),
-    result: z.array(z.string()),
-    lessons: z.array(z.string()),
-    captions: z.array(z.string()),
-  }),
+  article: PublicArticleDocumentSchema,
+  cover: z.nullable(z.extend(PublicImageSchema, { alt: z.string() })),
+  seo: PublicProjectSeoSchema,
 });
 
 /**
@@ -153,13 +154,15 @@ export type SkillGroupDto = z.infer<typeof SkillGroupDtoSchema>;
  * Constant ProfileDtoSchema
  *
  * @description
- * Validates the localized introductory profile and its label-value facts.
+ * Validates the localized introductory profile, its label-value facts and its public links (contact
+ * section, footer). The links default to none, so that a snapshot written before them still builds.
  */
 export const ProfileDtoSchema = z.object({
   heroIntro: Text,
   aboutStatement: Text,
   aboutLead: Text,
   facts: z.array(z.object({ label: Text, value: Text })),
+  links: z._default(z.array(ProfileLinkDtoSchema), []),
 });
 
 /**
@@ -175,7 +178,9 @@ export type ProfileDto = z.infer<typeof ProfileDtoSchema>;
  * Constant ContentSnapshotSchema
  *
  * @description
- * Validates the complete localized public payload, including its non-negative revision and all content sections.
+ * Validates the complete localized public payload, including its non-negative revision and all content
+ * sections. The legal documents are required: a site build from a service older than them fails at
+ * prerender and keeps the previous release online rather than publishing empty legal pages.
  */
 export const ContentSnapshotSchema = z.object({
   locale: ContentLocaleSchema,
@@ -184,6 +189,7 @@ export const ContentSnapshotSchema = z.object({
   projects: z.array(ProjectDtoSchema),
   timeline: z.array(TimelineEntryDtoSchema),
   skills: z.array(SkillGroupDtoSchema),
+  legal: LegalDocumentsSchema,
 });
 
 /**

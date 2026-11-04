@@ -76,7 +76,7 @@ export class BreadcrumbListDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'flex flex-wrap items-center gap-1.5 text-small break-words text-star-muted sm:gap-2.5',
+      'flex flex-wrap items-center gap-1.5 text-small break-words text-fg-muted sm:gap-2.5',
       this.class(),
     ),
   );
@@ -157,7 +157,7 @@ export class BreadcrumbLinkDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'rounded-sm transition-colors duration-(--dur-pop) ease-orbit hover:text-star motion-reduce:transition-none',
+      'rounded-xs transition-colors duration-(--dur-pop) ease-orbit hover:text-fg motion-reduce:transition-none',
       this.class(),
     ),
   );
@@ -216,7 +216,7 @@ export class BreadcrumbPageDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('font-medium text-star', this.class()),
+    cn('font-medium text-fg', this.class()),
   );
   // #endregion
 }
@@ -277,7 +277,7 @@ export class BreadcrumbSeparatorComponent {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('inline-flex items-center text-star-faint', this.class()),
+    cn('inline-flex items-center text-fg-faint', this.class()),
   );
   // #endregion
 }

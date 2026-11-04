@@ -29,6 +29,10 @@ const snapshot: {
   projects: never[];
   timeline: never[];
   skills: never[];
+  legal: Record<
+    'notice' | 'privacy',
+    { updatedOn: string; document: { type: 'doc'; content: { type: 'paragraph' }[] } }
+  >;
 } = {
   locale: 'fr',
   revision: 1,
@@ -36,6 +40,16 @@ const snapshot: {
   projects: [],
   timeline: [],
   skills: [],
+  legal: {
+    notice: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+    privacy: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+  },
 };
 
 function configure(load: () => Promise<unknown>, platform: 'browser' | 'server' = 'browser'): void {

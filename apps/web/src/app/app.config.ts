@@ -1,23 +1,20 @@
 import { type ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { type WebShellOptions, provideWebShell } from '@vfortin/web-shell';
+import { provideWebShell } from '@vfortin/web-shell';
+import { audienceMeasurement } from '@internal/web/environments/audience-measurement';
+import { contentSnapshot } from '@internal/web/environments/content-snapshot';
 
 /**
  * Constant appConfig
  *
  * @description
  * Configures browser-wide error reporting and the public web shell.
- * Content snapshots are selected by locale and dynamically loaded as separate build chunks.
+ * Content snapshots are selected by locale: the committed ones, loaded as separate build chunks, or
+ * the content API's on the dev server (`content-snapshot.development.ts`). The audience measurement id
+ * comes from `environments/audience-measurement.ts` (D48).
  */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideWebShell({
-      contentSnapshot: (
-        locale: Parameters<WebShellOptions['contentSnapshot']>[0],
-      ): Promise<unknown> =>
-        locale === 'en'
-          ? import('@internal/web-snapshot/en.json').then((m): unknown => m.default)
-          : import('@internal/web-snapshot/fr.json').then((m): unknown => m.default),
-    }),
+    provideWebShell({ contentSnapshot, audienceMeasurement }),
   ],
 };

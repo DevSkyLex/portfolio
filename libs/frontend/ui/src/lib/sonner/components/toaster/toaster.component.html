@@ -41,9 +41,9 @@
       }
     }
     <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-      <p class="text-star">{{ toast.message }}</p>
+      <p class="text-fg">{{ toast.message }}</p>
       @if (toast.description; as description) {
-        <p class="text-star-muted">{{ description }}</p>
+        <p class="text-fg-muted">{{ description }}</p>
       }
     </div>
     @if (toast.action; as action) {

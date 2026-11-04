@@ -5,7 +5,8 @@ paths:
 
 # Browser tests
 
-- `apps/web-e2e/playwright.config.mts` serves the **built** site (`dist/apps/web/browser`) with
+- `apps/web-e2e/playwright.config.mts` serves the **built** site (`dist/apps/web-e2e-site/browser`, the
+  production build with a placeholder GA4 id, `web:e2e-site`, D48) with
   `apps/web-e2e/support/preview/serve-site.mjs`, like Nginx (D25). `npx nx e2e web-e2e` builds first. The dedicated
   server defaults to 4200; `E2E_PORT` accepts integers 1–65535 and configures its command, readiness
   URL and browser URL together. Choose an available port; never stop or reuse an unknown user's server.

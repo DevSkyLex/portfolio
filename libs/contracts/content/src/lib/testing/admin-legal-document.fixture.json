@@ -1,0 +1,59 @@
+{
+  "kind": "privacy",
+  "body": {
+    "fr": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Durée de conservation"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Les messages sont supprimés trois ans après leur réception."
+            }
+          ]
+        }
+      ]
+    },
+    "en": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Retention period"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Messages are deleted three years after they are received."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "updatedAt": "2026-11-02T12:00:00.000Z",
+  "version": 1
+}

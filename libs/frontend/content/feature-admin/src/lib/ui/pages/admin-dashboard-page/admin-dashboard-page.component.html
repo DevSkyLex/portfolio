@@ -1,0 +1,251 @@
+<!-- Below 1024 px the top bar already names the section: the bar would repeat the title. -->
+<header
+  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[1024px]:hidden"
+>
+  <ui-sidebar-trigger class="-ml-2" />
+  <span class="font-medium text-fg" aria-current="page" i18n="@@admin.dashboard.title"
+    >Tableau de bord</span
+  >
+</header>
+
+<div class="flex flex-1 flex-col">
+  <ui-page-header>
+    <h1 uiPageHeaderTitle i18n="@@admin.dashboard.title">Tableau de bord</h1>
+    <p uiPageHeaderMeta>
+      @if (lastFetched(); as fetched) {
+        <span i18n="@@admin.dashboard.meta.fetched">Dernière collecte Google le {{ fetched }}</span>
+      } @else if (dashboard()) {
+        <span i18n="@@admin.dashboard.meta.never">Aucune collecte Google pour l’instant</span>
+      } @else {
+        <span i18n="@@admin.dashboard.meta"
+          >Search Console, audience, Core Web Vitals et audit SEO</span
+        >
+      }
+    </p>
+    <div uiPageHeaderActions class="flex flex-wrap items-center gap-2">
+      <div
+        uiToggleGroup
+        required
+        variant="outline"
+        class="gap-0.5 rounded-md border border-border-field p-0.5"
+        i18n-aria-label="@@admin.dashboard.range.label"
+        aria-label="Période"
+        [value]="store.range()"
+        (valueChange)="selectRange($event)"
+      >
+        <!-- Three static items: the group reads every item's value while the first one renders,
+          which an item still being created by a repeater does not have yet. -->
+        <button
+          uiToggleGroupItem
+          type="button"
+          class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
+          value="7d"
+        >
+          {{ rangeLabels['7d'] }}
+        </button>
+        <button
+          uiToggleGroupItem
+          type="button"
+          class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
+          value="28d"
+        >
+          {{ rangeLabels['28d'] }}
+        </button>
+        <button
+          uiToggleGroupItem
+          type="button"
+          class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
+          value="90d"
+        >
+          {{ rangeLabels['90d'] }}
+        </button>
+      </div>
+      <button
+        uiBtn
+        variant="secondary"
+        size="xs"
+        type="button"
+        [disabled]="store.refreshing()"
+        [attr.aria-busy]="store.refreshing() ? 'true' : null"
+        [uiTooltip]="refreshTooltip()"
+        (click)="refresh()"
+      >
+        @if (store.refreshing()) {
+          <ui-spinner size="sm" label="" />
+          <ng-container i18n="@@admin.dashboard.refresh.running">Actualisation…</ng-container>
+        } @else {
+          <ng-icon [svg]="icons.refresh" size="14" aria-hidden="true" />
+          <ng-container i18n="@@admin.dashboard.refresh">Actualiser</ng-container>
+        }
+      </button>
+    </div>
+  </ui-page-header>
+
+  <div
+    class="@container/dashboard flex w-full min-w-0 flex-1 flex-col px-6 pb-12 @max-[640px]:px-4"
+  >
+    @if (store.loadCallState().error; as failure) {
+      <div uiAlert variant="danger" class="mt-6">
+        <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.loadError">
+          Impossible de charger le tableau de bord
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p>{{ failure.message }}</p>
+          <button
+            uiBtn
+            variant="secondary"
+            size="xs"
+            type="button"
+            (click)="reload()"
+            i18n="@@admin.dashboard.retry"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (store.pollCallState().error; as failure) {
+      <div uiAlert variant="warning" class="mt-6">
+        <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.pollError">
+          Le suivi de l’actualisation a été interrompu
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p>{{ failure.message }}</p>
+          <button
+            uiBtn
+            variant="secondary"
+            size="xs"
+            type="button"
+            (click)="reload()"
+            i18n="@@admin.dashboard.reload"
+          >
+            Recharger
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (dashboard(); as current) {
+      @if (searchConsole(); as view) {
+        <section
+          class="flex flex-col gap-4 border-b border-border py-8"
+          aria-labelledby="dashboard-search-console"
+        >
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 id="dashboard-search-console" class="text-[15px]/6 font-semibold text-fg">
+              Search Console
+            </h2>
+            @if (view.data; as data) {
+              <p class="text-[12px]/4 text-fg-faint tabular-nums">
+                {{ windowSpan(data.window) }}
+                @if (view.fetchedAt; as fetchedAt) {
+                  <span aria-hidden="true"> · </span>
+                  <span i18n="@@admin.dashboard.section.fetched"
+                    >Collecté le {{ fetchedLabel(fetchedAt) }}</span
+                  >
+                }
+              </p>
+            }
+          </div>
+          <content-seo-source-state source="Search Console" [view]="view" />
+          @if (view.data; as data) {
+            <content-seo-search-console-panel [data]="data" [stale]="stale()" />
+          }
+        </section>
+      }
+
+      @if (analytics(); as view) {
+        <section
+          class="flex flex-col gap-4 border-b border-border py-8"
+          aria-labelledby="dashboard-analytics"
+        >
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2
+              id="dashboard-analytics"
+              class="text-[15px]/6 font-semibold text-fg"
+              i18n="@@admin.dashboard.analytics.title"
+            >
+              Audience
+            </h2>
+            @if (view.data; as data) {
+              <p class="text-[12px]/4 text-fg-faint tabular-nums">
+                {{ windowSpan(data.window) }}
+                @if (view.fetchedAt; as fetchedAt) {
+                  <span aria-hidden="true"> · </span>
+                  <span i18n="@@admin.dashboard.section.fetched"
+                    >Collecté le {{ fetchedLabel(fetchedAt) }}</span
+                  >
+                }
+              </p>
+            }
+          </div>
+          <content-seo-source-state source="Google Analytics" [view]="view" />
+          @if (view.data; as data) {
+            <content-seo-analytics-panel [data]="data" [stale]="stale()" />
+          }
+        </section>
+      }
+
+      @if (webVitals(); as view) {
+        <section
+          class="flex flex-col gap-4 border-b border-border py-8"
+          aria-labelledby="dashboard-web-vitals"
+        >
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 id="dashboard-web-vitals" class="text-[15px]/6 font-semibold text-fg">
+              Core Web Vitals
+            </h2>
+            @if (view.fetchedAt; as fetchedAt) {
+              <p
+                class="text-[12px]/4 text-fg-faint tabular-nums"
+                i18n="@@admin.dashboard.section.fetched"
+              >
+                Collecté le {{ fetchedLabel(fetchedAt) }}
+              </p>
+            }
+          </div>
+          <content-seo-source-state source="PageSpeed Insights" [view]="view" />
+          @if (view.data; as data) {
+            <content-seo-web-vitals-panel [data]="data" />
+          }
+        </section>
+      }
+
+      <section class="flex flex-col gap-4 py-8" aria-labelledby="dashboard-audit">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2
+            id="dashboard-audit"
+            class="text-[15px]/6 font-semibold text-fg"
+            i18n="@@admin.dashboard.audit.title"
+          >
+            Audit SEO
+          </h2>
+          <p
+            class="text-[12px]/4 text-fg-faint tabular-nums"
+            i18n="@@admin.dashboard.audit.generated"
+          >
+            Calculé le {{ fetchedLabel(current.audit.generatedAt) }}
+          </p>
+        </div>
+        <content-seo-audit-panel [audit]="current.audit" />
+      </section>
+    } @else if (!store.loadCallState().error) {
+      <span class="sr-only" role="status" i18n="@@admin.dashboard.loading"
+        >Chargement du tableau de bord…</span
+      >
+      <div class="flex flex-col gap-4 py-8" aria-hidden="true">
+        <span uiSkeleton class="h-6 w-40"></span>
+        <div class="grid grid-cols-2 gap-3 @min-[48rem]/dashboard:grid-cols-4">
+          <span uiSkeleton class="h-24"></span>
+          <span uiSkeleton class="h-24"></span>
+          <span uiSkeleton class="h-24"></span>
+          <span uiSkeleton class="h-24"></span>
+        </div>
+        <span uiSkeleton class="h-56 w-full"></span>
+      </div>
+    }
+  </div>
+</div>

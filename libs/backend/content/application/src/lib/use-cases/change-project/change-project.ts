@@ -2,7 +2,9 @@ import type { Project } from '@vfortin/content-domain';
 import { NotFoundError } from '@internal/content-application/lib/errors/application-error';
 import type {
   Clock,
+  ContentRepositories,
   ContentUnitOfWork,
+  MediaRecord,
 } from '@internal/content-application/lib/ports/content/content.ports';
 
 /**
@@ -40,8 +42,29 @@ export interface ProjectChangeResult {
    * Revision queued for a rebuild, or `null` when the project was and remains a draft.
    */
   readonly revision: number | null;
+
+  /**
+   * Property media
+   * @readonly
+   *
+   * @description
+   * Stored media referenced by the updated project, for the administrator editor.
+   */
+  readonly media: readonly MediaRecord[];
   // #endregion
 }
+
+/**
+ * Type ProjectChange
+ * @type ProjectChange
+ *
+ * @description
+ * Mutation applied to the loaded aggregate inside the unit of work, before it is saved.
+ */
+export type ProjectChange = (
+  project: Project,
+  repositories: ContentRepositories,
+) => void | Promise<void>;
 
 /**
  * Function changeProject
@@ -54,26 +77,28 @@ export interface ProjectChangeResult {
  * @param {Clock} clock - Source of the request timestamp.
  * @param {string} id - Project identifier to load.
  * @param {number} expectedVersion - Version that must still be stored for the save to succeed.
- * @param {(project: Project) => void} change - Mutation applied to the loaded aggregate.
- * @returns {Promise<ProjectChangeResult>} Updated project, new version and optional rebuild revision.
+ * @param {ProjectChange} change - Mutation applied to the loaded aggregate.
+ * @returns {Promise<ProjectChangeResult>} Updated project, new version, optional rebuild revision
+ * and referenced media.
  */
 export function changeProject(
   unitOfWork: ContentUnitOfWork,
   clock: Clock,
   id: string,
   expectedVersion: number,
-  change: (project: Project) => void,
+  change: ProjectChange,
 ): Promise<ProjectChangeResult> {
-  return unitOfWork.run(async ({ projects, buildRequests }): Promise<ProjectChangeResult> => {
+  return unitOfWork.run(async (repositories: ContentRepositories): Promise<ProjectChangeResult> => {
+    const { projects, buildRequests, media } = repositories;
     const project: Project | null = await projects.get(id);
     if (project === null) {
       throw new NotFoundError('Project');
     }
     const wasPublished: boolean = project.isPublished();
-    change(project);
+    await change(project, repositories);
     const version: number = await projects.save(project, expectedVersion);
     const revision: number | null =
       wasPublished || project.isPublished() ? await buildRequests.request(clock.now()) : null;
-    return { project, version, revision };
+    return { project, version, revision, media: await media.existing(project.mediaIds()) };
   });
 }

@@ -10,14 +10,25 @@ import type { SessionStoreType } from '@internal/identity-web-data-access/lib/st
  * Function isAdminApi
  *
  * @description
- * Identifies relative `/api/` paths containing an `/admin/` segment so public requests bypass session loading and token handling.
+ * Identifies the bearer-protected API: relative `/api/` paths containing an `/admin/` segment, and the
+ * second-factor management routes `/api/auth/totp` and `/api/auth/totp/*` (D17). Login, the code step
+ * `/api/auth/login/totp`, refresh and logout stay undecorated: they authenticate through credentials,
+ * the challenge or the `HttpOnly` cookie, and their 401 must not trigger a refresh.
  *
  * @param {string} url - Request URL to classify.
  *
- * @returns {boolean} Whether the URL is below an API prefix and contains an admin route segment.
+ * @returns {boolean} Whether the request needs the administrator access token.
  */
 export function isAdminApi(url: string): boolean {
-  return url.startsWith(`${API_PREFIX}/`) && url.includes('/admin/');
+  if (!url.startsWith(`${API_PREFIX}/`)) {
+    return false;
+  }
+  const path: string = url.split(/[?#]/, 1)[0] ?? url;
+  return (
+    path.includes('/admin/') ||
+    path === `${API_PREFIX}/auth/totp` ||
+    path.startsWith(`${API_PREFIX}/auth/totp/`)
+  );
 }
 
 /**
@@ -55,8 +66,10 @@ async function sessionFrom(injector: Injector): Promise<SessionStoreType> {
  * Function authInterceptor
  *
  * @description
- * Adds the current access token only to admin API requests. If the request fails with 401, refreshes
- * once and retries with the rotated token; a failed refresh clears the session and propagates the original error.
+ * Adds the current access token only to admin API requests (see `isAdminApi`). If the request fails
+ * with 401, refreshes once and retries with the rotated token; a failed refresh clears the session and
+ * propagates the original error. Other statuses (the 422 and 409 of the second-factor routes) pass
+ * through untouched and keep the session.
  *
  * @type {HttpInterceptorFn}
  */

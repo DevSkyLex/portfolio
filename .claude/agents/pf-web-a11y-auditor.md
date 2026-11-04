@@ -56,8 +56,8 @@ Load a skill with the `Skill` tool when its subject comes up, not before reading
   `dropdown-menu` in `libs/frontend/ui/src/lib/`) trap and restore focus and close on Escape.
 - Focus is visible: `:focus-visible` base rule in `apps/web/src/styles.css` and the focus classes of the
   catalogue recipes (`libs/frontend/ui/src/lib/button/button.directive.ts`).
-- Contrast: text and meaningful borders against `--void` / `--void-raised` in both themes
-  (`libs/frontend/design-tokens/src/theme.css`); field borders (`--line-field`) are a known risk against
+- Contrast: text and meaningful borders against `--surface` / `--surface-raised` in both themes
+  (`libs/frontend/design-tokens/src/theme.css`); field borders (`--border-field`) are a known risk against
   the 3:1 non-text threshold.
 - Decorative layers (ASCII planet canvas, glyphs, background grids in `libs/frontend/content/ui/src/lib/`)
   are `aria-hidden` and never carry information; state is never colour alone.

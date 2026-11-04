@@ -198,7 +198,7 @@ export class ProgressComponent {
    */
   protected readonly indicatorClasses: Signal<string> = computed<string>((): string =>
     cn(
-      'block size-full origin-left bg-signal transition-transform duration-(--dur-roll) ease-orbit motion-reduce:transition-none',
+      'block size-full origin-left bg-accent transition-transform duration-(--dur-roll) ease-orbit motion-reduce:transition-none',
       this.current() === null &&
         'animate-[pulse_var(--dur-pulse)_var(--ease-orbit-in-out)_infinite] motion-reduce:animate-none',
     ),

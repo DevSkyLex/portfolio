@@ -82,6 +82,28 @@ async function setup(): Promise<{
 }
 
 describe('ContactSectionComponent', () => {
+  it('lists the links passed by the shell, each with the icon of its kind', async () => {
+    const { fixture, root }: Awaited<ReturnType<typeof setup>> = await setup();
+    expect(root.querySelector('ul[role="list"]')).toBeNull();
+    fixture.componentRef.setInput('links', [
+      {
+        kind: 'email',
+        href: 'mailto:contact@valentin-fortin.pro',
+        label: 'contact@valentin-fortin.pro',
+      },
+      { kind: 'malt', href: 'https://www.malt.fr/profile/x', label: 'Malt' },
+    ]);
+    await fixture.whenStable();
+    const links: HTMLAnchorElement[] = [
+      ...root.querySelectorAll<HTMLAnchorElement>('ul[role="list"] a'),
+    ];
+    expect(links.map((link) => [link.getAttribute('href'), link.textContent?.trim()])).toEqual([
+      ['mailto:contact@valentin-fortin.pro', 'contact@valentin-fortin.pro'],
+      ['https://www.malt.fr/profile/x', 'Malt'],
+    ]);
+    expect(links.every((link) => link.querySelector('ng-icon svg') !== null)).toBe(true);
+  });
+
   it('refuses to send an incomplete form and flags each field', async () => {
     const { root, type, submit, backend }: Awaited<ReturnType<typeof setup>> = await setup();
     await type('contact-email', 'camille@');

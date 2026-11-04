@@ -123,3 +123,106 @@ export class AlreadyBootstrappedError extends ApplicationError {
   }
   // #endregion
 }
+
+/**
+ * Class PasswordMismatchError
+ * @class PasswordMismatchError
+ * @extends ApplicationError
+ *
+ * @description
+ * Represents a wrong password asked again before a second-factor change; it counts towards the account
+ * lock like a failed login, but is answered 422 so that the client keeps its session.
+ */
+export class PasswordMismatchError extends ApplicationError {
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Assigns the stable password-mismatch code.
+   */
+  public constructor() {
+    super('identity.password-mismatch', 'The password is incorrect.');
+    this.name = 'PasswordMismatchError';
+  }
+  // #endregion
+}
+
+/**
+ * Class TotpInvalidError
+ * @class TotpInvalidError
+ * @extends ApplicationError
+ *
+ * @description
+ * Represents a one-time code that matches neither the pending secret (enrollment) nor the active one
+ * (removal), or that was already used.
+ */
+export class TotpInvalidError extends ApplicationError {
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Assigns the stable invalid-code code.
+   */
+  public constructor() {
+    super('identity.totp-invalid', 'The code is incorrect.');
+    this.name = 'TotpInvalidError';
+  }
+  // #endregion
+}
+
+/**
+ * Class AuthorizationRequestExpiredError
+ * @class AuthorizationRequestExpiredError
+ * @extends ApplicationError
+ *
+ * @description
+ * Represents a consent decision on a request that is unknown, expired, already decided or reviewed by
+ * another administrator session (D45): the client must start the authorization again.
+ */
+export class AuthorizationRequestExpiredError extends ApplicationError {
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Assigns the stable expired-request code.
+   */
+  public constructor() {
+    super(
+      'identity.oauth-request-expired',
+      'The authorization request expired or was already decided.',
+    );
+    this.name = 'AuthorizationRequestExpiredError';
+  }
+  // #endregion
+}
+
+/**
+ * Class ConnectedApplicationNotFoundError
+ * @class ConnectedApplicationNotFoundError
+ * @extends ApplicationError
+ *
+ * @description
+ * Represents the revocation of a consent that does not exist, belongs to another account or is
+ * already revoked.
+ */
+export class ConnectedApplicationNotFoundError extends ApplicationError {
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Assigns the stable not-found code.
+   */
+  public constructor() {
+    super('identity.oauth-application-not-found', 'The connected application does not exist.');
+    this.name = 'ConnectedApplicationNotFoundError';
+  }
+  // #endregion
+}

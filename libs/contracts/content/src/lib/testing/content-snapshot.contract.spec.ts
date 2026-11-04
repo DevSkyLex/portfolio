@@ -19,3 +19,19 @@ describe('ContentSnapshotSchema', (): void => {
     expect(ContentSnapshotQuerySchema.safeParse({ locale: 'de' }).success).toBe(false);
   });
 });
+
+describe('ContentSnapshotSchema backward compatibility', (): void => {
+  it('reads a snapshot written before the public links as having none', (): void => {
+    const older: Record<string, unknown> = structuredClone(snapshot);
+    const profile: Partial<typeof snapshot.profile> = structuredClone(snapshot.profile);
+    delete profile.links;
+    older['profile'] = profile;
+    expect(ContentSnapshotSchema.parse(older).profile.links).toEqual([]);
+  });
+
+  it('requires the legal documents', (): void => {
+    const older: Partial<typeof snapshot> = structuredClone(snapshot);
+    delete older.legal;
+    expect(ContentSnapshotSchema.safeParse(older).success).toBe(false);
+  });
+});

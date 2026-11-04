@@ -5,6 +5,7 @@ import {
   layoutPortViolations,
   lightweightEntryPointViolations,
   ownerContractViolations,
+  packageOwnerViolations,
   parseOwnerContract,
   publicConsumerViolations,
   specTypecheckViolations,
@@ -344,5 +345,34 @@ describe('lightweightEntryPointViolations', (): void => {
         "import { x } from '@ngrx/signals'; export class Editor {}",
     });
     expect(lightweightEntryPointViolations(ws)).toEqual([]);
+  });
+});
+
+describe('packageOwnerViolations', (): void => {
+  it('confines the editor to the content administration and sharp to the content adapters', (): void => {
+    const ws: Workspace = fixture({
+      'libs/frontend/content/feature-admin/src/lib/ui/components/editor.component.ts':
+        "import { Editor } from '@tiptap/core';",
+      'libs/backend/content/adapters-out/src/lib/media/processor.ts': "import sharp from 'sharp';",
+      'libs/frontend/content/feature/src/lib/page.component.ts': [
+        "import { Editor } from '@tiptap/core';",
+        "import { EditorState } from 'prosemirror-state';",
+      ].join('\n'),
+      'libs/frontend/ui/src/lib/testing/editor.spec.ts':
+        "import StarterKit from '@tiptap/starter-kit';",
+      'libs/backend/contact/adapters-out/src/lib/avatar.ts': "import sharp from 'sharp';",
+      'libs/frontend/identity/feature/src/lib/ui/components/qr.component.ts':
+        "import { encode } from 'uqr';",
+      'libs/frontend/content/ui/src/lib/qr.component.ts': "import { encode } from 'uqr';",
+    });
+    expect(
+      packageOwnerViolations(ws).map((violation: Violation): string => violation.subject),
+    ).toEqual([
+      'libs/frontend/content/feature/src/lib/page.component.ts:1',
+      'libs/frontend/content/feature/src/lib/page.component.ts:2',
+      'libs/frontend/ui/src/lib/testing/editor.spec.ts:1',
+      'libs/backend/contact/adapters-out/src/lib/avatar.ts:1',
+      'libs/frontend/content/ui/src/lib/qr.component.ts:1',
+    ]);
   });
 });

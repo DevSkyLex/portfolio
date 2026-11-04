@@ -15,6 +15,6 @@
   `@ng-icons` packs, never hand-copied SVG paths.
 - Every public page is prerendered: browser APIs run in `afterNextRender` or behind `isPlatformBrowser`.
 - Public copy is French source with explicit `@@area.key` ids and English targets in
-  `apps/web/src/locale/messages.en.xlf`; admin screens are French only, without `$localize` (D18).
+  `apps/web/src/locale/messages.en.xlf`; admin screens too, with `@@admin.<area>.<key>` ids (D18).
 
 Details: [UI catalogue](../references/ui-catalogue.md), [naming](../references/naming.md), [design system](design-system.md).

@@ -5,8 +5,9 @@ import { type ClassNameValue, extendTailwindMerge } from 'tailwind-merge';
  * Configuration twMerge
  *
  * @description
- * Extends Tailwind conflict groups with Orbite font sizes, radii, easings, and animations so these
- * utility classes merge without being mistaken for built-in colour or spacing groups.
+ * Extends Tailwind conflict groups with Orbite font sizes, easings, and animations so these utility
+ * classes merge without being mistaken for built-in colour or spacing groups. The radius scale
+ * (`2xs` to `xl`, D43) uses t-shirt names tailwind-merge already groups.
  */
 const twMerge: (...classLists: ClassNameValue[]) => string = extendTailwindMerge({
   extend: {
@@ -28,7 +29,6 @@ const twMerge: (...classLists: ClassNameValue[]) => string = extendTailwindMerge
         'data',
         'code',
       ],
-      radius: ['field', 'option', 'card'],
       ease: ['orbit', 'orbit-in-out', 'orbit-roll'],
       animate: ['fade-up', 'menu-in'],
     },

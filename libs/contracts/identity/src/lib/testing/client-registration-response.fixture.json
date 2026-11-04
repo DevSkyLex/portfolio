@@ -1,0 +1,9 @@
+{
+  "client_id": "4d3c2b1a-0f9e-4d8c-b7a6-5e4d3c2b1a0f",
+  "client_id_issued_at": 1793872800,
+  "client_name": "Outil local",
+  "redirect_uris": ["http://127.0.0.1:33418/callback"],
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none"
+}

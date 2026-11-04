@@ -57,7 +57,7 @@ export class CommandListDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('flex max-h-80 flex-col overflow-y-auto overscroll-contain p-1', this.class()),
+    cn('flex max-h-80 flex-col overflow-y-auto overscroll-contain p-[3px]', this.class()),
   );
   // #endregion
 }
@@ -112,7 +112,7 @@ export class CommandEmptyDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('px-2.5 py-6 text-sm text-star-faint', this.class()),
+    cn('px-2.5 py-6 text-sm text-fg-faint', this.class()),
   );
   // #endregion
 }

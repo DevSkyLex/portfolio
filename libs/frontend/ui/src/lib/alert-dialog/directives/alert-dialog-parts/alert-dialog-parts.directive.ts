@@ -17,9 +17,14 @@ import {
   linkDialogDescription,
   linkDialogTitle,
 } from '@internal/ui/lib/dialog/directives/dialog-parts/dialog-parts.directive';
+import { alertDialogHeaderVariants } from '@internal/ui/lib/alert-dialog/constants/alert-dialog-header.variants';
+import {
+  type DialogFooterVariant,
+  dialogFooterVariants,
+} from '@internal/ui/lib/dialog/constants/dialog-footer.variants';
+import type { DialogHeaderVariant } from '@internal/ui/lib/dialog/constants/dialog-header.variants';
 import {
   dialogDescriptionClasses,
-  dialogFooterClasses,
   dialogTitleClasses,
 } from '@internal/ui/lib/dialog/constants/dialog-parts.constants';
 
@@ -28,14 +33,31 @@ import {
  * @class AlertDialogHeaderDirective
  *
  * @description
- * Groups the heading content of an alert confirmation panel and applies its header layout.
+ * Groups the heading content of an alert confirmation panel and applies its header layout, or the
+ * edge-to-edge header bar with `variant="bar"`.
  */
 @Directive({
   selector: '[uiAlertDialogHeader]',
-  host: { '[class]': 'classes()', 'data-slot': 'alert-dialog-header' },
+  host: {
+    '[class]': 'classes()',
+    'data-slot': 'alert-dialog-header',
+    '[attr.data-variant]': 'variant()',
+  },
 })
 export class AlertDialogHeaderDirective {
   // #region Properties
+  /**
+   * Property variant
+   * @readonly
+   *
+   * @description
+   * Header layout: `default` stays inside the panel padding, `bar` reaches the panel's top and side
+   * edges above a hairline.
+   *
+   * @type {InputSignal<DialogHeaderVariant>}
+   */
+  public readonly variant: InputSignal<DialogHeaderVariant> = input<DialogHeaderVariant>('default');
+
   /**
    * Property class
    * @readonly
@@ -52,12 +74,12 @@ export class AlertDialogHeaderDirective {
    * @readonly
    *
    * @description
-   * Column layout, spacing, and alignment classes combined with caller classes.
+   * Selected header layout combined with caller classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('flex flex-col gap-2 text-left', this.class()),
+    cn(alertDialogHeaderVariants({ variant: this.variant() }), this.class()),
   );
   // #endregion
 }
@@ -169,14 +191,31 @@ export class AlertDialogDescriptionDirective {
  * @class AlertDialogFooterDirective
  *
  * @description
- * Provides the footer alignment and spacing for alert-dialog action and cancellation controls.
+ * Provides the footer alignment and spacing for alert-dialog action and cancellation controls: the
+ * responsive action row by default, or the edge-to-edge footer bar with `variant="bar"`.
  */
 @Directive({
   selector: '[uiAlertDialogFooter]',
-  host: { '[class]': 'classes()', 'data-slot': 'alert-dialog-footer' },
+  host: {
+    '[class]': 'classes()',
+    'data-slot': 'alert-dialog-footer',
+    '[attr.data-variant]': 'variant()',
+  },
 })
 export class AlertDialogFooterDirective {
   // #region Properties
+  /**
+   * Property variant
+   * @readonly
+   *
+   * @description
+   * Footer layout: `actions` keeps the buttons inside the panel padding, `bar` reaches the panel
+   * edges with keyboard hints at the start and actions at the end.
+   *
+   * @type {InputSignal<DialogFooterVariant>}
+   */
+  public readonly variant: InputSignal<DialogFooterVariant> = input<DialogFooterVariant>('actions');
+
   /**
    * Property class
    * @readonly
@@ -193,12 +232,12 @@ export class AlertDialogFooterDirective {
    * @readonly
    *
    * @description
-   * Footer alignment and spacing classes combined with caller classes.
+   * Selected footer layout combined with caller classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn(dialogFooterClasses, this.class()),
+    cn(dialogFooterVariants({ variant: this.variant() }), this.class()),
   );
   // #endregion
 }

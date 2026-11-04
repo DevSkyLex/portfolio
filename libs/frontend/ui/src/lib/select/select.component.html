@@ -12,20 +12,20 @@
   [attr.aria-label]="ariaLabel() ?? null"
   [attr.aria-labelledby]="ariaLabelledby() ?? null"
   [attr.aria-describedby]="ariaDescribedby() ?? null"
-  [attr.aria-invalid]="invalid() || null"
+  [attr.aria-invalid]="showInvalid() || null"
   [attr.aria-required]="required() || null"
   (click)="toggle()"
   (keydown)="onKeydown($event)"
   (blur)="onBlur()"
 >
-  <span class="min-w-0 flex-1 truncate" [class.text-star-faint]="!selectedOption()">
+  <span class="min-w-0 flex-1 truncate" [class.text-fg-faint]="!selectedOption()">
     {{ selectedLabel() ?? placeholder() }}
   </span>
   <!-- Turned by the unrolling of the list (menu-panel/menu-motion.ts). -->
   <ng-icon
     #chevron
     class="shrink-0"
-    color="var(--star-muted)"
+    color="var(--fg-muted)"
     [svg]="icons.chevron"
     size="16"
     strokeWidth="2.25"
@@ -60,7 +60,7 @@
     <!-- Pill under the active option: it slides from option to option. -->
     <div
       #highlight
-      class="pointer-events-none absolute inset-x-1 top-0 z-0 h-10 rounded-option bg-star/5 opacity-0 transition-[translate,height,opacity] duration-[320ms,320ms,150ms] ease-orbit data-on:opacity-100 motion-reduce:transition-[opacity] motion-reduce:duration-150"
+      class="pointer-events-none absolute inset-x-[3px] top-0 z-0 h-10 rounded-sm bg-surface-hover opacity-0 transition-[translate,height,opacity] duration-[320ms,320ms,150ms] ease-orbit data-on:opacity-100 motion-reduce:transition-[opacity] motion-reduce:duration-150"
       aria-hidden="true"
     ></div>
     <ng-content />

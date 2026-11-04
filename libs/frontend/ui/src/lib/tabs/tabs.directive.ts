@@ -573,7 +573,7 @@ export class TabsContentDirective {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
-      'flex-1 rounded-option outline-4 outline-transparent focus-visible:outline-star/12 data-[state=active]:animate-fade-up motion-reduce:animate-none',
+      'flex-1 rounded-md outline-4 outline-transparent focus-visible:outline-fg/12 data-[state=active]:animate-fade-up motion-reduce:animate-none',
       this.class(),
     ),
   );

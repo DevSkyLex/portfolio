@@ -6,14 +6,14 @@ import { cva, type VariantProps } from 'class-variance-authority';
  * @description
  * Class recipe for card surfaces, with raised default, inset sunk, and border-only outline variants.
  */
-export const cardVariants = cva('flex flex-col gap-6 rounded-card py-6 text-star', {
+export const cardVariants = cva('flex flex-col gap-6 rounded-xl py-6 text-fg', {
   variants: {
     variant: {
       // Use the raised filled surface for the default card treatment.
-      default: 'bg-void-raised',
+      default: 'bg-surface-raised',
       // Use an inset surface when the card sits within another raised surface.
-      sunk: 'bg-void-sunk',
-      outline: 'border border-line',
+      sunk: 'bg-surface-sunk',
+      outline: 'border border-border',
     },
   },
   defaultVariants: { variant: 'default' },

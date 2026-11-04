@@ -41,7 +41,7 @@ export class TableContainerDirective {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
-      'relative w-full overflow-x-auto rounded-field outline-4 outline-offset-0 outline-transparent focus-visible:outline-signal/12',
+      'relative w-full overflow-x-auto rounded-lg outline-4 outline-offset-0 outline-transparent focus-visible:outline-accent/12',
       this.class(),
     ),
   );
@@ -82,7 +82,7 @@ export class TableDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('w-full caption-bottom border-collapse text-small text-star', this.class()),
+    cn('w-full caption-bottom border-collapse text-small text-fg', this.class()),
   );
   // #endregion
 }
@@ -121,7 +121,7 @@ export class TableHeaderDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('[&_tr]:border-b [&_tr]:border-line', this.class()),
+    cn('[&_tr]:border-b [&_tr]:border-border', this.class()),
   );
   // #endregion
 }
@@ -199,7 +199,7 @@ export class TableFooterDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('border-t border-line bg-void-raised font-medium [&>tr]:last:border-b-0', this.class()),
+    cn('border-t border-border bg-surface-raised font-medium [&>tr]:last:border-b-0', this.class()),
   );
   // #endregion
 }
@@ -239,7 +239,7 @@ export class TableRowDirective {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
-      'border-b border-line/60 transition-colors duration-150 ease-orbit hover:bg-void-raised/60 data-[state=selected]:bg-void-raised motion-reduce:transition-none',
+      'border-b border-border/60 transition-colors duration-150 ease-orbit hover:bg-surface-raised/60 data-[state=selected]:bg-surface-raised motion-reduce:transition-none',
       this.class(),
     ),
   );
@@ -281,7 +281,7 @@ export class TableHeadDirective {
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
-      'h-10 px-3 text-left align-middle font-mono text-label whitespace-nowrap text-star-faint uppercase [&:has([role=checkbox])]:pr-0',
+      'h-10 px-3 text-left align-middle font-mono text-label whitespace-nowrap text-fg-faint uppercase [&:has([role=checkbox])]:pr-0',
       this.class(),
     ),
   );
@@ -361,7 +361,7 @@ export class TableCaptionDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('mt-4 text-small text-star-muted', this.class()),
+    cn('mt-4 text-small text-fg-muted', this.class()),
   );
   // #endregion
 }

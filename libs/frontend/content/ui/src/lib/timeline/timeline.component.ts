@@ -30,7 +30,7 @@ import { timelineTracks } from '@internal/content-web-ui/lib/timeline/utils/time
   templateUrl: './timeline.component.html',
   host: {
     class:
-      'group relative block bg-void [--gap-top:212px] [--n:7] [--sp:0.6] pt-(--gap-top) h-[calc(900px+var(--gap-top))] data-live:h-[calc(var(--n)*100vh+var(--gap-top))] @max-3xl:[--gap-top:308px] scene-static:h-auto',
+      'group relative block bg-surface [--gap-top:212px] [--n:7] [--sp:0.6] pt-(--gap-top) h-[calc(900px+var(--gap-top))] data-live:h-[calc(var(--n)*100vh+var(--gap-top))] @max-3xl:[--gap-top:308px] scene-static:h-auto',
     'data-poster': '0.66',
   },
 })

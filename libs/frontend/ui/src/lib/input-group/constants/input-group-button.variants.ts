@@ -10,10 +10,10 @@ import { cva, type VariantProps } from 'class-variance-authority';
 export const inputGroupButtonVariants = cva('shadow-none', {
   variants: {
     size: {
-      xs: 'h-7 gap-1 rounded-option px-2 text-sm',
-      sm: 'h-8 gap-1.5 rounded-option px-2.5',
-      'icon-xs': 'size-7 rounded-option p-0',
-      'icon-sm': 'size-8 rounded-option p-0',
+      xs: 'h-7 gap-1 rounded-xs px-2 text-sm',
+      sm: 'h-8 gap-1.5 rounded-sm px-2.5',
+      'icon-xs': 'size-7 rounded-xs p-0',
+      'icon-sm': 'size-8 rounded-sm p-0',
     },
   },
   defaultVariants: { size: 'xs' },

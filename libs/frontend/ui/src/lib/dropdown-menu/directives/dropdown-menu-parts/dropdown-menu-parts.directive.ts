@@ -64,7 +64,7 @@ export class DropdownMenuLabelDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn(menuLabelClasses, this.inset() && 'pl-8', this.class()),
+    cn(menuLabelClasses, this.inset() && 'pl-7', this.class()),
   );
   // #endregion
 }

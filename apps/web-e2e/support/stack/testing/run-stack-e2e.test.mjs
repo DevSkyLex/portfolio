@@ -36,7 +36,7 @@ function acceptanceFixture({ failAt, failCleanup = false, partialBuild = false }
     if (args.includes('identity-bootstrap')) {
       return {
         status: failAt === 'bootstrap' ? 1 : 0,
-        stdout: `Secret (manual entry): ${'A'.repeat(32)}`,
+        stdout: 'Account created for acceptance@localhost.test (password only).',
       };
     }
     if (args.includes('e2e') && failAt === 'browser') return { status: 1 };

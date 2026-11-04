@@ -165,8 +165,8 @@ export class CommandComponent implements CommandHost {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'flex w-full flex-col overflow-hidden rounded-field border border-line bg-void-raised text-star light:bg-void',
-      'outline-4 outline-transparent focus-within:border-signal/55 focus-within:outline-signal/12',
+      'flex w-full flex-col overflow-hidden rounded-lg border border-border bg-surface-float text-fg',
+      'outline-2 outline-transparent focus-within:border-accent/55 focus-within:outline-accent/12',
       this.class(),
     ),
   );

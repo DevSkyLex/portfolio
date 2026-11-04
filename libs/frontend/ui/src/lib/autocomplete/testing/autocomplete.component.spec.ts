@@ -1,5 +1,6 @@
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { FormField, form, required, type FieldTree } from '@angular/forms/signals';
 import { AutocompleteComponent } from '@internal/ui/lib/autocomplete/autocomplete.component';
 
 /**
@@ -41,6 +42,40 @@ class HostComponent {
    * @type {WritableSignal<string>}
    */
   public readonly city: WritableSignal<string> = signal<string>('');
+  // #endregion
+}
+
+/**
+ * Class FormHostComponent
+ * @class FormHostComponent
+ *
+ * @description
+ * Binds a required city through Signal Forms, which supplies `required`, `invalid` and `touched`.
+ */
+@Component({
+  imports: [AutocompleteComponent, FormField],
+  template: `<ui-autocomplete
+    inputId="city"
+    ariaLabel="Ville"
+    [options]="['Lyon']"
+    [formField]="place.city"
+  />`,
+})
+class FormHostComponent {
+  // #region Properties
+  /**
+   * Property place
+   * @readonly
+   *
+   * @description
+   * Required city field.
+   *
+   * @type {FieldTree<{ city: string }, string | number, 'writable'>}
+   */
+  public readonly place: FieldTree<{ city: string }, string | number, 'writable'> = form(
+    signal<{ city: string }>({ city: '' }),
+    (path): void => required(path.city),
+  );
   // #endregion
 }
 
@@ -184,5 +219,22 @@ describe('AutocompleteComponent', () => {
     key(field, 'Escape');
     await fixture.whenStable();
     expect(fixture.componentInstance.city()).toBe('');
+  });
+
+  it('shows the invalid state of a form field once it is touched, and exposes it as required', async () => {
+    const fixture: ComponentFixture<FormHostComponent> = TestBed.createComponent(FormHostComponent);
+    await fixture.whenStable();
+    const field: HTMLInputElement = fixture.nativeElement.querySelector('#city');
+    expect(field.getAttribute('aria-required')).toBe('true');
+    expect(field.hasAttribute('aria-invalid')).toBe(false);
+
+    field.dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    expect(field.getAttribute('aria-invalid')).toBe('true');
+
+    type(field, 'Saint-Avertin');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.place.city().value()).toBe('Saint-Avertin');
+    expect(field.hasAttribute('aria-invalid')).toBe(false);
   });
 });

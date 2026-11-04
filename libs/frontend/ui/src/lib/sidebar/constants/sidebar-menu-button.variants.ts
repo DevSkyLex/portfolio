@@ -8,10 +8,10 @@ import { cva, type VariantProps } from 'class-variance-authority';
  */
 export const sidebarMenuButtonVariants = cva(
   [
-    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-option border border-transparent p-2 text-left text-control text-star-muted',
+    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm border border-transparent p-2 text-left text-control text-fg-muted',
     'transition-[width,height,padding,background-color,color,border-color] duration-(--dur-pop) ease-orbit motion-reduce:transition-none',
-    'hover:bg-star/5 hover:text-star data-active:bg-star/5 data-active:text-star',
-    'outline-4 outline-offset-0 outline-transparent focus-visible:border-star/55 focus-visible:outline-star/12',
+    'hover:bg-surface-hover hover:text-fg data-active:bg-surface-hover data-active:text-fg',
+    'outline-4 outline-offset-0 outline-transparent focus-visible:border-fg/55 focus-visible:outline-fg/12',
     'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
     'group-has-data-[slot=sidebar-menu-badge]/menu-item:pr-8',
     'group-data-[collapsible=icon]/sidebar:size-8! group-data-[collapsible=icon]/sidebar:p-2!',

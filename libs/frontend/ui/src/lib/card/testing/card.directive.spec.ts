@@ -37,7 +37,7 @@ describe('Card', () => {
     const fixture: ComponentFixture<HostComponent> = TestBed.createComponent(HostComponent);
     await fixture.whenStable();
     const card: HTMLElement = fixture.nativeElement.querySelector('[data-slot="card"]');
-    expect(card.className).toContain('border-line');
+    expect(card.className).toContain('border-border');
     const header: HTMLElement | null = card.querySelector<HTMLElement>('[data-slot="card-header"]');
     expect(header?.className).toContain(
       'has-[[data-slot=card-action]]:grid-cols-[minmax(0,1fr)_auto]',

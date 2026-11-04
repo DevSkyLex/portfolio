@@ -1,0 +1,94 @@
+<button
+  #trigger
+  #origin="cdkOverlayOrigin"
+  cdkOverlayOrigin
+  type="button"
+  role="combobox"
+  aria-haspopup="dialog"
+  [id]="triggerId()"
+  [class]="triggerClasses()"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="open() ? dialogId() : null"
+  [attr.aria-invalid]="showInvalid() || null"
+  [attr.aria-required]="required() || null"
+  [attr.aria-describedby]="describedBy() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+  [attr.aria-readonly]="readonly() || null"
+  [disabled]="disabled()"
+  (click)="toggle()"
+  (blur)="onTriggerBlur()"
+>
+  <span class="truncate first-letter:uppercase">{{ display() }}</span>
+  <ng-icon class="shrink-0 text-fg-muted" [svg]="icons.calendar" size="16" aria-hidden="true" />
+</button>
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayPush]="true"
+  (attach)="onAttach()"
+  (detach)="close(false)"
+  (overlayKeydown)="onOverlayKeydown($event)"
+  (overlayOutsideClick)="onOutsideClick($event)"
+>
+  <div
+    class="flex animate-menu-in flex-col rounded-lg border border-border bg-surface-float shadow-float motion-reduce:animate-none"
+    role="dialog"
+    aria-modal="true"
+    cdkTrapFocus
+    [id]="dialogId()"
+    [attr.aria-label]="dialogLabel()"
+  >
+    @if (precision() === 'flexible') {
+      <div
+        uiToggleGroup
+        required
+        size="sm"
+        class="mx-3 mt-3 self-start"
+        [attr.aria-label]="texts.precision"
+        [value]="unit()"
+        (valueChange)="setUnit($event)"
+      >
+        <button uiToggleGroupItem type="button" value="month" class="h-7 rounded-sm px-2.5">
+          {{ texts.months }}
+        </button>
+        <button uiToggleGroupItem type="button" value="year" class="h-7 rounded-sm px-2.5">
+          {{ texts.years }}
+        </button>
+      </div>
+    }
+    <ui-month-calendar
+      [unit]="unit()"
+      [range]="range()"
+      [min]="minBound()"
+      [max]="maxBound()"
+      (cellSelect)="select($event)"
+    />
+    <p class="-mt-1 px-4 pb-3 text-[12px]/4 text-fg-muted" aria-live="polite">{{ status() }}</p>
+    @if (allowOngoing() || value()) {
+      <div
+        class="flex min-h-11 items-center justify-between gap-3 border-t border-border px-3 py-1.5"
+      >
+        @if (allowOngoing()) {
+          <span class="flex items-center gap-2">
+            <ui-checkbox
+              size="sm"
+              [controlId]="ongoingId"
+              [checked]="ongoing()"
+              (checkedChange)="setOngoing($event)"
+            />
+            <label class="cursor-pointer text-[13px] text-fg" [for]="ongoingId">
+              {{ ongoingLabel() }}
+            </label>
+          </span>
+        }
+        @if (value()) {
+          <button uiBtn type="button" variant="ghost" size="sm" class="ms-auto" (click)="clear()">
+            {{ texts.clear }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+</ng-template>

@@ -15,7 +15,7 @@ A library entry point is a **public surface**, not a convenience re-export.
   (`menu-panel`, `combobox-base`, `*.token.ts`, `dialog-container`).
 - Other projects import a library only through `@vfortin/<name>` or a declared secondary entry point with
   its `tsconfig.base.json` path (`@vfortin/content-web-data-access/server`,
-  `@vfortin/identity-web-data-access/http`, `@vfortin/contact-web-data-access/links`,
+  `@vfortin/identity-web-data-access/http`,
   `@vfortin/content-web-data-access/admin`, `@vfortin/web-shell/server`). Deep imports into another library are refused by
   `@nx/enforce-module-boundaries` (`banTransitiveDependencies`, `tools/architecture`).
 - A secondary entry point exists to keep weight out of the public bundle (Zod, NgRx, stores, D10, D18):

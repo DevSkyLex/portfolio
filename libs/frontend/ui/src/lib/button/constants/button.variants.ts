@@ -9,9 +9,9 @@ import { cva, type VariantProps } from 'class-variance-authority';
  */
 export const buttonVariants = cva(
   [
-    'relative isolate inline-flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-field border border-transparent text-control whitespace-nowrap',
+    'relative isolate inline-flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-md border border-transparent text-control font-medium whitespace-nowrap',
     '[transition:scale_var(--dur-press)_cubic-bezier(0.16,1,0.3,1),color_var(--dur-wipe)_cubic-bezier(0.76,0,0.24,1),border-color_var(--dur-pop)_cubic-bezier(0.16,1,0.3,1),background-color_var(--dur-pop)_cubic-bezier(0.16,1,0.3,1)] active:scale-98',
-    'outline-4 outline-offset-0 outline-transparent focus-visible:border-star/55 focus-visible:outline-star/12',
+    'outline-4 outline-offset-0 outline-transparent focus-visible:border-fg/55 focus-visible:outline-fg/12',
     'motion-reduce:transition-none motion-reduce:active:scale-100',
     'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
     // Ripple (mockup ob-ripple): a disc of the text color, placed by --rx / --ry and sized by --rs.
@@ -20,24 +20,29 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Filled buttons turn into a control surface when disabled: half-transparent ink reads as neutral grey (D37).
+        // Filled buttons rest on the quiet fill-disabled surface when disabled: half-transparent ink reads as
+        // neutral grey (D37), and the light theme keeps it lighter than a field border.
         primary:
-          'bg-star text-void hover:bg-star-hover focus-visible:bg-star-hover disabled:bg-line-field disabled:text-star-faint disabled:opacity-100 aria-disabled:bg-line-field aria-disabled:text-star-faint aria-disabled:opacity-100',
+          'bg-fill text-on-fill hover:bg-fill-hover focus-visible:bg-fill-hover disabled:bg-fill-disabled disabled:text-fg-faint disabled:opacity-100 aria-disabled:bg-fill-disabled aria-disabled:text-fg-faint aria-disabled:opacity-100',
         danger:
-          'bg-danger text-on-danger hover:bg-danger/88 focus-visible:border-danger/55 focus-visible:bg-danger/88 focus-visible:outline-danger/12 disabled:bg-line-field disabled:text-star-faint disabled:opacity-100 aria-disabled:bg-line-field aria-disabled:text-star-faint aria-disabled:opacity-100',
+          'bg-danger text-on-fill hover:bg-danger/88 focus-visible:border-danger/55 focus-visible:bg-danger/88 focus-visible:outline-danger/12 disabled:bg-fill-disabled disabled:text-fg-faint disabled:opacity-100 aria-disabled:bg-fill-disabled aria-disabled:text-fg-faint aria-disabled:opacity-100',
         secondary:
-          'border-line-field text-star hover:border-line-hover hover:bg-star/5 focus-visible:bg-star/5',
+          'border-border-field text-fg hover:border-border-hover hover:bg-surface-hover focus-visible:bg-surface-hover',
         ghost:
-          'text-star-muted hover:bg-star/5 hover:text-star focus-visible:border-star-muted/55 focus-visible:outline-star-muted/12',
+          'text-fg-muted hover:bg-surface-hover hover:text-fg focus-visible:border-fg-muted/55 focus-visible:outline-fg-muted/12',
       },
+      // Radius by height (D43): xs and the icon sizes take the small-control step, lg the large one.
       size: {
+        xs: 'h-7 gap-1.5 rounded-sm px-2.5 text-[13px]',
+        'icon-xs': 'size-7 rounded-sm px-0',
+        'icon-sm': 'size-8 rounded-sm px-0',
         sm: 'h-9 px-4',
         md: 'h-11 px-6',
-        lg: 'h-14 px-8',
+        lg: 'h-14 rounded-lg px-8',
       },
     },
-    // Ghost buttons keep their narrow padding at every size.
-    compoundVariants: [{ variant: 'ghost', class: 'px-3' }],
+    // Ghost buttons keep a narrow padding at the larger sizes; xs is already narrow.
+    compoundVariants: [{ variant: 'ghost', size: ['sm', 'md', 'lg'], class: 'px-3' }],
     defaultVariants: { variant: 'primary', size: 'md' },
   },
 );

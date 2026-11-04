@@ -1,11 +1,24 @@
-import type { ContentRepository, ContentSnapshotReader } from '@vfortin/content-application';
-import type { Profile, Project, SkillGroup, TimelineEntry } from '@vfortin/content-domain';
-import { eq } from 'drizzle-orm';
+import type {
+  ContentRepository,
+  ContentSnapshotReader,
+  MediaRecord,
+} from '@vfortin/content-application';
+import type {
+  LegalDocument,
+  LegalDocumentKind,
+  Profile,
+  Project,
+  SkillGroup,
+  TimelineEntry,
+} from '@vfortin/content-domain';
+import { eq, inArray } from 'drizzle-orm';
 import type {
   ContentDatabase,
   ContentTransaction,
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
 import {
+  toLegalDocument,
+  toMediaRecord,
   toProfile,
   toProject,
   toSkillGroup,
@@ -13,6 +26,8 @@ import {
 } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
 import {
   contentRevision,
+  legalDocuments,
+  media,
   profile,
   projects,
   skillGroups,
@@ -38,6 +53,32 @@ export class ProfileMissingError extends Error {
   public constructor() {
     super('No profile in the database: run the content service seed target.');
     this.name = 'ProfileMissingError';
+  }
+  // #endregion
+}
+
+/**
+ * Class LegalDocumentsMissingError
+ * @class LegalDocumentsMissingError
+ *
+ * @description
+ * Indicates a legal document row is absent: the migrations (0009) or the seed must be applied. The
+ * snapshot is refused rather than published without a legal page.
+ */
+export class LegalDocumentsMissingError extends Error {
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Creates the missing-document persistence error with the instruction.
+   *
+   * @param {LegalDocumentKind} kind - Missing document.
+   */
+  public constructor(kind: LegalDocumentKind) {
+    super(`No ${kind} legal document in the database: run the content migrations or the seed.`);
+    this.name = 'LegalDocumentsMissingError';
   }
   // #endregion
 }
@@ -123,6 +164,52 @@ export class DrizzleContentRepository implements ContentRepository {
   public async listSkillGroups(): Promise<SkillGroup[]> {
     const rows: (typeof skillGroups.$inferSelect)[] = await this.db.select().from(skillGroups);
     return rows.map(toSkillGroup);
+  }
+
+  /**
+   * Method loadLegalDocuments
+   * @method loadLegalDocuments
+   *
+   * @description
+   * Loads both legal documents and rejects with `LegalDocumentsMissingError` when one is absent.
+   *
+   * @returns {Promise<Readonly<Record<LegalDocumentKind, LegalDocument>>>} Documents by kind.
+   */
+  public async loadLegalDocuments(): Promise<Readonly<Record<LegalDocumentKind, LegalDocument>>> {
+    const byKind: Map<LegalDocumentKind, LegalDocument> = new Map(
+      (await this.db.select().from(legalDocuments)).map(
+        (row: typeof legalDocuments.$inferSelect): [LegalDocumentKind, LegalDocument] => [
+          row.kind,
+          toLegalDocument(row),
+        ],
+      ),
+    );
+    const notice: LegalDocument | undefined = byKind.get('notice');
+    const privacy: LegalDocument | undefined = byKind.get('privacy');
+    if (notice === undefined) throw new LegalDocumentsMissingError('notice');
+    if (privacy === undefined) throw new LegalDocumentsMissingError('privacy');
+    return { notice, privacy };
+  }
+
+  /**
+   * Method loadMedia
+   * @method loadMedia
+   *
+   * @description
+   * Loads the media rows among the identifiers, without locking (the snapshot is read-only).
+   *
+   * @param {readonly string[]} ids - Media referenced by the published projects.
+   * @returns {Promise<MediaRecord[]>} Rows found.
+   */
+  public async loadMedia(ids: readonly string[]): Promise<MediaRecord[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const rows: (typeof media.$inferSelect)[] = await this.db
+      .select()
+      .from(media)
+      .where(inArray(media.id, [...ids]));
+    return rows.map(toMediaRecord);
   }
 
   /**

@@ -74,7 +74,7 @@ Exemplar: `libs/frontend/contact/feature/src/lib/ui/sections/contact-section/con
 - Keep the invisible honeypot field `website` (D15): empty for humans, never validated visibly.
 - The contact section is hydrated on viewport (`@defer (hydrate on viewport)`, D16/D22); input typed
   before hydration may be lost, so do not add a client trigger that replaces the prerendered markup.
-- Admin forms (French only, D18) follow the same Signal Forms rules; drafts and the revision request live
+- Admin forms (localized, D18) follow the same Signal Forms rules; drafts and the revision request live
   in `libs/frontend/content/data-access/src/lib/admin/utils/project-draft/project-draft.utils.ts`, and saves send `If-Match`
   (412 shows the conflict).
 

@@ -151,7 +151,8 @@ describe('Sidebar (desktop)', (): void => {
     expect(container?.textContent).toContain('Inbox');
     expect(sidebar.getAttribute('data-state')).toBe('expanded');
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
-    expect(trigger.getAttribute('aria-label')).toBe('Afficher ou masquer la barre latérale');
+    expect(trigger.getAttribute('aria-label')).toBe('Réduire la barre latérale');
+    expect(trigger.getAttribute('aria-keyshortcuts')).toBe('Control+B');
 
     trigger.click();
     await fixture.whenStable();
@@ -159,6 +160,7 @@ describe('Sidebar (desktop)', (): void => {
     expect(sidebar.getAttribute('data-state')).toBe('collapsed');
     expect(sidebar.getAttribute('data-collapsible')).toBe('icon');
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(trigger.getAttribute('aria-label')).toBe('Déployer la barre latérale');
 
     (element.querySelector('[uiSidebarRail]') as HTMLButtonElement).click();
     await fixture.whenStable();

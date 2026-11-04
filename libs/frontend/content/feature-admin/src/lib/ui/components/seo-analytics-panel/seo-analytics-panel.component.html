@@ -1,0 +1,71 @@
+<div
+  class="grid grid-cols-2 gap-3 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-5"
+>
+  @for (kpi of kpis(); track kpi.id) {
+    <content-seo-kpi-tile
+      [label]="kpi.label"
+      [value]="kpi.value"
+      [delta]="kpi.delta"
+      [comparison]="comparison()"
+    />
+  }
+</div>
+
+<div class="grid gap-3 @min-[48rem]/dashboard:grid-cols-3">
+  @for (chart of charts(); track chart.id) {
+    <div uiCard variant="outline" class="min-w-0 gap-4 p-4">
+      <h3 class="text-[13px]/5 font-medium text-fg">{{ chart.label }}</h3>
+      <ui-area-chart
+        [label]="chart.label"
+        [valueHeader]="chart.valueHeader"
+        [points]="chart.points"
+        [formatTick]="format.compact"
+        [stale]="stale()"
+      />
+    </div>
+  }
+</div>
+
+<div class="grid gap-3 @min-[72rem]/dashboard:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+  <div class="flex min-w-0 flex-col gap-2">
+    <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.analytics.topPages">
+      Pages les plus vues
+    </h3>
+    <ui-data-table
+      density="compact"
+      caption="Pages les plus vues"
+      i18n-caption="@@admin.dashboard.analytics.topPages"
+      [class]="stale() ? 'opacity-50' : ''"
+      [data]="data().pages"
+      [columns]="pageColumns"
+      [rowKey]="pageKey"
+      [searchable]="false"
+      [columnMenu]="false"
+      [paginated]="false"
+    />
+  </div>
+  <div class="flex min-w-0 flex-col gap-3">
+    <div uiCard variant="outline" class="gap-4 p-4">
+      <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.analytics.channels">
+        Sessions par canal
+      </h3>
+      <ui-bar-list
+        label="Sessions par canal"
+        i18n-label="@@admin.dashboard.analytics.channels"
+        [items]="channels()"
+        [stale]="stale()"
+      />
+    </div>
+    <div uiCard variant="outline" class="gap-4 p-4">
+      <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.analytics.countries">
+        Sessions par pays
+      </h3>
+      <ui-bar-list
+        label="Sessions par pays"
+        i18n-label="@@admin.dashboard.analytics.countries"
+        [items]="countries()"
+        [stale]="stale()"
+      />
+    </div>
+  </div>
+</div>

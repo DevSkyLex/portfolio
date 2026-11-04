@@ -13,12 +13,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Meta } from '@angular/platform-browser';
 import { bootstrapLinkedin } from '@ng-icons/bootstrap-icons';
 import { NgIcon } from '@ng-icons/core';
 import { flagFr, flagGb } from '@ng-icons/flag-icons';
 import {
   lucideFileDown,
+  lucideGlobe,
   lucideMail,
   lucideMenu,
   lucideMonitor,
@@ -26,9 +26,9 @@ import {
   lucideSun,
   lucideX,
 } from '@ng-icons/lucide';
-import { simpleGithub } from '@ng-icons/simple-icons';
+import { simpleGithub, simpleMalt } from '@ng-icons/simple-icons';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { CONTACT_LINKS } from '@vfortin/contact-web-data-access/links';
+import { PageSeoService, SiteLinksService } from '@vfortin/content-web-data-access';
 import {
   type DecoGlyph,
   ButtonDirective,
@@ -43,10 +43,13 @@ import {
   SPY_BOTTOM,
   SPY_TOP,
 } from '@internal/web-shell/lib/layout/site-layout/constants/scroll-spy.constants';
+import { SITE_DESCRIPTION } from '@internal/web-shell/lib/layout/site-layout/constants/site-description.constants';
 import { FOOTER_GLYPHS } from '@internal/web-shell/lib/layout/site-layout/constants/footer-glyphs.constants';
 import type { Language } from '@internal/web-shell/lib/layout/site-layout/models/language/language.type';
 import type { NavItem } from '@internal/web-shell/lib/layout/site-layout/models/nav-item/nav-item.interface';
 import { leafRoute } from '@internal/web-shell/lib/layout/site-layout/utils/leaf-route/leaf-route.utils';
+import { ConsentService } from '@internal/web-shell/lib/consent/consent.service';
+import { ConsentBannerComponent } from '@internal/web-shell/lib/layout/site-layout/components/consent-banner/consent-banner.component';
 import type { ThemeMode } from '@internal/web-shell/lib/theme/models/theme-mode/theme-mode.type';
 import { ThemeService } from '@internal/web-shell/lib/theme/theme.service';
 
@@ -57,11 +60,14 @@ import { ThemeService } from '@internal/web-shell/lib/theme/theme.service';
  * @description
  * Provides the public site header, responsive navigation, routed content, and footer. It tracks the
  * active section and scroll progress, while routes marked with minimal footer data retain only the © band.
+ * After hydration it reads the cookie choice; the consent banner is a deferred block loaded only when
+ * a choice is needed or « Gérer les cookies » is used (D48), so prerendered pages never contain it.
  */
 @Component({
   selector: 'app-site-layout',
   imports: [
     ButtonDirective,
+    ConsentBannerComponent,
     DecoComponent,
     MenuSelectComponent,
     MenuSelectIconDirective,
@@ -104,37 +110,33 @@ export class SiteLayoutComponent {
   ];
 
   /**
-   * Property email
+   * Property links
    * @readonly
    *
    * @description
-   * Public email address displayed in the site header and footer.
+   * Public links of the content snapshot (e-mail in the menu and the footer, profiles in its
+   * « Ailleurs » column), empty on a page rendered without the snapshot (error pages).
    *
-   * @type {string}
+   * @type {SiteLinksService}
    */
-  protected readonly email: string = CONTACT_LINKS.email;
+  protected readonly links: SiteLinksService = inject<SiteLinksService>(SiteLinksService);
 
   /**
-   * Property github
+   * Property linkIcons
    * @readonly
    *
    * @description
-   * GitHub profile URL displayed in the site navigation and footer.
+   * Icon of each profile link kind, the brand logos without their `<title>`.
    *
-   * @type {string}
+   * @type {Readonly<Record<string, string>>}
    */
-  protected readonly github: string = CONTACT_LINKS.github;
-
-  /**
-   * Property linkedin
-   * @readonly
-   *
-   * @description
-   * LinkedIn profile URL displayed in the site navigation and footer.
-   *
-   * @type {string}
-   */
-  protected readonly linkedin: string = CONTACT_LINKS.linkedin;
+  protected readonly linkIcons: Readonly<Record<string, string>> = {
+    email: lucideMail,
+    github: simpleGithub.replace(/<title>[^<]*<\/title>/, ''),
+    linkedin: bootstrapLinkedin,
+    malt: simpleMalt.replace(/<title>[^<]*<\/title>/, ''),
+    website: lucideGlobe,
+  };
 
   /**
    * Property icons
@@ -148,8 +150,6 @@ export class SiteLayoutComponent {
     readonly close: typeof lucideX;
     readonly mail: typeof lucideMail;
     readonly cv: typeof lucideFileDown;
-    readonly github: string;
-    readonly linkedin: typeof bootstrapLinkedin;
     readonly flagFr: typeof flagFr;
     readonly flagGb: typeof flagGb;
   } = {
@@ -157,8 +157,6 @@ export class SiteLayoutComponent {
     close: lucideX,
     mail: lucideMail,
     cv: lucideFileDown,
-    github: simpleGithub.replace(/<title>[^<]*<\/title>/, ''),
-    linkedin: bootstrapLinkedin,
     flagFr,
     flagGb,
   } as const;
@@ -239,7 +237,7 @@ export class SiteLayoutComponent {
    * @type {string}
    */
   protected readonly link: string =
-    'inline-flex min-h-9 items-center text-[15px]/5 text-star-muted transition-colors duration-(--dur-pop) ease-orbit hover:text-star focus-visible:text-star';
+    'inline-flex min-h-9 items-center text-[15px]/5 text-fg-muted transition-colors duration-(--dur-pop) ease-orbit hover:text-fg focus-visible:text-fg';
 
   /**
    * Property bandLink
@@ -251,7 +249,7 @@ export class SiteLayoutComponent {
    * @type {string}
    */
   protected readonly bandLink: string =
-    'inline-flex min-h-11 items-center text-[13px]/5 text-star-muted transition-colors duration-(--dur-pop) ease-orbit hover:text-star focus-visible:text-star';
+    'inline-flex min-h-11 items-center text-[13px]/5 text-fg-muted transition-colors duration-(--dur-pop) ease-orbit hover:text-fg focus-visible:text-fg';
 
   /**
    * Property theme
@@ -263,6 +261,18 @@ export class SiteLayoutComponent {
    * @type {ThemeService}
    */
   protected readonly theme: ThemeService = inject<ThemeService>(ThemeService);
+
+  /**
+   * Property consent
+   * @readonly
+   *
+   * @description
+   * Cookie choice: shows the banner and the « Gérer les cookies » link when the audience measurement
+   * is configured (D48).
+   *
+   * @type {ConsentService}
+   */
+  protected readonly consent: ConsentService = inject<ConsentService>(ConsentService);
 
   /**
    * Property locale
@@ -399,10 +409,7 @@ export class SiteLayoutComponent {
    * listeners and subscriptions when the layout is destroyed.
    */
   public constructor() {
-    inject<Meta>(Meta).updateTag({
-      name: 'description',
-      content: $localize`:@@meta.description:Valentin Fortin, développeur web fullstack à Blois : projets, parcours et compétences, d'Angular à Django.`,
-    });
+    inject<PageSeoService>(PageSeoService).setSiteDescription(SITE_DESCRIPTION);
     const destroyRef: DestroyRef = inject<DestroyRef>(DestroyRef);
     const router: Router = this.router;
 
@@ -415,6 +422,8 @@ export class SiteLayoutComponent {
     afterNextRender(() => {
       const view: (Window & typeof globalThis) | null = this.document.defaultView;
       if (!view) return;
+      // After hydration only: the stored choice never shapes the prerendered page (D48).
+      this.consent.restore();
       let frame: number = 0;
       /**
        * Function schedule
@@ -451,7 +460,7 @@ export class SiteLayoutComponent {
         const current: NavItem | undefined = this.nav.find(
           (item) => item.fragment === this.active(),
         );
-        style.setProperty('--hc', current?.hue ?? 'var(--star-faint)');
+        style.setProperty('--hc', current?.hue ?? 'var(--fg-faint)');
       };
       const navigation: Subscription = router.events.subscribe((event) => {
         if (!(event instanceof NavigationEnd)) return;

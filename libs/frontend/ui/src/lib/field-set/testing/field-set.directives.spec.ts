@@ -57,7 +57,7 @@ describe('FieldSetDirective', () => {
     expect(fieldset.getAttribute('data-slot')).toBe('field-set');
     expect(find('input').matches(':disabled')).toBe(true);
     expect(find('legend').className).toContain('text-sm');
-    expect(find('[data-slot="field-description"]').className).toContain('text-star-faint');
+    expect(find('[data-slot="field-description"]').className).toContain('text-fg-faint');
     expect(find('[data-slot="field-error"]').getAttribute('role')).toBe('alert');
     const separator: HTMLElement = find('[data-slot="field-separator"]');
     expect(separator.getAttribute('role')).toBe('separator');

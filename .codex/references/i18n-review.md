@@ -15,7 +15,8 @@ translations.
   English left in a source, missing or empty targets, changed placeholders and broken ICU plurals
   (`@@contact.failed.one` / `.many`).
 - Catalogue defaults (`@@ui.*`) enter the catalog only once the app uses the component.
-- The admin area is French only and not translated (D18); plain strings there are expected.
+- The admin area is localized like the site (D18 revision): `@@admin.<area>.<key>` ids, English targets,
+  French build at `/admin`, English at `/en/admin`; only content data (typed by the owner) stays as is.
 - Projects, journey and profile copy come from the content service through
   `apps/web/content-snapshot/{fr,en}.json`, not from the XLF files.
 - French copy addresses the reader with "vous"; errors say what broke and how to fix it; terminology

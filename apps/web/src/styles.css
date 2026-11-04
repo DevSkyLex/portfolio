@@ -4,21 +4,50 @@
  * lowest, so a `text-*` utility on an icon wins and status icons take their ink (D37).
  */
 @layer ng-icon;
-@import 'tailwindcss';
+/* Sources are listed below: no automatic detection of the workspace (docs, specs, backend). */
+@import 'tailwindcss' source(none);
 /* Self-hosted fonts (OFL): no request to a third-party service. */
-@import '@fontsource-variable/unbounded';
-@import '@fontsource-variable/host-grotesk';
-@import '@fontsource-variable/martian-mono';
+@import './fonts.css';
 @import '../../../libs/frontend/design-tokens/src/theme.css';
 /* Positioning of the CDK overlays (menus, popovers, dialogs of @vfortin/ui). */
 @import '@angular/cdk/overlay-prebuilt.css';
 
-@source '../../../libs/frontend';
+/*
+ * Public sources only (D31): this stylesheet is loaded by every prerendered page, so it holds the
+ * utilities of the libraries the public import graph reaches, and of the catalogue entries it uses.
+ * The administration (feature-admin libraries, identity feature, shell admin area) has its own
+ * stylesheet, admin.css, loaded when the admin area is entered. `npx nx run architecture:test`
+ * (stylesheets.spec.ts) fails when a public file is not covered or an entry is no longer used.
+ */
+@source '../../../libs/frontend/contact/feature';
+@source '../../../libs/frontend/content/feature';
+@source '../../../libs/frontend/content/ui';
+@source '../../../libs/frontend/legal/feature';
+@source '../../../libs/frontend/shell/src';
+@source not '../../../libs/frontend/shell/src/lib/admin';
+@source '../../../libs/frontend/ui/src/lib/alert';
+@source '../../../libs/frontend/ui/src/lib/button';
+@source '../../../libs/frontend/ui/src/lib/class-names';
+@source '../../../libs/frontend/ui/src/lib/deco';
+@source '../../../libs/frontend/ui/src/lib/dialog';
+@source '../../../libs/frontend/ui/src/lib/field';
+@source '../../../libs/frontend/ui/src/lib/input';
+@source '../../../libs/frontend/ui/src/lib/menu-panel';
+@source '../../../libs/frontend/ui/src/lib/menu-select';
+@source '../../../libs/frontend/ui/src/lib/render-id';
+@source '../../../libs/frontend/ui/src/lib/reveal';
+@source '../../../libs/frontend/ui/src/lib/scroll-frame';
+@source '../../../libs/frontend/ui/src/lib/scroll-progress';
+@source '../../../libs/frontend/ui/src/lib/section-fx';
+@source '../../../libs/frontend/ui/src/lib/section-heading';
+@source '../../../libs/frontend/ui/src/lib/select';
+@source '../../../libs/frontend/ui/src/lib/switch';
+@source '../../../libs/frontend/ui/src/lib/textarea';
 
 @layer base {
   html {
-    background: var(--void);
-    color: var(--star);
+    background: var(--surface);
+    color: var(--fg);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -31,16 +60,16 @@
   body {
     font-size: 17px;
     line-height: 28px;
-    background: var(--void);
+    background: var(--surface);
   }
 
   ::selection {
     background: var(--aurora-violet);
-    color: var(--on-aurora);
+    color: var(--on-fill);
   }
 
   :focus-visible {
-    outline: 2px solid var(--focus);
+    outline: 2px solid var(--accent);
     outline-offset: 3px;
   }
 }
@@ -51,9 +80,9 @@
  */
 :root {
   /* Derived from the tokens, so both themes follow (D37). */
-  --sb: color-mix(in srgb, var(--star) 24%, transparent);
-  --sb-hover: color-mix(in srgb, var(--star) 36%, transparent);
-  --sb-drag: color-mix(in srgb, var(--signal) 58%, transparent);
+  --sb: color-mix(in srgb, var(--fg) 24%, transparent);
+  --sb-hover: color-mix(in srgb, var(--fg) 36%, transparent);
+  --sb-drag: color-mix(in srgb, var(--accent) 58%, transparent);
 }
 @supports (scrollbar-color: auto) {
   :root,

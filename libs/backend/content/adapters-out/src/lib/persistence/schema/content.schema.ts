@@ -1,13 +1,23 @@
-import type { LocalizedTextProps } from '@vfortin/content-domain';
+import type {
+  ArticleDocumentProps,
+  LegalDocumentKind,
+  LocalizedTextProps,
+  ProfileLinkKind,
+  ProjectPeriodProps,
+  ProjectSeoProps,
+} from '@vfortin/content-domain';
 import {
   type PgSchema,
   boolean,
   integer,
   jsonb,
   pgSchema,
+  primaryKey,
   text,
   timestamp,
+  uuid,
 } from 'drizzle-orm/pg-core';
+import type { SeoSourceFailure } from '@vfortin/content-application';
 
 /**
  * Constant contentSchema
@@ -31,74 +41,95 @@ type Text = LocalizedTextProps;
  * @interface ArticleColumn
  *
  * @description
- * JSON representation of the localized paragraph groups stored for a project article.
+ * JSON representation of a project article: one document per language, as the domain value stores it
+ * (D40).
  */
 export interface ArticleColumn {
   // #region Properties
   /**
-   * Property context
+   * Property fr
    * @readonly
    *
    * @description
-   * Paragraphs describing the project's context.
+   * French document.
    */
-  readonly context: Text[];
+  readonly fr: ArticleDocumentProps;
 
   /**
-   * Property work
+   * Property en
    * @readonly
    *
    * @description
-   * Narrative paragraphs describing completed work.
+   * English document, absent until translated.
    */
-  readonly work: Text[];
-
-  /**
-   * Property workList
-   * @readonly
-   *
-   * @description
-   * Work descriptions stored for list presentation.
-   */
-  readonly workList: Text[];
-
-  /**
-   * Property choices
-   * @readonly
-   *
-   * @description
-   * Paragraphs describing implementation choices.
-   */
-  readonly choices: Text[];
-
-  /**
-   * Property result
-   * @readonly
-   *
-   * @description
-   * Paragraphs describing project outcomes.
-   */
-  readonly result: Text[];
-
-  /**
-   * Property lessons
-   * @readonly
-   *
-   * @description
-   * Reflections recorded for the case study.
-   */
-  readonly lessons: Text[];
-
-  /**
-   * Property captions
-   * @readonly
-   *
-   * @description
-   * Captions associated with case-study media.
-   */
-  readonly captions: Text[];
+  readonly en?: ArticleDocumentProps;
   // #endregion
 }
+
+/**
+ * Interface CoverColumn
+ * @interface CoverColumn
+ *
+ * @description
+ * JSON representation of a project cover; the media reference is also read by the purge query.
+ */
+export interface CoverColumn {
+  // #region Properties
+  /**
+   * Property media
+   * @readonly
+   *
+   * @description
+   * Identifier of the uploaded media.
+   */
+  readonly media: string;
+
+  /**
+   * Property alt
+   * @readonly
+   *
+   * @description
+   * Alternative text per language.
+   */
+  readonly alt: { readonly fr: string; readonly en?: string };
+  // #endregion
+}
+
+/**
+ * Type SeoTextsColumn
+ * @type SeoTextsColumn
+ *
+ * @description
+ * JSON representation of the search title and description of a project (D42); the keywords have their
+ * own column, so the rows written before them need no rewrite.
+ */
+export type SeoTextsColumn = Pick<ProjectSeoProps, 'title' | 'description'>;
+
+/**
+ * Type SeoKeywordsColumn
+ * @type SeoKeywordsColumn
+ *
+ * @description
+ * JSON representation of the search keywords of a project per language, empty lists left out.
+ */
+export type SeoKeywordsColumn = ProjectSeoProps['keywords'];
+
+/**
+ * Constant EMPTY_SEO
+ *
+ * @description
+ * Stored search texts of a project without any, the column default for existing rows.
+ */
+const EMPTY_SEO: SeoTextsColumn = { title: {}, description: {} };
+
+/**
+ * Constant EMPTY_SEO_KEYWORDS
+ *
+ * @description
+ * Stored keywords of a project without any, the column default for existing rows: the public page then
+ * falls back on the project's technologies.
+ */
+const EMPTY_SEO_KEYWORDS: SeoKeywordsColumn = {};
 
 /**
  * Constant projects
@@ -112,7 +143,8 @@ export const projects = contentSchema.table('projects', {
   title: jsonb('title').$type<Text>().notNull(),
   summary: jsonb('summary').$type<Text>().notNull(),
   lead: jsonb('lead').$type<Text>().notNull(),
-  periodLabel: jsonb('period_label').$type<Text>().notNull(),
+  // Start and end, months or whole years (D46); the snapshot's label is written from it.
+  period: jsonb('period').$type<ProjectPeriodProps>().notNull(),
   client: jsonb('client').$type<Text>().notNull(),
   role: jsonb('role').$type<Text>().notNull(),
   place: jsonb('place').$type<Text>().notNull(),
@@ -123,13 +155,38 @@ export const projects = contentSchema.table('projects', {
   status: text('status', { enum: ['draft', 'published'] }).notNull(),
   version: integer('version').notNull().default(1),
   article: jsonb('article').$type<ArticleColumn>().notNull(),
+  cover: jsonb('cover').$type<CoverColumn>(),
+  seo: jsonb('seo').$type<SeoTextsColumn>().notNull().default(EMPTY_SEO),
+  seoKeywords: jsonb('seo_keywords')
+    .$type<SeoKeywordsColumn>()
+    .notNull()
+    .default(EMPTY_SEO_KEYWORDS),
+});
+
+/**
+ * Constant media
+ *
+ * @description
+ * Drizzle table of the uploaded images (D40). The id names the files `<id>.webp` and
+ * `<id>-960.webp`; the unique SHA-256 of the uploaded bytes makes a repeated upload idempotent.
+ */
+export const media = contentSchema.table('media', {
+  id: uuid('id').primaryKey(),
+  width: integer('width').notNull(),
+  height: integer('height').notNull(),
+  bytes: integer('bytes').notNull(),
+  sha256: text('sha256').notNull().unique(),
+  hasSmall: boolean('has_small').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull(),
+  unlinkedAt: timestamp('unlinked_at', { withTimezone: true, mode: 'date' }),
 });
 
 /**
  * Constant timelineEntries
  *
  * @description
- * Drizzle table storing education and experience entries with month-precision dates.
+ * Drizzle table storing education and experience entries with month-precision dates, their order
+ * within their kind (`position`, from 0) and the optimistic-lock version of their content.
  */
 export const timelineEntries = contentSchema.table('timeline_entries', {
   id: text('id').primaryKey(),
@@ -142,6 +199,20 @@ export const timelineEntries = contentSchema.table('timeline_entries', {
   endYear: integer('end_year'),
   endMonth: integer('end_month'),
   techs: jsonb('techs').$type<string[]>().notNull(),
+  position: integer('position').notNull().default(0),
+  version: integer('version').notNull().default(1),
+});
+
+/**
+ * Constant timelineLists
+ *
+ * @description
+ * One row per timeline kind holding the version of its list: creations, deletions and moves bump it,
+ * and a reorder quotes it in `If-Match`. Updating the row also serializes those writes per kind.
+ */
+export const timelineLists = contentSchema.table('timeline_lists', {
+  kind: text('kind', { enum: ['education', 'experience'] }).primaryKey(),
+  version: integer('version').notNull().default(1),
 });
 
 /**
@@ -159,10 +230,21 @@ export const skillGroups = contentSchema.table('skill_groups', {
 });
 
 /**
+ * Type ProfileLinksColumn
+ * @type ProfileLinksColumn
+ *
+ * @description
+ * JSON representation of the public links of the profile, in display order.
+ */
+export type ProfileLinksColumn = { kind: ProfileLinkKind; url: string; label: string | null }[];
+
+/**
  * Constant profile
  *
  * @description
- * Singleton profile row, identified by id `1`, containing home and About section copy.
+ * Singleton profile row, identified by id `1`, containing home and About section copy, the public
+ * links (written by migration 0009 for an existing row) and the optimistic-lock version of the
+ * « Informations » editor.
  */
 export const profile = contentSchema.table('profile', {
   id: integer('id').primaryKey(),
@@ -170,6 +252,53 @@ export const profile = contentSchema.table('profile', {
   aboutStatement: jsonb('about_statement').$type<Text>().notNull(),
   aboutLead: jsonb('about_lead').$type<Text>().notNull(),
   facts: jsonb('facts').$type<{ label: Text; value: Text }[]>().notNull(),
+  links: jsonb('links').$type<ProfileLinksColumn>().notNull().default([]),
+  version: integer('version').notNull().default(1),
+});
+
+/**
+ * Interface LegalBodyColumn
+ * @interface LegalBodyColumn
+ *
+ * @description
+ * JSON representation of a legal document: one article document per language, without figures.
+ */
+export interface LegalBodyColumn {
+  // #region Properties
+  /**
+   * Property fr
+   * @readonly
+   *
+   * @description
+   * French document.
+   */
+  readonly fr: ArticleDocumentProps;
+
+  /**
+   * Property en
+   * @readonly
+   *
+   * @description
+   * English document.
+   */
+  readonly en: ArticleDocumentProps;
+  // #endregion
+}
+
+/**
+ * Constant legalDocuments
+ *
+ * @description
+ * The legal notice and the privacy policy, one row per kind (written by migration 0009 and the seed),
+ * with the time of their last save and their optimistic-lock version.
+ */
+export const legalDocuments = contentSchema.table('legal_documents', {
+  kind: text('kind', { enum: ['notice', 'privacy'] })
+    .$type<LegalDocumentKind>()
+    .primaryKey(),
+  body: jsonb('body').$type<LegalBodyColumn>().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull(),
+  version: integer('version').notNull().default(1),
 });
 
 /**
@@ -202,6 +331,40 @@ export const siteBuildRequests = contentSchema.table('site_build_requests', {
 });
 
 /**
+ * Constant seoReports
+ *
+ * @description
+ * Cache of the Google reports of the SEO dashboard (D47), one row per source and range (`all` for the
+ * Web Vitals): the last report fetched, kept when a later attempt fails, and the outcome of the last
+ * attempt. The dashboard reads it; the daily job and the manual refresh write it.
+ */
+export const seoReports = contentSchema.table(
+  'seo_reports',
+  {
+    source: text('source', { enum: ['search-console', 'analytics', 'web-vitals'] }).notNull(),
+    range: text('range', { enum: ['7d', '28d', '90d', 'all'] }).notNull(),
+    data: jsonb('data').$type<unknown>(),
+    fetchedAt: timestamp('fetched_at', { withTimezone: true, mode: 'date' }),
+    failure: jsonb('failure').$type<SeoSourceFailure>(),
+    attemptedAt: timestamp('attempted_at', { withTimezone: true, mode: 'date' }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.source, table.range] })],
+);
+
+/**
+ * Constant seoRefresh
+ *
+ * @description
+ * Singleton row `id = 1` holding the start and end of the last dashboard refresh; claiming a refresh
+ * updates its start conditionally, which serializes the manual refresh and the daily job.
+ */
+export const seoRefresh = contentSchema.table('seo_refresh', {
+  id: integer('id').primaryKey(),
+  startedAt: timestamp('started_at', { withTimezone: true, mode: 'date' }),
+  finishedAt: timestamp('finished_at', { withTimezone: true, mode: 'date' }),
+});
+
+/**
  * Constant contentTables
  *
  * @description
@@ -210,8 +373,13 @@ export const siteBuildRequests = contentSchema.table('site_build_requests', {
 export const contentTables = {
   projects,
   timelineEntries,
+  timelineLists,
   skillGroups,
   profile,
+  legalDocuments,
   contentRevision,
   siteBuildRequests,
+  media,
+  seoReports,
+  seoRefresh,
 } as const;

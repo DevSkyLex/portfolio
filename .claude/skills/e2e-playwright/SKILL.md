@@ -10,7 +10,7 @@ Codex counterpart: `.codex/references/e2e.md`; change one, change both. Rule: `e
 ## The suite
 
 - Config `apps/web-e2e/playwright.config.mts` (`nxE2EPreset`, specs in `apps/web-e2e/src/`). Its
-  `webServer` runs `node apps/web-e2e/support/preview/serve-site.mjs dist/apps/web/browser <port>`, which reproduces
+  `webServer` runs `node apps/web-e2e/support/preview/serve-site.mjs dist/apps/web-e2e-site/browser <port>`, which reproduces
   Nginx's prerendered paths, administration redirects/CSR and cache/indexing headers, real 404 and
   `/api/*` → 404 JSON (D25). The Nx target builds first. `E2E_PORT` defaults to 4200 and accepts integers
   1–65535; the command and both readiness/browser URLs use it consistently. Choose an available port,

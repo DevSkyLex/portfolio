@@ -24,7 +24,7 @@ import { cn } from '@internal/ui/lib/class-names/class-names.utils';
   template: `
     <ng-content select="select" />
     <ng-icon
-      class="pointer-events-none absolute end-4.5 top-1/2 -translate-y-1/2 text-star-muted"
+      class="pointer-events-none absolute end-4.5 top-1/2 -translate-y-1/2 text-fg-muted"
       [svg]="icons.chevron"
       size="16"
       aria-hidden="true"
@@ -70,7 +70,7 @@ export class NativeSelectComponent {
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
       'relative block w-full has-[select:disabled]:[&>ng-icon]:opacity-50',
-      '[&_option]:bg-void-raised [&_option]:text-star',
+      '[&_option]:bg-surface-raised [&_option]:text-fg',
       this.class(),
     ),
   );

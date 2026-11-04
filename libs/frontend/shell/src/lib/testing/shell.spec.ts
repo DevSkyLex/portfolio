@@ -18,7 +18,7 @@ import { SERVER_ROUTES } from '@internal/web-shell/lib/app.routes.server';
  * @param {string} slug - Project identifier used as its title.
  * @param {boolean} featured - Whether the home page fixture should feature the project.
  *
- * @returns Project fixture containing the sections required by the content snapshot contract.
+ * @returns Project fixture with the minimal article document and no cover, as the content snapshot contract requires.
  */
 const project: (
   slug: string,
@@ -35,15 +35,9 @@ const project: (
   siteUrl: null;
   techs: never[];
   featured: boolean;
-  article: {
-    context: never[];
-    work: never[];
-    workList: never[];
-    choices: never[];
-    result: never[];
-    lessons: never[];
-    captions: never[];
-  };
+  article: { type: 'doc'; content: { type: 'paragraph' }[] };
+  cover: null;
+  seo: { title: null; description: null };
 } = (
   slug: string,
   featured: boolean,
@@ -59,15 +53,9 @@ const project: (
   siteUrl: null;
   techs: never[];
   featured: boolean;
-  article: {
-    context: never[];
-    work: never[];
-    workList: never[];
-    choices: never[];
-    result: never[];
-    lessons: never[];
-    captions: never[];
-  };
+  article: { type: 'doc'; content: { type: 'paragraph' }[] };
+  cover: null;
+  seo: { title: null; description: null };
 } => ({
   slug,
   title: slug,
@@ -80,15 +68,9 @@ const project: (
   siteUrl: null,
   techs: [],
   featured,
-  article: {
-    context: [],
-    work: [],
-    workList: [],
-    choices: [],
-    result: [],
-    lessons: [],
-    captions: [],
-  },
+  article: { type: 'doc', content: [{ type: 'paragraph' }] },
+  cover: null,
+  seo: { title: null, description: null },
 });
 
 /**
@@ -113,18 +95,16 @@ const snapshot: {
     siteUrl: null;
     techs: never[];
     featured: boolean;
-    article: {
-      context: never[];
-      work: never[];
-      workList: never[];
-      choices: never[];
-      result: never[];
-      lessons: never[];
-      captions: never[];
-    };
+    article: { type: 'doc'; content: { type: 'paragraph' }[] };
+    cover: null;
+    seo: { title: null; description: null };
   }[];
   timeline: never[];
   skills: never[];
+  legal: Record<
+    'notice' | 'privacy',
+    { updatedOn: string; document: { type: 'doc'; content: { type: 'paragraph' }[] } }
+  >;
 } = {
   locale: 'fr',
   revision: 1,
@@ -132,6 +112,16 @@ const snapshot: {
   projects: [project('movah', true), project('crm-kodoka', false)],
   timeline: [],
   skills: [],
+  legal: {
+    notice: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+    privacy: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+  },
 };
 
 beforeEach(() => {

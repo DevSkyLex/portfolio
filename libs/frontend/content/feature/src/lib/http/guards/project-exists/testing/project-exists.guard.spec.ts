@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { provideContentSnapshots } from '@vfortin/content-web-data-access';
+import { provideContentSnapshots, provideSiteOrigin } from '@vfortin/content-web-data-access';
 import { CONTENT_ROUTES } from '@internal/content-web-feature/lib/content.routes';
 import { projectExistsGuard } from '@internal/content-web-feature/lib/http/guards/project-exists/project-exists.guard';
 
@@ -30,19 +30,23 @@ const snapshot = {
       siteUrl: null,
       techs: [],
       featured: true,
-      article: {
-        context: [],
-        work: [],
-        workList: [],
-        choices: [],
-        result: [],
-        lessons: [],
-        captions: [],
-      },
+      article: { type: 'doc', content: [{ type: 'paragraph' }] },
+      cover: null,
+      seo: { title: null, description: null, keywords: [] },
     },
   ],
   timeline: [],
   skills: [],
+  legal: {
+    notice: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+    privacy: {
+      updatedOn: '2026-11-02',
+      document: { type: 'doc', content: [{ type: 'paragraph' }] },
+    },
+  },
 } as const;
 
 describe('projectExistsGuard', (): void => {
@@ -51,6 +55,7 @@ describe('projectExistsGuard', (): void => {
       providers: [
         { provide: LOCALE_ID, useValue: 'fr' },
         provideContentSnapshots({ fr: snapshot, en: { ...snapshot, locale: 'en' } }),
+        provideSiteOrigin(),
         provideRouter(
           [
             ...CONTENT_ROUTES,

@@ -1,7 +1,7 @@
 import { CdkMenuItemRadio } from '@angular/cdk/menu';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
-import { lucideCheck, lucideChevronRight, lucideCircle } from '@ng-icons/lucide';
+import { lucideCheck, lucideChevronRight } from '@ng-icons/lucide';
 import { menuIndicatorClasses } from '@internal/ui/lib/menu-panel/constants/menu-panel.constants';
 
 /**
@@ -9,22 +9,23 @@ import { menuIndicatorClasses } from '@internal/ui/lib/menu-panel/constants/menu
  * @class DropdownMenuItemIndicatorComponent
  *
  * @description
- * Renders an aria-hidden check or radio dot for a selected dropdown-menu option, using the CDK item
- * directive to choose the indicator shape.
+ * Renders an aria-hidden check for a selected dropdown-menu option. A checkbox row keeps it in the
+ * inset at the start; a radio row shows it at the end, like the options of `ui-menu-select` on the
+ * public pages (owner review).
  */
 @Component({
   selector: 'ui-dropdown-menu-item-indicator',
   imports: [NgIcon],
   template: `
     @if (radio) {
-      <ng-icon class="[&_svg]:fill-current" [svg]="icons.dot" size="8" aria-hidden="true" />
+      <ng-icon [svg]="icons.check" size="16" strokeWidth="1.5" aria-hidden="true" />
     } @else {
       <ng-icon [svg]="icons.check" size="16" aria-hidden="true" />
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: `${menuIndicatorClasses} invisible group-aria-checked:visible`,
+    '[class]': 'classes',
     'aria-hidden': 'true',
     'data-slot': 'dropdown-menu-item-indicator',
   },
@@ -36,26 +37,38 @@ export class DropdownMenuItemIndicatorComponent {
    * @readonly
    *
    * @description
-   * Checkmark and radio-dot definitions rendered by the indicator template.
+   * Checkmark definition rendered by the indicator template.
    *
-   * @type {{ readonly check: typeof lucideCheck; readonly dot: typeof lucideCircle }}
+   * @type {{ readonly check: typeof lucideCheck }}
    */
-  protected readonly icons: {
-    readonly check: typeof lucideCheck;
-    readonly dot: typeof lucideCircle;
-  } = { check: lucideCheck, dot: lucideCircle } as const;
+  protected readonly icons: { readonly check: typeof lucideCheck } = {
+    check: lucideCheck,
+  } as const;
 
   /**
    * Property radio
    * @readonly
    *
    * @description
-   * Whether this indicator is inside a CDK radio item and should show a dot instead of a checkmark.
+   * Whether this indicator is inside a CDK radio item, whose check sits at the end of the row.
    *
    * @type {boolean}
    */
   protected readonly radio: boolean =
     inject<CdkMenuItemRadio>(CdkMenuItemRadio, { optional: true }) !== null;
+
+  /**
+   * Property classes
+   * @readonly
+   *
+   * @description
+   * Start inset for a checkbox row; last flex item, pushed to the end, for a radio row.
+   *
+   * @type {string}
+   */
+  protected readonly classes: string = this.radio
+    ? 'pointer-events-none order-last ms-auto flex size-4 items-center justify-center text-fg invisible group-aria-checked:visible'
+    : `${menuIndicatorClasses} invisible group-aria-checked:visible`;
   // #endregion
 }
 
@@ -72,7 +85,7 @@ export class DropdownMenuItemIndicatorComponent {
   template: `<ng-icon [svg]="icons.chevron" size="16" aria-hidden="true" />`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'ml-auto flex text-star-faint rtl:-scale-x-100',
+    class: 'ml-auto flex text-fg-faint rtl:-scale-x-100',
     'aria-hidden': 'true',
     'data-slot': 'dropdown-menu-sub-indicator',
   },

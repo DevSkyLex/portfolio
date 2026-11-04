@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Switches the static site to a release already copied to /srv/site/releases/<name> (`site-build`
+# Switches the static site to a release already copied to SITE_ROOT/releases/<name> (`site-build`
 # workflow, playbooks/publish-site.yml), or back to an older one (rollback):
 #   bash scripts/publish-site.sh <name>
-#   bash scripts/publish-site.sh "$(basename "$(readlink /srv/site/previous)")"     # rollback
+#   bash scripts/publish-site.sh "$(basename "$(readlink /srv/apps/portfolio/production/site/previous)")" # rollback
 # Atomic switch of the `current` link; `previous` points to the release it replaced (Nginx still serves
 # its hashed files to pages loaded before the switch). The SITE_KEEP_RELEASES (5) most recently
 # published releases are kept; `current` and `previous` are never deleted.
 set -euo pipefail
 
 release="${1:?release name required}"
-root="${SITE_ROOT:-/srv/site}"
+root="${SITE_ROOT:-/srv/apps/portfolio/production/site}"
 keep="${SITE_KEEP_RELEASES:-5}"
 [[ "$release" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || { echo "Invalid release name: $release" >&2; exit 1; }
 dir="$root/releases/$release"

@@ -161,6 +161,35 @@ describe('ProblemDetailsFilter', (): void => {
     });
   });
 
+  it('keeps the status of a body-parser error, and still hides an unexposed one', (): void => {
+    const tooLarge: Error & { status: number; expose: boolean; type: string } = Object.assign(
+      new Error('request entity too large'),
+      { status: 413, expose: true, type: 'entity.too.large' },
+    );
+    const sent: {
+      status?: number;
+      type?: string;
+      body?: Record<string, unknown>;
+      ended?: boolean;
+    } = capture(new ProblemDetailsFilter(), tooLarge, { originalUrl: '/api/demo' });
+    expect(sent.status).toBe(413);
+    expect(sent.type).toBe('application/problem+json');
+    expect(sent.body).toEqual({
+      type: 'about:blank',
+      instance: '/api/demo',
+      title: 'request entity too large',
+      status: 413,
+      code: 'http.413',
+    });
+    const hidden: Error & { status: number } = Object.assign(new Error('hidden'), { status: 400 });
+    expect(capture(new ProblemDetailsFilter(), hidden).status).toBe(500);
+    const server: Error & { status: number; expose: boolean } = Object.assign(new Error('db'), {
+      status: 503,
+      expose: true,
+    });
+    expect(capture(new ProblemDetailsFilter(), server).status).toBe(500);
+  });
+
   it('hides the detail of an unknown error and logs it', (): void => {
     const sent: {
       status?: number;

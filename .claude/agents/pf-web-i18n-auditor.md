@@ -1,6 +1,6 @@
 ---
 name: pf-web-i18n-auditor
-description: 'Use to audit the localization of the portfolio site: explicit @@area.key ids in templates and $localize calls, the French source catalog apps/web/src/locale/messages.xlf, the English targets of messages.en.xlf, placeholders and ICU structures, the /en/ routing, the admin French-only exception and the copy that comes from the content snapshot. Invoke after copy changes or before a release of the site. Read-only, reports findings.'
+description: 'Use to audit the localization of the portfolio site: explicit @@area.key ids in templates and $localize calls, the French source catalog apps/web/src/locale/messages.xlf, the English targets of messages.en.xlf, placeholders and ICU structures, the /en/ routing (admin at /en/admin included) and the copy that comes from the content snapshot. Invoke after copy changes or before a release of the site. Read-only, reports findings.'
 tools: Skill, Read, Grep, Glob, Bash, mcp__angular__get_best_practices, mcp__angular__search_documentation
 model: sonnet
 effort: medium
@@ -59,8 +59,9 @@ Load a skill with the `Skill` tool when its subject comes up, not before reading
   broken ICU plural structures (`@@contact.failed.one` / `.many`) and stale units whose source changed.
 - `@@ui.<component>.<key>` defaults of `libs/frontend/ui` reach the catalog only once the app uses the
   component (`libs/frontend/ui/README.md`); an unused entry without a unit is not a finding.
-- Admin screens (`feature-admin`, the login page) are French only and not translated (D18): plain strings
-  there are expected.
+- Admin screens (`feature-admin`, the shell's admin layout, the identity screens) are localized like the
+  site (D18 revision): `@@admin.<area>.<key>` ids with English targets, served at `/admin` and `/en/admin`;
+  a plain French string there is a finding, content data typed by the owner is not.
 - Content copy (projects, journey, profile) comes from the content service through the snapshot
   `apps/web/content-snapshot/{fr,en}.json`; it is not in the XLF files. Report copy duplicated between the
   two.
@@ -71,7 +72,7 @@ Load a skill with the `Skill` tool when its subject comes up, not before reading
 ## Errors to avoid
 
 - Running extraction or a build yourself, or editing a catalog.
-- Reporting the French-only admin as missing translations.
+- Reporting the owner-typed bilingual content shown in the admin as missing translations.
 - Certifying wording quality from key coverage alone.
 
 ## Output

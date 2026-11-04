@@ -61,6 +61,23 @@ export class AdminMessagesApiService {
   }
 
   /**
+   * Method countAll
+   * @method countAll
+   *
+   * @description
+   * Counts the messages of every status through an unfiltered one-row page: the collection's
+   * `totalItems` is the figure, the row itself is dropped.
+   *
+   * @returns {Observable<number>} Number of messages in the inbox.
+   */
+  public countAll(): Observable<number> {
+    const params: HttpParams = new HttpParams().set('page', 1).set('pageSize', 1);
+    return this.http
+      .get<ContactMessageList>(ADMIN_MESSAGES_URL, { params })
+      .pipe(map((list) => list.totalItems));
+  }
+
+  /**
    * Method transition
    * @method transition
    *

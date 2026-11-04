@@ -88,8 +88,9 @@ jobs:
         run: npx nx run web:content-snapshot
         env:
           CONTENT_API_URL: https://${{ vars.APP_HOST || 'valentin-fortin.pro' }}
+      # Prerendered build, then sitemap.xml and robots.txt from the same snapshot (D42).
       - if: steps.target.outputs.publish == 'true'
-        run: npx nx run web:build --skip-nx-cache
+        run: npx nx run web:seo-files --skip-nx-cache
       - name: Release name
         if: steps.target.outputs.publish == 'true'
         id: release

@@ -4,6 +4,8 @@ import {
   type OutputEmitterRef,
   ChangeDetectionStrategy,
   Component,
+  LOCALE_ID,
+  inject,
   input,
   output,
 } from '@angular/core';
@@ -25,9 +27,12 @@ import { relativeDate } from '@internal/contact-web-feature-admin/lib/utils/rela
  * @class MessageListDataviewComponent
  *
  * @description
- * Left pane of the two-pane inbox (D36): one hairline row per message with the sender's initials,
- * an info dot on unread rows (D37), the subject and the start of the message, the keyboard hints and
- * the pagination. Selection and paging go out through outputs; the page owns the store.
+ * Left pane of the two-pane inbox (D36): one 72 px hairline row per message on a fixed grid (initials,
+ * sender and time, subject, start of the message), unread rows marked by a heavier weight and the
+ * 2 px start bar of the current row in neutral `border-strong` (3:1 or more on the row in both themes;
+ * the current row's accent bar wins), with a spoken unread label so the state is not shape alone; then the
+ * keyboard hints and the pagination. Selection and paging go out through outputs; the page owns the
+ * store.
  */
 @Component({
   selector: 'contact-message-list-dataview',
@@ -41,9 +46,10 @@ import { relativeDate } from '@internal/contact-web-feature-admin/lib/utils/rela
   ],
   templateUrl: './message-list-dataview.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Beside the reading pane, the inbox page's separator draws the dividing line; `min-w-0` lets the
+  // rows shrink to the pane so the time stays visible and the previews truncate.
   host: {
-    class:
-      'flex min-h-0 flex-col border-r border-line @max-[1024px]:border-r-0 @max-[1024px]:border-b',
+    class: 'flex min-h-0 min-w-0 flex-col border-border @max-[1024px]:border-b',
   },
 })
 export class MessageListDataviewComponent {
@@ -61,11 +67,23 @@ export class MessageListDataviewComponent {
     input.required<readonly AdminMessage[]>();
 
   /**
+   * Property label
+   * @readonly
+   *
+   * @description
+   * Accessible name of the list, after the selected filter tab ("Messages archivés", …).
+   *
+   * @type {InputSignal<string>}
+   */
+  public readonly label: InputSignal<string> = input.required<string>();
+
+  /**
    * Property selectedId
    * @readonly
    *
    * @description
-   * Identifier of the message open in the reading pane, marked with `aria-current`.
+   * Identifier of the message shown in the reading pane or sheet, marked with `aria-current`; `null`
+   * while none is shown.
    *
    * @type {InputSignal<string | null>}
    */
@@ -132,7 +150,7 @@ export class MessageListDataviewComponent {
    * @readonly
    *
    * @description
-   * French labels of the message subjects.
+   * Localized labels of the message subjects.
    *
    * @type {typeof MESSAGE_SUBJECTS}
    */
@@ -150,14 +168,32 @@ export class MessageListDataviewComponent {
   protected readonly initials: typeof initials = initials;
 
   /**
-   * Property when
+   * Property locale
    * @readonly
    *
    * @description
-   * Relative reception date shown in a row ("il y a 3 h", "hier", "2 nov.").
+   * Build locale, which spells the relative reception dates.
    *
-   * @type {typeof relativeDate}
+   * @type {string}
    */
-  protected readonly when: typeof relativeDate = relativeDate;
+  private readonly locale: string = inject<string>(LOCALE_ID);
+  // #endregion
+
+  // #region Methods
+  /**
+   * Method when
+   * @method when
+   *
+   * @description
+   * Relative reception date shown in a row, in the build locale ("il y a 3 h", "hier", "2 nov.";
+   * "3 hr. ago", "yesterday", "Nov 2").
+   *
+   * @param {string} iso - ISO 8601 reception instant.
+   *
+   * @returns {string} The label.
+   */
+  protected when(iso: string): string {
+    return relativeDate(iso, this.locale);
+  }
   // #endregion
 }

@@ -9,7 +9,7 @@ You are the portfolio e2e-runner for a bounded assigned task.
 Read AGENTS.md, .codex/workflow.md, the matching .codex/rules.md entries, docs/architecture/boundaries.md, docs/architecture/decisions.md, .codex/references/e2e.md, and the README.md of every project in scope.
 Resolve the checkout from the assigned workspace; do not assume the initial shell directory.
 Own the assigned specs under apps/web-e2e/src and the browser evidence. Build first (npx nx build web); the
-standalone suite serves dist/apps/web/browser with apps/web-e2e/support/preview/serve-site.mjs on E2E_PORT (default 4200,
+standalone suite serves dist/apps/web-e2e-site/browser (web:e2e-site, production build with a placeholder GA4 id, D48) with apps/web-e2e/support/preview/serve-site.mjs on E2E_PORT (default 4200,
 Nginx route/header parity, D25) across chromium, firefox, webkit and Mobile Chrome. Use a dedicated free port
 and CI=true rather than stopping or reusing an unrelated server. Run npx nx e2e web-e2e
 (-- --project=chromium to narrow). npx nx run web-e2e:e2e-stack owns a disposable Compose project and

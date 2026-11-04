@@ -6,6 +6,7 @@ import {
   type ElementRef,
   type Signal,
   afterRenderEffect,
+  booleanAttribute,
   computed,
   inject,
   input,
@@ -13,6 +14,7 @@ import {
   signal,
   viewChild,
   type InputSignal,
+  type InputSignalWithTransform,
   type OutputEmitterRef,
   type WritableSignal,
 } from '@angular/core';
@@ -24,6 +26,8 @@ import {
 } from '@internal/ui/lib/menu-panel/utils/menu-panel/menu-panel.utils';
 import { menuPanelVariants } from '@internal/ui/lib/menu-panel/constants/menu-panel.variants';
 import type { ComboboxItem } from '@internal/ui/lib/combobox/models/combobox/combobox-item.interface';
+import type { FieldHost } from '@internal/ui/lib/field/models/field/field-host.interface';
+import { FIELD_HOST } from '@internal/ui/lib/field/tokens/field/field.token';
 
 /**
  * Class ComboboxBase
@@ -48,9 +52,21 @@ export abstract class ComboboxBase<I extends ComboboxItem> {
    * Property invalid
    *
    * @description
-   * Exposes validation state to the field host.
+   * Validation state; Signal Forms binds it, and it shows once the control is touched.
    */
   public readonly invalid: InputSignal<boolean> = input<boolean>(false);
+
+  /**
+   * Property touched
+   *
+   * @description
+   * Whether the control was left once. Signal Forms binds it, so an invalid value turns red after the
+   * field is left or the form submitted, as in `ui-tags-input`; unbound, `invalid` shows at once.
+   */
+  public readonly touched: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
+    true,
+    { transform: booleanAttribute },
+  );
 
   /**
    * Property required
@@ -59,6 +75,20 @@ export abstract class ComboboxBase<I extends ComboboxItem> {
    * Exposes required state to the field host.
    */
   public readonly required: InputSignal<boolean> = input<boolean>(false);
+
+  /**
+   * Property showInvalid
+   * @readonly
+   *
+   * @description
+   * Invalid state as displayed (`aria-invalid`): invalid and touched, or the error shown by the
+   * enclosing `ui-field`, which the inner `uiInput` also reflects, so both writers agree.
+   *
+   * @type {Signal<boolean>}
+   */
+  protected readonly showInvalid: Signal<boolean> = computed<boolean>(
+    (): boolean => (this.invalid() && this.touched()) || !!this.fieldHost?.invalid(),
+  );
 
   /**
    * Property touch
@@ -133,6 +163,17 @@ export abstract class ComboboxBase<I extends ComboboxItem> {
    * Adds caller-provided classes to the popup panel.
    */
   public readonly panelClass: InputSignal<string> = input<string>('');
+  /**
+   * Property fieldHost
+   * @readonly
+   *
+   * @description
+   * Enclosing `ui-field`, whose shown error also marks the control invalid.
+   *
+   * @type {FieldHost | null}
+   */
+  private readonly fieldHost: FieldHost | null = inject<FieldHost>(FIELD_HOST, { optional: true });
+
   // #endregion
 
   // #region Traits
@@ -254,7 +295,7 @@ export abstract class ComboboxBase<I extends ComboboxItem> {
    * Combines shared field interaction styles with caller-provided classes.
    */
   protected readonly fieldClasses: Signal<string> = computed<string>(() =>
-    cn('pr-10 aria-expanded:border-signal/55 aria-expanded:hover:border-signal/55', this.class()),
+    cn('pr-10 aria-expanded:border-accent/55 aria-expanded:hover:border-accent/55', this.class()),
   );
   // #endregion
 

@@ -10,6 +10,7 @@
   `aria-required`.
 - Server field errors returned by the store are attached to their fields; the honeypot `website` field
   stays invisible and unvalidated (D15); the contact section keeps `@defer (hydrate on viewport)` (D16, D22).
-- Admin forms are French only and save with `If-Match` (412 shows the conflict).
+- Admin forms are localized like the rest of the admin (D18) and save with `If-Match` (412 shows the
+  conflict).
 
 Details: [UI catalogue](../references/ui-catalogue.md), [SignalStore](../references/signalstore.md).

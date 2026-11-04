@@ -9,8 +9,8 @@ import { cva } from 'class-variance-authority';
 export const tabsListVariants = cva('relative flex', {
   variants: {
     orientation: {
-      horizontal: 'items-center gap-6 border-b border-line',
-      vertical: 'flex-col items-stretch gap-1 border-l border-line',
+      horizontal: 'items-center gap-6 border-b border-border',
+      vertical: 'flex-col items-stretch gap-1 border-l border-border',
     },
   },
   defaultVariants: { orientation: 'horizontal' },

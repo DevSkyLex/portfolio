@@ -8,8 +8,10 @@ import {
   type WritableSignal,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   Directive,
   ElementRef,
+  afterNextRender,
   computed,
   contentChildren,
   forwardRef,
@@ -22,9 +24,16 @@ import { NgIcon } from '@ng-icons/core';
 import { lucideGripVertical } from '@ng-icons/lucide';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import {
+  boundaryRange,
+  fitPanelSizes,
   initialPanelSizes,
+  panelRange,
+  percentOf,
+  pixelsOf,
   resizePanels,
 } from '@internal/ui/lib/resizable/utils/resizable/resizable.utils';
+import type { PanelRange } from '@internal/ui/lib/resizable/models/resizable/panel-range.interface';
+import type { PanelSize } from '@internal/ui/lib/resizable/models/resizable/panel-size.type';
 import type { ResizableDirection } from '@internal/ui/lib/resizable/models/resizable/resizable-direction.type';
 
 /**
@@ -32,8 +41,11 @@ import type { ResizableDirection } from '@internal/ui/lib/resizable/models/resiz
  * @class ResizablePanelGroupDirective
  *
  * @description
- * Coordinates panel layout and resizing for direct descendant panels and handles. Panel sizes are
- * percentages of the group and respect each panel's configured bounds.
+ * Coordinates panel layout and resizing for descendant panels and handles. Panel sizes are
+ * percentages of the group; a panel sized or bounded in pixels (`'232px'`) is converted with the
+ * group's length, measured in the browser and followed with a `ResizeObserver`, and keeps its pixel
+ * length when the group grows or shrinks, the other panels taking the difference. Before the first
+ * measure (and while prerendering) a pixel default renders as a fixed CSS basis, so nothing jumps.
  */
 @Directive({
   selector: '[uiResizablePanelGroup]',
@@ -74,7 +86,8 @@ export class ResizablePanelGroupDirective {
    * @readonly
    *
    * @description
-   * Emits panel percentages after a keyboard adjustment or completed pointer drag.
+   * Emits panel percentages after a keyboard adjustment or completed pointer drag; `pixelSizes()`
+   * holds the same layout in pixels.
    *
    * @type {OutputEmitterRef<readonly number[]>}
    */
@@ -85,7 +98,7 @@ export class ResizablePanelGroupDirective {
    * @readonly
    *
    * @description
-   * Native group element used to measure pointer movement along the active axis.
+   * Native group element measured along the active axis.
    *
    * @type {HTMLElement}
    */
@@ -144,7 +157,8 @@ export class ResizablePanelGroupDirective {
    * @readonly
    *
    * @description
-   * Descendant handles whose owning group is this directive.
+   * Descendant handles whose owning group is this directive, in document order: the handle at index
+   * `i` moves the boundary after panel `i`, wherever it sits (between the panels or inside one).
    *
    * @type {Signal<readonly ResizableHandleComponent[]>}
    */
@@ -155,11 +169,33 @@ export class ResizablePanelGroupDirective {
   );
 
   /**
+   * Property measured
+   * @readonly
+   *
+   * @description
+   * Length of the group available to its panels along the active axis, `0` until measured.
+   *
+   * @type {WritableSignal<number>}
+   */
+  private readonly measured: WritableSignal<number> = signal<number>(0);
+
+  /**
+   * Property extent
+   * @readonly
+   *
+   * @description
+   * Measured length shared by the panels, in pixels; `0` before the first browser measure.
+   *
+   * @type {Signal<number>}
+   */
+  public readonly extent: Signal<number> = this.measured.asReadonly();
+
+  /**
    * Property layout
    * @readonly
    *
    * @description
-   * Last calculated panel layout, or `null` until sizes are first derived from panel defaults.
+   * Last layout set by a resize, or `null` until the first one; the defaults apply meanwhile.
    *
    * @type {WritableSignal<readonly number[] | null>}
    */
@@ -168,42 +204,82 @@ export class ResizablePanelGroupDirective {
   >(null);
 
   /**
+   * Property pinned
+   * @readonly
+   *
+   * @description
+   * Pixel lengths the last resize gave the pixel-sized panels, kept when the group's length changes.
+   *
+   * @type {WritableSignal<readonly (number | undefined)[] | null>}
+   */
+  private readonly pinned: WritableSignal<readonly (number | undefined)[] | null> = signal<
+    readonly (number | undefined)[] | null
+  >(null);
+
+  /**
+   * Property ranges
+   * @readonly
+   *
+   * @description
+   * Bounds of each owned panel in percent, pixel bounds converted with the measured length.
+   *
+   * @type {Signal<PanelRange[]>}
+   */
+  private readonly ranges: Signal<PanelRange[]> = computed<PanelRange[]>((): PanelRange[] =>
+    this.panels().map((panel: ResizablePanelDirective): PanelRange =>
+      panelRange(panel.minSize(), panel.maxSize(), this.measured()),
+    ),
+  );
+
+  /**
    * Property sizes
    * @readonly
    *
    * @description
-   * Current panel sizes; derives the initial layout until a stored layout matches panel count.
+   * Current panel percentages: the last resize, else the defaults; once measured, pixel-sized panels
+   * take their pinned or default pixel length within their bounds and the others share the rest.
    *
    * @type {Signal<readonly number[]>}
    */
   public readonly sizes: Signal<readonly number[]> = computed<readonly number[]>(
     (): readonly number[] => {
       const panels: ResizablePanelDirective[] = this.panels();
+      const extent: number = this.measured();
       const layout: readonly number[] | null = this.layout();
-      return layout?.length === panels.length
-        ? layout
-        : initialPanelSizes(
-            panels.map((panel: ResizablePanelDirective): number | undefined => panel.defaultSize()),
-          );
+      const current: readonly number[] | null = layout?.length === panels.length ? layout : null;
+      const base: readonly number[] =
+        current ??
+        initialPanelSizes(
+          panels.map((panel: ResizablePanelDirective): number | undefined =>
+            percentOf(panel.defaultSize(), extent),
+          ),
+        );
+      if (extent <= 0 || panels.length < 2) return base;
+      const pinned: readonly (number | undefined)[] | null = current ? this.pinned() : null;
+      const targets: (number | undefined)[] = panels.map(
+        (panel: ResizablePanelDirective, index: number): number | undefined => {
+          if (!panel.pixelSized()) return undefined;
+          const pixels: number | undefined =
+            pinned?.[index] ?? (current ? undefined : pixelsOf(panel.defaultSize()));
+          return pixels === undefined ? base[index] : (pixels / extent) * 100;
+        },
+      );
+      return fitPanelSizes(base, targets, this.ranges());
     },
   );
 
   /**
-   * Property limits
+   * Property pixelSizes
    * @readonly
    *
    * @description
-   * Current minimum and maximum percentages for each owned panel.
+   * Current panel lengths in pixels; zeros before the first measure.
    *
-   * @type {Signal<PanelLimits[]>}
+   * @type {Signal<readonly number[]>}
    */
-  private readonly limits: Signal<{ min: number; max: number }[]> = computed<
-    { min: number; max: number }[]
-  >((): { min: number; max: number }[] =>
-    this.panels().map((panel: ResizablePanelDirective): { min: number; max: number } => ({
-      min: panel.minSize(),
-      max: panel.maxSize(),
-    })),
+  public readonly pixelSizes: Signal<readonly number[]> = computed<readonly number[]>(
+    (): readonly number[] =>
+      this.sizes().map((size: number): number => (size * this.measured()) / 100),
   );
 
   /**
@@ -218,6 +294,27 @@ export class ResizablePanelGroupDirective {
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn('flex h-full w-full', this.direction() === 'vertical' && 'flex-col', this.class()),
   );
+  // #endregion
+
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Measures the group after its first render in the browser and follows its size; prerendering
+   * never runs the callback, so pixel sizes keep their CSS basis there.
+   */
+  public constructor() {
+    const destroyRef: DestroyRef = inject<DestroyRef>(DestroyRef);
+    afterNextRender((): void => {
+      this.measure();
+      if (typeof ResizeObserver === 'undefined') return;
+      const observer: ResizeObserver = new ResizeObserver((): void => this.measure());
+      observer.observe(this.element);
+      destroyRef.onDestroy((): void => observer.disconnect());
+    });
+  }
   // #endregion
 
   // #region Methods
@@ -236,6 +333,23 @@ export class ResizablePanelGroupDirective {
   }
 
   /**
+   * Method flexOf
+   * @method flexOf
+   *
+   * @description
+   * CSS `flex` of a panel: its percentage as the grow factor over a zero basis, or, before the group
+   * is measured, a fixed basis for a pixel default.
+   *
+   * @param {ResizablePanelDirective} panel - Panel whose flex value is requested.
+   * @returns {string} Value of the panel's `flex` property.
+   */
+  public flexOf(panel: ResizablePanelDirective): string {
+    const pixels: number | undefined = pixelsOf(panel.defaultSize());
+    if (this.measured() <= 0 && pixels !== undefined) return `0 0 ${pixels}px`;
+    return `${this.sizeOf(panel)} 1 0px`;
+  }
+
+  /**
    * Method panelBefore
    * @method panelBefore
    *
@@ -250,11 +364,26 @@ export class ResizablePanelGroupDirective {
   }
 
   /**
+   * Method rangeOf
+   * @method rangeOf
+   *
+   * @description
+   * Percentages the panel before a handle can reach while both neighbours keep their bounds.
+   *
+   * @param {ResizableHandleComponent} handle - Boundary whose range is requested.
+   * @returns {PanelRange | undefined} Reachable range, or `undefined` without two neighbours.
+   */
+  public rangeOf(handle: ResizableHandleComponent): PanelRange | undefined {
+    return boundaryRange(this.sizes(), this.handles().indexOf(handle), this.ranges());
+  }
+
+  /**
    * Method resize
    * @method resize
    *
    * @description
-   * Applies a percentage-point change to the two panels beside a handle and stores the new layout.
+   * Applies a percentage-point change to the two panels beside a handle and stores the new layout,
+   * pinning the pixel length of the pixel-sized panels.
    *
    * @param {ResizableHandleComponent} handle - Boundary being moved.
    * @param {number} delta - Requested change in percentage points.
@@ -266,14 +395,39 @@ export class ResizablePanelGroupDirective {
     delta: number,
     from: readonly number[] = this.sizes(),
   ): readonly number[] {
+    const panels: ResizablePanelDirective[] = this.panels();
     const sizes: number[] = resizePanels(
       from,
       this.handles().indexOf(handle),
       delta,
-      this.limits(),
+      this.ranges(),
     );
+    const extent: number = this.measured();
     this.layout.set(sizes);
+    this.pinned.set(
+      extent > 0
+        ? panels.map((panel: ResizablePanelDirective, index: number): number | undefined =>
+            panel.pixelSized() ? ((sizes[index] ?? 0) * extent) / 100 : undefined,
+          )
+        : null,
+    );
     return sizes;
+  }
+
+  /**
+   * Method resizePixels
+   * @method resizePixels
+   *
+   * @description
+   * Moves the boundary of a handle by a length in pixels, such as a reset to a pixel default.
+   *
+   * @param {ResizableHandleComponent} handle - Boundary being moved.
+   * @param {number} delta - Change of the panel before the handle, in pixels.
+   * @returns {readonly number[]} Updated panel percentages; unchanged before the group is measured.
+   */
+  public resizePixels(handle: ResizableHandleComponent, delta: number): readonly number[] {
+    const extent: number = this.measured();
+    return extent > 0 ? this.resize(handle, (delta / extent) * 100) : this.sizes();
   }
 
   /**
@@ -288,6 +442,29 @@ export class ResizablePanelGroupDirective {
   public commit(): void {
     this.layoutChange.emit(this.sizes());
   }
+
+  /**
+   * Method measure
+   * @method measure
+   *
+   * @description
+   * Reads the length the panels share: the group's length along its axis minus the handles laid out
+   * between the panels (a handle inside a panel takes no room).
+   *
+   * @returns {void} Updates `extent` when the length changed.
+   */
+  private measure(): void {
+    const horizontal: boolean = this.direction() === 'horizontal';
+    const box: DOMRect = this.element.getBoundingClientRect();
+    const handles: number = this.handles()
+      .filter((handle: ResizableHandleComponent): boolean => !handle.embedded)
+      .reduce((sum: number, handle: ResizableHandleComponent): number => {
+        const own: DOMRect = handle.element.getBoundingClientRect();
+        return sum + (horizontal ? own.width : own.height);
+      }, 0);
+    const length: number = Math.max(0, (horizontal ? box.width : box.height) - handles);
+    if (length !== this.measured()) this.measured.set(length);
+  }
   // #endregion
 }
 
@@ -296,15 +473,17 @@ export class ResizablePanelGroupDirective {
  * @class ResizablePanelDirective
  *
  * @description
- * Declares one panel in a resizable group and applies its current percentage as the host flex basis.
+ * Declares one panel in a resizable group and applies its current size as the host flex value.
+ * Sizes and bounds are percentages of the group or `'<n>px'` lengths.
  */
 @Directive({
   selector: '[uiResizablePanel]',
+  exportAs: 'uiResizablePanel',
   host: {
     '[class]': 'classes()',
     'data-slot': 'resizable-panel',
     '[id]': 'id',
-    '[style.flex]': 'size() + " 1 0px"',
+    '[style.flex]': 'flex()',
   },
 })
 export class ResizablePanelDirective {
@@ -327,33 +506,33 @@ export class ResizablePanelDirective {
    * @readonly
    *
    * @description
-   * Initial group percentage; panels without a default split the remaining space.
+   * Initial size, a percentage or `'<n>px'`; panels without a default split the remaining space.
    *
-   * @type {InputSignal<number | undefined>}
+   * @type {InputSignal<PanelSize | undefined>}
    */
-  public readonly defaultSize: InputSignal<number | undefined> = input<number>();
+  public readonly defaultSize: InputSignal<PanelSize | undefined> = input<PanelSize>();
 
   /**
    * Property minSize
    * @readonly
    *
    * @description
-   * Smallest percentage accepted during keyboard and pointer resizing.
+   * Smallest size accepted during keyboard and pointer resizing, a percentage or `'<n>px'`.
    *
-   * @type {InputSignal<number>}
+   * @type {InputSignal<PanelSize>}
    */
-  public readonly minSize: InputSignal<number> = input<number>(0);
+  public readonly minSize: InputSignal<PanelSize> = input<PanelSize>(0);
 
   /**
    * Property maxSize
    * @readonly
    *
    * @description
-   * Largest percentage accepted during keyboard and pointer resizing.
+   * Largest size accepted during keyboard and pointer resizing, a percentage or `'<n>px'`.
    *
-   * @type {InputSignal<number>}
+   * @type {InputSignal<PanelSize>}
    */
-  public readonly maxSize: InputSignal<number> = input<number>(100);
+  public readonly maxSize: InputSignal<PanelSize> = input<PanelSize>(100);
 
   /**
    * Property class
@@ -378,27 +557,65 @@ export class ResizablePanelDirective {
   public readonly id: string = inject<RenderIdService>(RenderIdService).next('ui-resizable-panel-');
 
   /**
-   * Property size
+   * Property pixelSized
    * @readonly
    *
    * @description
-   * Current percentage supplied by the owning group for this panel.
+   * Whether a size or bound is given in pixels: the panel then keeps its pixel length when the group
+   * changes size.
    *
-   * @type {Signal<number>}
+   * @type {Signal<boolean>}
    */
-  protected readonly size: Signal<number> = computed<number>((): number => this.group.sizeOf(this));
+  public readonly pixelSized: Signal<boolean> = computed<boolean>((): boolean =>
+    [this.defaultSize(), this.minSize(), this.maxSize()].some(
+      (size: PanelSize | undefined): boolean => typeof size === 'string',
+    ),
+  );
+
+  /**
+   * Property innerHandles
+   * @readonly
+   *
+   * @description
+   * Handles placed inside this panel, which position themselves against its edge.
+   *
+   * @type {Signal<readonly ResizableHandleComponent[]>}
+   */
+  private readonly innerHandles: Signal<readonly ResizableHandleComponent[]> =
+    contentChildren<ResizableHandleComponent>(
+      forwardRef((): typeof ResizableHandleComponent => ResizableHandleComponent),
+      { descendants: true },
+    );
+
+  /**
+   * Property flex
+   * @readonly
+   *
+   * @description
+   * Current flex value supplied by the owning group for this panel.
+   *
+   * @type {Signal<string>}
+   */
+  protected readonly flex: Signal<string> = computed<string>((): string => this.group.flexOf(this));
 
   /**
    * Property classes
    * @readonly
    *
    * @description
-   * Panel overflow and minimum-size classes merged with caller utilities.
+   * Panel overflow and minimum-size classes merged with caller utilities; a panel holding its handle
+   * becomes its positioning context (a caller's `sticky` still wins).
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('min-h-0 min-w-0 overflow-hidden', this.class()),
+    cn(
+      'min-h-0 min-w-0 overflow-hidden',
+      this.innerHandles().some(
+        (handle: ResizableHandleComponent): boolean => handle.group === this.group,
+      ) && 'relative',
+      this.class(),
+    ),
   );
   // #endregion
 }
@@ -409,7 +626,10 @@ export class ResizablePanelDirective {
  *
  * @description
  * Provides an accessible window splitter that supports pointer dragging and keyboard resizing
- * with arrow keys, Home and End.
+ * with arrow keys, Home and End. Placed between two panels it is a 1 px flex item; placed inside a
+ * panel it lies along that panel's edge facing the other panel (the end edge of the panel before it,
+ * the start edge of the panel after it), so that it stays inside the panel's landmark (`aside`,
+ * `nav`, `main`) for the axe `region` rule.
  */
 @Component({
   selector: 'ui-resizable-handle',
@@ -423,8 +643,8 @@ export class ResizablePanelDirective {
     '[attr.aria-orientation]': 'group.direction() === "horizontal" ? "vertical" : "horizontal"',
     '[attr.aria-controls]': 'panel()?.id',
     '[attr.aria-valuenow]': 'value()',
-    '[attr.aria-valuemin]': 'panel()?.minSize() ?? 0',
-    '[attr.aria-valuemax]': 'panel()?.maxSize() ?? 100',
+    '[attr.aria-valuemin]': 'valueMin()',
+    '[attr.aria-valuemax]': 'valueMax()',
     '[attr.aria-label]': 'label() || null',
     '[attr.data-dragging]': 'dragging() || null',
     '(keydown)': 'onKeydown($event)',
@@ -435,7 +655,7 @@ export class ResizablePanelDirective {
   },
   template: `@if (withHandle()) {
     <span
-      class="z-10 flex h-6 w-3.5 items-center justify-center rounded-option border border-line bg-void-raised text-star-faint"
+      class="z-10 flex h-6 w-3.5 items-center justify-center rounded-xs border border-border bg-surface-raised text-fg-faint"
       [class.rotate-90]="group.direction() === 'vertical'"
     >
       <ng-icon [svg]="icons.grip" size="12" aria-hidden="true" />
@@ -456,6 +676,46 @@ export class ResizableHandleComponent {
   public readonly group: ResizablePanelGroupDirective = inject<ResizablePanelGroupDirective>(
     ResizablePanelGroupDirective,
   );
+
+  /**
+   * Property element
+   * @readonly
+   *
+   * @description
+   * Host element, measured by the group when it lies between the panels.
+   *
+   * @type {HTMLElement}
+   */
+  public readonly element: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+
+  /**
+   * Property container
+   * @readonly
+   *
+   * @description
+   * Panel of the same group holding this handle, `null` when the handle lies between the panels.
+   *
+   * @type {ResizablePanelDirective | null}
+   */
+  private readonly container: ResizablePanelDirective | null =
+    ((): ResizablePanelDirective | null => {
+      const panel: ResizablePanelDirective | null = inject<ResizablePanelDirective>(
+        ResizablePanelDirective,
+        { optional: true },
+      );
+      return panel?.group === this.group ? panel : null;
+    })();
+
+  /**
+   * Property embedded
+   * @readonly
+   *
+   * @description
+   * Whether the handle sits inside one of the panels it resizes.
+   *
+   * @type {boolean}
+   */
+  public readonly embedded: boolean = this.container !== null;
 
   /**
    * Property icons
@@ -491,11 +751,12 @@ export class ResizableHandleComponent {
    * @readonly
    *
    * @description
-   * Percentage points transferred by each arrow-key press.
+   * Change made by each arrow-key press: percentage points, or `'<n>px'` for a step that stays the
+   * same on every window size (10 points until the group is measured).
    *
-   * @type {InputSignal<number>}
+   * @type {InputSignal<PanelSize>}
    */
-  public readonly step: InputSignal<number> = input<number>(10);
+  public readonly step: InputSignal<PanelSize> = input<PanelSize>(10);
 
   /**
    * Property label
@@ -583,26 +844,77 @@ export class ResizableHandleComponent {
   });
 
   /**
+   * Property range
+   * @readonly
+   *
+   * @description
+   * Percentages the preceding panel can reach, pixel bounds of both neighbours included.
+   *
+   * @type {Signal<PanelRange | undefined>}
+   */
+  private readonly range: Signal<PanelRange | undefined> = computed<PanelRange | undefined>(
+    (): PanelRange | undefined => this.group.rangeOf(this),
+  );
+
+  /**
+   * Property valueMin
+   * @readonly
+   *
+   * @description
+   * Rounded lower bound exposed as `aria-valuemin`.
+   *
+   * @type {Signal<number>}
+   */
+  protected readonly valueMin: Signal<number> = computed<number>((): number =>
+    Math.round(this.range()?.min ?? 0),
+  );
+
+  /**
+   * Property valueMax
+   * @readonly
+   *
+   * @description
+   * Rounded upper bound exposed as `aria-valuemax`.
+   *
+   * @type {Signal<number>}
+   */
+  protected readonly valueMax: Signal<number> = computed<number>((): number =>
+    Math.round(this.range()?.max ?? 100),
+  );
+
+  /**
    * Property classes
    * @readonly
    *
    * @description
-   * Splitter hit-area, orientation, drag and focus-visible classes.
+   * Splitter hit-area, orientation, placement, drag and focus-visible classes. The 8 px hit area is
+   * centred on the line; inside a panel, give the panel `overflow-visible` to keep its outer half.
    *
    * @type {Signal<string>}
    */
-  protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn(
-      'relative flex shrink-0 touch-none items-center justify-center bg-line select-none',
-      'transition-colors duration-(--dur-pop) hover:bg-line-strong data-dragging:bg-signal motion-reduce:transition-none',
+  protected readonly classes: Signal<string> = computed<string>((): string => {
+    const horizontal: boolean = this.group.direction() === 'horizontal';
+    const trailing: boolean = this.container !== null && this.panel() === this.container;
+    return cn(
+      'flex shrink-0 touch-none items-center justify-center bg-border select-none',
+      'transition-colors duration-(--dur-pop) hover:bg-border-strong data-dragging:bg-fg motion-reduce:transition-none',
       "after:absolute after:content-['']",
-      'outline-4 outline-offset-0 outline-transparent focus-visible:bg-star/55 focus-visible:outline-star/12',
-      this.group.direction() === 'horizontal'
+      'outline-2 outline-offset-0 outline-transparent focus-visible:bg-fg focus-visible:outline-accent/40',
+      horizontal
         ? 'w-px cursor-col-resize after:inset-y-0 after:left-1/2 after:w-2 after:-translate-x-1/2'
         : 'h-px w-full cursor-row-resize after:inset-x-0 after:top-1/2 after:h-2 after:-translate-y-1/2',
+      this.embedded ? 'absolute z-10' : 'relative',
+      this.embedded &&
+        (horizontal
+          ? trailing
+            ? 'inset-y-0 end-0'
+            : 'inset-y-0 start-0'
+          : trailing
+            ? 'inset-x-0 bottom-0'
+            : 'inset-x-0 top-0'),
       this.class(),
-    ),
-  );
+    );
+  });
   // #endregion
 
   // #region Methods
@@ -619,9 +931,10 @@ export class ResizableHandleComponent {
   protected onKeydown(event: KeyboardEvent): void {
     const horizontal: boolean = this.group.direction() === 'horizontal';
     const flip: 1 | -1 = horizontal && this.dir.valueSignal() === 'rtl' ? -1 : 1;
+    const step: number = percentOf(this.step(), this.group.extent()) ?? 10;
     const deltas: Record<string, number> = horizontal
-      ? { ArrowLeft: -this.step() * flip, ArrowRight: this.step() * flip }
-      : { ArrowUp: -this.step(), ArrowDown: this.step() };
+      ? { ArrowLeft: -step * flip, ArrowRight: step * flip }
+      : { ArrowUp: -step, ArrowDown: step };
     const delta: number | undefined =
       event.key === 'Home' ? -100 : event.key === 'End' ? 100 : deltas[event.key];
     if (delta === undefined) return;
@@ -667,7 +980,7 @@ export class ResizableHandleComponent {
     if (!this.drag || event.pointerId !== this.drag.pointer) return;
     const horizontal: boolean = this.group.direction() === 'horizontal';
     const box: DOMRect = this.group.element.getBoundingClientRect();
-    const length: number = horizontal ? box.width : box.height;
+    const length: number = this.group.extent() || (horizontal ? box.width : box.height);
     if (!length) return;
     const flip: 1 | -1 = horizontal && this.dir.valueSignal() === 'rtl' ? -1 : 1;
     const delta: number = ((this.position(event) - this.drag.start) / length) * 100 * flip;

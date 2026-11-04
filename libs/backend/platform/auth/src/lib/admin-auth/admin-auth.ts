@@ -144,7 +144,7 @@ const BEARER: RegExp = /^Bearer +(\S+)$/i;
  * @class JoseAdminTokenVerifier
  *
  * @description
- * Verifies administrator JWTs with jose, enforcing EdDSA, the `at+jwt` type, issuer, audience, required claims (session `sid` included), age and the admin claim schema.
+ * Verifies administrator JWTs with jose, enforcing EdDSA, the `at+jwt` type, issuer, audience, required claims (session `sid` included), age and the admin claim schema, and refusing the MCP access tokens (D45) signed with the same keys.
  */
 export class JoseAdminTokenVerifier implements AdminTokenVerifier {
   // #region Properties
@@ -208,6 +208,11 @@ export class JoseAdminTokenVerifier implements AdminTokenVerifier {
       maxTokenAge: MAX_TOKEN_AGE,
       clockTolerance: CLOCK_TOLERANCE_SECONDS,
     });
+    // An MCP access token (D45) has another audience already; its client and scope claims make the
+    // refusal independent of the audience configuration.
+    if (payload['client_id'] !== undefined || payload['scope'] !== undefined) {
+      throw new Error('Delegated client tokens are not administrator sessions.');
+    }
     return AdminClaimsSchema.parse(payload);
   }
   // #endregion

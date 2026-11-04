@@ -30,14 +30,15 @@ export class KbdDirective {
    * @readonly
    *
    * @description
-   * Host class string for a non-interactive keyboard key.
+   * Host class string for a non-interactive keyboard key; a thicker, lighter lower edge gives the
+   * keycap its relief.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'pointer-events-none inline-flex h-6 w-fit min-w-6 items-center justify-center gap-1 rounded-sm border border-line bg-void-raised px-1.5 font-mono text-[12px]/4 font-medium text-star-muted select-none',
-      '[&_svg]:size-3',
+      'pointer-events-none inline-flex h-[18px] w-fit min-w-[18px] items-center justify-center gap-0.5 rounded-xs border border-b-2 border-border border-b-border-hover bg-surface-raised px-1 font-mono text-[10px]/3 font-medium text-fg-muted select-none',
+      '[&_svg]:size-2.5',
       this.class(),
     ),
   );
@@ -78,7 +79,7 @@ export class KbdGroupDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('inline-flex items-center gap-1 font-mono text-[12px]/4 text-star-faint', this.class()),
+    cn('inline-flex items-center gap-0.5 font-mono text-[10px]/3 text-fg-faint', this.class()),
   );
   // #endregion
 }

@@ -17,7 +17,7 @@
   [attr.aria-label]="ariaLabel() ?? null"
   [attr.aria-labelledby]="ariaLabelledby() ?? null"
   [attr.aria-describedby]="ariaDescribedby() ?? null"
-  [attr.aria-invalid]="invalid() || null"
+  [attr.aria-invalid]="showInvalid() || null"
   [attr.aria-required]="required() || null"
   (input)="onInput(field.value)"
   (keydown)="onKeydown($event)"
@@ -25,7 +25,7 @@
   (blur)="onBlur()"
 />
 <ng-icon
-  class="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-star-muted transition-transform duration-(--dur-pop) ease-orbit motion-reduce:transition-none"
+  class="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-fg-muted transition-transform duration-(--dur-pop) ease-orbit motion-reduce:transition-none"
   [class.rotate-180]="open()"
   [svg]="icons.chevron"
   size="16"
@@ -53,7 +53,7 @@
       <ng-content />
     </div>
     @if (!items().length) {
-      <p role="status" class="px-2.5 py-2 text-sm text-star-faint" data-slot="combobox-empty">
+      <p role="status" class="px-2.5 py-2 text-sm text-fg-faint" data-slot="combobox-empty">
         {{ emptyText() }}
       </p>
     }

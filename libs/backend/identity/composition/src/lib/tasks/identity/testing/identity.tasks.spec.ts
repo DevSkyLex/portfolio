@@ -5,11 +5,9 @@ import { ObservabilityModule } from '@vfortin/backend-observability';
 import {
   AlreadyBootstrappedError,
   Login,
-  VerifyLoginCode,
   type BootstrapResult,
   type LoginResult,
 } from '@vfortin/identity-application';
-import { totpAt } from '@vfortin/identity-adapters-out';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -52,7 +50,7 @@ describe('migrateIdentity, generateSigningKey and bootstrapAdmin', (): void => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it('prepare an account the service then logs in with, on the system clock', async (): Promise<void> => {
+  it('prepare a password-only account the service then logs in with', async (): Promise<void> => {
     const url: string = `pglite:${join(root, 'db')}`;
     const keysDir: string = join(root, 'keys');
     await migrateIdentity(url, MIGRATIONS);
@@ -62,8 +60,8 @@ describe('migrateIdentity, generateSigningKey and bootstrapAdmin', (): void => {
       'Moi@Exemple.fr',
       'a-strong-password',
     );
-    expect(account.email).toBe('moi@exemple.fr');
-    expect(account.provisioningUri).toMatch(/^otpauth:\/\/totp\//);
+    // Password only: no secret is produced, the code is enrolled later from the admin.
+    expect(account).toEqual({ email: 'moi@exemple.fr' });
     await expect(
       bootstrapAdmin(url, 'autre@exemple.fr', 'another-password'),
     ).rejects.toBeInstanceOf(AlreadyBootstrappedError);
@@ -83,21 +81,18 @@ describe('migrateIdentity, generateSigningKey and bootstrapAdmin', (): void => {
     const app: INestApplication<NodeHttpServer> =
       moduleRef.createNestApplication<INestApplication<NodeHttpServer>>();
     await app.init();
-    const code: string = totpAt(account.totpSecret, Math.floor(Date.now() / 30_000));
     const first: LoginResult = await app.get<Login>(Login).execute({
       email: 'moi@exemple.fr',
       password: 'a-strong-password',
       remember: false,
       deviceToken: null,
     });
-    if (first.status !== 'totp-required') throw new Error('challenge expected');
-    await expect(
-      app
-        .get<VerifyLoginCode>(VerifyLoginCode)
-        .execute({ challenge: first.challenge, totp: code, trustDevice: false }),
-    ).resolves.toMatchObject({ session: { access: { expiresIn: 300 } }, device: null });
+    expect(first).toMatchObject({
+      status: 'authenticated',
+      session: { access: { expiresIn: 300 } },
+    });
     await app.close();
-    // PGlite on disk, scrypt and both login steps exceed 5 seconds when the workspace tests in parallel.
+    // PGlite on disk and scrypt exceed 5 seconds when the workspace tests in parallel.
   }, 30_000);
 
   it('report a migration failure after closing the database', async (): Promise<void> => {

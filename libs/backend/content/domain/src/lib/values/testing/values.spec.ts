@@ -1,6 +1,10 @@
 import { DomainError } from '@internal/content-domain/lib/errors/domain-error';
 import { LocalizedText } from '@internal/content-domain/lib/values/localized-text/localized-text';
 import { Period } from '@internal/content-domain/lib/values/period/period';
+import {
+  ProjectPeriod,
+  type ProjectPeriodProps,
+} from '@internal/content-domain/lib/values/project-period/project-period';
 import { Slug } from '@internal/content-domain/lib/values/slug/slug';
 
 describe('LocalizedText', (): void => {
@@ -77,5 +81,45 @@ describe('Period', (): void => {
     [{ year: 2024, month: 0 }],
   ])('rejects the month %o', (start): void => {
     expect((): Period => Period.of(start, null)).toThrow(DomainError);
+  });
+});
+
+describe('ProjectPeriod', (): void => {
+  it.each<[string, ProjectPeriodProps]>([
+    ['whole years', { start: { year: 2023, month: null }, end: { year: 2026, month: null } }],
+    ['months of one year', { start: { year: 2023, month: 3 }, end: { year: 2023, month: 4 } }],
+    ['a single month', { start: { year: 2023, month: 3 }, end: { year: 2023, month: 3 } }],
+    ['mixed precision', { start: { year: 2023, month: 9 }, end: { year: 2023, month: null } }],
+    ['an ongoing month', { start: { year: 2026, month: 7 }, end: null }],
+  ])('accepts %s and copies the bounds', (_label, props): void => {
+    const period: ProjectPeriod = ProjectPeriod.of(props);
+    expect(period.toProps()).toEqual(props);
+    expect(period.toProps().start).not.toBe(props.start);
+    expect(period.isOngoing()).toBe(props.end === null);
+  });
+
+  it.each<[string, ProjectPeriodProps, string]>([
+    ['a year before 1990', { start: { year: 1989, month: null }, end: null }, 'period.start'],
+    [
+      'a year after 2100',
+      { start: { year: 2023, month: null }, end: { year: 2101, month: null } },
+      'period.end',
+    ],
+    ['a fractional year', { start: { year: 2023.5, month: null }, end: null }, 'period.start'],
+    ['month 0', { start: { year: 2023, month: 0 }, end: null }, 'period.start'],
+    ['month 13', { start: { year: 2023, month: 1 }, end: { year: 2023, month: 13 } }, 'period.end'],
+    [
+      'an earlier end year',
+      { start: { year: 2024, month: null }, end: { year: 2023, month: 12 } },
+      'period.end',
+    ],
+    [
+      'an earlier end month',
+      { start: { year: 2023, month: 4 }, end: { year: 2023, month: 3 } },
+      'period.end',
+    ],
+  ])('rejects %s', (_label, props, field): void => {
+    expect((): ProjectPeriod => ProjectPeriod.of(props)).toThrow(DomainError);
+    expect((): ProjectPeriod => ProjectPeriod.of(props)).toThrow(field);
   });
 });

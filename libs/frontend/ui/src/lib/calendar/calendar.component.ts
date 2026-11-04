@@ -14,6 +14,7 @@ import {
   linkedSignal,
   model,
   output,
+  signal,
   type InputSignal,
   type InputSignalWithTransform,
   type ModelSignal,
@@ -30,18 +31,21 @@ import {
   addDays,
   addMonths,
   clampDay,
+  compareDays,
   dayKey,
   firstDayOfWeek,
   isOutOfRange,
   isSameDay,
   isSameMonth,
   monthGrid,
+  rangeSpan,
   startOfDay,
   startOfMonth,
   weekDays,
 } from '@internal/ui/lib/calendar/utils/calendar/calendar.utils';
 import type { Weekday } from '@internal/ui/lib/calendar/models/calendar/weekday.type';
 import type { CalendarDay } from '@internal/ui/lib/calendar/models/calendar/calendar-day.interface';
+import type { CalendarRange } from '@internal/ui/lib/calendar/models/calendar/calendar-range.interface';
 
 /**
  * Component CalendarComponent
@@ -51,6 +55,11 @@ import type { CalendarDay } from '@internal/ui/lib/calendar/models/calendar/cale
  * Implements a single-date APG calendar grid with locale-derived labels and week ordering. Arrow
  * keys move by day or week, Home and End move within a week, and Page Up or Down changes month or
  * year when Shift is held.
+ *
+ * Bound to a `range`, the grid draws that range instead of `value`, as `ui-date-range-picker` does:
+ * filled ends joined by a continuous `surface-selected` band and, while only the start is chosen,
+ * a preview up to the day under the pointer or reached with the keyboard. Picks then only emit
+ * `dateSelect`; the caller owns the range.
  */
 @Component({
   selector: 'ui-calendar',
@@ -75,6 +84,18 @@ export class CalendarComponent implements FormValueControl<Date | null> {
    * @type {ModelSignal<Date | null>}
    */
   public readonly value: ModelSignal<Date | null> = model<Date | null>(null);
+
+  /**
+   * Property range
+   * @readonly
+   *
+   * @description
+   * Range drawn instead of `value`; `null` (default) keeps the single-date mode. Its start, then its
+   * end, places the grid when `value` is empty.
+   *
+   * @type {InputSignal<CalendarRange | null>}
+   */
+  public readonly range: InputSignal<CalendarRange | null> = input<CalendarRange | null>(null);
 
   /**
    * Property min
@@ -233,6 +254,17 @@ export class CalendarComponent implements FormValueControl<Date | null> {
     inject<RenderIdService>(RenderIdService).next('ui-calendar-') + '-heading';
 
   /**
+   * Property hovered
+   * @readonly
+   *
+   * @description
+   * Day under the pointer, or last reached with the keyboard, that previews the end of a range.
+   *
+   * @type {WritableSignal<Date | null>}
+   */
+  protected readonly hovered: WritableSignal<Date | null> = signal<Date | null>(null);
+
+  /**
    * Property locale
    * @readonly
    *
@@ -305,9 +337,11 @@ export class CalendarComponent implements FormValueControl<Date | null> {
    * Date holding the roving tab stop; its month determines the displayed grid and it is clamped to
    * the optional bounds.
    */
-  private readonly focusedDate: WritableSignal<Date> = linkedSignal<Date>(() =>
-    clampDay(this.value() ?? new Date(), this.min(), this.max()),
-  );
+  private readonly focusedDate: WritableSignal<Date> = linkedSignal<Date>(() => {
+    const range: CalendarRange | null = this.range();
+    const anchor: Date | null = this.value() ?? range?.start ?? range?.end ?? null;
+    return clampDay(anchor ?? new Date(), this.min(), this.max());
+  });
 
   /**
    * Property weekStart
@@ -367,8 +401,8 @@ export class CalendarComponent implements FormValueControl<Date | null> {
    * @readonly
    *
    * @description
-   * Calendar cells for the displayed month, including selection, focus, today, adjacent-month, and
-   * unavailable state for each day.
+   * Calendar cells for the displayed month, including selection, range, focus, today,
+   * adjacent-month, and unavailable state for each day.
    *
    * @type {Signal<CalendarDay[][]>}
    */
@@ -376,19 +410,27 @@ export class CalendarComponent implements FormValueControl<Date | null> {
     const month: Date = this.month();
     const focused: Date = this.focusedDate();
     const selected: Date | null = this.value();
+    const span: { start: Date; end: Date } | null = this.span();
     const today: Date = new Date();
     return monthGrid(month, this.weekStart()).map((week) =>
-      week.map((date) => ({
-        date,
-        key: dayKey(date),
-        number: this.formats.day.format(date),
-        label: this.formats.full.format(date),
-        selected: isSameDay(date, selected),
-        focused: isSameDay(date, focused),
-        today: isSameDay(date, today),
-        outside: !isSameMonth(date, month),
-        disabled: this.isUnavailable(date),
-      })),
+      week.map((date) => {
+        const rangeStart: boolean = !!span && isSameDay(date, span.start);
+        const rangeEnd: boolean = !!span && isSameDay(date, span.end);
+        return {
+          date,
+          key: dayKey(date),
+          number: this.formats.day.format(date),
+          label: this.formats.full.format(date),
+          selected: span ? rangeStart || rangeEnd : isSameDay(date, selected),
+          rangeStart,
+          rangeEnd,
+          inRange: !!span && compareDays(date, span.start) > 0 && compareDays(date, span.end) < 0,
+          focused: isSameDay(date, focused),
+          today: isSameDay(date, today),
+          outside: !isSameMonth(date, month),
+          disabled: this.isUnavailable(date),
+        };
+      }),
     );
   });
 
@@ -430,8 +472,30 @@ export class CalendarComponent implements FormValueControl<Date | null> {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('inline-flex flex-col gap-3 p-3 text-star', this.class()),
+    cn('inline-flex flex-col gap-3 p-3 text-fg', this.class()),
   );
+
+  /**
+   * Property span
+   * @readonly
+   *
+   * @description
+   * Days drawn in range mode, or `null` in single-date mode and for an empty range. The preview
+   * applies only while the end is not chosen, to an available day, when picking is allowed.
+   *
+   * @type {Signal<{ start: Date; end: Date } | null>}
+   */
+  private readonly span: Signal<{ start: Date; end: Date } | null> = computed<{
+    start: Date;
+    end: Date;
+  } | null>(() => {
+    const range: CalendarRange | null = this.range();
+    if (!range) return null;
+    const hovered: Date | null = this.hovered();
+    const preview: Date | null =
+      hovered && !this.readonly() && !this.isUnavailable(hovered) ? hovered : null;
+    return rangeSpan(range, preview);
+  });
   // #endregion
 
   // #region Methods
@@ -458,20 +522,59 @@ export class CalendarComponent implements FormValueControl<Date | null> {
    *
    * @description
    * Builds the cell's base, focus, selection, today, adjacent-month, and unavailable utility classes.
+   * A range end squares the corners facing the band when the band goes on in its week row, so that
+   * the end and the band read as one shape.
    *
    * @param {CalendarDay} day - Display and interaction state for the grid cell.
+   * @param {boolean} first - Whether the cell opens its week row.
+   * @param {boolean} last - Whether the cell closes its week row.
    *
    * @returns {string} Classes applied to the day button.
    */
-  protected dayClasses(day: CalendarDay): string {
+  protected dayClasses(day: CalendarDay, first: boolean, last: boolean): string {
     return cn(
-      'inline-flex size-9 items-center justify-center rounded-option border border-transparent text-data text-star tabular-nums',
-      'transition-[background-color,border-color,color] duration-(--dur-pop) ease-orbit hover:bg-star/5 motion-reduce:transition-none',
-      'outline-4 outline-offset-0 outline-transparent focus-visible:border-star/55 focus-visible:outline-star/12',
-      day.outside && 'text-star-faint',
-      day.today && !day.selected && 'border-line-strong',
-      day.selected && 'bg-star text-void hover:bg-star-muted',
+      'inline-flex size-9 items-center justify-center rounded-md border border-transparent text-data text-fg tabular-nums',
+      'transition-[background-color,border-color,color] duration-(--dur-pop) ease-orbit hover:bg-surface-hover motion-reduce:transition-none',
+      'outline-4 outline-offset-0 outline-transparent focus-visible:border-fg/55 focus-visible:outline-fg/12',
+      day.outside && 'text-fg-faint',
+      day.today && !day.selected && 'border-border-strong',
+      day.selected && 'bg-fill text-on-fill hover:bg-fg-muted',
+      day.rangeStart && !day.rangeEnd && !last && 'rounded-e-none',
+      day.rangeEnd && !day.rangeStart && !first && 'rounded-s-none',
       day.disabled && 'cursor-not-allowed line-through opacity-40 hover:bg-transparent',
+    );
+  }
+
+  /**
+   * Method cellClasses
+   * @method cellClasses
+   *
+   * @description
+   * Draws the range band behind the day button as a `surface-selected` layer over the whole cell,
+   * padding included, so that it runs unbroken from cell to cell: from the middle of a range start,
+   * up to the middle of a range end. Where a week row cuts the range, the layer stops at the button
+   * edge with the buttons' `md` radius (D43). Empty outside a band.
+   *
+   * @param {CalendarDay} day - Display and interaction state for the grid cell.
+   * @param {boolean} first - Whether the cell opens its week row.
+   * @param {boolean} last - Whether the cell closes its week row.
+   *
+   * @returns {string} Classes applied to the grid cell.
+   */
+  protected cellClasses(day: CalendarDay, first: boolean, last: boolean): string {
+    if (!day.inRange && day.rangeStart === day.rangeEnd) return '';
+    return cn(
+      'relative isolate before:absolute before:inset-y-0.5 before:-z-10 before:bg-surface-selected',
+      day.rangeStart
+        ? 'before:start-1/2'
+        : first
+          ? 'before:start-0.5 before:rounded-s-md'
+          : 'before:start-0',
+      day.rangeEnd
+        ? 'before:end-1/2'
+        : last
+          ? 'before:end-0.5 before:rounded-e-md'
+          : 'before:end-0',
     );
   }
 
@@ -496,7 +599,8 @@ export class CalendarComponent implements FormValueControl<Date | null> {
    *
    * @description
    * Ignores selection in readonly mode or for unavailable dates; otherwise normalizes the day,
-   * updates the selected and focused values, and emits the selection event.
+   * updates the focused value and, in single-date mode, the selected one, and emits the selection
+   * event.
    *
    * @param {Date} date - Candidate date selected by the user.
    *
@@ -505,7 +609,7 @@ export class CalendarComponent implements FormValueControl<Date | null> {
   protected pick(date: Date): void {
     if (this.readonly() || this.isUnavailable(date)) return;
     const day: Date = startOfDay(date);
-    this.value.set(day);
+    if (!this.range()) this.value.set(day);
     this.focusedDate.set(day);
     this.dateSelect.emit(day);
   }
@@ -517,7 +621,8 @@ export class CalendarComponent implements FormValueControl<Date | null> {
    * @description
    * Handles grid navigation keys in the current text direction, clamps the target date to the
    * configured bounds, and focuses the resulting grid cell after rendering. At a bound, focus returns
-   * to the current cell even when the clamped date does not change.
+   * to the current cell even when the clamped date does not change. The target also previews a range
+   * end.
    *
    * @param {KeyboardEvent} event - Key event from the calendar grid.
    *
@@ -540,7 +645,9 @@ export class CalendarComponent implements FormValueControl<Date | null> {
     const target: (() => Date) | undefined = targets[event.key];
     if (!target) return;
     event.preventDefault();
-    this.focusedDate.set(clampDay(target(), this.min(), this.max()));
+    const day: Date = clampDay(target(), this.min(), this.max());
+    this.focusedDate.set(day);
+    this.hovered.set(day);
     afterNextRender(() => this.focus(), { injector: this.injector });
   }
 
@@ -549,14 +656,17 @@ export class CalendarComponent implements FormValueControl<Date | null> {
    * @method onFocusOut
    *
    * @description
-   * Emits the touch event only when focus moves outside the calendar host.
+   * Clears the range preview and emits the touch event only when focus moves outside the calendar
+   * host.
    *
    * @param {FocusEvent} event - Native focus transition event from the host.
    *
    * @returns {void}
    */
   protected onFocusOut(event: FocusEvent): void {
-    if (!this.element.contains(event.relatedTarget as Node | null)) this.touch.emit();
+    if (this.element.contains(event.relatedTarget as Node | null)) return;
+    this.hovered.set(null);
+    this.touch.emit();
   }
 
   /**

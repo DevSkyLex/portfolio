@@ -56,7 +56,7 @@ describe('paintMenu', () => {
     expect(p.list.style.translate).toBe('0 -4.00px');
     expect(p.list.style.opacity).toBe('0');
     expect(p.list.style.clipPath).toBe('inset(0.0px -64px 100.0px -64px round 0px 0px 10px 10px)');
-    expect(p.trigger.style.borderBottomLeftRadius).toBe('10.00px');
+    expect(p.trigger.style.borderBottomLeftRadius).toBe('8.00px');
     expect(p.trigger.style.borderTopLeftRadius).toBe('');
     expect(p.chevron.style.rotate).toBe('0.0deg');
   });
@@ -69,7 +69,7 @@ describe('paintMenu', () => {
     paintMenu(p, 1, true, { above: true, height: 108 }, false);
     expect(p.list.style.translate).toBe('0 0.00px');
     expect(p.list.style.clipPath).toContain('-64px');
-    expect(p.trigger.style.borderTopLeftRadius).toBe('10.00px');
+    expect(p.trigger.style.borderTopLeftRadius).toBe('8.00px');
     expect(p.chevron.style.rotate).toBe('180.0deg');
   });
 

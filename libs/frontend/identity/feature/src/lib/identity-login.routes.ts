@@ -13,6 +13,6 @@ export const IDENTITY_LOGIN_ROUTES: Routes = [
       import('@internal/identity-web-feature/lib/ui/pages/login-page/login-page.component').then(
         (module) => module.LoginPageComponent,
       ),
-    title: 'Connexion — Administration',
+    title: $localize`:@@admin.login.routeTitle:Connexion — Administration`,
   },
 ];

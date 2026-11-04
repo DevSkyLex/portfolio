@@ -11,14 +11,14 @@ import { cva, type VariantProps } from 'class-variance-authority';
  */
 export const switchVariants = cva(
   [
-    'relative inline-flex shrink-0 cursor-pointer items-center rounded-full border border-line-field bg-void-sunk',
+    'relative inline-flex shrink-0 cursor-pointer items-center rounded-full border border-border-field bg-surface-sunk',
     'transition-[background-color,border-color,outline-color] duration-(--dur-pop) ease-orbit',
-    'hover:not-aria-checked:border-line-hover aria-checked:border-star aria-checked:bg-star',
-    'outline-4 outline-offset-0 outline-transparent focus-visible:border-signal/55 focus-visible:outline-signal/12',
-    'aria-invalid:border-danger aria-invalid:focus-visible:outline-danger/12',
+    'hover:not-aria-checked:border-border-hover aria-checked:border-fg aria-checked:bg-fill',
+    'outline-2 outline-offset-0 outline-transparent focus-visible:outline-accent/55',
+    'aria-invalid:border-danger',
     'disabled:cursor-not-allowed disabled:opacity-50',
-    'before:block before:rounded-full before:bg-star-muted before:transition-[translate,background-color] before:duration-(--dur-pop) before:ease-orbit',
-    'aria-checked:before:bg-void motion-reduce:transition-none motion-reduce:before:transition-none',
+    'before:block before:rounded-full before:bg-fg-muted before:transition-[translate,background-color] before:duration-(--dur-pop) before:ease-orbit',
+    'aria-checked:before:bg-surface motion-reduce:transition-none motion-reduce:before:transition-none',
   ],
   {
     variants: {

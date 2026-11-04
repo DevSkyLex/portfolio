@@ -138,6 +138,26 @@ interface ProblemDetails extends MappedProblem {
 }
 
 /**
+ * Function isExposedClientError
+ *
+ * @description
+ * Recognizes the `http-errors` raised by the Express body parsers before any route runs (body larger
+ * than the limit: 413, unsupported charset or encoding: 415), which mark their message safe to expose.
+ *
+ * @param {unknown} exception - Error to classify.
+ * @returns {boolean} Whether the error is an exposed 4xx client error.
+ */
+function isExposedClientError(
+  exception: unknown,
+): exception is Error & { readonly status: number; readonly expose: true } {
+  if (!(exception instanceof Error)) {
+    return false;
+  }
+  const { status, expose } = exception as Error & { status?: unknown; expose?: unknown };
+  return expose === true && typeof status === 'number' && status >= 400 && status < 500;
+}
+
+/**
  * Class ProblemDetailsFilter
  * @class ProblemDetailsFilter
  *
@@ -234,6 +254,13 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         status,
         code: typeof payload['code'] === 'string' ? payload['code'] : `http.${status}`,
         ...(payload['errors'] === undefined ? {} : { errors: payload['errors'] }),
+      };
+    }
+    if (isExposedClientError(exception)) {
+      return {
+        title: exception.message,
+        status: exception.status,
+        code: `http.${exception.status}`,
       };
     }
     return {

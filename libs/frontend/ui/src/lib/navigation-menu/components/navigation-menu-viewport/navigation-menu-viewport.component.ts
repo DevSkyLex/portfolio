@@ -101,7 +101,7 @@ export class NavigationMenuViewportComponent {
   host: {
     'aria-hidden': 'true',
     class:
-      'pointer-events-none absolute top-full h-0.5 rounded-full bg-star transition-[left,width,opacity] duration-(--dur-pop) ease-orbit motion-reduce:transition-none',
+      'pointer-events-none absolute top-full h-0.5 rounded-full bg-fill transition-[left,width,opacity] duration-(--dur-pop) ease-orbit motion-reduce:transition-none',
     '[class.opacity-0]': '!menu.openItem()',
     '[style.left.px]': 'left()',
     '[style.width.px]': 'width()',
@@ -180,7 +180,7 @@ export class NavigationMenuIndicatorComponent {
   host: {
     'aria-hidden': 'true',
     class:
-      'flex text-star-faint transition-transform duration-(--dur-pop) ease-orbit group-aria-expanded:rotate-180 motion-reduce:transition-none',
+      'flex text-fg-faint transition-transform duration-(--dur-pop) ease-orbit group-aria-expanded:rotate-180 motion-reduce:transition-none',
     'data-slot': 'navigation-menu-chevron',
   },
 })

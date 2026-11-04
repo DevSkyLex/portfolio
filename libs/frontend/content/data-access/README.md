@@ -15,9 +15,14 @@ request state. Server validation and administration capabilities have narrow ent
 | `@vfortin/content-web-data-access/admin`      | `content-web-feature-admin`        |
 | `@vfortin/content-web-data-access/navigation` | `web-shell`                        |
 
-The root exposes public snapshot loading/provision, `loadSiteContent()` and `SiteContentService`. `/server` supplies the
-prerender contract validator. `/admin` exposes administration view models, editor adapters, API service
-and `AdminProjectsStore`. `/navigation` publishes only `AdminProjectNavigationPort`, its small item
+The root exposes public snapshot loading/provision, `loadSiteContent()`, `SiteContentService` (with the
+legal documents, D44) and `SiteLinksService` (the public links for the site layout, filled once the
+snapshot is read). `/server` supplies the
+prerender contract validator. `/admin` exposes administration view models, editor adapters, the
+article-document helpers (D40), the project and media API services and `AdminProjectsStore`, and the
+timeline administration (`AdminTimelineEntry`, `TimelineEntryDraft` conversion, `AdminTimelineApiService`,
+`AdminTimelineStore`, which keeps the entries most recent first), and the « Informations » and « Légal »
+administration (`AdminSiteTextsApiService`, `AdminProfileStore`, `AdminLegalStore`, draft conversion), and the « Tableau de bord » SEO dashboard (D47: type-only aliases of the dashboard contract, `SEO_RANGES`, `AdminSeoDashboardApiService`, `AdminSeoDashboardStore`, which polls a running refresh every 3 s and stops with the page). `/navigation` publishes only `AdminProjectNavigationPort`, its small item
 model and provider for shell composition; the shell does not import administration DTOs/query services.
 
 ## Provider scope
@@ -34,7 +39,11 @@ capability. HTTP services own transport, not view state.
 - Runtime schema validation stays behind `/server` and outside browser entries (D10).
 - Replaceable reads discard obsolete responses; writes retain observed `If-Match` versions.
 - A 412 remains a visible conflict, never an automatic overwrite.
+- Timeline entry writes send the entry version; a move sends the list version of its kind, so a
+  creation, deletion or move made elsewhere fails it with 412 while a text edit does not.
 - Services preserve failures; stores normalize them into named load/write call states.
+- The SEO dashboard store keeps the previous dashboard while another window loads, ignores obsolete
+  reads and polls, and returns the API's retry time on a 429 `content.seo-refresh-too-soon`.
 - Form values and rules belong to the feature; data-access adapters perform request conversion.
 
 ## Validation

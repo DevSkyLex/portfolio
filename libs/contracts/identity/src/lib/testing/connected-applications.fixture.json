@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "id": "0b7c9a52-3f1e-4d2a-8c6b-5e4f3a2b1c0d",
+      "clientId": "https://claude.ai/oauth/mcp-oauth-client-metadata",
+      "name": "Claude",
+      "logo": null,
+      "host": "claude.ai",
+      "registration": "metadata-document",
+      "scopes": ["content:read", "content:write"],
+      "createdAt": "2026-11-04T10:00:00.000Z",
+      "lastUsedAt": null
+    }
+  ]
+}

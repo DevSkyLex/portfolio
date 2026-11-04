@@ -56,11 +56,46 @@ export interface CalendarDay {
    * @readonly
    *
    * @description
-   * Whether this day matches the selected model value.
+   * Whether this day matches the selected model value or, in range mode, is an end of the drawn
+   * range.
    *
    * @type {boolean}
    */
   readonly selected: boolean;
+
+  /**
+   * Property rangeStart
+   * @readonly
+   *
+   * @description
+   * Whether this day is the first day of the drawn range (committed or previewed).
+   *
+   * @type {boolean}
+   */
+  readonly rangeStart: boolean;
+
+  /**
+   * Property rangeEnd
+   * @readonly
+   *
+   * @description
+   * Whether this day is the last day of the drawn range; also true on the start of a one-day range
+   * or of a range whose end is not chosen nor previewed yet.
+   *
+   * @type {boolean}
+   */
+  readonly rangeEnd: boolean;
+
+  /**
+   * Property inRange
+   * @readonly
+   *
+   * @description
+   * Whether this day lies strictly between the ends of the drawn range.
+   *
+   * @type {boolean}
+   */
+  readonly inRange: boolean;
 
   /**
    * Property focused

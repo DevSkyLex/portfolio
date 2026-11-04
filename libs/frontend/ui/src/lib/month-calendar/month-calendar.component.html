@@ -1,0 +1,60 @@
+<div class="flex items-center justify-between gap-2">
+  <button
+    uiBtn
+    type="button"
+    variant="ghost"
+    size="sm"
+    class="w-9 px-0"
+    [attr.aria-label]="previousText()"
+    [disabled]="!canGoPrevious()"
+    (click)="shiftPage(-1)"
+  >
+    <ng-icon class="rtl:-scale-x-100" [svg]="icons.previous" size="16" aria-hidden="true" />
+  </button>
+  <div class="text-control text-fg tabular-nums" aria-live="polite" [id]="headingId">
+    {{ heading() }}
+  </div>
+  <button
+    uiBtn
+    type="button"
+    variant="ghost"
+    size="sm"
+    class="w-9 px-0"
+    [attr.aria-label]="nextText()"
+    [disabled]="!canGoNext()"
+    (click)="shiftPage(1)"
+  >
+    <ng-icon class="rtl:-scale-x-100" [svg]="icons.next" size="16" aria-hidden="true" />
+  </button>
+</div>
+<!-- Keyboard of the focused cell, handled once for the whole grid. -->
+<!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+<div
+  role="grid"
+  class="flex flex-col gap-1"
+  [attr.aria-labelledby]="headingId"
+  (keydown)="onKeydown($event)"
+  (pointerleave)="hovered.set(null)"
+>
+  @for (row of rows(); track $index) {
+    <div role="row" class="grid grid-cols-4 gap-1">
+      @for (cell of row; track cell.key) {
+        <div role="gridcell" [attr.aria-selected]="cell.selected || cell.inRange || null">
+          <button
+            type="button"
+            [class]="cellClasses(cell)"
+            [attr.data-cell]="cell.key"
+            [attr.tabindex]="cell.focused ? 0 : -1"
+            [attr.aria-label]="cell.label"
+            [attr.aria-current]="cell.current ? 'date' : null"
+            [attr.aria-disabled]="cell.disabled || null"
+            (click)="pick(cell)"
+            (pointerenter)="hovered.set(cell.bound)"
+          >
+            {{ cell.text }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,34 @@
+/*
+ * Administration stylesheet (D31): the non-injected `admin` bundle of apps/web/project.json, appended by
+ * AdminStylesheetService when the admin area is entered, after styles.css. Imports, Tailwind sources and
+ * admin document rules only (dentalstock convention).
+ *
+ * Same layer order as styles.css (no-op once styles.css has declared it). No preflight and no base rules
+ * of the public site: they are already loaded, and a second copy would come later in the base layer.
+ * The tokens are referenced, not emitted: styles.css defines them, and Tailwind writes the value of a
+ * theme variable that styles.css does not emit as the fallback of its var().
+ */
+@layer ng-icon;
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@import '../../../libs/frontend/design-tokens/src/theme.css' reference;
+
+/*
+ * Every frontend source, public ones included: with both stylesheets loaded, this file holds every
+ * utility in Tailwind's own order, so the cascade is that of a single stylesheet on any page.
+ */
+@source '../../../libs/frontend';
+
+@layer base {
+  /*
+   * Administration, marked by its layout while mounted. Without the stable gutter, the CDK overlay
+   * container and the right-based positions of end-aligned menus share one width. The layout spans
+   * 100vw so that its container queries read the same width as matchMedia; the scrollbar covers its
+   * last pixels, which the page gives back as a margin, and nothing scrolls sideways.
+   */
+  html[data-admin] {
+    scrollbar-gutter: auto;
+    overflow-x: hidden;
+  }
+}

@@ -260,7 +260,7 @@ export class ItemTitleDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('flex w-fit items-center gap-2 text-control text-star', this.class()),
+    cn('flex w-fit items-center gap-2 text-control text-fg', this.class()),
   );
   // #endregion
 }
@@ -300,7 +300,7 @@ export class ItemDescriptionDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'line-clamp-2 text-small text-balance text-star-muted [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-star',
+      'line-clamp-2 text-small text-balance text-fg-muted [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-fg',
       this.class(),
     ),
   );
@@ -458,7 +458,7 @@ export class ItemSeparatorDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('my-0 h-px w-full shrink-0 border-0 bg-line/60', this.class()),
+    cn('my-0 h-px w-full shrink-0 border-0 bg-border/60', this.class()),
   );
   // #endregion
 }

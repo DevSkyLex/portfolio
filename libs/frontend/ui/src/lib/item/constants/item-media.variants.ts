@@ -15,8 +15,8 @@ export const itemMediaVariants = cva(
     variants: {
       variant: {
         default: 'bg-transparent',
-        icon: 'size-8 rounded-option border border-line bg-void-sunk text-star-muted',
-        image: 'size-10 overflow-hidden rounded-option [&_img]:size-full [&_img]:object-cover',
+        icon: 'size-8 rounded-sm border border-border bg-surface-sunk text-fg-muted',
+        image: 'size-10 overflow-hidden rounded-md [&_img]:size-full [&_img]:object-cover',
       },
     },
     defaultVariants: { variant: 'default' },

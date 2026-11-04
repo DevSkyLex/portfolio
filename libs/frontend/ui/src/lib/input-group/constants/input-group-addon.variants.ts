@@ -8,7 +8,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
  * Defines addon placement at inline or block edges and adjusts edge spacing when an addon contains a button.
  */
 export const inputGroupAddonVariants = cva(
-  'flex h-auto cursor-text items-center justify-center gap-2 text-star-muted select-none [&>ng-icon]:shrink-0',
+  'flex h-auto cursor-text items-center justify-center gap-2 text-fg-muted select-none [&>ng-icon]:shrink-0',
   {
     variants: {
       align: {

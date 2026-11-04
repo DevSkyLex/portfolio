@@ -8,16 +8,16 @@ import { cva, type VariantProps } from 'class-variance-authority';
  */
 export const itemVariants = cva(
   [
-    'group/item flex flex-wrap items-center rounded-field border border-transparent text-small text-star',
+    'group/item flex flex-wrap items-center rounded-lg border border-transparent text-small text-fg',
     'transition-[background-color,border-color] duration-(--dur-pop) ease-orbit motion-reduce:transition-none',
-    'outline-4 outline-offset-0 outline-transparent focus-visible:border-star/55 focus-visible:outline-star/12',
+    'outline-4 outline-offset-0 outline-transparent focus-visible:border-fg/55 focus-visible:outline-fg/12',
   ],
   {
     variants: {
       variant: {
-        default: 'bg-transparent [a&]:hover:bg-void-raised',
-        outline: 'border-line [a&]:hover:border-line-hover [a&]:hover:bg-void-raised',
-        muted: 'bg-void-raised [a&]:hover:bg-void-hover',
+        default: 'bg-transparent [a&]:hover:bg-surface-raised',
+        outline: 'border-border [a&]:hover:border-border-hover [a&]:hover:bg-surface-raised',
+        muted: 'bg-surface-raised [a&]:hover:bg-surface-hover',
       },
       size: {
         sm: 'gap-2.5 px-4 py-3',

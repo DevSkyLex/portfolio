@@ -17,7 +17,7 @@
   [attr.aria-label]="ariaLabel() ?? null"
   [attr.aria-labelledby]="ariaLabelledby() ?? null"
   [attr.aria-describedby]="ariaDescribedby() ?? null"
-  [attr.aria-invalid]="invalid() || null"
+  [attr.aria-invalid]="showInvalid() || null"
   [attr.aria-required]="required() || null"
   (input)="onInput(field.value)"
   (keydown)="onKeydown($event)"
@@ -64,7 +64,7 @@
       }
     </div>
     @if (!items().length) {
-      <p role="status" class="px-2.5 py-2 text-sm text-star-faint" data-slot="autocomplete-empty">
+      <p role="status" class="px-2.5 py-2 text-sm text-fg-faint" data-slot="autocomplete-empty">
         {{ emptyText() }}
       </p>
     }

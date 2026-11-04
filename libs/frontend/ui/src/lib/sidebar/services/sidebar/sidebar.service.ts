@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import type { SidebarControl } from '@internal/ui/lib/sidebar/models/sidebar/sidebar-control.interface';
 import type { SidebarState } from '@internal/ui/lib/sidebar/models/sidebar/sidebar-state.type';
 import { SIDEBAR_MOBILE_QUERY } from '@internal/ui/lib/sidebar/constants/sidebar.constants';
 
@@ -18,9 +19,10 @@ import { SIDEBAR_MOBILE_QUERY } from '@internal/ui/lib/sidebar/constants/sidebar
  *
  * @description
  * Stores sidebar state for one provider instance and switches between desktop expansion and mobile drawer visibility.
+ * It is the provider's `SIDEBAR_CONTROL`, read by `ui-sidebar-trigger`.
  */
 @Injectable()
-export class SidebarService {
+export class SidebarService implements SidebarControl {
   // #region Properties
   /**
    * Property source
@@ -34,6 +36,19 @@ export class SidebarService {
   private readonly source: WritableSignal<WritableSignal<boolean>> = signal<
     WritableSignal<boolean>
   >(signal<boolean>(true));
+
+  /**
+   * Property shortcutSource
+   * @readonly
+   *
+   * @description
+   * Signal holding the provider's shortcut switch, off until a provider connects one.
+   *
+   * @type {WritableSignal<Signal<boolean>>}
+   */
+  private readonly shortcutSource: WritableSignal<Signal<boolean>> = signal<Signal<boolean>>(
+    signal<boolean>(false),
+  );
 
   /**
    * Property query
@@ -119,6 +134,43 @@ export class SidebarService {
    * @type {string}
    */
   public readonly sidebarId: string = inject<RenderIdService>(RenderIdService).next('ui-sidebar-');
+
+  /**
+   * Property available
+   * @readonly
+   *
+   * @description
+   * Always `true`: the trigger toggles the desktop sidebar or, on small viewports, its drawer.
+   *
+   * @type {Signal<boolean>}
+   */
+  public readonly available: Signal<boolean> = signal<boolean>(true).asReadonly();
+
+  /**
+   * Property controls
+   * @readonly
+   *
+   * @description
+   * Desktop sidebar panel id; `null` on small viewports, where the drawer exists only while open.
+   *
+   * @type {Signal<string | null>}
+   */
+  public readonly controls: Signal<string | null> = computed<string | null>((): string | null =>
+    this.isMobile() ? null : this.sidebarId,
+  );
+
+  /**
+   * Property shortcut
+   * @readonly
+   *
+   * @description
+   * Ctrl/Cmd+B while the provider binds it.
+   *
+   * @type {Signal<readonly string[]>}
+   */
+  public readonly shortcut: Signal<readonly string[]> = computed<readonly string[]>(
+    (): readonly string[] => (this.shortcutSource()() ? ['Mod', 'B'] : []),
+  );
   // #endregion
 
   // #region Methods
@@ -127,13 +179,19 @@ export class SidebarService {
    * @method connect
    *
    * @description
-   * Connects the provider's writable model so desktop state updates are reflected back to its owner.
+   * Connects the provider's writable model so desktop state updates are reflected back to its owner,
+   * and the switch of its Ctrl/Cmd+B shortcut.
    *
    * @param {WritableSignal<boolean>} open - Provider-owned desktop open model.
+   * @param {Signal<boolean>} shortcut - Whether the provider binds Ctrl/Cmd+B.
    * @returns {void}
    */
-  public connect(open: WritableSignal<boolean>): void {
+  public connect(
+    open: WritableSignal<boolean>,
+    shortcut: Signal<boolean> = signal<boolean>(false),
+  ): void {
     this.source.set(open);
+    this.shortcutSource.set(shortcut);
   }
 
   /**

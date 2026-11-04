@@ -167,7 +167,7 @@ export class FieldDescriptionDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('text-sm text-pretty text-star-faint', this.class()),
+    cn('text-sm text-pretty text-fg-faint', this.class()),
   );
   // #endregion
 }
@@ -251,8 +251,8 @@ export class FieldSeparatorDirective {
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'flex items-center gap-3 text-sm text-star-faint empty:gap-0',
-      'before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line',
+      'flex items-center gap-3 text-sm text-fg-faint empty:gap-0',
+      'before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border',
       this.class(),
     ),
   );

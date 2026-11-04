@@ -7,7 +7,7 @@
  * @type {string}
  */
 export const navigationLinkClasses: string = [
-  'group inline-flex h-11 items-center gap-1.5 rounded-option px-3 text-control whitespace-nowrap text-star-muted',
-  'transition-colors duration-(--dur-pop) ease-orbit hover:text-star aria-expanded:text-star aria-[current=page]:text-star',
+  'group inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-control whitespace-nowrap text-fg-muted',
+  'transition-colors duration-(--dur-pop) ease-orbit hover:text-fg aria-expanded:text-fg aria-[current=page]:text-fg',
   'motion-reduce:transition-none',
 ].join(' ');

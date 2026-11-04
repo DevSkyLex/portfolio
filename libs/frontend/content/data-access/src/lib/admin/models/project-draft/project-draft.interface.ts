@@ -1,5 +1,8 @@
-import type { ArticleSection } from '@internal/content-web-data-access/lib/admin/models/article-section/article-section.model';
+import type { ArticleDocumentDraft } from '@internal/content-web-data-access/lib/admin/models/article-document/article-document-draft.interface';
 import type { BilingualText } from '@internal/content-web-data-access/lib/admin/models/bilingual-text/bilingual-text.interface';
+import type { ProjectPeriod } from '@internal/content-web-data-access/lib/admin/models/project-period/project-period.interface';
+import type { ProjectCoverDraft } from '@internal/content-web-data-access/lib/admin/models/project-cover/project-cover-draft.interface';
+import type { ProjectSeoDraft } from '@internal/content-web-data-access/lib/admin/models/project-seo/project-seo-draft.interface';
 
 /**
  * Interface ProjectDraft
@@ -41,14 +44,14 @@ export interface ProjectDraft {
   lead: BilingualText;
 
   /**
-   * Property periodLabel
+   * Property period
    *
    * @description
-   * Localized project period text.
+   * Start and end of the project (D46), `null` until chosen; the form requires one.
    *
-   * @type {BilingualText}
+   * @type {ProjectPeriod | null}
    */
-  periodLabel: BilingualText;
+  period: ProjectPeriod | null;
 
   /**
    * Property client
@@ -94,11 +97,11 @@ export interface ProjectDraft {
    * Property techs
    *
    * @description
-   * Technology catalogue keys entered as a comma-separated list.
+   * Technology catalogue keys, one tag each in the editor.
    *
-   * @type {string}
+   * @type {string[]}
    */
-  techs: string;
+  techs: string[];
 
   /**
    * Property featured
@@ -114,10 +117,31 @@ export interface ProjectDraft {
    * Property article
    *
    * @description
-   * Localized values for each article section, with paragraphs separated by blank lines.
+   * Article document of each language; an English document without text nor figure is omitted from
+   * the revision.
    *
-   * @type {Record<ArticleSection, BilingualText>}
+   * @type {{ fr: ArticleDocumentDraft; en: ArticleDocumentDraft }}
    */
-  article: Record<ArticleSection, BilingualText>;
+  article: { fr: ArticleDocumentDraft; en: ArticleDocumentDraft };
+
+  /**
+   * Property cover
+   *
+   * @description
+   * Cover image and its alternative texts; an empty `media` means no cover.
+   *
+   * @type {ProjectCoverDraft}
+   */
+  cover: ProjectCoverDraft;
+
+  /**
+   * Property seo
+   *
+   * @description
+   * Search title and description of each language; empty texts are omitted from the revision.
+   *
+   * @type {ProjectSeoDraft}
+   */
+  seo: ProjectSeoDraft;
   // #endregion
 }

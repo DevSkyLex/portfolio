@@ -2,6 +2,7 @@ import type {
   Clock,
   IdGenerator,
   PasswordHasher,
+  PkceVerifier,
   RefreshTokenCodec,
   TotpVerifier,
 } from '@vfortin/identity-application';
@@ -425,6 +426,39 @@ export class RandomIdGenerator implements IdGenerator {
    */
   public next(): string {
     return randomUUID();
+  }
+  // #endregion
+}
+
+/**
+ * Class S256PkceVerifier
+ * @class S256PkceVerifier
+ * @implements PkceVerifier
+ *
+ * @description
+ * Checks a PKCE verifier against an `S256` challenge (RFC 7636 §4.6): `BASE64URL(SHA256(verifier))`,
+ * compared in constant time.
+ */
+export class S256PkceVerifier implements PkceVerifier {
+  // #region Methods
+  /**
+   * Method matches
+   * @method matches
+   *
+   * @description
+   * Hashes the verifier and compares it with the challenge.
+   *
+   * @param {string} verifier - Presented `code_verifier`.
+   * @param {string} challenge - Stored `code_challenge`.
+   *
+   * @returns {boolean} Whether they match.
+   */
+  public matches(verifier: string, challenge: string): boolean {
+    const expected: Buffer = Buffer.from(
+      createHash('sha256').update(verifier, 'ascii').digest('base64url'),
+    );
+    const presented: Buffer = Buffer.from(challenge);
+    return expected.length === presented.length && timingSafeEqual(expected, presented);
   }
   // #endregion
 }

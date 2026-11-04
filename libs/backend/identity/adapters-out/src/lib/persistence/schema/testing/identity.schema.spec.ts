@@ -34,4 +34,11 @@ describe('identity schema', (): void => {
     );
     expect(getTableConfig(adminAccounts).name).toBe('admin_accounts');
   });
+
+  it('allows an account without an active or pending one-time-code secret', (): void => {
+    expect([adminAccounts.totpSecret.notNull, adminAccounts.pendingTotpSecret.notNull]).toEqual([
+      false,
+      false,
+    ]);
+  });
 });

@@ -1,13 +1,21 @@
-import type { LocalizedTextDto, ProjectRevisionRequest } from '@vfortin/content-contracts';
+import type {
+  LocalizedTextDto,
+  ProjectCoverDto,
+  ProjectRevisionRequest,
+  ProjectSeoDto,
+} from '@vfortin/content-contracts';
 import { SHORT_FIELDS } from '@internal/content-web-data-access/lib/admin/constants/short-fields.constants';
-import { UNTRANSLATED } from '@internal/content-web-data-access/lib/admin/constants/untranslated.constants';
 import type { AdminProject } from '@internal/content-web-data-access/lib/admin/models/admin-project/admin-project.type';
-import {
-  ARTICLE_SECTIONS,
-  type ArticleSection,
-} from '@internal/content-web-data-access/lib/admin/models/article-section/article-section.model';
 import type { BilingualText } from '@internal/content-web-data-access/lib/admin/models/bilingual-text/bilingual-text.interface';
+import type { ProjectCoverDraft } from '@internal/content-web-data-access/lib/admin/models/project-cover/project-cover-draft.interface';
+import type { ProjectPeriod } from '@internal/content-web-data-access/lib/admin/models/project-period/project-period.interface';
 import type { ProjectDraft } from '@internal/content-web-data-access/lib/admin/models/project-draft/project-draft.interface';
+import {
+  emptyArticleDocument,
+  isArticleEmpty,
+  withFigureSources,
+  withoutFigureSources,
+} from '@internal/content-web-data-access/lib/admin/utils/article-document/article-document.utils';
 
 /**
  * Function flat
@@ -19,30 +27,13 @@ import type { ProjectDraft } from '@internal/content-web-data-access/lib/admin/m
  *
  * @returns {BilingualText} Editable French and English field values.
  */
-const flat: (text: LocalizedTextDto) => BilingualText = (
-  text: LocalizedTextDto,
-): BilingualText => ({ fr: text.fr, en: text.en ?? '' });
-
-/**
- * Function joined
- *
- * @description
- * Joins localized paragraphs with blank lines while inserting a placeholder for untranslated English paragraphs when any translation exists.
- *
- * @param {readonly LocalizedTextDto[]} paragraphs - Ordered paragraph values from the API.
- *
- * @returns {BilingualText} Flat editor text whose paragraph positions remain aligned across languages.
- */
-const joined: (paragraphs: readonly LocalizedTextDto[]) => BilingualText = (
-  paragraphs: readonly LocalizedTextDto[],
-): BilingualText => ({
-  fr: paragraphs.map((p: { fr: string; en?: string | undefined }): string => p.fr).join('\n\n'),
-  en: paragraphs.some((p: { fr: string; en?: string | undefined }): boolean => p.en !== undefined)
-    ? paragraphs
-        .map((p: { fr: string; en?: string | undefined }): string => p.en ?? UNTRANSLATED)
-        .join('\n\n')
-    : '',
-});
+const flat: (text: {
+  readonly fr: string;
+  readonly en?: string | undefined;
+}) => BilingualText = (text: {
+  readonly fr: string;
+  readonly en?: string | undefined;
+}): BilingualText => ({ fr: text.fr, en: text.en ?? '' });
 
 /**
  * Function localized
@@ -60,115 +51,167 @@ const localized: (text: BilingualText) => LocalizedTextDto = (
   text.en.trim() === '' ? { fr: text.fr.trim() } : { fr: text.fr.trim(), en: text.en.trim() };
 
 /**
- * Function paragraphsOf
+ * Function optional
  *
  * @description
- * Splits flat editor text on blank lines, trims each paragraph, and removes empty entries.
+ * Trims both languages of a search text and omits the blank ones, which fall back on the title or the
+ * summary.
  *
- * @param {string} value - Text entered in a project field.
+ * @param {BilingualText} text - Search text form value.
  *
- * @returns {string[]} Non-empty paragraphs in their original order.
+ * @returns {ProjectSeoDto['title']} Contract value holding only the written languages.
  */
-const paragraphsOf: (value: string) => string[] = (value: string): string[] =>
-  value
-    .split(/\n\s*\n/)
-    .map((p: string): string => p.trim())
-    .filter((p: string): boolean => p !== '');
+const optional: (text: BilingualText) => ProjectSeoDto['title'] = (
+  text: BilingualText,
+): ProjectSeoDto['title'] => {
+  const fr: string = text.fr.trim();
+  const en: string = text.en.trim();
+  return { ...(fr === '' ? {} : { fr }), ...(en === '' ? {} : { en }) };
+};
+
+/**
+ * Function keywordsOf
+ *
+ * @description
+ * Trims the keywords of both languages and drops blank ones; the French list is always sent, the
+ * English one only when it holds a keyword.
+ *
+ * @param {{ fr: string[]; en: string[] }} keywords - Keyword form values.
+ *
+ * @returns {ProjectSeoDto['keywords']} Contract keywords.
+ */
+const keywordsOf: (keywords: {
+  fr: string[];
+  en: string[];
+}) => ProjectSeoDto['keywords'] = (keywords: {
+  fr: string[];
+  en: string[];
+}): ProjectSeoDto['keywords'] => {
+  const clean = (list: string[]): string[] =>
+    list.map((keyword: string): string => keyword.trim()).filter(Boolean);
+  const fr: string[] = clean(keywords.fr);
+  const en: string[] = clean(keywords.en);
+  return en.length === 0 ? { fr } : { fr, en };
+};
+
+/**
+ * Function periodOf
+ *
+ * @description
+ * Copies a period, so the draft and the request never share a bound with the loaded project.
+ *
+ * @param {ProjectPeriod} period - Period.
+ *
+ * @returns {ProjectPeriod} Copy.
+ */
+const periodOf: (period: ProjectPeriod) => ProjectPeriod = (
+  period: ProjectPeriod,
+): ProjectPeriod => ({
+  start: { year: period.start.year, month: period.start.month },
+  end: period.end === null ? null : { year: period.end.year, month: period.end.month },
+});
+
+/**
+ * Function coverOf
+ *
+ * @description
+ * Serializes the edited cover: `null` without media, otherwise the media with its trimmed
+ * alternative texts, the French one possibly empty in a draft.
+ *
+ * @param {ProjectCoverDraft} cover - Cover form value.
+ *
+ * @returns {ProjectCoverDto | null} Contract cover.
+ */
+const coverOf: (cover: ProjectCoverDraft) => ProjectCoverDto | null = (
+  cover: ProjectCoverDraft,
+): ProjectCoverDto | null =>
+  cover.media.trim() === '' ? null : { media: cover.media.trim(), alt: localized(cover.alt) };
 
 /**
  * Function toProjectDraft
  *
  * @description
- * Projects an administrator project response into editable text, preserving article section order and untranslated paragraph positions.
+ * Projects an administrator project response into editable values: flat bilingual texts, one article
+ * document per language whose figures carry the URL of their media for display (an unwritten English
+ * article becomes an empty document), a cover always present for its fields and the search texts, an
+ * absent one as empty text.
  *
  * @param {AdminProject} project - Project response loaded for editing.
  *
- * @returns {ProjectDraft} Form values with paragraph arrays represented as blank-line-separated text.
+ * @returns {ProjectDraft} Independent form values.
  */
 export function toProjectDraft(project: AdminProject): ProjectDraft {
-  const article: Record<
-    'choices' | 'result' | 'work' | 'context' | 'workList' | 'lessons' | 'captions',
-    BilingualText
-  > = {} as Record<ArticleSection, BilingualText>;
-  for (const section of ARTICLE_SECTIONS) {
-    article[section] = joined(project.article[section]);
-  }
   return {
     title: flat(project.title),
     summary: flat(project.summary),
     lead: flat(project.lead),
-    periodLabel: flat(project.periodLabel),
+    period: periodOf(project.period),
     client: flat(project.client),
     role: flat(project.role),
     place: flat(project.place),
     siteUrl: project.siteUrl ?? '',
-    techs: project.techs.join(', '),
+    techs: [...project.techs],
     featured: project.featured,
-    article,
-  };
-}
-
-/**
- * Function misalignedSections
- *
- * @description
- * Finds translated article sections whose English paragraph indexes cannot be paired with the French paragraphs.
- *
- * @param {ProjectDraft} draft - Current bilingual editor values.
- *
- * @returns {ArticleSection[]} Sections with non-empty English text and unequal paragraph counts.
- */
-export function misalignedSections(draft: ProjectDraft): ArticleSection[] {
-  return ARTICLE_SECTIONS.filter(
-    (
-      section: 'choices' | 'result' | 'work' | 'context' | 'workList' | 'lessons' | 'captions',
-    ): boolean => {
-      const { fr, en } = draft.article[section];
-      return en.trim() !== '' && paragraphsOf(fr).length !== paragraphsOf(en).length;
+    article: {
+      fr: withFigureSources(project.article.fr, project.media),
+      en: project.article.en
+        ? withFigureSources(project.article.en, project.media)
+        : emptyArticleDocument(),
     },
-  );
+    cover: project.cover
+      ? { media: project.cover.media, alt: flat(project.cover.alt) }
+      : { media: '', alt: { fr: '', en: '' } },
+    seo: {
+      title: { fr: project.seo.title.fr ?? '', en: project.seo.title.en ?? '' },
+      description: { fr: project.seo.description.fr ?? '', en: project.seo.description.en ?? '' },
+      keywords: { fr: [...project.seo.keywords.fr], en: [...project.seo.keywords.en] },
+    },
+  };
 }
 
 /**
  * Function toRevisionRequest
  *
  * @description
- * Serializes editor values into the revision contract, pairing English article paragraphs by index and omitting untranslated placeholders.
+ * Serializes editor values into the revision contract: trimmed texts, the period, normalized
+ * technology keys, the article documents without display attributes (an empty English document is
+ * omitted), the cover, the search texts without their blank languages and the trimmed keywords (an
+ * empty English list omitted).
  *
  * @param {ProjectDraft} draft - Current project form values.
  *
- * @returns {ProjectRevisionRequest} Revision payload with trimmed fields and normalized technology keys.
+ * @returns {ProjectRevisionRequest} Revision payload.
+ * @throws {Error} Without a period, which the form requires before submitting.
  */
 export function toRevisionRequest(draft: ProjectDraft): ProjectRevisionRequest {
   const short: Pick<ProjectRevisionRequest, (typeof SHORT_FIELDS)[number]> = Object.fromEntries(
     SHORT_FIELDS.map(
-      (
-        field: 'summary' | 'title' | 'place' | 'lead' | 'periodLabel' | 'client' | 'role',
-      ): [
-        'summary' | 'title' | 'place' | 'lead' | 'periodLabel' | 'client' | 'role',
-        { fr: string; en?: string | undefined },
-      ] => [field, localized(draft[field])],
+      (field: (typeof SHORT_FIELDS)[number]): [(typeof SHORT_FIELDS)[number], LocalizedTextDto] => [
+        field,
+        localized(draft[field]),
+      ],
     ),
   ) as Pick<ProjectRevisionRequest, (typeof SHORT_FIELDS)[number]>;
-  const article: ProjectRevisionRequest['article'] = {} as ProjectRevisionRequest['article'];
-  for (const section of ARTICLE_SECTIONS) {
-    const fr: string[] = paragraphsOf(draft.article[section].fr);
-    const en: string[] = paragraphsOf(draft.article[section].en);
-    article[section] = fr.map((paragraph: string, index: number) => {
-      const translation: string | undefined = en[index];
-      return translation === undefined || translation === UNTRANSLATED
-        ? { fr: paragraph }
-        : { fr: paragraph, en: translation };
-    });
-  }
+  if (draft.period === null) throw new Error('A project period is required.');
   return {
     ...short,
+    period: periodOf(draft.period),
     siteUrl: draft.siteUrl.trim() || null,
     techs: draft.techs
-      .split(',')
       .map((tech: string): string => tech.trim())
       .filter((tech: string): boolean => tech !== ''),
     featured: draft.featured,
-    article,
+    article: isArticleEmpty(draft.article.en)
+      ? { fr: withoutFigureSources(draft.article.fr) }
+      : {
+          fr: withoutFigureSources(draft.article.fr),
+          en: withoutFigureSources(draft.article.en),
+        },
+    cover: coverOf(draft.cover),
+    seo: {
+      title: optional(draft.seo.title),
+      description: optional(draft.seo.description),
+      keywords: keywordsOf(draft.seo.keywords),
+    },
   };
 }

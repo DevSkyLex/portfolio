@@ -48,16 +48,16 @@ describe('Item', () => {
     await fixture.whenStable();
     const link: HTMLElement = fixture.nativeElement.querySelector('a[data-slot="item"]');
     expect(link.hasAttribute('role')).toBe(false);
-    expect(link.className).toContain('[a&]:hover:bg-void-raised');
+    expect(link.className).toContain('[a&]:hover:bg-surface-raised');
   });
 
   it('applies variants and sizes', async () => {
     const fixture: ComponentFixture<HostComponent> = TestBed.createComponent(HostComponent);
     await fixture.whenStable();
     const [outline, muted] = fixture.nativeElement.querySelectorAll('[data-slot="item"]');
-    expect(outline.className).toContain('border-line');
+    expect(outline.className).toContain('border-border');
     expect(outline.className).toContain('p-4');
-    expect(muted.className).toContain('bg-void-raised');
+    expect(muted.className).toContain('bg-surface-raised');
     expect(muted.className).toContain('py-3');
   });
 });

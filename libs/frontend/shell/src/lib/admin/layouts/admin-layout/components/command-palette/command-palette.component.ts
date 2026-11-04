@@ -17,9 +17,18 @@ import {
   lucideExternalLink,
   lucideKeyboard,
   lucideLogOut,
+  lucideSearch,
 } from '@ng-icons/lucide';
 import type { AdminProjectNavigationItem } from '@vfortin/content-web-data-access/navigation';
-import { CommandImports, type DialogRef, DialogService } from '@vfortin/ui';
+import {
+  CommandImports,
+  type DialogRef,
+  DialogFooterDirective,
+  DialogService,
+  EMPTY_IMPORTS,
+  KbdHintComponent,
+} from '@vfortin/ui';
+import { ADMIN_ESCAPE_KEYS } from '@internal/web-shell/lib/admin/layouts/admin-layout/constants/admin-keys.constants';
 import type { AdminLink } from '@internal/web-shell/lib/admin/layouts/admin-layout/models/admin-link/admin-link.interface';
 
 /**
@@ -28,12 +37,13 @@ import type { AdminLink } from '@internal/web-shell/lib/admin/layouts/admin-layo
  *
  * @description
  * Administration command palette (D36): opens in a dialog on Ctrl/Cmd+K or through `open()`, lists
- * the sections, the projects and the actions, closes itself and reports the chosen command. It
- * renders nothing in place; the layout loads the projects and carries out the commands.
+ * the sections, the projects and the actions above a footer bar of keyboard hints, closes itself
+ * and reports the chosen command. It renders nothing in place; the layout loads the projects and
+ * carries out the commands.
  */
 @Component({
   selector: 'app-command-palette',
-  imports: [CommandImports, NgIcon],
+  imports: [CommandImports, DialogFooterDirective, EMPTY_IMPORTS, KbdHintComponent, NgIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(window:keydown.control.k)': 'shortcut($event)',
@@ -63,6 +73,17 @@ export class CommandPaletteComponent {
    *
    * @type {InputSignal<readonly AdminProjectNavigationItem[]>}
    */
+  /**
+   * Property escapeKeys
+   * @readonly
+   *
+   * @description
+   * Escape key cap of the footer hint, in the build locale.
+   *
+   * @type {readonly string[]}
+   */
+  protected readonly escapeKeys: readonly string[] = ADMIN_ESCAPE_KEYS;
+
   public readonly projects: InputSignal<readonly AdminProjectNavigationItem[]> = input<
     readonly AdminProjectNavigationItem[]
   >([]);
@@ -127,19 +148,21 @@ export class CommandPaletteComponent {
    * @readonly
    *
    * @description
-   * Lucide icons of the project statuses and the actions.
+   * Lucide icons of the project statuses, the actions and the empty state.
    */
   protected readonly icons: {
     readonly draft: typeof lucideCircleDashed;
     readonly keyboard: typeof lucideKeyboard;
     readonly logout: typeof lucideLogOut;
     readonly published: typeof lucideCircleCheckBig;
+    readonly search: typeof lucideSearch;
     readonly site: typeof lucideExternalLink;
   } = {
     draft: lucideCircleDashed,
     keyboard: lucideKeyboard,
     logout: lucideLogOut,
     published: lucideCircleCheckBig,
+    search: lucideSearch,
     site: lucideExternalLink,
   } as const;
 
@@ -188,9 +211,12 @@ export class CommandPaletteComponent {
       return;
     }
     const ref: DialogRef<unknown, unknown> = this.dialogs.open(this.content(), {
-      ariaLabel: 'Palette de commandes',
+      ariaLabel: $localize`:@@admin.shell.palette.label:Palette de commandes`,
       showClose: false,
-      class: 'max-w-xl gap-0 p-0 sm:p-0',
+      // Anchored near the top: the input stays put while the results shrink or grow.
+      placement: 'top',
+      // No inset: the command list runs to the edges, and so does the footer bar.
+      class: 'max-w-xl gap-0 [--dialog-inset:0px] sm:[--dialog-inset:0px]',
     });
     this.ref = ref;
     ref.closed.subscribe(() => (this.ref = null));

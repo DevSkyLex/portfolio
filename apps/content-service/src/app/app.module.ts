@@ -2,7 +2,11 @@ import { type DynamicModule, Module } from '@nestjs/common';
 import { AdminAuthModule } from '@vfortin/backend-auth';
 import { ObservabilityModule } from '@vfortin/backend-observability';
 import { ContentModule } from '@vfortin/content-composition';
-import type { ContentServiceConfig } from '@internal/content-service/config';
+import {
+  type ContentServiceConfig,
+  mediaDirectory,
+  seoDashboardOptions,
+} from '@internal/content-service/config';
 
 /**
  * Class AppModule
@@ -47,6 +51,8 @@ export class AppModule {
                 }
               : null,
           workers: true,
+          mediaDirectory: mediaDirectory(config),
+          seo: seoDashboardOptions(config),
         }),
       ],
     };

@@ -1,0 +1,1 @@
+ALTER TABLE "content"."projects" ADD COLUMN "seo" jsonb DEFAULT '{"title":{},"description":{}}'::jsonb NOT NULL;

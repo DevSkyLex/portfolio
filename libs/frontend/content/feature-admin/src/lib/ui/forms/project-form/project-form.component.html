@@ -1,4 +1,9 @@
-<form class="flex flex-col gap-8" novalidate (submit)="onSubmit($event)">
+<form
+  id="edit-project-form"
+  class="@container/form flex flex-1 flex-col gap-8"
+  novalidate
+  (submit)="onSubmit($event)"
+>
   @if (summary(); as message) {
     <div uiAlert variant="danger" class="-mb-2">
       <ng-icon [svg]="icons.alert" size="16" aria-hidden="true" />
@@ -6,197 +11,791 @@
     </div>
   }
 
-  <div uiTabs class="gap-6" [(value)]="locale">
-    <div uiTabsList class="gap-5" aria-label="Langue du contenu">
-      @for (lang of locales; track lang) {
-        <button class="h-9 text-[13px] font-medium" [uiTabsTrigger]="lang">
-          {{ localeLabels[lang] }}
-          @if (missing()[lang]; as count) {
-            <span uiBadge variant="warning" class="h-5 px-1.5 text-[11px]/4">
-              {{ count }}<span class="sr-only"> champ(s) à compléter</span>
-            </span>
-          }
-        </button>
-      }
-    </div>
-
-    @for (lang of locales; track lang) {
-      <div class="flex flex-col gap-8" [uiTabsContent]="lang">
-        <fieldset uiFieldSet class="gap-4" [disabled]="pending()">
-          <legend
-            uiFieldLegend
-            variant="label"
-            class="mb-0 w-full border-b border-line pb-2 text-[14px] font-semibold"
+  @for (section of textSections; track section.key) {
+    @let headingId = 'edit-section-' + section.key;
+    <section
+      [class]="$first ? 'flex flex-col gap-6' : 'flex flex-col gap-6 border-t border-border pt-8'"
+      [attr.aria-labelledby]="headingId"
+    >
+      <header class="flex flex-col gap-1">
+        <h2 class="text-[14px]/5 font-semibold text-fg" [id]="headingId">
+          {{ section.title }}
+        </h2>
+        @if (section.description; as description) {
+          <p class="text-[13px]/5 text-fg-faint">{{ description }}</p>
+        }
+      </header>
+      <fieldset
+        uiFieldSet
+        [class]="
+          section.columns ? 'grid grid-cols-1 gap-x-5 gap-y-6 @md/form:grid-cols-2' : 'gap-6'
+        "
+        [disabled]="pending()"
+        [attr.aria-labelledby]="headingId"
+      >
+        @for (field of section.fields; track field.key) {
+          @let lang = shown()[field.key];
+          @let id = 'edit-' + field.key + '-' + lang;
+          @let error = fieldError(field.key, lang);
+          @let isRequired = lang === 'fr' || complete();
+          @let name = localizedName(field.label, lang);
+          <ui-field
+            size="sm"
+            [label]="field.label"
+            [controlId]="id"
+            [required]="isRequired"
+            [error]="error"
           >
-            Présentation
-          </legend>
-          @for (field of shortFields; track field.key) {
-            @let id = 'edit-' + field.key + '-' + lang;
-            @let error = fieldError(field.key, lang);
-            <ui-field
-              size="sm"
-              [label]="field.label"
-              [controlId]="id"
-              [required]="lang === 'fr' || complete()"
-              [error]="error"
-            >
+            <!--
+              The language toggle is joined to the field: at the end of a one-line control, in a strip
+              under a textarea.
+            -->
+            <div [class]="field.multiline ? 'flex w-full min-w-0 flex-col' : 'flex w-full min-w-0'">
               @if (field.multiline) {
                 <textarea
                   uiInput
                   size="sm"
                   multiline
                   rows="3"
-                  class="text-[14px]"
+                  class="relative rounded-b-none text-[14px] focus:z-10"
                   [id]="id"
-                  [attr.aria-required]="lang === 'fr' || complete() ? 'true' : null"
+                  [attr.aria-label]="name"
+                  [attr.aria-required]="isRequired ? 'true' : null"
+                  [attr.lang]="lang"
                   [attr.aria-describedby]="describedBy(id, error)"
+                  [attr.aria-invalid]="error ? 'true' : null"
                   [formField]="projectForm[field.key][lang]"
                 ></textarea>
               } @else {
                 <input
                   uiInput
                   size="sm"
-                  class="text-[14px]"
+                  class="relative min-w-0 flex-1 rounded-e-none text-[14px] focus:z-10"
                   [id]="id"
-                  [attr.aria-required]="lang === 'fr' || complete() ? 'true' : null"
+                  [attr.aria-label]="name"
+                  [attr.aria-required]="isRequired ? 'true' : null"
+                  [attr.lang]="lang"
                   [attr.aria-describedby]="describedBy(id, error)"
+                  [attr.aria-invalid]="error ? 'true' : null"
                   [formField]="projectForm[field.key][lang]"
                 />
               }
-            </ui-field>
-          }
-        </fieldset>
+              @if (field.multiline) {
+                <div
+                  class="-mt-px flex justify-end rounded-b-md border border-border-field bg-surface-field p-1"
+                >
+                  <content-locale-switch
+                    compact
+                    [attached]="false"
+                    [label]="field.label"
+                    [states]="localeStates(field.key)"
+                    [value]="lang"
+                    (valueChange)="show(field.key, $event)"
+                  />
+                </div>
+              } @else {
+                <content-locale-switch
+                  [label]="field.label"
+                  [states]="localeStates(field.key)"
+                  [value]="lang"
+                  (valueChange)="show(field.key, $event)"
+                />
+              }
+            </div>
+          </ui-field>
+        }
+      </fieldset>
+    </section>
+  }
 
-        <fieldset uiFieldSet class="gap-4" [disabled]="pending()">
-          <legend
-            uiFieldLegend
-            variant="label"
-            class="mb-0 w-full border-b border-line pb-2 text-[14px] font-semibold"
-          >
-            Étude de cas
-          </legend>
-          <p uiFieldDescription class="max-w-[72ch] text-[13px]/5">
-            @if (lang === 'fr') {
-              Un paragraphe par bloc, séparés par une ligne vide.
-            } @else {
-              Les paragraphes anglais suivent les paragraphes français dans le même ordre ; un
-              paragraphe pas encore traduit s'écrit « {{ untranslated }} ».
-            }
-          </p>
-          @for (section of sections; track section.key) {
-            @let id = 'edit-article-' + section.key + '-' + lang;
-            @let error = articleError(section.key, lang);
-            <ui-field size="sm" [label]="section.label" [controlId]="id" [error]="error">
-              <textarea
-                uiInput
-                size="sm"
-                multiline
-                rows="6"
-                class="text-[14px]"
-                [id]="id"
-                [attr.aria-describedby]="describedBy(id, error)"
-                [formField]="projectForm.article[section.key][lang]"
-              ></textarea>
-            </ui-field>
+  @let articleLang = shown().article;
+  <section
+    class="flex flex-col gap-6 border-t border-border pt-8"
+    aria-labelledby="edit-section-article"
+  >
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex min-w-0 flex-col gap-1">
+        <h2
+          id="edit-section-article"
+          class="flex items-baseline gap-2 text-[14px]/5 font-semibold text-fg"
+        >
+          <ng-container i18n="@@admin.project.form.article">Article</ng-container>
+          @if (articleLang === 'fr' || complete()) {
+            <span class="-ml-1 text-danger-ink" aria-hidden="true">*</span>
           }
-        </fieldset>
+        </h2>
+        <p class="text-[13px]/5 text-fg-faint" i18n="@@admin.project.form.articleHint">
+          Les intertitres forment le sommaire ; glissez ou collez une image pour l’ajouter.
+        </p>
+      </div>
+      @if (articleLang === 'en') {
+        <button
+          uiBtn
+          variant="secondary"
+          size="sm"
+          class="h-8 gap-2 rounded-sm px-3 text-[13px]"
+          type="button"
+          [disabled]="pending()"
+          (click)="copyFrench()"
+        >
+          <ng-icon [svg]="icons.copy" size="14" aria-hidden="true" />
+          <ng-container i18n="@@admin.project.form.copyFrench">Partir du français</ng-container>
+        </button>
+      }
+    </header>
+    <!--
+      Both editors stay alive, the other language hidden: each keeps its state and undo history. Each
+      toolbar ends with the language toggle, bound to the same shown language.
+    -->
+    @for (lang of locales; track lang) {
+      @let articleId = 'edit-article-' + lang;
+      @let articleMessage = articleError(lang);
+      <div #articlePane class="flex flex-col gap-2" [hidden]="lang !== articleLang">
+        <content-article-editor
+          [controlId]="articleId"
+          [label]="articleLabel(lang)"
+          [describedBy]="describedBy(articleId, articleMessage)"
+          [language]="lang"
+          [upload]="upload()"
+          [formField]="projectForm.article[lang]"
+        >
+          <content-locale-switch
+            articleToolbarEnd
+            compact
+            label="Article"
+            i18n-label="@@admin.project.form.article"
+            [attached]="false"
+            [states]="localeStates('article')"
+            [value]="articleLang"
+            (valueChange)="showArticle($event)"
+          />
+        </content-article-editor>
+        @if (articleMessage) {
+          <p uiFieldError class="flex items-start gap-2" [id]="articleId + '-error'">
+            <ng-icon
+              class="mt-0.5 shrink-0"
+              [svg]="icons.alert"
+              size="16"
+              strokeWidth="2.25"
+              aria-hidden="true"
+            />
+            <span>{{ articleMessage }}</span>
+          </p>
+        }
       </div>
     }
-  </div>
+  </section>
 
-  <fieldset uiFieldSet class="gap-4" [disabled]="pending()">
-    <legend
-      uiFieldLegend
-      variant="label"
-      class="mb-0 w-full border-b border-line pb-2 text-[14px] font-semibold"
-    >
-      Paramètres
-    </legend>
-    <p uiFieldDescription class="text-[13px]/5">Communs aux deux langues.</p>
-    <div class="grid grid-cols-2 gap-4 @max-[768px]:grid-cols-1">
-      @let siteError = simpleError('siteUrl');
-      <ui-field
-        size="sm"
-        label="Site"
-        controlId="edit-site-url"
-        hint="Facultatif, en https://"
-        [error]="siteError"
-      >
-        <input
-          uiInput
-          size="sm"
-          class="text-[14px]"
-          id="edit-site-url"
-          type="url"
-          placeholder="https://"
-          [attr.aria-describedby]="describedBy('edit-site-url', siteError, true)"
-          [formField]="projectForm.siteUrl"
-        />
-      </ui-field>
-      @let techsError = simpleError('techs');
-      <ui-field
-        size="sm"
-        label="Technos"
-        controlId="edit-techs"
-        hint="Clés en minuscules, séparées par des virgules."
-        [error]="techsError"
-      >
-        <input
-          uiInput
-          size="sm"
-          class="font-mono text-[13px]"
-          id="edit-techs"
-          [attr.aria-describedby]="describedBy('edit-techs', techsError, true)"
-          [formField]="projectForm.techs"
-        />
-      </ui-field>
-    </div>
-    <div class="flex w-fit items-center gap-2.5 py-1">
-      <ui-checkbox size="sm" controlId="edit-featured" [formField]="projectForm.featured" />
-      <label class="cursor-pointer text-[13px] font-medium text-star" for="edit-featured">
-        Projet mis en avant sur l'accueil
-      </label>
-    </div>
-  </fieldset>
-
-  <div
-    class="sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-line bg-void-raised py-2 pr-2 pl-4 shadow-float"
+  @let seoTitleLang = shown()['seo.title'];
+  @let seoTitleId = 'edit-seo-title-' + seoTitleLang;
+  @let seoTitleError = seoError('title', seoTitleLang);
+  @let seoTitleLength = seoLength('title', seoTitleLang);
+  @let seoDescriptionLang = shown()['seo.description'];
+  @let seoDescriptionId = 'edit-seo-description-' + seoDescriptionLang;
+  @let seoDescriptionError = seoError('description', seoDescriptionLang);
+  @let seoDescriptionLength = seoLength('description', seoDescriptionLang);
+  @let seoKeywordsLang = shown()['seo.keywords'];
+  @let seoKeywordsId = 'edit-seo-keywords-' + seoKeywordsLang;
+  @let seoKeywordsError = seoError('keywords', seoKeywordsLang);
+  @let seoKeywordCount = keywordCount(seoKeywordsLang);
+  @let previewLang = previewLocale();
+  @let preview = previews()[previewLang];
+  <section
+    class="flex flex-col gap-6 border-t border-border pt-8"
+    aria-labelledby="edit-section-seo"
   >
-    <span class="flex items-center gap-2 text-[13px] text-star-muted">
+    <header class="flex flex-col gap-1">
+      <h2
+        id="edit-section-seo"
+        class="text-[14px]/5 font-semibold text-fg"
+        i18n="@@admin.project.form.seoSection"
+      >
+        Référencement
+      </h2>
+      <p class="text-[13px]/5 text-fg-faint" i18n="@@admin.project.form.seoSectionHint">
+        Facultatifs : vides, le titre, le résumé et les technos du projet sont repris.
+      </p>
+    </header>
+    <fieldset uiFieldSet class="gap-6" aria-labelledby="edit-section-seo" [disabled]="pending()">
+      <ui-field
+        size="sm"
+        [label]="labels.seoTitle"
+        [controlId]="seoTitleId"
+        [error]="seoTitleError"
+      >
+        <div class="flex w-full min-w-0">
+          <input
+            uiInput
+            size="sm"
+            class="relative min-w-0 flex-1 rounded-e-none text-[14px] focus:z-10"
+            [id]="seoTitleId"
+            [attr.aria-label]="localizedName(labels.seoTitle, seoTitleLang)"
+            [placeholder]="projectForm.title[seoTitleLang]().value()"
+            [attr.lang]="seoTitleLang"
+            [attr.aria-describedby]="describedBy(seoTitleId, seoTitleError, false, 'count')"
+            [attr.aria-invalid]="seoTitleError ? 'true' : null"
+            [formField]="projectForm.seo.title[seoTitleLang]"
+          />
+          <content-locale-switch
+            [label]="labels.seoTitle"
+            [states]="localeStates('seo.title')"
+            [value]="seoTitleLang"
+            (valueChange)="show('seo.title', $event)"
+          />
+        </div>
+        <span
+          uiFieldAside
+          class="ml-auto flex shrink-0 items-center gap-1 font-mono text-[12px]/5"
+          [class]="seoTitleLength > seoLimits.titleWarning ? 'text-warning-ink' : 'text-fg-faint'"
+          [id]="seoTitleId + '-count'"
+        >
+          @if (seoTitleLength > seoLimits.titleWarning) {
+            <ng-icon [svg]="icons.warning" size="12" aria-hidden="true" />
+            <span class="sr-only"
+              ><ng-container i18n="@@admin.project.form.seoCutOff"
+                >Risque de coupure dans les résultats :</ng-container
+              ></span
+            >
+          }
+          {{ seoTitleLength }}/{{ seoLimits.title }}
+        </span>
+      </ui-field>
+      <ui-field
+        size="sm"
+        [label]="labels.seoDescription"
+        [controlId]="seoDescriptionId"
+        [error]="seoDescriptionError"
+      >
+        <div class="flex w-full min-w-0 flex-col">
+          <textarea
+            uiInput
+            size="sm"
+            multiline
+            rows="3"
+            class="relative rounded-b-none text-[14px] focus:z-10"
+            [id]="seoDescriptionId"
+            [attr.aria-label]="localizedName(labels.seoDescription, seoDescriptionLang)"
+            [placeholder]="projectForm.summary[seoDescriptionLang]().value()"
+            [attr.lang]="seoDescriptionLang"
+            [attr.aria-describedby]="
+              describedBy(seoDescriptionId, seoDescriptionError, false, 'count')
+            "
+            [attr.aria-invalid]="seoDescriptionError ? 'true' : null"
+            [formField]="projectForm.seo.description[seoDescriptionLang]"
+          ></textarea>
+          <div
+            class="-mt-px flex justify-end rounded-b-md border border-border-field bg-surface-field p-1"
+          >
+            <content-locale-switch
+              compact
+              [label]="labels.seoDescription"
+              [attached]="false"
+              [states]="localeStates('seo.description')"
+              [value]="seoDescriptionLang"
+              (valueChange)="show('seo.description', $event)"
+            />
+          </div>
+        </div>
+        <span
+          uiFieldAside
+          class="ml-auto flex shrink-0 items-center gap-1 font-mono text-[12px]/5"
+          [class]="
+            seoDescriptionLength > seoLimits.descriptionWarning
+              ? 'text-warning-ink'
+              : 'text-fg-faint'
+          "
+          [id]="seoDescriptionId + '-count'"
+        >
+          @if (seoDescriptionLength > seoLimits.descriptionWarning) {
+            <ng-icon [svg]="icons.warning" size="12" aria-hidden="true" />
+            <span class="sr-only"
+              ><ng-container i18n="@@admin.project.form.seoCutOff"
+                >Risque de coupure dans les résultats :</ng-container
+              ></span
+            >
+          }
+          {{ seoDescriptionLength }}/{{ seoLimits.description }}
+        </span>
+      </ui-field>
+      <ui-field
+        size="sm"
+        hint="Vides, les technos du projet sont reprises."
+        i18n-hint="@@admin.project.form.keywordsHint"
+        [label]="labels.keywords"
+        [controlId]="seoKeywordsId"
+        [error]="seoKeywordsError"
+      >
+        <!--
+          36 px (`md`), the height of the other fields and of the joined toggle, which stays on the
+          first row as the tags wrap.
+        -->
+
+        <div class="flex w-full min-w-0 items-start">
+          <ui-tags-input
+            size="md"
+            class="relative min-w-0 flex-1 rounded-e-none focus-within:z-10"
+            [controlId]="seoKeywordsId"
+            [ariaLabel]="localizedName(labels.keywords, seoKeywordsLang)"
+            [placeholder]="techsHint()"
+            [maxTags]="seoLimits.keywords"
+            [maxTagLength]="seoLimits.keywordMaxLength"
+            [normalize]="normalizeKeyword"
+            [ariaDescribedby]="describedBy(seoKeywordsId, seoKeywordsError, true, 'count')"
+            [attr.lang]="seoKeywordsLang"
+            [formField]="projectForm.seo.keywords[seoKeywordsLang]"
+          />
+          <content-locale-switch
+            [label]="labels.keywords"
+            [states]="localeStates('seo.keywords')"
+            [value]="seoKeywordsLang"
+            (valueChange)="show('seo.keywords', $event)"
+          />
+        </div>
+        <span uiFieldAside class="ml-auto flex shrink-0 items-center gap-2">
+          <button
+            uiBtn
+            variant="ghost"
+            size="xs"
+            class="text-[12px]"
+            type="button"
+            data-slot="seo-keywords-from-techs"
+            [disabled]="pending() || projectForm.techs().value().length === 0"
+            (click)="useTechs(seoKeywordsLang)"
+          >
+            <ng-icon [svg]="icons.copy" size="12" aria-hidden="true" />
+            <ng-container i18n="@@admin.project.form.useTechs">Reprendre les technos</ng-container>
+          </button>
+          <span class="font-mono text-[12px]/5 text-fg-faint" [id]="seoKeywordsId + '-count'"
+            >{{ seoKeywordCount }}/{{ seoLimits.keywords }}</span
+          >
+        </span>
+      </ui-field>
+    </fieldset>
+    <div class="flex flex-col gap-4">
+      <header class="flex items-center justify-between gap-3">
+        <h3 class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.project.form.previews">Aperçus</ng-container>
+        </h3>
+        <content-locale-switch
+          label="Aperçus"
+          i18n-label="@@admin.project.form.previews"
+          [attached]="false"
+          [value]="previewLang"
+          (valueChange)="previewLocale.set($event)"
+        />
+      </header>
+      <!-- Both previews take the full width, side by side once the form is wide enough. -->
+      <div class="grid grid-cols-1 gap-4 @3xl/form:grid-cols-2">
+        <figure
+          class="flex w-full min-w-0 flex-col gap-1 rounded-xl border border-border bg-surface-raised px-4 py-3.5"
+          data-slot="seo-preview"
+          [attr.aria-labelledby]="'edit-seo-preview-' + previewLang"
+        >
+          <figcaption
+            class="mb-2 text-[12px]/4 font-medium text-fg-faint"
+            i18n="@@admin.project.seo.googlePreview"
+            [id]="'edit-seo-preview-' + previewLang"
+          >
+            Aperçu dans Google
+          </figcaption>
+          <div class="flex min-w-0 items-center gap-2.5">
+            <span
+              class="grid size-7 shrink-0 place-items-center rounded-full border border-border bg-surface font-mono text-[10px] font-semibold text-fg-muted"
+              aria-hidden="true"
+              >VF</span
+            >
+            <span class="flex min-w-0 flex-col">
+              <span class="truncate text-[13px]/4 text-fg">{{ siteName }}</span>
+              <span class="truncate text-[12px]/4 text-fg-muted" data-slot="seo-preview-url">
+                {{ preview.breadcrumb }}
+              </span>
+            </span>
+          </div>
+          <p
+            class="mt-1.5 truncate text-[18px]/6 text-info-ink"
+            data-slot="seo-preview-title"
+            [attr.lang]="previewLang"
+          >
+            {{ preview.title }}
+          </p>
+          @if (preview.description) {
+            <p
+              class="text-[13px]/5 text-fg-muted"
+              data-slot="seo-preview-description"
+              [attr.lang]="previewLang"
+            >
+              {{ preview.description }}
+            </p>
+          } @else {
+            <p
+              class="text-[13px]/5 text-fg-faint"
+              data-slot="seo-preview-description"
+              i18n="@@admin.project.seo.noDescription"
+            >
+              Aucune description.
+            </p>
+          }
+        </figure>
+        <content-social-preview
+          [preview]="socialPreviews()[previewLang]"
+          [language]="previewLang"
+          [captionId]="'edit-social-preview-' + previewLang"
+        />
+      </div>
+      <content-seo-generated-tags [tags]="generatedTags()[previewLang]" [language]="previewLang" />
+    </div>
+  </section>
+
+  <!--
+    Floating bar sized to its content and centred under the form, like the table selection bar. It pads
+    6 px around h-8 `sm` buttons, so its radius is `xl` (D43). Below 640 px the status keeps its icon,
+    its text for screen readers, on one row.
+  -->
+  <div
+    class="sticky bottom-4 z-10 mx-auto mt-auto flex w-fit max-w-full items-center gap-3 rounded-xl border border-border bg-surface-float p-1.5 pl-3.5 shadow-float"
+  >
+    <span
+      #status
+      class="flex min-w-0 items-center gap-2 text-[13px]/5 text-fg-muted outline-none"
+      tabindex="-1"
+      data-slot="save-status"
+    >
       @if (dirty()) {
-        <span uiBadge variant="warning" dot class="h-5 px-2">Modifications non enregistrées</span>
+        <span class="size-1.5 shrink-0 rounded-full bg-warning-ink" aria-hidden="true"></span>
+        <span class="truncate text-fg max-sm:sr-only" i18n="@@admin.project.form.unsaved"
+          >Modifications non enregistrées</span
+        >
       } @else {
-        <ng-icon class="text-success-ink" [svg]="icons.saved" size="14" aria-hidden="true" />
-        Tout est enregistré
+        <ng-icon
+          class="shrink-0 text-success-ink"
+          [svg]="icons.saved"
+          size="14"
+          aria-hidden="true"
+        />
+        <span class="truncate max-sm:sr-only" i18n="@@admin.project.form.saved"
+          >Tout est enregistré</span
+        >
       }
     </span>
-    <span class="flex items-center gap-1.5">
+    <span class="h-5 w-px shrink-0 bg-border" aria-hidden="true"></span>
+    <span class="flex shrink-0 items-center gap-1.5">
       <button
         uiBtn
         variant="ghost"
         size="sm"
-        class="h-8 px-3 text-[13px]"
+        class="h-8 rounded-sm px-3 text-[13px]"
         type="button"
+        aria-label="Abandonner les modifications"
+        i18n-aria-label="@@admin.project.form.discardLabel"
         [disabled]="pending() || !dirty()"
-        (click)="cancel()"
+        (click)="discard()"
       >
-        Annuler
+        <ng-container i18n="@@admin.project.form.discard">Abandonner</ng-container>
       </button>
       <button
         uiBtn
         size="sm"
-        class="h-8 gap-2 pr-2 pl-3 text-[13px]"
+        class="h-8 gap-2 rounded-sm pr-2 pl-3 text-[13px]"
         type="submit"
         [disabled]="pending() || !dirty()"
       >
-        {{ pending() ? 'Enregistrement…' : 'Enregistrer' }}
+        @if (pending()) {
+          <ng-container i18n="@@admin.project.form.saving">Enregistrement…</ng-container>
+        } @else {
+          <ng-container i18n="@@admin.project.form.save">Enregistrer</ng-container>
+        }
         <kbd
           uiKbd
-          class="h-4 min-w-0 rounded-[4px] border-0 bg-current/12 px-1 text-[11px]/4 font-normal text-current"
+          class="h-4 min-w-0 rounded-2xs border-0 bg-current/12 px-1 text-[10px]/4 font-normal text-current max-sm:hidden"
           aria-hidden="true"
-          >Ctrl S</kbd
+          >{{ modifier.key }} S</kbd
         >
       </button>
     </span>
   </div>
 </form>
+
+<!--
+  Shared settings: the page renders this template in its properties panel (or sheet), outside the form
+  element, so its text inputs name the form for Enter to submit it.
+-->
+<ng-template #settings>
+  <fieldset uiFieldSet class="gap-6" [disabled]="pending()">
+    <section
+      class="flex flex-col gap-3 border-t border-border pt-6"
+      aria-labelledby="edit-cover-label"
+    >
+      <header class="flex flex-col gap-1">
+        <h3
+          id="edit-cover-label"
+          class="text-[14px]/5 font-semibold text-fg"
+          i18n="@@admin.project.form.cover"
+        >
+          Couverture
+        </h3>
+        <p class="text-[12px]/4 text-fg-faint" i18n="@@admin.project.form.coverHint">
+          En tête de l’article et sur la carte de l’accueil.
+        </p>
+      </header>
+      @if (coverMedia()) {
+        @if (coverSrc(); as src) {
+          <img
+            class="aspect-video w-full rounded-xl bg-surface-sunk object-cover"
+            alt=""
+            [src]="src"
+          />
+        } @else {
+          <!-- The frame keeps the image's 16:9 room: the panel layout fills it. -->
+          <div
+            class="aspect-video w-full overflow-hidden rounded-xl border border-dashed border-border bg-surface-sunk"
+            data-slot="cover-placeholder"
+          >
+            <div uiEmpty layout="panel">
+              <div uiEmptyHeader>
+                <div uiEmptyMedia variant="icon">
+                  <ng-icon [svg]="icons.coverMissing" size="16" />
+                </div>
+                <p uiEmptyTitle class="text-[13px]/5" i18n="@@admin.project.form.coverUnavailable">
+                  Image indisponible
+                </p>
+                <p
+                  uiEmptyDescription
+                  class="text-[12px]/4"
+                  i18n="@@admin.project.form.coverUnavailableHint"
+                >
+                  Le fichier ne se charge pas : remplacez-le ou retirez-le.
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+      } @else {
+        <div
+          class="aspect-video w-full overflow-hidden rounded-xl border border-dashed border-border bg-surface-sunk"
+          data-slot="cover-placeholder"
+        >
+          <div uiEmpty layout="panel">
+            <div uiEmptyHeader>
+              <div uiEmptyMedia variant="icon">
+                <ng-icon [svg]="icons.cover" size="16" />
+              </div>
+              <p uiEmptyTitle class="text-[13px]/5" i18n="@@admin.project.form.noCover">
+                Aucune couverture
+              </p>
+              <p uiEmptyDescription class="text-[12px]/4" i18n="@@admin.project.form.noCoverHint">
+                JPEG, PNG, WebP, AVIF ou GIF, 10 Mo au plus.
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+      <span class="flex flex-wrap items-center gap-1.5">
+        <input
+          #coverPicker
+          id="edit-cover-file"
+          class="hidden"
+          type="file"
+          tabindex="-1"
+          aria-hidden="true"
+          [accept]="accept"
+          (change)="pickCover(coverPicker)"
+        />
+        <button
+          uiBtn
+          variant="secondary"
+          size="xs"
+          type="button"
+          [disabled]="!upload() || coverUploading()"
+          (click)="coverPicker.click()"
+        >
+          <ng-icon [svg]="icons.image" size="14" aria-hidden="true" />
+          @if (coverUploading()) {
+            <ng-container i18n="@@admin.project.form.uploading">Envoi…</ng-container>
+          } @else if (coverMedia()) {
+            <ng-container i18n="@@admin.project.form.replace">Remplacer</ng-container>
+          } @else {
+            <ng-container i18n="@@admin.project.form.chooseImage">Choisir une image</ng-container>
+          }
+        </button>
+        @if (coverMedia()) {
+          <button uiBtn variant="ghost" size="xs" type="button" (click)="removeCover()">
+            <ng-icon class="text-danger-ink" [svg]="icons.remove" size="14" aria-hidden="true" />
+            <ng-container i18n="@@admin.project.form.removeCover">Retirer</ng-container>
+          </button>
+        }
+      </span>
+      @if (coverError('media'); as mediaError) {
+        <p uiFieldError class="text-[12px]/4">{{ mediaError }}</p>
+      }
+      @if (coverMedia()) {
+        @let altLang = shown()['cover.alt'];
+        @let altId = 'edit-cover-alt-' + altLang;
+        @let altError = coverError(altLang);
+        <!-- Label above: the 88 px label column leaves the field and its selector too little room. -->
+        <div class="flex flex-col gap-1.5 text-[13px]/5">
+          <label class="flex items-baseline gap-1 font-medium text-fg-muted" [for]="altId">
+            {{ labels.coverAlt }}
+            @if (complete()) {
+              <span class="text-danger-ink" aria-hidden="true">*</span>
+            }
+          </label>
+          <div class="flex w-full min-w-0">
+            <input
+              uiInput
+              size="sm"
+              class="relative min-w-0 flex-1 rounded-e-none px-2.5 text-[13px] focus:z-10"
+              form="edit-project-form"
+              placeholder="Décrivez l’image"
+              i18n-placeholder="@@admin.project.form.coverAltPlaceholder"
+              [id]="altId"
+              [attr.aria-label]="localizedName(labels.coverAlt, altLang)"
+              [attr.lang]="altLang"
+              [attr.aria-required]="complete() ? 'true' : null"
+              [attr.aria-describedby]="describedBy(altId, altError)"
+              [attr.aria-invalid]="altError ? 'true' : null"
+              [formField]="projectForm.cover.alt[altLang]"
+            />
+            <content-locale-switch
+              [label]="labels.coverAlt"
+              [states]="localeStates('cover.alt')"
+              [value]="altLang"
+              (valueChange)="show('cover.alt', $event)"
+            />
+          </div>
+          @if (altError) {
+            <p uiFieldError class="text-[12px]/4" [id]="altId + '-error'">{{ altError }}</p>
+          }
+        </div>
+      }
+    </section>
+
+    @let periodError = simpleError('period');
+    @let siteError = simpleError('siteUrl');
+    @let techsError = simpleError('techs');
+    <section
+      class="flex flex-col gap-3 border-t border-border pt-6"
+      aria-labelledby="edit-settings-label"
+    >
+      <h3
+        id="edit-settings-label"
+        class="text-[14px]/5 font-semibold text-fg"
+        i18n="@@admin.project.form.settings"
+      >
+        Réglages
+      </h3>
+      <div class="flex flex-col gap-3 text-[13px]/5">
+        <!-- Months or whole years (D46): the public label is written from this value. -->
+        <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
+          <label
+            id="edit-period-label"
+            class="flex items-baseline gap-1 pt-1.5 font-medium text-fg-muted"
+            for="edit-period"
+            ><ng-container i18n="@@admin.project.form.period">Période</ng-container
+            ><span class="text-danger-ink" aria-hidden="true">*</span></label
+          >
+          <div class="flex min-w-0 flex-col gap-1.5">
+            <ui-period-picker
+              size="sm"
+              precision="flexible"
+              triggerId="edit-period"
+              triggerClass="h-8 rounded-sm ps-2.5 pe-2 text-[13px]"
+              placeholder="Choisir le début et la fin"
+              i18n-placeholder="@@admin.project.form.periodPlaceholder"
+              dialogLabel="Période"
+              i18n-dialogLabel="@@admin.project.form.period"
+              ariaLabelledby="edit-period-label edit-period"
+              [minBound]="periodMin"
+              [maxBound]="periodMax"
+              [describedBy]="periodError ? 'edit-period-error' : 'edit-period-hint'"
+              [formField]="projectForm.period"
+            />
+            @if (periodError) {
+              <p uiFieldError id="edit-period-error" class="text-[12px]/4">{{ periodError }}</p>
+            } @else {
+              <p
+                id="edit-period-hint"
+                class="text-[12px]/4 text-fg-faint"
+                i18n="@@admin.project.form.periodHint"
+              >
+                « En cours » laisse la fin vide.
+              </p>
+            }
+          </div>
+        </div>
+        <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
+          <label
+            class="pt-1.5 font-medium text-fg-muted"
+            for="edit-site-url"
+            i18n="@@admin.project.form.site"
+            >Site</label
+          >
+          <div class="flex min-w-0 flex-col gap-1.5">
+            <input
+              uiInput
+              size="sm"
+              class="h-8 rounded-sm px-2.5 text-[13px]"
+              id="edit-site-url"
+              form="edit-project-form"
+              type="url"
+              placeholder="https://…"
+              [attr.aria-describedby]="describedBy('edit-site-url', siteError)"
+              [attr.aria-invalid]="siteError ? 'true' : null"
+              [formField]="projectForm.siteUrl"
+            />
+            @if (siteError) {
+              <p uiFieldError id="edit-site-url-error" class="text-[12px]/4">{{ siteError }}</p>
+            }
+          </div>
+        </div>
+        <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
+          <label
+            class="pt-1.5 font-medium text-fg-muted"
+            for="edit-techs"
+            i18n="@@admin.project.form.techs"
+            >Technos</label
+          >
+          <div class="flex min-w-0 flex-col gap-1.5">
+            <ui-tags-input
+              size="sm"
+              mono
+              controlId="edit-techs"
+              form="edit-project-form"
+              placeholder="angular, typescript"
+              ariaLabel="Technos"
+              i18n-ariaLabel="@@admin.project.form.techs"
+              [maxTags]="techLimit"
+              [normalize]="normalizeTech"
+              [ariaDescribedby]="describedBy('edit-techs', techsError)"
+              [ariaInvalid]="!!techsError"
+              [formField]="projectForm.techs"
+            />
+            @if (techsError) {
+              <p uiFieldError id="edit-techs-error" class="text-[12px]/4">{{ techsError }}</p>
+            }
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3"
+          role="group"
+          aria-labelledby="edit-featured-label"
+        >
+          <span
+            id="edit-featured-label"
+            class="font-medium text-fg-muted"
+            i18n="@@admin.project.form.featured"
+            >Mis en avant</span
+          >
+          <span class="flex min-w-0 items-center gap-2">
+            <ui-checkbox size="sm" controlId="edit-featured" [formField]="projectForm.featured" />
+            <label
+              class="cursor-pointer text-fg"
+              for="edit-featured"
+              i18n="@@admin.project.form.featured"
+              >Mis en avant</label
+            >
+          </span>
+        </div>
+      </div>
+    </section>
+  </fieldset>
+</ng-template>

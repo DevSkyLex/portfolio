@@ -1,3 +1,4 @@
+import type { CalendarRange } from '@internal/ui/lib/calendar/models/calendar/calendar-range.interface';
 import type { Weekday } from '@internal/ui/lib/calendar/models/calendar/weekday.type';
 
 /**
@@ -80,6 +81,49 @@ export function isSameDay(a: Date | null | undefined, b: Date | null | undefined
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
   );
+}
+
+/**
+ * Function compareDays
+ *
+ * @description
+ * Orders two dates by their local calendar day, ignoring the time of day.
+ *
+ * @param {Date} a - First date.
+ * @param {Date} b - Second date.
+ *
+ * @returns {number} Negative when `a` is an earlier day, zero on the same day, positive otherwise.
+ */
+export function compareDays(a: Date, b: Date): number {
+  return startOfDay(a).getTime() - startOfDay(b).getTime();
+}
+
+/**
+ * Function rangeSpan
+ *
+ * @description
+ * Resolves the days a range draws, normalized to local midnight: both ends in order when they are
+ * set; with a single end, from it to the preview day when that day does not precede it, else that
+ * end alone.
+ *
+ * @param {CalendarRange} range - Committed or partially chosen range.
+ * @param {Date | null} preview - Day under the pointer or keyboard focus, if any.
+ *
+ * @returns {{ start: Date; end: Date } | null} Inclusive drawn span, or `null` for an empty range.
+ */
+export function rangeSpan(
+  range: CalendarRange,
+  preview: Date | null = null,
+): { start: Date; end: Date } | null {
+  const { start, end } = range;
+  if (start && end) {
+    const [first, last] = compareDays(start, end) <= 0 ? [start, end] : [end, start];
+    return { start: startOfDay(first), end: startOfDay(last) };
+  }
+  const anchor: Date | null = start ?? end;
+  if (!anchor) return null;
+  const last: Date = preview && compareDays(preview, anchor) >= 0 ? preview : anchor;
+  return { start: startOfDay(anchor), end: startOfDay(last) };
 }
 
 /**

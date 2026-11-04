@@ -1,7 +1,7 @@
 @if (project(); as p) {
   <!-- Layouts follow the page width without the scrollbar, like the mockup container queries. -->
   <div class="@container/page">
-    <section class="relative pt-8 pb-16 shadow-[0_-1px_0_var(--void)]">
+    <section class="relative pt-8 pb-16 shadow-[0_-1px_0_var(--surface)]">
       <!-- Sky of the hero (mockup .ob-sky--case): runs 240px under the hero, fading out. -->
       <div
         class="pointer-events-auto absolute inset-x-0 top-0 -bottom-[240px] overflow-hidden mask-[linear-gradient(to_bottom,#000_calc(100%-240px),transparent)] opacity-90 [&_canvas]:mask-[linear-gradient(to_bottom,#000_40%,transparent_96%)]"
@@ -11,7 +11,7 @@
       </div>
       <div class="relative z-1 wrap">
         <a
-          class="inline-flex min-h-11 items-center gap-2 text-[15px]/5 font-medium text-star-muted transition-colors hover:text-star"
+          class="inline-flex min-h-11 items-center gap-2 text-[15px]/5 font-medium text-fg-muted transition-colors hover:text-fg"
           routerLink="/"
           fragment="projects"
         >
@@ -23,7 +23,7 @@
           class="mt-12 flex max-w-[980px] flex-col gap-6 @max-[768px]/page:mt-6 @max-[768px]/page:gap-4"
         >
           <h1
-            class="overflow-hidden pb-[0.08em] font-display text-[clamp(36px,7cqi,104px)] leading-none font-semibold tracking-[-0.04em] text-star"
+            class="overflow-hidden pb-[0.08em] font-display text-[clamp(36px,7cqi,104px)] leading-none font-semibold tracking-[-0.04em] text-fg"
           >
             <span
               class="inline-block transition-transform duration-(--dur-reveal) ease-orbit motion-reduce:transition-none starting:translate-y-[105%]"
@@ -31,13 +31,13 @@
             >
           </h1>
           <p
-            class="max-w-160 text-lead text-star-muted @max-[768px]/page:text-lead-sm"
+            class="max-w-160 text-lead text-fg-muted @max-[768px]/page:text-lead-sm"
             [class]="enter"
           >
             {{ p.lead }}
           </p>
           <ul
-            class="flex flex-wrap gap-x-8 gap-y-1 text-[15px]/[22px] text-star-muted [--rd:80ms]"
+            class="flex flex-wrap gap-x-8 gap-y-1 text-[15px]/[22px] text-fg-muted [--rd:80ms]"
             [class]="enter"
             role="list"
           >
@@ -48,7 +48,7 @@
           </ul>
           @if (p.site; as site) {
             <a
-              class="inline-flex min-h-9 items-center self-start text-[15px]/5 text-star-muted transition-colors duration-(--dur-pop) ease-orbit [--rd:160ms] hover:text-star focus-visible:text-star"
+              class="inline-flex min-h-9 items-center self-start text-[15px]/5 text-fg-muted transition-colors duration-(--dur-pop) ease-orbit [--rd:160ms] hover:text-fg focus-visible:text-fg"
               [class]="enter"
               [href]="site.url"
             >
@@ -65,7 +65,7 @@
           <ul class="flex flex-wrap gap-2 [--rd:160ms]" [class]="enter" role="list">
             @for (tech of p.techs; track tech) {
               <li
-                class="inline-flex h-7 items-center gap-1.5 rounded-[999px] border border-line pr-3 pl-2.5 font-mono text-xs text-star-muted"
+                class="inline-flex h-7 items-center gap-1.5 rounded-full border border-border pr-3 pl-2.5 font-mono text-xs text-fg-muted"
               >
                 <content-tech-icon class="size-3.5" [tech]="tech" />
                 {{ techLabel(tech) }}
@@ -76,169 +76,89 @@
       </div>
     </section>
 
-    <div class="wrap bg-void shadow-[0_-1px_0_var(--void)]">
+    <div class="wrap bg-surface shadow-[0_-1px_0_var(--surface)]">
       <figure class="m-0" [class]="reveal" uiReveal>
         <div
-          class="relative aspect-video overflow-hidden rounded-card bg-void-raised [clip-path:inset(calc((1-var(--e,1))*9%)_round_16px)]"
+          class="relative aspect-video overflow-hidden rounded-xl bg-surface-raised [clip-path:inset(calc((1-var(--e,1))*9%)_round_12px)]"
           uiScrollProgress
         >
-          <div class="absolute inset-0 scale-[calc(1+(1-var(--e,1))*0.25)]" [class]="tint()"></div>
+          @if (p.cover; as cover) {
+            <img
+              class="absolute inset-0 size-full scale-[calc(1+(1-var(--e,1))*0.25)] object-cover"
+              [src]="cover.src"
+              [attr.srcset]="srcset(cover)"
+              [attr.sizes]="cover.small === null ? null : '(min-width: 1280px) 1200px, 100vw'"
+              [width]="cover.width"
+              [height]="cover.height"
+              [alt]="cover.alt"
+              fetchpriority="high"
+            />
+          } @else {
+            <div
+              class="absolute inset-0 scale-[calc(1+(1-var(--e,1))*0.25)]"
+              [class]="tint()"
+            ></div>
+          }
         </div>
       </figure>
 
       <div
         class="grid gap-12 pt-24 @min-[1024px]/page:grid-cols-[220px_minmax(0,1fr)] @min-[1024px]/page:gap-16 @min-[1024px]/page:pt-40"
       >
-        <nav
-          class="sticky top-30 hidden self-start @min-[1024px]/page:block"
-          i18n-aria-label="@@project.toc"
-          aria-label="Sommaire"
-        >
-          <ol role="list">
-            @for (entry of toc; track entry.id) {
-              <li>
-                <a
-                  class="relative flex min-h-9 items-center gap-3 pl-4 text-[15px]/5 font-medium text-star-muted transition-colors hover:text-star aria-[current]:text-star aria-[current]:before:absolute aria-[current]:before:top-2 aria-[current]:before:bottom-2 aria-[current]:before:left-0 aria-[current]:before:w-0.5 aria-[current]:before:bg-(image:--aurora-down)"
-                  routerLink="."
-                  [fragment]="entry.id"
-                  [attr.aria-current]="active() === entry.id ? 'true' : null"
-                  >{{ entry.label }}</a
-                >
-              </li>
-            }
-          </ol>
-        </nav>
-
-        <article class="flex min-w-0 flex-col gap-24">
-          <section
-            class="flex flex-col gap-4"
-            [class]="reveal"
-            id="context"
-            data-spy
-            uiReveal
-            aria-labelledby="context-title"
+        @if (sections().length > 0) {
+          <nav
+            class="sticky top-30 hidden self-start @min-[1024px]/page:block"
+            i18n-aria-label="@@project.toc"
+            aria-label="Sommaire"
           >
-            <h2
-              class="font-display text-[32px]/[38px] font-semibold tracking-[-0.02em] text-star @max-[768px]/page:text-[26px]/8"
-              id="context-title"
-            >
-              {{ labels.context }}
-            </h2>
-            @for (paragraph of p.context; track $index) {
-              <p class="max-w-measure text-body">{{ paragraph }}</p>
-            }
-          </section>
-
-          <section
-            class="flex flex-col gap-4"
-            [class]="reveal"
-            id="work"
-            data-spy
-            uiReveal
-            aria-labelledby="work-title"
-          >
-            <h2
-              class="font-display text-[32px]/[38px] font-semibold tracking-[-0.02em] text-star @max-[768px]/page:text-[26px]/8"
-              id="work-title"
-            >
-              {{ labels.work }}
-            </h2>
-            @for (paragraph of p.work; track $index) {
-              <p class="max-w-measure text-body">{{ paragraph }}</p>
-            }
-            <ul class="flex max-w-measure flex-col gap-3" role="list">
-              @for (item of p.workList; track $index) {
-                <li
-                  class="relative pl-[22px] text-body text-star before:absolute before:top-[11px] before:left-0.5 before:size-1.5 before:bg-aurora-violet"
-                >
-                  {{ item }}
+            <ol role="list">
+              @for (section of sections(); track section.id) {
+                <li>
+                  <a
+                    class="relative flex min-h-9 items-center gap-3 pl-4 text-[15px]/5 font-medium text-fg-muted transition-colors hover:text-fg aria-[current]:text-fg aria-[current]:before:absolute aria-[current]:before:top-2 aria-[current]:before:bottom-2 aria-[current]:before:left-0 aria-[current]:before:w-0.5 aria-[current]:before:bg-(image:--aurora-down)"
+                    routerLink="."
+                    [fragment]="section.id"
+                    [attr.aria-current]="active() === section.id ? 'true' : null"
+                    >{{ section.label }}</a
+                  >
                 </li>
               }
-            </ul>
-          </section>
+            </ol>
+          </nav>
+        }
 
-          <section
-            class="flex flex-col gap-4"
-            [class]="reveal"
-            id="choices"
-            data-spy
-            uiReveal
-            aria-labelledby="choices-title"
-          >
-            <h2
-              class="font-display text-[32px]/[38px] font-semibold tracking-[-0.02em] text-star @max-[768px]/page:text-[26px]/8"
-              id="choices-title"
-            >
-              {{ labels.choices }}
-            </h2>
-            @for (paragraph of p.choices; track $index) {
-              <p class="max-w-measure text-body">{{ paragraph }}</p>
-            }
-          </section>
-
-          <section class="flex flex-col gap-4" id="result" data-spy aria-labelledby="result-title">
-            <h2
-              class="font-display text-[32px]/[38px] font-semibold tracking-[-0.02em] text-star @max-[768px]/page:text-[26px]/8"
-              [class]="reveal"
-              id="result-title"
-              uiReveal
-            >
-              {{ labels.result }}
-            </h2>
-            <div class="flex flex-col gap-4" [class]="reveal" uiReveal>
-              @for (paragraph of p.result; track $index) {
-                <p class="max-w-measure text-body">{{ paragraph }}</p>
-              }
+        <article class="flex min-w-0 flex-col gap-24 @min-[1024px]/page:col-start-2">
+          @if (p.intro.length > 0) {
+            <div class="flex flex-col gap-4">
+              <content-article-blocks [blocks]="p.intro" [reveal]="reveal" />
             </div>
-            <div class="grid gap-6 @min-[768px]/page:grid-cols-2">
-              @for (caption of p.captions; track $index) {
-                <figure class="m-0" [class]="reveal" [style.--rd.ms]="$index * 80" uiReveal>
-                  <div
-                    class="relative aspect-[4/3] overflow-hidden rounded-card bg-void-raised [clip-path:inset(calc((1-var(--e,1))*9%)_round_16px)]"
-                    uiScrollProgress
-                  >
-                    <div
-                      class="absolute inset-0 scale-[calc(1+(1-var(--e,1))*0.25)]"
-                      [class]="tint()"
-                    ></div>
-                  </div>
-                  <figcaption class="mt-3 text-sm/5 text-star-muted">{{ caption }}</figcaption>
-                </figure>
-              }
-            </div>
-          </section>
-
-          <section
-            class="flex flex-col gap-4"
-            [class]="reveal"
-            id="lessons"
-            data-spy
-            uiReveal
-            aria-labelledby="lessons-title"
-          >
-            <h2
-              class="font-display text-[32px]/[38px] font-semibold tracking-[-0.02em] text-star @max-[768px]/page:text-[26px]/8"
-              id="lessons-title"
+          }
+          @for (section of sections(); track section.id) {
+            <section
+              class="flex scroll-mt-28 flex-col gap-4"
+              [id]="section.id"
+              data-spy
+              [attr.aria-labelledby]="section.id + '-title'"
             >
-              {{ labels.lessons }}
-            </h2>
-            @for (paragraph of p.lessons; track $index) {
-              <p class="max-w-measure text-body">{{ paragraph }}</p>
-            }
-          </section>
+              <h2 [class]="typography.h2 + ' ' + reveal" [id]="section.id + '-title'" uiReveal>
+                {{ section.label }}
+              </h2>
+              <content-article-blocks [blocks]="section.blocks" [reveal]="reveal" />
+            </section>
+          }
         </article>
       </div>
     </div>
 
     @if (neighbours(); as around) {
       <nav
-        class="mt-24 bg-void shadow-[0_-1px_0_var(--void)] @max-[768px]/page:mt-16"
+        class="mt-24 bg-surface shadow-[0_-1px_0_var(--surface)] @max-[768px]/page:mt-16"
         i18n-aria-label="@@project.others"
         aria-label="Autres projets"
       >
         <div class="wrap grid gap-4 @min-[768px]/page:grid-cols-2">
           <a
-            class="group grid grid-cols-[auto_minmax(0,1fr)] items-center gap-6 rounded-card bg-void-raised px-12 py-8 transition-colors duration-(--dur-pop) ease-orbit hover:bg-void-hover focus-visible:bg-void-hover @max-[768px]/page:p-6"
+            class="group grid grid-cols-[auto_minmax(0,1fr)] items-center gap-6 rounded-xl bg-surface-raised px-12 py-8 transition-colors duration-(--dur-pop) ease-orbit hover:bg-surface-hover focus-visible:bg-surface-hover @max-[768px]/page:p-6"
             [class]="reveal"
             [routerLink]="['/projects', around.previous.slug]"
             uiReveal
@@ -247,21 +167,21 @@
               <ng-icon [svg]="icons.back" size="24" strokeWidth="1.875" />
             </span>
             <span class="flex flex-col gap-2">
-              <span class="text-sm/5 text-star-muted" i18n="@@project.previous"
+              <span class="text-sm/5 text-fg-muted" i18n="@@project.previous"
                 >Projet précédent</span
               >
-              <span class="block font-display text-d3 text-star">{{ around.previous.title }}</span>
+              <span class="block font-display text-d3 text-fg">{{ around.previous.title }}</span>
             </span>
           </a>
           <a
-            class="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 rounded-card bg-void-raised px-12 py-8 transition-colors duration-(--dur-pop) ease-orbit [--rd:80ms] hover:bg-void-hover focus-visible:bg-void-hover @max-[768px]/page:p-6"
+            class="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 rounded-xl bg-surface-raised px-12 py-8 transition-colors duration-(--dur-pop) ease-orbit [--rd:80ms] hover:bg-surface-hover focus-visible:bg-surface-hover @max-[768px]/page:p-6"
             [class]="reveal"
             [routerLink]="['/projects', around.next.slug]"
             uiReveal
           >
             <span class="flex flex-col gap-2">
-              <span class="text-sm/5 text-star-muted" i18n="@@project.next">Projet suivant</span>
-              <span class="block font-display text-d3 text-star">{{ around.next.title }}</span>
+              <span class="text-sm/5 text-fg-muted" i18n="@@project.next">Projet suivant</span>
+              <span class="block font-display text-d3 text-fg">{{ around.next.title }}</span>
             </span>
             <span class="group-hover:translate-x-1" [class]="arrow" aria-hidden="true">
               <ng-icon [svg]="icons.next" size="24" strokeWidth="1.875" />

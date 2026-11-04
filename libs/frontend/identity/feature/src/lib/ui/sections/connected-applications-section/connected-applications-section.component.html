@@ -1,0 +1,139 @@
+<section
+  class="group/section grid grid-cols-1 gap-x-10 gap-y-4 pt-10 @max-[640px]:pt-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
+  aria-labelledby="connected-applications-title"
+>
+  <div
+    class="flex flex-col gap-1.5 @3xl/settings:pt-4 @3xl/settings:group-has-[[data-slot=alert]]/section:pt-0"
+  >
+    <h2
+      id="connected-applications-title"
+      class="text-[14px]/5 font-semibold text-fg"
+      i18n="@@admin.apps.title"
+    >
+      Applications connectées
+    </h2>
+    <p class="max-w-[65ch] text-[13px]/5 text-fg-muted" i18n="@@admin.apps.description">
+      Les assistants d’IA autorisés à agir sur le contenu du site par MCP, avec votre accord.
+    </p>
+    <p class="mt-1.5 max-w-[65ch] text-[12px]/4.5 text-fg-muted" i18n="@@admin.apps.clients">
+      Claude, ChatGPT, Cursor et tout client MCP. Les messages de contact ne leur sont jamais
+      accessibles.
+    </p>
+  </div>
+
+  <div class="flex min-w-0 flex-col gap-3">
+    @if (store.applications(); as applications) {
+      @if (applications.length === 0) {
+        <div uiEmpty appearance="dashed">
+          <div uiEmptyHeader>
+            <div uiEmptyMedia variant="icon">
+              <ng-icon [svg]="icons.empty" size="16" />
+            </div>
+            <p uiEmptyTitle i18n="@@admin.apps.empty.title">Aucune application connectée</p>
+            <p uiEmptyDescription i18n="@@admin.apps.empty.description">
+              Une application apparaît ici une fois autorisée depuis son écran de connexion.
+            </p>
+          </div>
+        </div>
+      } @else {
+        <ul
+          class="flex flex-col divide-y divide-border"
+          aria-label="Applications connectées"
+          i18n-aria-label="@@admin.apps.listLabel"
+        >
+          @for (application of applications; track application.id) {
+            <li class="flex flex-wrap items-start gap-x-4 gap-y-3 py-4">
+              @if (application.logo; as logo) {
+                <img
+                  class="size-9 shrink-0 rounded-md border border-border bg-surface-raised object-contain p-0.5 @max-[640px]:hidden"
+                  [src]="logo"
+                  alt=""
+                  width="36"
+                  height="36"
+                />
+              } @else {
+                <span
+                  class="grid size-9 shrink-0 place-items-center rounded-md border border-border bg-surface-raised text-fg-muted @max-[640px]:hidden"
+                  aria-hidden="true"
+                >
+                  <ng-icon [svg]="icons.app" size="16" />
+                </span>
+              }
+              <div class="flex min-w-0 flex-1 flex-col gap-1 @max-[640px]:basis-full">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <h3 class="text-[14px]/5 font-medium break-words text-fg">
+                    {{ nameOf(application) }}
+                  </h3>
+                  @if (application.registration === 'dynamic') {
+                    <span uiBadge variant="warning" [dot]="true" i18n="@@admin.apps.unverified"
+                      >Non vérifiée</span
+                    >
+                  }
+                </div>
+                <p class="max-w-[65ch] text-[13px]/5 text-fg-muted">
+                  <span class="text-fg">{{ application.host }}</span> · {{ scopesOf(application) }}
+                </p>
+                <p class="text-[12px]/4.5 text-fg-muted tabular-nums">
+                  <ng-container i18n="@@admin.apps.authorizedOn"
+                    >Autorisée le {{ application.createdAt | date: 'shortDate' }}</ng-container
+                  >
+                  ·
+                  @if (application.lastUsedAt; as lastUsed) {
+                    <ng-container i18n="@@admin.apps.lastUsed"
+                      >Dernière utilisation : {{ lastUsed | date: 'short' }}</ng-container
+                    >
+                  } @else {
+                    <ng-container i18n="@@admin.apps.neverUsed"
+                      >Dernière utilisation : jamais</ng-container
+                    >
+                  }
+                </p>
+              </div>
+              <!-- Danger ghost (the menus' danger option, D37); on its own line its text aligns with the row's. -->
+              <button
+                uiBtn
+                variant="ghost"
+                size="sm"
+                class="shrink-0 text-[13px] text-danger-ink hover:bg-danger/10 hover:text-danger-ink focus-visible:border-danger/55 focus-visible:outline-danger/12 @max-[640px]:-ml-3"
+                type="button"
+                [attr.aria-label]="revokeLabelOf(application)"
+                [disabled]="store.revoking()"
+                (click)="revoke(application)"
+                i18n="@@admin.apps.revoke"
+              >
+                Révoquer
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    } @else if (store.loadCallState().error; as error) {
+      <div uiAlert variant="danger" class="px-3 py-2.5 text-[13px]/5">
+        <ng-icon [svg]="icons.error" size="14" aria-hidden="true" />
+        <p class="col-start-2">{{ error.message }}</p>
+        <div class="col-start-2 mt-1.5">
+          <button
+            uiBtn
+            size="xs"
+            variant="secondary"
+            type="button"
+            [disabled]="store.loading()"
+            (click)="store.load()"
+            i18n="@@admin.apps.retry"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="flex items-start gap-x-4 py-4" role="status">
+        <span class="sr-only" i18n="@@admin.apps.loading">Chargement…</span>
+        <span uiSkeleton class="size-9 shrink-0 rounded-md @max-[640px]:hidden"></span>
+        <div class="flex min-w-0 flex-1 flex-col gap-2">
+          <span uiSkeleton class="h-4 w-40 max-w-full rounded-full"></span>
+          <span uiSkeleton class="h-3 w-72 max-w-full rounded-full"></span>
+        </div>
+      </div>
+    }
+  </div>
+</section>

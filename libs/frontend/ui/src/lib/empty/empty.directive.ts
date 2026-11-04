@@ -4,26 +4,62 @@ import {
   type EmptyMediaVariant,
   emptyMediaVariants,
 } from '@internal/ui/lib/empty/constants/empty-media.variants';
+import {
+  type EmptyAppearance,
+  type EmptyLayout,
+  emptyVariants,
+} from '@internal/ui/lib/empty/constants/empty.variants';
 
 /**
  * Class EmptyDirective
  * @class EmptyDirective
  *
  * @description
- * Styles the container for an empty result or collection state and its explanatory content.
+ * Container of an empty collection or result (shadcn « Empty »): an optional icon tile, a title, a
+ * description and actions, centred (the owner's exception to the admin's left-aligned text, D36 empty
+ * state revision). Its `layout` follows its position (`emptyVariants`): `fill` when nothing follows it
+ * in its page column, `inline` when something does, `panel` when it is the only content of a bounded
+ * pane or frame; `fill` and `panel` also centre it vertically.
  */
 @Directive({
   selector: '[uiEmpty]',
-  host: { '[class]': 'classes()', 'data-slot': 'empty' },
+  host: {
+    '[class]': 'classes()',
+    '[attr.data-layout]': 'layout()',
+    '[attr.data-appearance]': 'appearance()',
+    'data-slot': 'empty',
+  },
 })
 export class EmptyDirective {
   // #region Properties
+  /**
+   * Property layout
+   * @readonly
+   *
+   * @description
+   * Height rule from the empty state's position, `inline` by default (no stretching).
+   *
+   * @type {InputSignal<EmptyLayout>}
+   */
+  public readonly layout: InputSignal<EmptyLayout> = input<EmptyLayout>('inline');
+
+  /**
+   * Property appearance
+   * @readonly
+   *
+   * @description
+   * `plain` (default) or `dashed`, a dashed frame on a light surface for an empty list in a section.
+   *
+   * @type {InputSignal<EmptyAppearance>}
+   */
+  public readonly appearance: InputSignal<EmptyAppearance> = input<EmptyAppearance>('plain');
+
   /**
    * Property class
    * @readonly
    *
    * @description
-   * Additional classes merged with the centered empty-state layout.
+   * Additional classes merged with the layout.
    *
    * @type {InputSignal<string>}
    */
@@ -34,15 +70,12 @@ export class EmptyDirective {
    * @readonly
    *
    * @description
-   * Centered, responsive empty-state classes combined with caller classes.
+   * Layout classes combined with caller classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn(
-      'flex min-w-0 flex-1 flex-col items-start justify-center gap-6 rounded-card p-6 text-left md:p-12',
-      this.class(),
-    ),
+    cn(emptyVariants({ layout: this.layout(), appearance: this.appearance() }), this.class()),
   );
   // #endregion
 }
@@ -52,7 +85,7 @@ export class EmptyDirective {
  * @class EmptyHeaderDirective
  *
  * @description
- * Groups the primary media and text in an empty state within a constrained centered column.
+ * Groups the media, title and description of an empty state in a centred column of at most 28rem.
  */
 @Directive({
   selector: '[uiEmptyHeader]',
@@ -76,12 +109,12 @@ export class EmptyHeaderDirective {
    * @readonly
    *
    * @description
-   * Centered header layout with caller classes merged on the host.
+   * Centred header column with caller classes merged on the host.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('flex max-w-sm flex-col items-start gap-2 text-left', this.class()),
+    cn('flex max-w-md min-w-0 flex-col items-center gap-1 text-center', this.class()),
   );
   // #endregion
 }
@@ -146,7 +179,8 @@ export class EmptyMediaDirective {
  * @class EmptyTitleDirective
  *
  * @description
- * Applies display typography to the semantic heading chosen by the consumer for the empty state.
+ * Applies the dense title type (14 px, medium) to the element chosen by the consumer: a heading when
+ * the empty state stands for a page section, a paragraph inside a list or a table.
  */
 @Directive({
   selector: '[uiEmptyTitle]',
@@ -170,12 +204,12 @@ export class EmptyTitleDirective {
    * @readonly
    *
    * @description
-   * Display title typography combined with caller classes.
+   * Title typography combined with caller classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('font-display text-d3 text-star', this.class()),
+    cn('text-[14px]/5 font-medium text-fg', this.class()),
   );
   // #endregion
 }
@@ -209,13 +243,14 @@ export class EmptyDescriptionDirective {
    * @readonly
    *
    * @description
-   * Muted copy and link styles combined with caller classes.
+   * Muted copy of at most 60ch, centred under the title, and link styles combined with caller
+   * classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
-      'text-small text-star-muted [&>a]:text-star [&>a]:underline [&>a]:decoration-line-strong [&>a]:underline-offset-4 [&>a:hover]:decoration-star',
+      'mx-auto max-w-[60ch] text-[13px]/5 text-fg-muted [&>a]:text-fg [&>a]:underline [&>a]:decoration-border-strong [&>a]:underline-offset-4 [&>a:hover]:decoration-fg',
       this.class(),
     ),
   );
@@ -227,7 +262,7 @@ export class EmptyDescriptionDirective {
  * @class EmptyContentDirective
  *
  * @description
- * Constrains and spaces calls to action or additional content beneath the empty-state header.
+ * Row of actions beneath the empty-state header, the primary one first (`uiBtn size="xs"`).
  */
 @Directive({
   selector: '[uiEmptyContent]',
@@ -251,12 +286,12 @@ export class EmptyContentDirective {
    * @readonly
    *
    * @description
-   * Responsive action stack layout and text treatment combined with caller classes.
+   * Wrapping action row 16 px below the header, centred, combined with caller classes.
    *
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>(() =>
-    cn('flex w-full max-w-sm min-w-0 flex-col items-start gap-4 text-small', this.class()),
+    cn('mt-4 flex min-w-0 flex-wrap items-center justify-center gap-2', this.class()),
   );
   // #endregion
 }

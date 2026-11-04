@@ -162,7 +162,7 @@ export class DropdownMenuSubTriggerDirective {
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
       menuOptionVariants({ inset: this.inset() }),
-      'aria-expanded:bg-star/5 aria-expanded:text-star',
+      'aria-expanded:bg-surface-hover aria-expanded:text-fg',
       this.class(),
     ),
   );
