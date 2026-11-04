@@ -91,7 +91,8 @@ jobs:
   # Built, prerendered site served with the Nginx routing (apps/web-e2e/support/preview/serve-site.mjs), no services.
   e2e:
     needs: quality
-    runs-on: ubuntu-latest
+    # Keep the browser dependencies on a stable runner while ubuntu-latest migrates to 26.04.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
         with:
@@ -103,6 +104,7 @@ jobs:
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
       - run: npx playwright install --with-deps chromium firefox webkit
+        timeout-minutes: 10
       # web-e2e:e2e depends on web:build; on a pull request it only runs when the site is affected.
       - run: npx nx ${{ github.event_name == 'pull_request' && 'affected -t e2e' || 'run-many -t e2e -p web-e2e' }}
       - uses: actions/upload-artifact@v4
