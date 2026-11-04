@@ -247,10 +247,9 @@ test.describe('isolated stack acceptance @stack', (): void => {
     );
     await page.getByRole('button', { name: 'Publier', exact: true }).click();
     expect((await publication).status()).toBe(200);
+    await expect(page.getByText('Publié.', { exact: true })).toBeVisible();
     await expect(
-      page.getByText('Publié. Le site public sera reconstruit dans quelques minutes.', {
-        exact: true,
-      }),
+      page.getByText('Le site public sera mis à jour dans quelques minutes.', { exact: true }),
     ).toBeVisible();
 
     const content: string = `Acceptance message ${Date.now()}: please verify delivery to the local inbox.`;
@@ -280,7 +279,7 @@ test.describe('isolated stack acceptance @stack', (): void => {
       )
       .toBeGreaterThan(0);
     await page.goto('/admin/messages');
-    await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Messages(?:\s|$)/ })).toBeVisible();
     const messageLink: Locator = page
       .getByRole('navigation', { name: 'Administration', exact: true })
       .getByRole('link', { name: /Messages/ });
