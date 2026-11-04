@@ -46,7 +46,7 @@ you work; none of it widens **what** you were asked to do.
 - `deploy.yml`: `workflow_run` after a successful CI on `main` or manual dispatch, the exact head SHA
   checked out, `packages: write` only where images are pushed, GHCR lowercase owner, `environment:
 production` for the Ansible job, `concurrency` without cancelling a running deployment, secrets
-  `VPS_HOST`, `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS`, `ANSIBLE_VAULT_PASSWORD` never echoed, known hosts pinned.
+  `VPS_HOST`, `VPS_SSH_KEY`, `VPS_SSH_KNOWN_HOSTS` and application secrets never echoed, known hosts pinned.
 - `site-build.yml`: dispatch with `revision` from content-service and `workflow_run` after CI, the most
   recent rebuild replacing a pending one (`cancel-in-progress: true`), snapshot before build, atomic
   publication through `ansible/playbooks/publish-site.yml`.

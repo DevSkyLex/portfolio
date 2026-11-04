@@ -202,11 +202,11 @@ export const SEED_PRIVACY_POLICY: {
     ),
     h2('Destinataires'),
     p(
-      "Seul l'éditeur lit vos messages. Ils transitent par l'hébergeur, OVH SAS, en France, qui assure aussi l'envoi de l'e-mail de notification. Vos données ne sont ni vendues ni cédées.",
+      "Vos messages sont hébergés par OVH SAS en France. Pour notifier l'éditeur, leur contenu et vos coordonnées sont transmis à Brevo, prestataire d'envoi d'e-mails. Brevo indique héberger les données de son service d'e-mails transactionnels en France et en Allemagne ; son traitement peut faire intervenir des sous-traitants selon ses conditions.",
     ),
     h2('Durée de conservation'),
     p(
-      'Les messages sont supprimés automatiquement trois ans après leur réception, ou plus tôt sur simple demande.',
+      'Les messages enregistrés sur le site sont supprimés automatiquement trois ans après leur réception, ou plus tôt sur simple demande. Les e-mails de notification et leurs journaux sont conservés selon les conditions du prestataire et de la boîte de réception.',
     ),
     h2("Cookies et mesure d'audience"),
     p(
@@ -252,11 +252,11 @@ export const SEED_PRIVACY_POLICY: {
     ),
     h2('Recipients'),
     p(
-      'Only the publisher reads your messages. They pass through the hosting provider, OVH SAS, in France, which also sends the notification email. Your data is neither sold nor transferred.',
+      'Your messages are hosted by OVH SAS in France. To notify the publisher, their content and your contact details are sent to Brevo, the email delivery provider. Brevo states that it hosts its transactional email service data in France and Germany; processing may involve its subprocessors under its terms.',
     ),
     h2('Retention period'),
     p(
-      'Messages are deleted automatically three years after they are received, or earlier on request.',
+      'Messages stored on the site are deleted automatically three years after they are received, or earlier on request. Notification emails and their logs are retained according to the provider and mailbox terms.',
     ),
     h2('Cookies and audience measurement'),
     p(

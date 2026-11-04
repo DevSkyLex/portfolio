@@ -1,5 +1,5 @@
 # Deploys the services of a version published on GHCR:
-#   ansible-playbook playbooks/deploy.yml -e tag=<sha> --vault-password-file …
+#   ansible-playbook playbooks/deploy.yml -e tag=<sha>
 - name: Deploy the services
   hosts: vps
   become: true

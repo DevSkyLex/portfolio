@@ -1,4 +1,4 @@
-# Non-secret variables. Secrets live in vault.yml (encrypted with ansible-vault); template: vault.example.yml.
+# Non-secret variables. Application secrets are supplied through the controller environment.
 # Extra variables given per run: `tag` (deploy.yml, commit SHA of the images), `release` (publish-site.yml).
 domain: "{{ lookup('ansible.builtin.env', 'APP_HOST') | default('valentin-fortin.pro', true) }}"
 
@@ -11,6 +11,6 @@ backup_root: '{{ app_root }}/backups'
 
 registry: ghcr.io/devskylex
 site_build_repository: DevSkyLex/portfolio
-identity_signing_kid: k1
+identity_signing_kid: "{{ lookup('ansible.builtin.env', 'IDENTITY_SIGNING_KID') | default('k1', true) }}"
 # UID of the `node` user in the images: owner of the signing keys mounted into identity-service.
 service_uid: 1000

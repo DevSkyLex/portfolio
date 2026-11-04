@@ -6,7 +6,7 @@ Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Compose, Nginx, scripts | `/srv/apps/portfolio/production` (copied by Ansible from `docker/`)                                                                                              |
 | Compose variables       | `/srv/apps/portfolio/production/.env` (Ansible; `TAG` written by `scripts/deploy.sh`)                                                                            |
-| Secrets                 | `/srv/apps/portfolio/production/secrets` (rendered from Ansible Vault, `0700` directory)                                                                         |
+| Secrets                 | `/srv/apps/portfolio/production/secrets` (written by Ansible from GitHub environment secrets, `0700` directory)                                                  |
 | Static site             | `/srv/apps/portfolio/production/site/releases/<release>`, links `/srv/apps/portfolio/production/site/current` and `/srv/apps/portfolio/production/site/previous` |
 | Uploaded media (D40)    | `/srv/apps/portfolio/production/media` (`MEDIA_ROOT`; owner UID 1000, `0755`), served at `/media/`                                                               |
 | Backups                 | `/srv/apps/portfolio/production/backups` (`0750`; dump and media archive, daily at 03:30 and before deploys, 14 d)                                               |
@@ -19,7 +19,7 @@ Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing
 - **Media (D40)**: the host directory `MEDIA_ROOT` (created by Ansible, owner `service_uid`, `0755`) is content-service's only writable mount, at `/srv/media` (`CONTENT_MEDIA_DIR`); Nginx mounts it read-only at the same path. The service writes `<uuid>.webp` and `<uuid>-960.webp` (files `0644`, written as `.tmp` then renamed) and purges images unlinked for more than 7 days. Ansible creates the directory before the first `docker compose up`, otherwise Docker would create it owned by root.
 - **Images**: pinned by version and digest (`docker/service.Dockerfile`, compose files); update version and digest together.
 - **Networks**: external `traefik_proxy` connects Traefik to Nginx only. Private `proxy` connects Nginx to services and provides outbound access for GitHub and SMTP; `database` is internal, without egress. Services and Postgres never join the shared edge network. Nginx cannot reach Postgres; migrations and one-off jobs only join `database`. Production publishes no host ports.
-- **Postgres roles** (D23): `docker/postgres/init/01-roles.sh` is idempotent. The image runs it on the first start; `scripts/deploy.sh` runs it again before and after the migrations, so a password changed in the vault, new grants or new tables are applied on the next deployment. The application roles have data access only (not on `__migrations`), connection limits, and `PUBLIC` has no access to the database.
+- **Postgres roles** (D23): `docker/postgres/init/01-roles.sh` is idempotent. The image runs it on the first start; `scripts/deploy.sh` runs it again before and after the migrations, so a changed GitHub secret, new grants or new tables are applied on the next deployment. The application roles have data access only (not on `__migrations`), connection limits, and `PUBLIC` has no access to the database.
 - **Traefik**: routers use entrypoints `web` and `websecure`, HTTP redirects to HTTPS, and TLS uses the existing `letsencrypt` resolver. The secure router accepts `APP_HOST` and `www.APP_HOST`; Nginx redirects `www` to the canonical host. Optional `TRAEFIK_SECURE_MIDDLEWARES` attaches an existing shared middleware chain.
 - **Nginx**: the official entrypoint renders `nginx/templates/portfolio.conf.template` into `/tmp/portfolio.conf` on tmpfs. `APP_PORT` is the internal HTTP listening port, not a published host port. Only the reviewed Traefik peer from `TRUSTED_PROXIES` may reach the origin or supply the client address; this restored address drives rate limits and logs. HTTPS is preserved when forwarding to services. Upstreams resolve through Docker DNS at runtime, so recreated services need no Nginx reload. JSON access logs carry `request_id`, also returned in `X-Request-Id` and passed to services. Pages are revalidated (`no-cache`); hashed assets are cached for a year and other static files for an hour, except `/admin.css`, the unhashed administration stylesheet loaded by the admin area only (D31), which is revalidated like the pages. Missing hashed assets fall back to the previous release. `/media/` serves only names matching `<uuid>.webp` or `<uuid>-960.webp` (immutable, one year, with the server's security headers including `nosniff`); any other path under `/media/` answers 404. Request bodies are 64 kB by default; `/api/content/admin/projects/` and `/api/content/admin/legal/` accept 1100 kB (the service's JSON limit is 1 MB) and `POST /api/content/admin/media` 11 MB (the service caps the file at 10 MiB); larger bodies get a problem+json 413 (`http.413`, `content.media-too-large`). Uploaded images come from the same origin (`img-src 'self' data:`); the CSP only adds the Google tag origin to `script-src` and the GA4 collection hosts to `img-src` and `connect-src`, for the audience measurement loaded after consent (D48).
 
@@ -50,7 +50,7 @@ snapshot independently of these service artifacts.
 
 ## Shared environment contract
 
-[`docker/.env.example`](../../docker/.env.example) lists public runtime settings. Ansible writes the server's `.env`; credentials remain in Vault-rendered Docker secret files. Configure the following GitHub `production` environment variables, or supply the corresponding environment variables when running Ansible manually:
+[`docker/.env.example`](../../docker/.env.example) lists public runtime settings. Ansible writes the server's `.env`; Ansible writes Docker secret files from the production GitHub environment secrets. Configure the following GitHub `production` environment variables, or supply the corresponding environment variables when running Ansible manually:
 
 | GitHub variable                           | Runtime setting / use                                | Default                           |
 | ----------------------------------------- | ---------------------------------------------------- | --------------------------------- |
@@ -73,29 +73,59 @@ snapshot independently of these service artifacts.
 
 Obtain `TRUSTED_PROXIES` from the existing Traefik configuration. Use a stable, reviewed proxy address; do not trust the whole shared Docker network, all private ranges or an unrestricted CIDR. A changed Traefik address requires updating this setting and recreating the origin. Ansible validates the address and requires the external `traefik_proxy` network to exist; it does not create the shared proxy or its network.
 
-The portfolio has three distinct service images, so it retains `REGISTRY` and a common commit `TAG` instead of a single `IMAGE_REF`. `IDENTITY_SIGNING_KID`, `SITE_BUILD_REPOSITORY` and `SITE_ROOT` are supplied by the existing Ansible inventory; `MEDIA_ROOT` comes from the role default `portfolio_media_root` (`<app_root>/media`, so `/srv/apps/portfolio/production/media`), also written to `backup.env` as `BACKUP_MEDIA_DIR`. Image tags identify the deployed commit; base images remain pinned by digest.
+The portfolio has three distinct service images, so it retains `REGISTRY` and a common commit `TAG` instead of a single `IMAGE_REF`. `IDENTITY_SIGNING_KID` defaults to `k1` and can be set as a GitHub variable; `SITE_BUILD_REPOSITORY` and `SITE_ROOT` are supplied by the existing Ansible inventory; `MEDIA_ROOT` comes from the role default `portfolio_media_root` (`<app_root>/media`, so `/srv/apps/portfolio/production/media`), also written to `backup.env` as `BACKUP_MEDIA_DIR`. Image tags identify the deployed commit; base images remain pinned by digest.
 
 The site, media and backup paths follow `VPS_APP_DIR`: `<app_root>/site`, `<app_root>/media` and `<app_root>/backups`. The paths above use its default. Nginx still sees the site at `/srv/site` inside its container.
 
 For an existing installation using the former `/srv/portfolio`, `/srv/site` or `/srv/backups` paths, plan and verify a separate migration of the site releases, media, backups and configuration before switching paths. Changing the defaults does not migrate existing data.
 
+## GitHub application secrets
+
+Configure these secrets in the GitHub `production` environment. They are passed only to the deployment step; the validator prints only missing or invalid names. Ansible checks them again without logging values before touching application files. Manual Ansible runs need the same names in the controller environment, supplied through the operator's secret manager; never put their values in shell history or repository files.
+
+An old local `ansible/inventory/group_vars/all/vault.yml`, if present, is still automatically loaded by Ansible even though it is no longer used by the project. Before a manual run, move any retained encrypted vault outside the inventory directory; preserve it securely if it contains credentials you still need.
+
+| Secret                                                | Purpose                                                                                   |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `POSTGRES_PASSWORD`                                   | Postgres administrator password.                                                          |
+| `CONTENT_MIGRATOR_PASSWORD`, `CONTENT_APP_PASSWORD`   | Content migration and application database passwords.                                     |
+| `CONTACT_MIGRATOR_PASSWORD`, `CONTACT_APP_PASSWORD`   | Contact migration and application database passwords.                                     |
+| `IDENTITY_MIGRATOR_PASSWORD`, `IDENTITY_APP_PASSWORD` | Identity migration and application database passwords.                                    |
+| `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`                  | Brevo SMTP login and SMTP key; the SMTP key is not an API key.                            |
+| `CONTACT_CLIENT_KEY_SECRET`                           | Contact fingerprint HMAC key, at least 32 characters.                                     |
+| `SITE_BUILD_TOKEN`                                    | Fine-grained token with Actions write access to this repository for publication dispatch. |
+| `IDENTITY_SIGNING_KEY_K1`                             | Unencrypted Ed25519 PKCS#8 private key, including PEM delimiters and newlines.            |
+| `GHCR_TOKEN`                                          | Classic personal access token with read:packages and access to the service images.        |
+| `IDENTITY_SIGNING_KEY_K2`                             | Optional second Ed25519 key for rotation.                                                 |
+| `SEO_GOOGLE_CREDENTIALS`, `SEO_PAGESPEED_API_KEY`     | Optional SEO dashboard credentials.                                                       |
+
+All seven Postgres passwords must be distinct, alphanumeric and at least 24 characters; generate each independently, for example with `openssl rand -hex 24`. Generate the HMAC key with `openssl rand -hex 32`. Generate the signing key in a trusted environment and provide its entire PKCS#8 PEM as the GitHub secret; do not commit it. The active slot is selected by `IDENTITY_SIGNING_KID` (`k1` by default); the active key must be present. `GHCR_USERNAME` defaults to the repository owner and can be overridden by a GitHub variable. The SSH secrets are listed in [GitHub](#github). Do not put secret values in tickets or chat.
+
+## Brevo email delivery
+
+The contact service sends notifications through Brevo over SMTPS (`smtp-relay.brevo.com:465`). Ansible builds the existing SMTP secret file from `BREVO_SMTP_LOGIN` and `BREVO_SMTP_KEY` GitHub environment secrets, encoding both credentials. The credentials are not written to the Compose environment. Local development continues to use Mailpit.
+
+1. In Brevo, add and authenticate `valentin-fortin.pro` (or the chosen sender subdomain) under Settings → Senders, Domains and IPs → Domains. Add the exact DNS records Brevo provides without replacing existing mail or authentication records. Authentication can take up to 48 hours. See [Brevo's domain guide](https://help.brevo.com/hc/fr/articles/12163873383186-Authentifier-votre-domaine-dans-Brevo-code-Brevo-enregistrement-DKIM-enregistrement-DMARC).
+2. Activate transactional email if Brevo requires it. In Settings → SMTP & API → SMTP, copy the displayed SMTP login and generate a dedicated SMTP key; enter them as GitHub `production` secrets `BREVO_SMTP_LOGIN` and `BREVO_SMTP_KEY`. The SMTP key is different from a Brevo API key. Check the account's IP authorization if enabled.
+3. Set `CONTACT_MAIL_FROM` to an address on the authenticated sender domain and `CONTACT_NOTIFY_TO` to an existing mailbox. For `send.valentin-fortin.pro`, use `Portfolio <noreply@send.valentin-fortin.pro>` as the sender. Brevo's sending service does not itself create the receiving inbox. Notifications keep the visitor's address as Reply-To.
+4. Check the VPS can reach `smtp-relay.brevo.com` on port 465. After deployment, submit a contact message and check the mailbox and Brevo's transactional email logs; SMTP acceptance alone does not prove delivery.
+5. Review and publish the French and English privacy policy before enabling Brevo. The contact notification includes the visitor's details and message. The initial legal seed describes Brevo; an existing policy must be updated through the admin « Légal » page and republished. Do not rerun the content seed on an existing site: it replaces all content.
+
+Brevo states that an SMTP key can be deactivated after 90 days without a successful send, even when it has no fixed expiration date. Monitor the key's status and the provider's warning emails; check the [SMTP key policy](https://help.brevo.com/hc/en-us/articles/7959631848850-Create-and-manage-your-SMTP-keys).
+
+The worker retries failed deliveries; its Message-ID is stable, but delivery remains at least once and duplicate messages are possible. See [Brevo's SMTP guide](https://help.brevo.com/hc/en-us/articles/7924908994450-Send-transactional-emails-using-Brevo-SMTP).
+
 ## First installation
 
 1. **Shared edge and DNS**: the existing Traefik must expose `web` / `websecure`, have the `letsencrypt` resolver and join external `traefik_proxy`. Point `APP_HOST` and `www.APP_HOST` to that edge. Record its reviewed address in `TRUSTED_PROXIES`.
 2. **Existing access**: configure `VPS_HOST`, optional `VPS_USER` and `VPS_PORT`, and authorize the deployment public key on the VPS through its existing administration process. The SSH account defaults to `deploy`; it must already exist, have passwordless sudo and Docker access, and have a primary group with the same name. The repository does not manage `authorized_keys`, SSH, the firewall or Docker on the host.
-3. **Secrets**: copy `vault.example.yml` to `vault.yml`, fill it in, then encrypt it. The roles check that nothing is left at `CHANGE_ME` and that the Postgres passwords are alphanumeric (they go into URLs). The two SEO dashboard secrets (`vault_seo_google_credentials`, `vault_seo_pagespeed_api_key`) are optional: left empty, Ansible writes empty secret files and the sections answer `not-configured` (see « SEO dashboard and audience measurement » below).
-
-   ```bash
-   openssl rand -hex 24                                   # each Postgres password
-   openssl genpkey -algorithm ed25519 -out k1.pem         # token signing key (paste it into the vault)
-   ansible-vault encrypt ansible/inventory/group_vars/all/vault.yml
-   ```
+3. **Secrets**: add the application secrets listed in [GitHub application secrets](#github-application-secrets) to the `production` environment. A failed validation stops before Ansible changes the server. Optional SEO secrets can be left empty.
 
 4. **Prepare the portfolio** using the existing deployment account:
 
    ```bash
    cd ansible && ansible-galaxy collection install -r requirements.yml -p .collections
-   ansible-playbook playbooks/provision.yml --ask-vault-pass
+   ansible-playbook playbooks/provision.yml
    ```
 
    The playbook prepares portfolio files, secrets and backup timers. It does not install Docker, provision users, modify SSH keys or change shared host security settings. The existing shared Traefik handles TLS.
@@ -103,7 +133,7 @@ For an existing installation using the former `/srv/portfolio`, `/srv/site` or `
 5. **First deployment** (images already published by the `deploy` workflow):
 
    ```bash
-   ansible-playbook playbooks/deploy.yml -e tag=<sha> --ask-vault-pass
+   ansible-playbook playbooks/deploy.yml -e tag=<sha>
    ```
 
    On a blank server the backup step reports "Database never migrated" and continues.
@@ -143,7 +173,7 @@ For an existing installation using the former `/srv/portfolio`, `/srv/site` or `
 
 ## GitHub
 
-Secrets of the `production` environment: `VPS_HOST`, `VPS_SSH_KEY` (private key of the deployment account), `VPS_SSH_KNOWN_HOSTS` (verified SSH server fingerprint), `ANSIBLE_VAULT_PASSWORD`. Optional `VPS_USER` overrides the SSH account; it defaults to `deploy`. Rename the former `VPS_KNOWN_HOSTS` secret to `VPS_SSH_KNOWN_HOSTS`. For a nonstandard SSH port, obtain the fingerprint for that port.
+Connection secrets of the `production` environment: `VPS_HOST`, `VPS_SSH_KEY` (private key of the deployment account) and `VPS_SSH_KNOWN_HOSTS` (complete verified OpenSSH known_hosts entries). Optional `VPS_USER` overrides the SSH account; it defaults to `deploy`. Rename the former `VPS_KNOWN_HOSTS` secret to `VPS_SSH_KNOWN_HOSTS`. For a nonstandard SSH port, obtain the fingerprint for that port.
 
 - `CI`: format, lint, typecheck, tests, build, architecture test; operations checks (`docker/scripts/check-ops.sh`); e2e (Playwright, four browsers) on `main`.
 - `Deploy services` (after CI on `main`): GHCR images, then `playbooks/deploy.yml -e tag=<sha>` → `scripts/deploy.sh`.
@@ -194,14 +224,14 @@ content-service, cached once a day (05:30 server time) and on request; the publi
 audience with GA4 after the visitor's consent. Every source is optional; a missing setting shows as
 `not-configured` with the variables to set, a Google error as `error` with its reason.
 
-| Setting                                | Where                                                                  |
-| -------------------------------------- | ---------------------------------------------------------------------- |
-| Service account key (JSON)             | Vault `vault_seo_google_credentials` → secret `seo_google_credentials` |
-| PageSpeed Insights API key             | Vault `vault_seo_pagespeed_api_key` → secret `seo_pagespeed_api_key`   |
-| Search Console property                | GitHub variable `SEO_SEARCH_CONSOLE_PROPERTY` → `.env`                 |
-| GA4 property id (numeric)              | GitHub variable `SEO_GA4_PROPERTY_ID` → `.env`                         |
-| Key URLs for the Web Vitals (optional) | GitHub variable `SEO_WEB_VITALS_URLS` → `.env`                         |
-| GA4 measurement id (`G-…`, public)     | `apps/web/src/environments/audience-measurement.ts`, committed         |
+| Setting                                | Where                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------- |
+| Service account key (JSON)             | GitHub secret `SEO_GOOGLE_CREDENTIALS` → Docker secret `seo_google_credentials` |
+| PageSpeed Insights API key             | GitHub secret `SEO_PAGESPEED_API_KEY` → Docker secret `seo_pagespeed_api_key`   |
+| Search Console property                | GitHub variable `SEO_SEARCH_CONSOLE_PROPERTY` → `.env`                          |
+| GA4 property id (numeric)              | GitHub variable `SEO_GA4_PROPERTY_ID` → `.env`                                  |
+| Key URLs for the Web Vitals (optional) | GitHub variable `SEO_WEB_VITALS_URLS` → `.env`                                  |
+| GA4 measurement id (`G-…`, public)     | `apps/web/src/environments/audience-measurement.ts`, committed                  |
 
 Compose mounts the key at `/run/secrets/seo_google_credentials` (`SEO_GOOGLE_CREDENTIALS_PATH`); the
 service reads it on the first refresh only, never at startup. `SEO_SITE_ORIGIN` is `https://<APP_HOST>`.
@@ -212,7 +242,7 @@ Owner setup, once:
    Data API** and the **PageSpeed Insights API**.
 2. **Service account**: « IAM & Admin › Service accounts › Create service account » (e.g.
    `seo-dashboard`), no project role. In its « Keys » tab, « Add key › Create new key › JSON »: paste the
-   downloaded file in the vault as a block (`vault_seo_google_credentials: |`), then delete the local
+   downloaded JSON into the `SEO_GOOGLE_CREDENTIALS` GitHub environment secret, then delete the local
    copy. If the organization policy `iam.disableServiceAccountKeyCreation` blocks keys, allow it for this
    project.
 3. **Search Console**: in the property (prefer the domain property `sc-domain:valentin-fortin.pro`),
@@ -234,7 +264,7 @@ Owner setup, once:
 7. **PageSpeed Insights key**: « APIs & Services › Credentials › Create credentials › API key », then
    « Edit API key › API restrictions › Restrict key › PageSpeed Insights API » (optionally an « IP
    addresses » application restriction to the VPS egress address). Put it in
-   `vault_seo_pagespeed_api_key`.
+   the `SEO_PAGESPEED_API_KEY` GitHub environment secret.
 8. **Privacy policy**: on the admin « Légal » page, replace the policy's « Cookies » section with the
    « Cookies et mesure d'audience » text (French and English, see the seed
    `libs/backend/content/adapters-out/src/lib/seed/legal-documents.seed.ts`) and adjust the first
@@ -244,10 +274,10 @@ Owner setup, once:
 
 Existing installation: content migration `0013_seo_dashboard` (D47) adds `content.seo_reports` and
 `content.seo_refresh`, applied by the usual migration step; Ansible writes the two secret files, empty
-while the vault lacks them, before `docker compose up`. content-service reaches
+when the GitHub secrets are absent, before `docker compose up`. content-service reaches
 `searchconsole.googleapis.com`, `analyticsdata.googleapis.com`, `oauth2.googleapis.com` and
 `www.googleapis.com` over HTTPS through the `proxy` network: a host firewall restricting egress must
-allow them. Rotation: create a new key (service account or API key), update the vault and deploy, then
+allow them. Rotation: create a new key (service account or API key), update the GitHub secret and deploy, then
 delete the old key in the console.
 
 ## Routine operations
@@ -274,8 +304,8 @@ delete the old key in the console.
 
 - **Nginx configuration**: `bash scripts/reload-nginx.sh` renders bind-mounted templates with the container's restricted environment filter, tests the resulting configuration and reloads it. Environment changes require recreating the container first so it receives the new values.
 - **Maintenance**: `touch /srv/apps/portfolio/production/site/maintenance` (Nginx answers 503 with the prerendered page), `rm` to reopen.
-- **Signing key rotation**: add `k2` to the vault and deploy (published in the JWKS, not used yet); wait at least ten minutes (JWKS cache in the services), then set `identity_signing_kid: k2` and deploy; remove `k1` from the vault at least ten minutes later (lifetime of an access token) and deploy: the role deletes key files no longer in the vault.
-- **Password rotation (Postgres roles)**: change it in the vault and deploy: the secrets are rewritten and the roles script applies the new password before the services restart.
+- **Signing key rotation**: set `IDENTITY_SIGNING_KEY_K2` and deploy (published in the JWKS, not used yet); wait at least ten minutes (JWKS cache), set the GitHub variable `IDENTITY_SIGNING_KID` to `k2` and deploy, then remove `IDENTITY_SIGNING_KEY_K1` at least ten minutes later and deploy again. The role removes unconfigured key files. Reverse the slots for the next rotation.
+- **Password rotation (Postgres roles)**: update the relevant GitHub secret and deploy: the secrets are rewritten and the roles script applies the new password before the services restart.
 - **Logs**: `docker compose -f compose.prod.yml logs -f <service>` (JSON; `request_id` / `x-request-id` links Nginx, the browser and the services). Host jobs: `journalctl -u portfolio-backup -u portfolio-restore-check`.
 
 ## Checks (`docker/scripts/check-ops.sh`)

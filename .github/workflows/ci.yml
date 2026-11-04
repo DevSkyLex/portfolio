@@ -28,6 +28,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: node --test .github/scripts/validate-production-secrets.test.mjs
       # NX_BASE/NX_HEAD: last successful CI run on main, or the pull request base.
       - uses: nrwl/nx-set-shas@v4
       - run: npx nx format:check
