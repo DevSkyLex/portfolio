@@ -119,6 +119,8 @@
   ansible.posix.synchronize:
     src: '{{ playbook_dir }}/../../docker/{{ item }}'
     dest: '{{ app_root }}/'
+    dest_port: '{{ ansible_port | int }}'
+    verify_host: true
     delete: true
     # Readable by the containers (Postgres reads its init script); these files hold no secrets.
     rsync_opts:

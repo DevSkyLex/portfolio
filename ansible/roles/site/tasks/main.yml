@@ -34,6 +34,8 @@
   ansible.posix.synchronize:
     src: '{{ site_dist }}/'
     dest: '{{ site_root }}/releases/{{ release }}/'
+    dest_port: '{{ ansible_port | int }}'
+    verify_host: true
     delete: true
     rsync_opts: ['--chmod=D755,F644']
 
