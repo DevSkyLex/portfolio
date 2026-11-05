@@ -1,7 +1,7 @@
 // Writes sitemap.xml and robots.txt into the built site from the content snapshot (D42).
 // Usage, after `web:build`: SITE_ORIGIN=https://… node apps/web/scripts/generate-seo-files.mjs
 import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 /** Production origin; the Angular `SITE_ORIGIN` token defaults to the same value. */
 export const DEFAULT_SITE_ORIGIN = 'https://valentin-fortin.pro';
 
-/** @type {readonly SiteLocale[]} Locales of the static build: French at the root, English under /en. */
+/** @type {readonly SiteLocale[]} Locales of the static build. */
 const LOCALES = ['fr', 'en'];
 
 /** Prerendered pages that exist in both locales whatever the content. */
@@ -25,10 +25,10 @@ const STATIC_PATHS = ['/', '/legal-notice', '/privacy'];
  * @param {string} origin - Site origin without a trailing slash.
  * @param {SiteLocale} locale - Page locale.
  * @param {string} path - Locale-independent path starting with `/`.
- * @returns {string} Absolute address; `/en/` for the English home page.
+ * @returns {string} Absolute address under its locale prefix.
  */
 export function localizedUrl(origin, locale, path) {
-  return `${origin}${locale === 'en' ? '/en' : ''}${path}`;
+  return `${origin}/${locale}${path}`;
 }
 
 /**
@@ -143,6 +143,7 @@ export function robotsTxt(origin) {
     'User-agent: *',
     'Allow: /',
     'Disallow: /admin',
+    'Disallow: /fr/admin',
     'Disallow: /en/admin',
     'Disallow: /api/',
     '',
@@ -168,7 +169,7 @@ export async function writeSeoFiles({
     throw new Error(`SITE_ORIGIN must be a scheme and a host: ${origin}`);
   }
   const base = origin.replace(/\/+$/, '');
-  if (!existsSync(join(outputDirectory, 'index.html'))) {
+  if (!existsSync(join(outputDirectory, 'fr', 'index.html'))) {
     throw new Error(`No built site in ${outputDirectory}: run npx nx run web:build first.`);
   }
   /** @type {Record<SiteLocale, string[]>} */
@@ -178,6 +179,24 @@ export async function writeSeoFiles({
     slugs[locale] = projectSlugs(JSON.parse(await readFile(file, 'utf8')), locale);
   }
   const pages = sitePages(slugs);
+  // Keep the root release marker and French error pages available while the Nginx and site
+  // workflows are deployed independently. Nginx redirects the legacy home to /fr/.
+  await writeFile(
+    join(outputDirectory, 'index.html'),
+    '<!doctype html><html lang="fr"><head><meta http-equiv="refresh" content="0;url=/fr/"></head><body><a href="/fr/">Français</a></body></html>\n',
+  );
+  for (const file of ['index.csr.html', 'admin.css']) {
+    const source = join(outputDirectory, 'fr', file);
+    if (existsSync(source)) await copyFile(source, join(outputDirectory, file));
+  }
+  for (const code of ['403', '404', '500', '503']) {
+    const source = join(outputDirectory, 'fr', 'error', code, 'index.html');
+    if (existsSync(source)) {
+      const destination = join(outputDirectory, 'error', code);
+      await mkdir(destination, { recursive: true });
+      await copyFile(source, join(destination, 'index.html'));
+    }
+  }
   await writeFile(join(outputDirectory, 'sitemap.xml'), sitemapXml(base, pages));
   await writeFile(join(outputDirectory, 'robots.txt'), robotsTxt(base));
   return { pages: pages.length, urls: pages.reduce((sum, page) => sum + page.locales.length, 0) };

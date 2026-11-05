@@ -51,7 +51,7 @@ test.describe('language', (): void => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
     await chooseFooterOption(page, 'Language', 'Français');
-    await expect(page).toHaveURL(/\/privacy$/);
+    await expect(page).toHaveURL(/\/fr\/privacy$/);
     await expect(page).not.toHaveURL(/\/en\//);
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
   });

@@ -259,7 +259,7 @@ describe('ProjectPageComponent', (): void => {
     const head: HTMLHeadElement = document.head;
     expect(head.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('Résumé.');
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://valentin-fortin.pro/projects/movah',
+      'https://valentin-fortin.pro/fr/projects/movah',
     );
     expect(head.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
       `https://valentin-fortin.pro${COVER.src}`,
@@ -270,7 +270,7 @@ describe('ProjectPageComponent', (): void => {
     expect(TestBed.inject<Title>(Title).getTitle()).toBe('Solo, projet seul');
     expect(head.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://valentin-fortin.pro/projects/solo',
+      'https://valentin-fortin.pro/fr/projects/solo',
     );
     expect(head.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(1);
     expect(head.querySelector('meta[property="og:image"]')).toBeNull();

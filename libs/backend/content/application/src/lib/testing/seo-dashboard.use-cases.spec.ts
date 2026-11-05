@@ -238,12 +238,12 @@ describe('RefreshSeoDashboard', (): void => {
         ([url, strategy]: [string, PageSpeedStrategy]) => `${strategy} ${url}`,
       ),
     ).toEqual([
-      `mobile ${ORIGIN}/`,
-      `desktop ${ORIGIN}/`,
+      `mobile ${ORIGIN}/fr/`,
+      `desktop ${ORIGIN}/fr/`,
       `mobile ${ORIGIN}/en/`,
       `desktop ${ORIGIN}/en/`,
-      `mobile ${ORIGIN}/projects/movah`,
-      `desktop ${ORIGIN}/projects/movah`,
+      `mobile ${ORIGIN}/fr/projects/movah`,
+      `desktop ${ORIGIN}/fr/projects/movah`,
     ]);
     expect(store.entries.get('search-console:28d')).toMatchObject({
       failure: null,
@@ -253,7 +253,7 @@ describe('RefreshSeoDashboard', (): void => {
     const vitals: WebVitalsReport = store.entries.get('web-vitals:all')?.data as WebVitalsReport;
     expect(vitals.rows).toHaveLength(6);
     expect(vitals.rows[0]).toEqual({
-      url: `${ORIGIN}/`,
+      url: `${ORIGIN}/fr/`,
       strategy: 'mobile',
       measure: MEASURE,
       failure: null,
@@ -363,7 +363,7 @@ describe('RefreshSeoDashboard', (): void => {
 describe('defaultWebVitalsUrls', (): void => {
   it('measures the home pages alone without a published project', (): void => {
     expect(defaultWebVitalsUrls(ORIGIN, [PROJECTS[2] as Project])).toEqual([
-      `${ORIGIN}/`,
+      `${ORIGIN}/fr/`,
       `${ORIGIN}/en/`,
     ]);
   });
@@ -374,7 +374,7 @@ describe('defaultWebVitalsUrls', (): void => {
         PROJECTS[0] as Project,
         project('iot', { position: 0, published: true }),
       ]),
-    ).toEqual([`${ORIGIN}/`, `${ORIGIN}/en/`, `${ORIGIN}/projects/crm-kodoka`]);
+    ).toEqual([`${ORIGIN}/fr/`, `${ORIGIN}/en/`, `${ORIGIN}/fr/projects/crm-kodoka`]);
   });
 });
 

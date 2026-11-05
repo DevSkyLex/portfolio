@@ -3,7 +3,7 @@
  *
  * @description
  * Public site as a search result shows it: the site name appended to a project title without custom
- * search title, and the host of the breadcrumb URL (`https://valentin-fortin.pro`, French at `/`,
+ * search title, and the host of the breadcrumb URL (`https://valentin-fortin.pro`, French at `/fr/`,
  * English at `/en/`).
  */
 export const SEO_PREVIEW_SITE: { readonly name: string; readonly host: string } = {

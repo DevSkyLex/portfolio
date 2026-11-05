@@ -18,16 +18,16 @@ describe('createSiteServer', () => {
     fixture = await mkdtemp(join(tmpdir(), 'portfolio-site-server-'));
     const root = join(fixture, 'site');
     const files = {
-      'index.html': 'HOME',
+      'fr/index.html': 'HOME',
       'en/index.html': 'EN-HOME',
-      'index.csr.html': 'CSR-ADMIN',
+      'fr/index.csr.html': 'CSR-ADMIN',
       'en/index.csr.html': 'EN-CSR-ADMIN',
-      'error/404/index.html': 'FR-404',
+      'fr/error/404/index.html': 'FR-404',
       'en/error/404/index.html': 'EN-404',
-      'projects/example/index.html': 'PROJECT',
+      'fr/projects/example/index.html': 'PROJECT',
       'main-ABCDEFGH.js': 'const hashed = true;',
       'theme.js': 'const theme = true;',
-      'admin.css': '.admin {}',
+      'fr/admin.css': '.admin {}',
       'en/admin.css': '.admin {}',
       'sitemap.xml': '<urlset/>',
       'robots.txt': 'User-agent: *',
@@ -69,7 +69,7 @@ describe('createSiteServer', () => {
     }
   });
 
-  for (const path of ['/admin', '/en/admin']) {
+  for (const path of ['/fr/admin', '/en/admin']) {
     it(`redirects ${path} to its administration with a trailing slash`, async () => {
       const reply = await fetch(baseUrl + path, { redirect: 'manual' });
       assert.equal(reply.status, 301);
@@ -77,8 +77,23 @@ describe('createSiteServer', () => {
     });
   }
 
+  it('redirects legacy French addresses and preserves queries', async () => {
+    for (const [path, location] of [
+      ['/?source=mail', '/fr/?source=mail'],
+      ['/fr?source=mail', '/fr/?source=mail'],
+      ['/projects/example?from=old', '/fr/projects/example?from=old'],
+      ['/admin/projects/example?tab=article', '/fr/admin/projects/example?tab=article'],
+      ['/privacy', '/fr/privacy'],
+      ['/old-path?x=1', '/fr/old-path?x=1'],
+    ]) {
+      const reply = await fetch(baseUrl + path, { redirect: 'manual' });
+      assert.equal(reply.status, 308);
+      assert.equal(reply.headers.get('location'), location);
+    }
+  });
+
   it('serves nested administration routes from the CSR shell without caching or indexing', async () => {
-    const reply = await fetch(baseUrl + '/admin/projects/example?tab=article');
+    const reply = await fetch(baseUrl + '/fr/admin/projects/example?tab=article');
     assert.equal(reply.status, 200);
     assert.equal(await reply.text(), 'CSR-ADMIN');
     assert.equal(reply.headers.get('cache-control'), 'no-store');
@@ -100,11 +115,11 @@ describe('createSiteServer', () => {
   });
 
   it('serves prerendered pages with revalidation and supports HEAD', async () => {
-    const reply = await fetch(baseUrl + '/projects/example');
+    const reply = await fetch(baseUrl + '/fr/projects/example');
     assert.equal(reply.status, 200);
     assert.equal(await reply.text(), 'PROJECT');
     assert.equal(reply.headers.get('cache-control'), 'no-cache');
-    const head = await fetch(baseUrl + '/', { method: 'HEAD' });
+    const head = await fetch(baseUrl + '/fr/', { method: 'HEAD' });
     assert.equal(head.status, 200);
     assert.equal(await head.text(), '');
   });
@@ -117,11 +132,11 @@ describe('createSiteServer', () => {
   });
 
   it('revalidates the unhashed administration stylesheet on every request', async () => {
-    const admin = await fetch(baseUrl + '/admin.css');
+    const admin = await fetch(baseUrl + '/fr/admin.css');
     assert.equal(admin.status, 200);
     assert.equal(admin.headers.get('content-type'), 'text/css; charset=utf-8');
     assert.equal(admin.headers.get('cache-control'), 'no-cache');
-    // Each locale build loads its own copy against its base href (/ and /en/).
+    // Each locale build loads its own copy against its base href.
     const english = await fetch(baseUrl + '/en/admin.css');
     assert.equal(english.status, 200);
     assert.equal(english.headers.get('cache-control'), 'no-cache');

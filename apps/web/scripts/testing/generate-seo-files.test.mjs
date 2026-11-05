@@ -51,11 +51,11 @@ describe('sitemapXml', () => {
     assert.match(xml, /^<\?xml version="1.0" encoding="UTF-8"\?>\n<urlset /);
     assert.match(xml, /xmlns:xhtml="http:\/\/www.w3.org\/1999\/xhtml"/);
     assert.equal(xml.match(/<url>/g)?.length, 2);
-    assert.ok(xml.includes('<loc>https://valentin-fortin.pro/projects/movah</loc>'));
+    assert.ok(xml.includes('<loc>https://valentin-fortin.pro/fr/projects/movah</loc>'));
     assert.ok(xml.includes('<loc>https://valentin-fortin.pro/en/projects/movah</loc>'));
     assert.equal(
       xml.match(
-        /<xhtml:link rel="alternate" hreflang="x-default" href="https:\/\/valentin-fortin.pro\/projects\/movah"\/>/g,
+        /<xhtml:link rel="alternate" hreflang="x-default" href="https:\/\/valentin-fortin.pro\/fr\/projects\/movah"\/>/g,
       )?.length,
       2,
     );
@@ -67,7 +67,7 @@ describe('sitemapXml', () => {
       { path: '/', locales: ['fr', 'en'] },
       { path: '/projects/a&b', locales: ['en'] },
     ]);
-    assert.ok(xml.includes('<loc>https://example.test/</loc>'));
+    assert.ok(xml.includes('<loc>https://example.test/fr/</loc>'));
     assert.ok(xml.includes('<loc>https://example.test/en/</loc>'));
     assert.ok(xml.includes('<loc>https://example.test/en/projects/a&amp;b</loc>'));
     assert.ok(
@@ -86,6 +86,7 @@ describe('robotsTxt', () => {
         'User-agent: *',
         'Allow: /',
         'Disallow: /admin',
+        'Disallow: /fr/admin',
         'Disallow: /en/admin',
         'Disallow: /api/',
         '',
@@ -110,6 +111,7 @@ describe('writeSeoFiles', () => {
     outputDirectory = join(fixture, 'browser');
     await mkdir(snapshotDirectory);
     await mkdir(outputDirectory);
+    await mkdir(join(outputDirectory, 'fr'));
     await writeFile(join(snapshotDirectory, 'fr.json'), snapshot('fr', ['movah']));
     await writeFile(join(snapshotDirectory, 'en.json'), snapshot('en', ['movah']));
   });
@@ -121,7 +123,11 @@ describe('writeSeoFiles', () => {
   });
 
   it('writes both files at the root of the built site', async () => {
-    await writeFile(join(outputDirectory, 'index.html'), '<!doctype html>');
+    await writeFile(join(outputDirectory, 'fr/index.html'), '<!doctype html>');
+    await writeFile(join(outputDirectory, 'fr/index.csr.html'), 'CSR shell');
+    await writeFile(join(outputDirectory, 'fr/admin.css'), 'admin stylesheet');
+    await mkdir(join(outputDirectory, 'fr/error/404'), { recursive: true });
+    await writeFile(join(outputDirectory, 'fr/error/404/index.html'), 'French error');
     const summary = await writeSeoFiles({
       snapshotDirectory,
       outputDirectory,
@@ -130,7 +136,14 @@ describe('writeSeoFiles', () => {
     assert.deepEqual(summary, { pages: 4, urls: 8 });
     const xml = await readFile(join(outputDirectory, 'sitemap.xml'), 'utf8');
     assert.ok(xml.includes('<loc>https://example.test/en/projects/movah</loc>'));
-    assert.ok(xml.includes('<loc>https://example.test/legal-notice</loc>'));
+    assert.ok(xml.includes('<loc>https://example.test/fr/legal-notice</loc>'));
+    assert.match(await readFile(join(outputDirectory, 'index.html'), 'utf8'), /url=\/fr\//);
+    assert.equal(await readFile(join(outputDirectory, 'index.csr.html'), 'utf8'), 'CSR shell');
+    assert.equal(await readFile(join(outputDirectory, 'admin.css'), 'utf8'), 'admin stylesheet');
+    assert.equal(
+      await readFile(join(outputDirectory, 'error/404/index.html'), 'utf8'),
+      'French error',
+    );
     assert.match(
       await readFile(join(outputDirectory, 'robots.txt'), 'utf8'),
       /Sitemap: https:\/\/example.test\/sitemap.xml\n$/,
@@ -142,7 +155,7 @@ describe('writeSeoFiles', () => {
       writeSeoFiles({ snapshotDirectory, outputDirectory, origin: 'https://example.test' }),
       /No built site/,
     );
-    await writeFile(join(outputDirectory, 'index.html'), '<!doctype html>');
+    await writeFile(join(outputDirectory, 'fr/index.html'), '<!doctype html>');
     await assert.rejects(
       writeSeoFiles({ snapshotDirectory, outputDirectory, origin: 'https://example.test/fr' }),
       /SITE_ORIGIN must be a scheme and a host/,

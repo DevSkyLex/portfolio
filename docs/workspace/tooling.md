@@ -12,11 +12,11 @@
 
 ## CI (`.github/workflows`)
 
-| Workflow         | Trigger                                       | Jobs                                                                                                                                                                                                    |
-| ---------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ci.yml`         | pull request, push on `main`                  | `quality` (format check, architecture, affected lint/typecheck/build), `tests` (coverage, summary, report artefact), `e2e` (built site, four browsers; affected on pull requests), `e2e-stack` (opt-in) |
-| `deploy.yml`     | CI success on `main`, manual                  | services deployed only if the commit is still the head of `main`; manual run takes an explicit `ref` (rollback)                                                                                         |
-| `site-build.yml` | CI success on `main`, content-service, manual | same head-of-`main` check; `ref` input for a rollback build                                                                                                                                             |
+| Workflow         | Trigger                                               | Jobs                                                                                                                                                                                                    |
+| ---------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`         | pull request, push on `main`                          | `quality` (format check, architecture, affected lint/typecheck/build), `tests` (coverage, summary, report artefact), `e2e` (built site, four browsers; affected on pull requests), `e2e-stack` (opt-in) |
+| `deploy.yml`     | CI success on `main`, manual                          | services deployed only if the commit is still the head of `main`; manual run takes an explicit `ref` (rollback)                                                                                         |
+| `site-build.yml` | Automatic service deployment, content-service, manual | same head-of-`main` check; `ref` input for a rollback build                                                                                                                                             |
 
 ## Lint
 

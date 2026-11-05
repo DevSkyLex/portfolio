@@ -22,7 +22,9 @@ async function activeSnapshotChunk(request: APIRequestContext): Promise<string> 
   const html: string = await (await request.get('/')).text();
   const main: string | undefined = /src="([^"]*main-[^"]+\.js)"/.exec(html)?.[1];
   if (!main) throw new Error('Missing built main bundle.');
-  const bundle: string = await (await request.get('/' + main.replace(/^\//, ''))).text();
+  const bundle: string = await (
+    await request.get(new URL(main, 'https://example.test/fr/').pathname)
+  ).text();
   // The option is either an inline loader or a reference to the environment's loader function
   // (`contentSnapshot:t2` … `function t2(a){…}`, D7 development exception), whose body holds the imports.
   const option: string | undefined = /contentSnapshot:.{0,350}/.exec(bundle)?.[0];
@@ -156,7 +158,7 @@ async function publicStylesheet(request: APIRequestContext, html: string): Promi
     html,
   )?.[1];
   if (!href) throw new Error('Missing public stylesheet.');
-  return (await request.get('/' + href.replace(/^\//, ''))).text();
+  return (await request.get(new URL(href, 'https://example.test/fr/').pathname)).text();
 }
 
 /**
@@ -169,7 +171,7 @@ async function publicStylesheet(request: APIRequestContext, html: string): Promi
  * @returns {string} Root-relative project page path.
  */
 function projectPath(home: string): string {
-  const path: string | undefined = /href="(\/projects\/[a-z0-9-]+)"/.exec(home)?.[1];
+  const path: string | undefined = /href="(\/fr\/projects\/[a-z0-9-]+)"/.exec(home)?.[1];
   if (!path) throw new Error('Missing project link on the home page.');
   return path;
 }
@@ -196,7 +198,7 @@ test('public pages never load the administration stylesheet (D31)', async ({
   expect(requested).toEqual([]);
   // Admin-only catalogue families (resizable panels, sidebar) stay out of the public stylesheet.
   const styles: string = await publicStylesheet(request, home);
-  const admin: string = await (await request.get('/admin.css')).text();
+  const admin: string = await (await request.get('/fr/admin.css')).text();
   for (const family of ['cursor-col-resize', '/sidebar']) {
     expect(admin).toContain(family);
     expect(styles).not.toContain(family);

@@ -58,7 +58,7 @@ test.describe('public site', (): void => {
     expect(entries).toEqual(
       sections.map(
         (section: { id: string; title: string }): { href: string | null; label: string } => ({
-          href: `/projects/movah#${section.id}`,
+          href: `/fr/projects/movah#${section.id}`,
           label: section.title,
         }),
       ),
@@ -74,7 +74,7 @@ test.describe('public site', (): void => {
     }).toPass();
     await expect(page.getByRole('heading', { level: 2, name: last.title })).toBeInViewport();
 
-    await page.goto(`/projects/movah#${first.id}`);
+    await page.goto(`/fr/projects/movah#${first.id}`);
     await expect(page.getByRole('heading', { level: 2, name: first.title })).toBeInViewport();
   });
 
