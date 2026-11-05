@@ -10,7 +10,7 @@ import {
   migrateContentDatabase,
   seedContent,
 } from '@vfortin/content-adapters-out';
-import { GetAdminProject } from '@vfortin/content-application';
+import { GetAdminProject, PublishProject, ReviseProject } from '@vfortin/content-application';
 import { type JWK, SignJWT, exportJWK, generateKeyPair } from 'jose';
 import { mkdtempSync, rmSync } from 'node:fs';
 import type { Server } from 'node:http';
@@ -357,6 +357,103 @@ describe('ContentModule', (): void => {
       publishToken,
     );
     expect(data<ProjectResponse>(published)).toMatchObject({ status: 'published' });
+  });
+
+  it('denies a predicted future draft version before a concurrent publication can authorize the edit', async (): Promise<void> => {
+    const current: ProjectResponse = data(await call('get_project', { id: 'project-iotplatform' }));
+    const draft: ProjectResponse = data(
+      await call(
+        'unpublish_project',
+        {
+          id: current.id,
+          expectedVersion: current.version,
+        },
+        publishToken,
+      ),
+    );
+    const revise: ReviseProject = app.get<ReviseProject>(ReviseProject);
+    const originalExecute: ReviseProject['execute'] = revise.execute.bind(revise);
+    const publish: PublishProject = app.get<PublishProject>(PublishProject);
+    const spy: ReturnType<typeof vi.spyOn> = vi
+      .spyOn(revise, 'execute')
+      .mockImplementationOnce(
+        async (id, expectedVersion, revision): ReturnType<ReviseProject['execute']> => {
+          // An edit permitted against a guessed version must not race this real publication.
+          await publish.execute(id, draft.version);
+          return originalExecute(id, expectedVersion, revision);
+        },
+      );
+    try {
+      const denied: request.Response = await call(
+        'revise_project',
+        {
+          id: draft.id,
+          expectedVersion: draft.version + 1,
+          revision: {
+            ...draft,
+            title: { fr: 'Unauthorized public edit', en: 'Unauthorized public edit' },
+          },
+        },
+        writeToken,
+      );
+      expect(denied.status).toBe(403);
+      expect(denied.headers['www-authenticate']).toContain('content:publish');
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+    expect(data<ProjectResponse>(await call('get_project', { id: draft.id }))).toMatchObject({
+      status: 'draft',
+      version: draft.version,
+      title: draft.title,
+    });
+  });
+
+  it('rejects an exact-version draft edit if publication races the mutation', async (): Promise<void> => {
+    const current: ProjectResponse = data(await call('get_project', { id: 'project-crm-kodoka' }));
+    const draft: ProjectResponse = data(
+      await call(
+        'unpublish_project',
+        {
+          id: current.id,
+          expectedVersion: current.version,
+        },
+        publishToken,
+      ),
+    );
+    const revise: ReviseProject = app.get<ReviseProject>(ReviseProject);
+    const originalExecute: ReviseProject['execute'] = revise.execute.bind(revise);
+    const publish: PublishProject = app.get<PublishProject>(PublishProject);
+    const spy: ReturnType<typeof vi.spyOn> = vi
+      .spyOn(revise, 'execute')
+      .mockImplementationOnce(
+        async (id, expectedVersion, revision): ReturnType<ReviseProject['execute']> => {
+          await publish.execute(id, draft.version);
+          return originalExecute(id, expectedVersion, revision);
+        },
+      );
+    try {
+      const conflicted: request.Response = await call(
+        'revise_project',
+        {
+          id: draft.id,
+          expectedVersion: draft.version,
+          revision: { ...draft, title: { fr: 'Racing edit', en: 'Racing edit' } },
+        },
+        writeToken,
+      );
+      expect(conflicted.status).toBe(200);
+      expect(conflicted.body.result.isError).toBe(true);
+      expect(data(conflicted)).toMatchObject({ status: 412, code: 'content.version-mismatch' });
+      expect(spy).toHaveBeenCalledOnce();
+    } finally {
+      spy.mockRestore();
+    }
+    expect(data<ProjectResponse>(await call('get_project', { id: draft.id }))).toMatchObject({
+      status: 'published',
+      version: draft.version + 1,
+      title: draft.title,
+    });
   });
 
   it('creates, reads, revises, reorders and deletes a timeline entry', async (): Promise<void> => {

@@ -347,6 +347,25 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     expect(malformedId.body.error.code).toBe(-32602);
   });
 
+  it('denies write-only edits with predicted future or stale draft versions before mutation', async (): Promise<void> => {
+    const draft: Project = project('draft');
+    useCases.getProject.execute.mockResolvedValue({ project: draft, media: [] });
+    for (const expectedVersion of [draft.version + 1, draft.version - 1]) {
+      const denied: request.Response = await call(
+        'revise_project',
+        {
+          id: draft.id,
+          expectedVersion,
+          revision: FIXTURE,
+        },
+        'write',
+      );
+      expect(denied.status).toBe(403);
+      expect(denied.headers['www-authenticate']).toContain('content:publish');
+    }
+    expect(useCases.reviseProject.execute).not.toHaveBeenCalled();
+  });
+
   it('keeps the SDK permission check when invoked without the HTTP scope preflight', async (): Promise<void> => {
     const client: Client = new Client({ name: 'permission-test', version: '1' });
     const server: ReturnType<ContentMcpTools['createServer']> = tools.createServer([

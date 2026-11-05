@@ -906,7 +906,9 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
 - **Consistency**: tool inputs reuse the existing content contracts, presenters and application use
   cases. Revisions, publication, unpublication, deletion and reordering require `expectedVersion`;
   stale versions fail without overwriting newer changes. Existing transactional outbox behavior stays
-  responsible for site rebuild requests. Tool descriptions identify immediately public mutations.
+  responsible for site rebuild requests. Draft-only write permission is bound to the exact version
+  observed during authorization, so guessing a future version cannot bypass publication consent during
+  a concurrent publication. Tool descriptions identify immediately public mutations.
 - **Errors and edge**: protocol errors remain JSON-RPC; known application failures become safe tool
   errors and unexpected failures are redacted. Nginx gives the exact MCP endpoint the same 1100 kB
   ceiling as rich project/legal administration, above the service's 1 MB JSON ceiling. Stateless JSON

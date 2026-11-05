@@ -304,7 +304,15 @@ export class ContentMcpTools {
       typeof input.id === 'string'
     ) {
       try {
-        if ((await this.getProject.execute(input.id)).project.status === 'published')
+        const { project }: Awaited<ReturnType<GetAdminProject['execute']>> =
+          await this.getProject.execute(input.id);
+        // Bind draft-only consent to the observed version, so a guessed future version cannot
+        // authorize an edit after concurrent publication increments the stored version.
+        if (
+          project.status === 'published' ||
+          !('expectedVersion' in input) ||
+          project.version !== input.expectedVersion
+        )
           return PublicWrite;
       } catch {
         // A failed lookup must never relax the publication permission check.
