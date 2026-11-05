@@ -175,6 +175,9 @@ The worker retries failed deliveries; its Message-ID is stable, but delivery rem
 
 Connection secrets of the `production` environment: `VPS_HOST`, `VPS_SSH_KEY` (private key of the deployment account) and `VPS_SSH_KNOWN_HOSTS` (complete verified OpenSSH known_hosts entries). Optional `VPS_USER` overrides the SSH account; it defaults to `deploy`. Rename the former `VPS_KNOWN_HOSTS` secret to `VPS_SSH_KNOWN_HOSTS`. For a nonstandard SSH port, obtain the fingerprint for that port.
 
+Both deployment and site release copies use the configured SSH port and verify the server against
+`known_hosts`.
+
 - `CI`: format, lint, typecheck, tests, build, architecture test; operations checks (`docker/scripts/check-ops.sh`); e2e (Playwright, four browsers) on `main`.
 - `Deploy services` (after CI on `main`): GHCR images, then `playbooks/deploy.yml -e tag=<sha>` → `scripts/deploy.sh`.
 - `Site build` (after CI, or triggered by content-service on each publication): snapshot of the published content, prerendered build with `sitemap.xml` and `robots.txt` generated from the same snapshot (`npx nx run web:seo-files`, which runs `web:build` first; origin `SITE_ORIGIN`, default `https://valentin-fortin.pro`, D42), then `playbooks/publish-site.yml -e release=<name>` (release copy, pre-compression and atomic switch). A new rebuild replaces a pending one.
