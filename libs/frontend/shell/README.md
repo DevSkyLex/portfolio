@@ -25,7 +25,7 @@ inject these ports rather than concrete business stores, services or DTOs.
 
 ## Invariants
 
-- French `/` and English `/en/` serve public content and the administration (`/admin`, `/en/admin`,
+- French `/fr/` and English `/en/` serve public content and the administration (`/fr/admin`, `/en/admin`,
   CSR and noindex); the admin sidebar's « Langue » menu switches between the two builds (D18).
 - Root initialization is reserved for requirements shared by the whole application.
 - Public content failure preserves prerendered readability and does not prevent login.

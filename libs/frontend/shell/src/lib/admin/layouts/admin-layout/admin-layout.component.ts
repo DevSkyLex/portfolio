@@ -341,7 +341,7 @@ import {
               </div>
             </ng-template>
             <!--
-              Each locale is a separate build (French at /, English at /en/): choosing the other one
+              Each locale is a separate build (French at /fr/, English at /en/): choosing the other one
               loads the same admin address from it.
             -->
             <button
@@ -759,7 +759,7 @@ export class AdminLayoutComponent {
    * @readonly
    *
    * @description
-   * Language of this build of the administration: French at `/admin`, English at `/en/admin`.
+   * Language of this build of the administration: French at `/fr/admin`, English at `/en/admin`.
    *
    * @type {Language}
    */
@@ -810,7 +810,7 @@ export class AdminLayoutComponent {
    *
    * @type {string}
    */
-  protected readonly siteHref: string = this.locale === 'en' ? '/en/' : '/';
+  protected readonly siteHref: string = `/${this.locale}/`;
 
   /**
    * Property theme
@@ -997,7 +997,7 @@ export class AdminLayoutComponent {
    * @method switchLanguage
    *
    * @description
-   * Loads the same administration address from the other locale build (`/admin/…` ↔
+   * Loads the same administration address from the other locale build (`/fr/admin/…` ↔
    * `/en/admin/…`, `localeUrl`), as the public layout does. A full document load is needed, each
    * locale being a separate build; the session survives it (the refresh cookie is not tied to the
    * locale path).

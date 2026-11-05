@@ -928,7 +928,7 @@ describe('ProjectFormComponent', (): void => {
     expect(shownLanguage(root, 'Aperçus')).toBe('Français');
     expect(preview('title')).toBe('Titre movah — Valentin Fortin');
     expect(preview('description')).toBe('Résumé');
-    expect(preview('url')).toBe('valentin-fortin.pro › projects › movah');
+    expect(preview('url')).toBe('valentin-fortin.pro › fr › projects › movah');
     await showLanguage('Aperçus', 'en');
     expect(preview('url')).toBe('valentin-fortin.pro › en › projects › movah');
     expect(preview('title')).toBe('Title movah — Valentin Fortin');
@@ -1041,8 +1041,8 @@ describe('ProjectFormComponent', (): void => {
     const french: Record<string, string> = await generated('fr');
     expect(french['title']).toBe('Titre movah — Valentin Fortin');
     expect(french['keywords']).toBe('covoiturage');
-    expect(french['canonical']).toBe('https://valentin-fortin.pro/projects/movah');
-    expect(french['hreflang x-default']).toBe('https://valentin-fortin.pro/projects/movah');
+    expect(french['canonical']).toBe('https://valentin-fortin.pro/fr/projects/movah');
+    expect(french['hreflang x-default']).toBe('https://valentin-fortin.pro/fr/projects/movah');
     expect(french['og:image']).toBe(`https://valentin-fortin.pro${MEDIA.src}`);
     expect(french['og:image:alt']).toBe('Accueil');
     expect(french['twitter:card']).toBe('summary_large_image');
@@ -1747,10 +1747,10 @@ describe('AdminProjectEditPageComponent', (): void => {
 
   it('unpublishes a published project, then toasts its removal', async (): Promise<void> => {
     const { backend, root, settle } = await edit(project('a', 'published'), [FRENCH_BUILD]);
-    expect(root.querySelector('ui-page-header a[href="/projects/a"]')?.textContent).toContain(
+    expect(root.querySelector('ui-page-header a[href="/fr/projects/a"]')?.textContent).toContain(
       'Voir la page',
     );
-    expect(root.querySelector('aside dd.font-mono')?.textContent?.trim()).toBe('/projects/a');
+    expect(root.querySelector('aside dd.font-mono')?.textContent?.trim()).toBe('/fr/projects/a');
     button(root, 'Dépublier').click();
     await settle();
     expect(document.querySelector('[data-slot="alert-dialog-content"]')?.textContent).toContain(
@@ -1829,7 +1829,9 @@ describe('AdminProjectEditPageComponent', (): void => {
   });
 
   it('opens the properties in a right sheet from the page header', async (): Promise<void> => {
-    const { root, settle } = await edit({ ...project('a', 'published'), featured: true });
+    const { root, settle } = await edit({ ...project('a', 'published'), featured: true }, [
+      FRENCH_BUILD,
+    ]);
     expect(root.querySelector('aside[aria-label="Propriétés"]')?.textContent).toContain(
       '/projects/a',
     );
@@ -1853,7 +1855,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     expect(sheet?.querySelector('[data-slot="cover-placeholder"]')?.className).toContain(
       'bg-surface-sunk',
     );
-    expect(sheet?.textContent).toContain('/projects/a');
+    expect(sheet?.textContent).toContain('/fr/projects/a');
     // The shared settings travel with the properties, still bound to the form.
     expect(sheet?.querySelector<HTMLInputElement>('[id="edit-featured"]')?.checked).toBe(true);
     expect(sheet?.querySelector('[id="edit-site-url"]')).not.toBeNull();
@@ -1927,7 +1929,7 @@ describe('AdminProjectsPageComponent', (): void => {
       'Dépublier',
     ]);
     expect(menuItems()[0]?.getAttribute('href')).toBe('/admin/projects/a');
-    expect(menuItems()[1]?.getAttribute('href')).toBe('/projects/a');
+    expect(menuItems()[1]?.getAttribute('href')).toBe('/fr/projects/a');
     expect(menuItems()[1]?.getAttribute('target')).toBe('_blank');
     root.querySelectorAll('tbody tr')[0]?.querySelector<HTMLButtonElement>('button')?.click();
     await settle();

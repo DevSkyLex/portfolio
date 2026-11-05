@@ -498,7 +498,7 @@ export class SiteLayoutComponent {
   protected switchLanguage(language: Language): void {
     if (language === this.locale) return;
     const path: string = this.router.url;
-    this.document.location.assign(language === 'en' ? `/en${path}` : path);
+    this.document.location.assign(`/${language}${path}`);
   }
 
   /**

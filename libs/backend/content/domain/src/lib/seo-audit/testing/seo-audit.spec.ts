@@ -123,7 +123,7 @@ describe('auditProjectSeo', (): void => {
     expect(audit.issues).toEqual([]);
     expect(audit).toMatchObject({ projectId: 'p-1', slug: 'movah', title: 'Movah' });
     expect(audit.pages.fr).toEqual({
-      path: '/projects/movah',
+      path: '/fr/projects/movah',
       title: 'Movah, suivi de séries et de films',
       description: SUMMARY_FR,
       keywords: ['suivi de séries'],

@@ -83,7 +83,7 @@ function send(request, response, file, status, headers) {
 function sendNotFound(request, response, root, pathname) {
   const errorPath = pathname.startsWith('/en/')
     ? 'en/error/404/index.html'
-    : 'error/404/index.html';
+    : 'fr/error/404/index.html';
   const notFound = siteFile(root, errorPath);
   if (notFound) send(request, response, notFound, 404, { 'cache-control': 'no-store' });
   else {
@@ -106,8 +106,11 @@ export function createSiteServer(directory, { mediaDirectory } = {}) {
     mediaDirectory && existsSync(mediaDirectory) ? realpathSync(resolve(mediaDirectory)) : null;
   return createServer((request, response) => {
     let pathname;
+    let search;
     try {
-      pathname = decodeURIComponent(new URL(request.url ?? '/', 'http://localhost').pathname);
+      const url = new URL(request.url ?? '/', 'http://localhost');
+      pathname = decodeURIComponent(url.pathname);
+      search = url.search;
       if (pathname.includes('\0')) throw new URIError('Invalid path');
     } catch {
       response.writeHead(400, { 'cache-control': 'no-store' });
@@ -137,17 +140,26 @@ export function createSiteServer(directory, { mediaDirectory } = {}) {
       else sendNotFound(request, response, root, pathname);
       return;
     }
-    if (pathname === '/admin' || pathname === '/en/admin') {
-      response.writeHead(301, { location: `${pathname}/` });
+    if (pathname === '/' || pathname === '/fr') {
+      response.writeHead(308, { location: `/fr/${search}` });
       response.end();
       return;
     }
-    // Each locale build serves its own client-rendered administration (French at /admin/, English
-    // at /en/admin/).
-    if (pathname.startsWith('/admin/') || pathname.startsWith('/en/admin/')) {
+    if (/^\/(?:admin(?:\/|$)|projects(?:\/|$)|privacy$|legal-notice$)/.test(pathname)) {
+      response.writeHead(308, { location: `/fr${pathname}${search}` });
+      response.end();
+      return;
+    }
+    if (pathname === '/fr/admin' || pathname === '/en/admin') {
+      response.writeHead(301, { location: `${pathname}/${search}` });
+      response.end();
+      return;
+    }
+    // Each locale build serves its own client-rendered administration.
+    if (pathname.startsWith('/fr/admin/') || pathname.startsWith('/en/admin/')) {
       const index = siteFile(
         root,
-        pathname.startsWith('/en/') ? 'en/index.csr.html' : 'index.csr.html',
+        pathname.startsWith('/en/') ? 'en/index.csr.html' : 'fr/index.csr.html',
       );
       if (index)
         send(request, response, index, 200, {
@@ -161,7 +173,20 @@ export function createSiteServer(directory, { mediaDirectory } = {}) {
       return;
     }
     const hidden = pathname.split('/').some((part) => part.startsWith('.'));
-    const internalError = /^\/(?:en\/)?error\//.test(pathname);
+    const internalError = /^\/(?:fr\/|en\/)?error\//.test(pathname);
+    const staticAsset =
+      /\.(?:js|css|woff2?|png|jpe?g|webp|avif|gif|svg|ico|txt|xml|webmanifest)$/i.test(pathname);
+    if (
+      !hidden &&
+      !internalError &&
+      !staticAsset &&
+      !pathname.startsWith('/fr/') &&
+      !pathname.startsWith('/en/')
+    ) {
+      response.writeHead(308, { location: `/fr${pathname}${search}` });
+      response.end();
+      return;
+    }
     const requested = pathname.replace(/^\/+/, '');
     const found =
       hidden || internalError
@@ -174,6 +199,7 @@ export function createSiteServer(directory, { mediaDirectory } = {}) {
       // The unhashed administration stylesheet of each locale (D31) is revalidated like the pages.
       const asset =
         pathname !== '/admin.css' &&
+        pathname !== '/fr/admin.css' &&
         pathname !== '/en/admin.css' &&
         /\.(?:js|css|woff2?|png|jpe?g|webp|avif|gif|svg|ico|txt|xml|webmanifest)$/i.test(pathname);
       send(request, response, found, 200, {

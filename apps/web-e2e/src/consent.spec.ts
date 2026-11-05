@@ -141,7 +141,7 @@ test.describe('cookie consent', (): void => {
     await expect(region.getByRole('button', { name: 'Personnaliser' })).toBeVisible();
     await expect(
       region.getByRole('link', { name: 'Politique de confidentialité' }),
-    ).toHaveAttribute('href', '/privacy');
+    ).toHaveAttribute('href', '/fr/privacy');
     expect(await seriousViolations(page)).toEqual([]);
     expect(google).toEqual([]);
   });

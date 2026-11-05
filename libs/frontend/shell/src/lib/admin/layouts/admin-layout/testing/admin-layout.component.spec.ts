@@ -904,7 +904,7 @@ describe('AdminLayoutComponent', () => {
     expect(items.map((item) => item.getAttribute('aria-checked'))).toEqual(['true', 'false']);
     expect(items.every((item) => item.querySelector('ng-icon') !== null)).toBe(true);
     // The public site opens in the administration's language.
-    expect(siteLink(root)?.getAttribute('href')).toBe('/');
+    expect(siteLink(root)?.getAttribute('href')).toBe('/fr/');
   });
 
   it('loads the same admin address from the English build, and nothing for the current one', async () => {
@@ -941,6 +941,6 @@ describe('AdminLayoutComponent', () => {
     expect(items.map((item) => item.getAttribute('aria-checked'))).toEqual(['false', 'true']);
     items[0]?.click();
     await fixture.whenStable();
-    expect(loaded).toEqual(['/admin/messages']);
+    expect(loaded).toEqual(['/fr/admin/messages']);
   });
 });

@@ -210,7 +210,7 @@ describe('ContentModule', (): void => {
       expect((await dashboard('7d')).searchConsole).toMatchObject({
         data: { totals: { clicks: 7 } },
       });
-      expect(measured).toContain('https://valentin-fortin.pro/projects/movah');
+      expect(measured).toContain('https://valentin-fortin.pro/fr/projects/movah');
       expect((await dashboard()).refresh.nextAllowedAt).not.toBeNull();
 
       const again: request.Response = await request(app.getHttpServer())

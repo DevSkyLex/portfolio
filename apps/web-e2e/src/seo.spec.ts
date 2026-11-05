@@ -80,7 +80,7 @@ function snapshotProject(locale: 'fr' | 'en', slug: string): SnapshotProject {
  */
 function expectedPage(locale: 'fr' | 'en'): ExpectedPage {
   const project: SnapshotProject = snapshotProject(locale, 'movah');
-  const path: string = `${locale === 'en' ? '/en' : ''}/projects/movah`;
+  const path: string = `/${locale}/projects/movah`;
   const cover: SnapshotProject['cover'] = project.cover;
   return {
     locale,
@@ -158,9 +158,9 @@ for (const expected of [expectedPage('fr'), expectedPage('en')]) {
 
     expect(await attribute(page, 'link[rel="canonical"]', 'href')).toBe(expected.canonical);
     for (const [hreflang, href] of [
-      ['fr', `${ORIGIN}/projects/movah`],
+      ['fr', `${ORIGIN}/fr/projects/movah`],
       ['en', `${ORIGIN}/en/projects/movah`],
-      ['x-default', `${ORIGIN}/projects/movah`],
+      ['x-default', `${ORIGIN}/fr/projects/movah`],
     ]) {
       expect(await attribute(page, `link[rel="alternate"][hreflang="${hreflang}"]`, 'href')).toBe(
         href,
@@ -206,7 +206,7 @@ test('replaces the metadata when moving to the next project, then removes them o
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
 
   await page.getByRole('link', { name: 'Tous les projets' }).click();
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${ORIGIN}/`);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${ORIGIN}/fr/`);
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(0);
   await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'website');
 });
@@ -221,17 +221,17 @@ test('serves a sitemap listing every page in both languages', async ({
   expect(reply.headers()['content-type']).toMatch(/xml/);
   const xml: string = await reply.text();
   for (const path of [
-    '/',
+    '/fr/',
     '/en/',
-    '/legal-notice',
+    '/fr/legal-notice',
     '/en/privacy',
-    '/projects/movah',
+    '/fr/projects/movah',
     '/en/projects/movah',
   ]) {
     expect(xml).toContain(`<loc>${ORIGIN}${path}</loc>`);
   }
   expect(xml).toContain(
-    `<xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}/projects/movah"/>`,
+    `<xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}/fr/projects/movah"/>`,
   );
 });
 
@@ -247,6 +247,7 @@ test('serves robots.txt that keeps the admin area out and points to the sitemap'
   for (const line of [
     'User-agent: *',
     'Disallow: /admin',
+    'Disallow: /fr/admin',
     'Disallow: /en/admin',
     'Disallow: /api/',
     `Sitemap: ${ORIGIN}/sitemap.xml`,

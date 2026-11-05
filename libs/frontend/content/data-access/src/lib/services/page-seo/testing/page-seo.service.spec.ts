@@ -73,7 +73,7 @@ describe('PageSeoService', (): void => {
       'Une application mobile pour suivre ses séries.',
     );
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://example.test/projects/movah',
+      'https://example.test/fr/projects/movah',
     );
     expect(
       [...head.querySelectorAll('link[rel="alternate"]')].map((link: Element): string[] => [
@@ -81,9 +81,9 @@ describe('PageSeoService', (): void => {
         link.getAttribute('href') ?? '',
       ]),
     ).toEqual([
-      ['fr', 'https://example.test/projects/movah'],
+      ['fr', 'https://example.test/fr/projects/movah'],
       ['en', 'https://example.test/en/projects/movah'],
-      ['x-default', 'https://example.test/projects/movah'],
+      ['x-default', 'https://example.test/fr/projects/movah'],
     ]);
     expect(content(head, 'name="keywords"')).toBe('flutter');
     expect(content(head, 'property="og:type"')).toBe('article');
@@ -155,7 +155,7 @@ describe('PageSeoService', (): void => {
       [...head.querySelectorAll('link[rel="canonical"]')].map((link: Element): string | null =>
         link.getAttribute('href'),
       ),
-    ).toEqual(['https://example.test/projects/movah']);
+    ).toEqual(['https://example.test/fr/projects/movah']);
   });
 
   it('writes a website page without an image or JSON-LD', (): void => {
@@ -164,7 +164,7 @@ describe('PageSeoService', (): void => {
 
     expect(content(head, 'property="og:type"')).toBe('website');
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://example.test/',
+      'https://example.test/fr/',
     );
     expect(head.querySelector('script[type="application/ld+json"]')).toBeNull();
   });

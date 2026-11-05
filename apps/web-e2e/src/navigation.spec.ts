@@ -1,5 +1,15 @@
 import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
 
+test('redirects legacy French links while preserving their query and fragment', async ({
+  page,
+}: {
+  page: Page;
+}): Promise<void> => {
+  await page.goto('/projects/movah?source=link#contexte');
+  await expect(page).toHaveURL(/\/fr\/projects\/movah\?source=link#contexte$/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+});
+
 test.describe('mobile menu', (): void => {
   test.use({ viewport: { width: 390, height: 844 } });
 

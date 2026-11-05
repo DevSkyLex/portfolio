@@ -453,7 +453,7 @@ describe('admin area', () => {
     await fixture.whenStable();
     expect(palette()?.textContent).not.toContain('Movah');
     item('Voir le site')?.click();
-    expect(open).toHaveBeenCalledWith('/', '_blank', 'noopener');
+    expect(open).toHaveBeenCalledWith('/fr/', '_blank', 'noopener');
     await fixture.whenStable();
     expect(palette()).toBeNull();
     open.mockRestore();

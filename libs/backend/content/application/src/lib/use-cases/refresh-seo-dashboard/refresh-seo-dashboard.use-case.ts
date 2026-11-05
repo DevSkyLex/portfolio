@@ -263,9 +263,9 @@ export function defaultWebVitalsUrls(origin: string, projects: readonly Project[
         Number(b.snapshot().featured) - Number(a.snapshot().featured) || a.position - b.position,
     );
   return [
-    `${origin}/`,
+    `${origin}/fr/`,
     `${origin}/en/`,
-    ...(first ? [`${origin}/projects/${encodeURIComponent(first.slug.value)}`] : []),
+    ...(first ? [`${origin}/fr/projects/${encodeURIComponent(first.slug.value)}`] : []),
   ];
 }
 

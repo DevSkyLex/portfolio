@@ -10,8 +10,10 @@ describe('localeUrl', () => {
     );
   });
 
-  it('serves the French build at the router URL itself', () => {
-    expect(localeUrl('/admin/messages', 'fr')).toBe('/admin/messages');
-    expect(localeUrl('/admin', 'fr')).toBe('/admin');
+  it('prefixes the French build and preserves the query and fragment', () => {
+    expect(localeUrl('/admin/messages?status=archived#top', 'fr')).toBe(
+      '/fr/admin/messages?status=archived#top',
+    );
+    expect(localeUrl('/admin', 'fr')).toBe('/fr/admin');
   });
 });

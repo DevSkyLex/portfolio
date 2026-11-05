@@ -1,6 +1,6 @@
 # Static site: rebuilt from the content published in production, then published by an atomic switch.
 # Triggered by the content service on each publication (workflow_dispatch, `revision` input),
-# and on every change to the site code on main. After CI, only the commit that is still the head of
+# and after the services deploy on main. Only the commit that is still the head of
 # main is published (a late, older CI run is skipped); `ref` builds an explicit commit (rollback).
 name: Site build
 
@@ -15,7 +15,7 @@ on:
         required: false
         default: main
   workflow_run:
-    workflows: [CI]
+    workflows: [Deploy services]
     types: [completed]
     branches: [main]
 
@@ -26,10 +26,11 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'workflow_run')
     runs-on: ubuntu-latest
     environment: production
     env:
@@ -57,6 +58,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EVENT: ${{ github.event_name }}
           RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
           REF: ${{ inputs.ref || 'main' }}
         run: |
           if [ "$EVENT" = "workflow_dispatch" ]; then
@@ -65,9 +67,10 @@ jobs:
           else
             head=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
             sha="$RUN_SHA"
-            if [ "$head" = "$sha" ]; then publish=true; else
+            deployed=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/jobs" --jq '[.jobs[] | select(.name == "deploy" and .conclusion == "success")] | length')
+            if [ "$head" = "$sha" ] && [ "$deployed" = 1 ]; then publish=true; else
               publish=false
-              echo "::notice::$sha is no longer the head of main ($head): not published"
+              echo "::notice::Services were not deployed for the current head ($head): not published"
             fi
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"

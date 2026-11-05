@@ -93,7 +93,7 @@ export class ProjectPropertiesPanelComponent {
    * @readonly
    *
    * @description
-   * Public address of the project (`/projects/<slug>`, `/en/projects/<slug>` in the English build).
+   * Public address of the project (`/fr/projects/<slug>` or `/en/projects/<slug>`).
    *
    * @type {Signal<string>}
    */

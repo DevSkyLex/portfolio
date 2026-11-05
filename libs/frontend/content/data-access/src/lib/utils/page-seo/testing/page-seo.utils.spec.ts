@@ -21,9 +21,9 @@ describe('pageSeo', (): void => {
       keywords: [],
       canonical: 'https://valentin-fortin.pro/en/',
       alternates: [
-        { hreflang: 'fr', href: 'https://valentin-fortin.pro/' },
+        { hreflang: 'fr', href: 'https://valentin-fortin.pro/fr/' },
         { hreflang: 'en', href: 'https://valentin-fortin.pro/en/' },
-        { hreflang: 'x-default', href: 'https://valentin-fortin.pro/' },
+        { hreflang: 'x-default', href: 'https://valentin-fortin.pro/fr/' },
       ],
       type: 'website',
       locale: 'en_GB',

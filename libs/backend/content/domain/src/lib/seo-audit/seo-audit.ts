@@ -177,7 +177,7 @@ export interface SeoPageAudit {
    * @readonly
    *
    * @description
-   * Path of the page on the site (`/projects/<slug>` or `/en/projects/<slug>`).
+   * Path of the page on the site (`/fr/projects/<slug>` or `/en/projects/<slug>`).
    */
   readonly path: string;
 
@@ -414,9 +414,7 @@ function auditPage(
       issues.push({ code: 'translation-missing', severity: 'error', locale, fields });
     }
   }
-  const path: string = `${locale === 'fr' ? '' : `/${locale}`}/projects/${encodeURIComponent(
-    props.slug.value,
-  )}`;
+  const path: string = `/${locale}/projects/${encodeURIComponent(props.slug.value)}`;
   return { page: { path, title, description, keywords: [...keywords], keywordsSource }, issues };
 }
 

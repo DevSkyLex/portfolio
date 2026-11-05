@@ -88,11 +88,11 @@ describe('projectPageSeo', (): void => {
 
   it('builds the French canonical, alternates and Open Graph locales', (): void => {
     const seo: PageSeo = projectPageSeo(article(), 'fr', ORIGIN);
-    expect(seo.canonical).toBe('https://valentin-fortin.pro/projects/movah');
+    expect(seo.canonical).toBe('https://valentin-fortin.pro/fr/projects/movah');
     expect(seo.alternates).toEqual([
-      { hreflang: 'fr', href: 'https://valentin-fortin.pro/projects/movah' },
+      { hreflang: 'fr', href: 'https://valentin-fortin.pro/fr/projects/movah' },
       { hreflang: 'en', href: 'https://valentin-fortin.pro/en/projects/movah' },
-      { hreflang: 'x-default', href: 'https://valentin-fortin.pro/projects/movah' },
+      { hreflang: 'x-default', href: 'https://valentin-fortin.pro/fr/projects/movah' },
     ]);
     expect([seo.locale, seo.alternateLocale]).toEqual(['fr_FR', 'en_GB']);
   });

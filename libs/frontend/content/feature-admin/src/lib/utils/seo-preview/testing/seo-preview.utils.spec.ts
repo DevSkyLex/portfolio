@@ -28,7 +28,7 @@ describe('seoPreview', (): void => {
     expect(seoPreview(blank, 'fr', 'movah')).toEqual({
       title: 'Movah — Valentin Fortin',
       description: 'Covoiturage local.',
-      breadcrumb: 'valentin-fortin.pro › projects › movah',
+      breadcrumb: 'valentin-fortin.pro › fr › projects › movah',
     });
     expect(seoPreview(blank, 'en', 'movah')).toEqual({
       title: 'Movah EN — Valentin Fortin',

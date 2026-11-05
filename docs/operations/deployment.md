@@ -21,6 +21,10 @@ Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing
 - **Networks**: external `traefik_proxy` connects Traefik to Nginx only. Private `proxy` connects Nginx to services and provides outbound access for GitHub and SMTP; `database` is internal, without egress. Services and Postgres never join the shared edge network. Nginx cannot reach Postgres; migrations and one-off jobs only join `database`. Production publishes no host ports.
 - **Postgres roles** (D23): `docker/postgres/init/01-roles.sh` is idempotent. The image runs it on the first start; `scripts/deploy.sh` runs it again before and after the migrations, so a changed GitHub secret, new grants or new tables are applied on the next deployment. The application roles have data access only (not on `__migrations`), connection limits, and `PUBLIC` has no access to the database.
 - **Traefik**: routers use entrypoints `web` and `websecure`, HTTP redirects to HTTPS, and TLS uses the existing `letsencrypt` resolver. The secure router accepts `APP_HOST` and `www.APP_HOST`; Nginx redirects `www` to the canonical host. Optional `TRAEFIK_SECURE_MIDDLEWARES` attaches an existing shared middleware chain.
+- **Localized URLs**: public pages and administration live under `/fr/` and `/en/`. Legacy French
+  addresses redirect to `/fr/` while keeping their query; APIs and media remain at their existing paths.
+  The French redirect activates only once a release with the `/fr/` build is present, so either
+  workflow can finish first during the transition.
 - **Nginx**: the official entrypoint renders `nginx/templates/portfolio.conf.template` into `/tmp/portfolio.conf` on tmpfs. `APP_PORT` is the internal HTTP listening port, not a published host port. Only the reviewed Traefik peer from `TRUSTED_PROXIES` may reach the origin or supply the client address; this restored address drives rate limits and logs. HTTPS is preserved when forwarding to services. Upstreams resolve through Docker DNS at runtime, so recreated services need no Nginx reload. JSON access logs carry `request_id`, also returned in `X-Request-Id` and passed to services. Pages are revalidated (`no-cache`); hashed assets are cached for a year and other static files for an hour, except `/admin.css`, the unhashed administration stylesheet loaded by the admin area only (D31), which is revalidated like the pages. Missing hashed assets fall back to the previous release. `/media/` serves only names matching `<uuid>.webp` or `<uuid>-960.webp` (immutable, one year, with the server's security headers including `nosniff`); any other path under `/media/` answers 404. Request bodies are 64 kB by default; `/api/content/admin/projects/` and `/api/content/admin/legal/` accept 1100 kB (the service's JSON limit is 1 MB) and `POST /api/content/admin/media` 11 MB (the service caps the file at 10 MiB); larger bodies get a problem+json 413 (`http.413`, `content.media-too-large`). Uploaded images come from the same origin (`img-src 'self' data:`); the CSP only adds the Google tag origin to `script-src` and the GA4 collection hosts to `img-src` and `connect-src`, for the audience measurement loaded after consent (D48).
 
 ## Building service images
@@ -152,7 +156,7 @@ The worker retries failed deliveries; its Message-ID is stable, but delivery rem
    ```
 
    The command creates a password-only account and prints only its normalized address; no secret is
-   printed. Sign in at `/admin/`, then enable the one-time code (TOTP) from the "Sécurité" page: it asks
+   printed. Sign in at `/fr/admin/`, then enable the one-time code (TOTP) from the "Sécurité" page: it asks
    for the password again, shows the QR code and manual key once, and activates the code after a first
    code from the authenticator app (D17). Until then the login asks for the password alone.
 
@@ -185,7 +189,7 @@ Both deployment and site release copies use the configured SSH port and verify t
 
 - `CI`: format, lint, typecheck, tests, build, architecture test; operations checks (`docker/scripts/check-ops.sh`); e2e (Playwright, four browsers) on `main`.
 - `Deploy services` (after CI on `main`): GHCR images, then `playbooks/deploy.yml -e tag=<sha>` → `scripts/deploy.sh`.
-- `Site build` (after CI, or triggered by content-service on each publication): snapshot of the published content, prerendered build with `sitemap.xml` and `robots.txt` generated from the same snapshot (`npx nx run web:seo-files`, which runs `web:build` first; origin `SITE_ORIGIN`, default `https://valentin-fortin.pro`, D42), then `playbooks/publish-site.yml -e release=<name>` (release copy, pre-compression and atomic switch). A new rebuild replaces a pending one.
+- `Site build` (after successful automatic service deployment, or triggered by content-service on each publication): snapshot of the published content, prerendered build with `sitemap.xml` and `robots.txt` generated from the same snapshot (`npx nx run web:seo-files`, which runs `web:build` first; origin `SITE_ORIGIN`, default `https://valentin-fortin.pro`, D42), then `playbooks/publish-site.yml -e release=<name>` (release copy, pre-compression and atomic switch). A new rebuild replaces a pending one.
 
 ## Migrating an existing standalone installation
 
