@@ -117,12 +117,12 @@ test.describe('public site', (): void => {
       if (request.url().includes('/api/contact')) requests.push(request.url());
     });
     await page.goto('/#contact');
-    await page.locator('#contact').scrollIntoViewIfNeeded();
     const form: Locator = page.getByRole('form', { name: 'Formulaire de contact' });
 
     // Section hydrated on approach: the character counter reacts once the code has loaded.
     const message: Locator = form.getByLabel('Message');
     await expect(async (): Promise<void> => {
+      await page.locator('#contact').scrollIntoViewIfNeeded();
       await form.scrollIntoViewIfNeeded();
       await message.fill('Bonjour');
       await expect(form.getByText('7 / 2000')).toBeVisible({ timeout: 500 });

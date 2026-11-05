@@ -57,6 +57,4 @@ echo "TAG=$TAG" >> "$env_file"
 chmod 640 "$env_file"
 mv "$env_file" .env
 
-# Images unused for 10 days (older versions); a rollback pulls its version again.
-docker image prune --all --force --filter 'until=240h' > /dev/null
 step "Deployment ${TAG} complete (rollback: TAG=${previous_tag:-<sha>} bash scripts/deploy.sh)."
