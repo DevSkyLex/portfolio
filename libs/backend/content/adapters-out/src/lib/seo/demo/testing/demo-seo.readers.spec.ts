@@ -102,6 +102,22 @@ describe('DemoAnalyticsReader', (): void => {
 });
 
 describe('DemoWebVitalsReader', (): void => {
+  it('provides varied but valid field samples for different pages', async (): Promise<void> => {
+    const reader: DemoWebVitalsReader = new DemoWebVitalsReader();
+    const samples: WebVitalsMeasure[] = await Promise.all(
+      Array.from({ length: 50 }, (_, index: number) =>
+        reader.measure(`http://localhost:8080/projects/${index}`, 'mobile'),
+      ),
+    );
+    expect(new Set(samples.map((sample) => sample.field?.scope))).toEqual(
+      new Set(['url', 'origin']),
+    );
+    expect(new Set(samples.map((sample) => sample.field?.lcp?.category))).toEqual(
+      new Set(['good', 'needs-improvement', 'poor']),
+    );
+    expect(samples.some((sample) => sample.field?.cls === null)).toBe(true);
+  });
+
   it('measures each URL and strategy the same way, categories following the thresholds', async (): Promise<void> => {
     const reader: DemoWebVitalsReader = new DemoWebVitalsReader();
     const urls: string[] = ['http://localhost:8080/', 'http://localhost:8080/projects/movah'];

@@ -145,4 +145,31 @@ describe('Content administration (Postgres via PGlite)', (): void => {
     expect(await requests.request(now)).toBe(3);
     expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
   });
+
+  it('leases and retries pending requests left by an earlier deployment', async (): Promise<void> => {
+    const requests: DrizzleSiteBuildRequestRepository = new DrizzleSiteBuildRequestRepository(
+      handle.db,
+    );
+    const lease: Date = new Date(now.getTime() + 60_000);
+    const retry: Date = new Date(now.getTime() + 120_000);
+    expect(await requests.claimLatest(now, lease)).toBeNull();
+    await handle.db.insert(siteBuildRequests).values([
+      { revision: 2, status: 'pending', requestedAt: now, nextAttemptAt: now },
+      { revision: 3, status: 'pending', requestedAt: now, nextAttemptAt: now },
+    ]);
+    expect(await requests.claimLatest(now, lease)).toEqual({ revision: 3, attempts: 0 });
+    expect(await requests.claimLatest(now, lease)).toBeNull();
+    await requests.markFailed(3, 'failure', retry);
+    expect(await requests.claimLatest(now, lease)).toBeNull();
+    expect(await requests.claimLatest(retry, new Date(retry.getTime() + 60_000))).toEqual({
+      revision: 3,
+      attempts: 1,
+    });
+    await requests.markDispatched(3, retry);
+    expect((await handle.db.select().from(siteBuildRequests)).map((row) => row.status)).toEqual([
+      'dispatched',
+      'dispatched',
+    ]);
+    expect(await requests.claimLatest(retry, lease)).toBeNull();
+  });
 });
