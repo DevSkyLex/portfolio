@@ -50,7 +50,7 @@ export class DrizzleProfileRepository implements ProfileRepository {
    * @method load
    *
    * @description
-   * Loads the profile and rejects with `ProfileMissingError` before the seed.
+   * Loads the profile and rejects with `ProfileMissingError` if the singleton is absent.
    *
    * @returns {Promise<Profile>} Profile with its version.
    */

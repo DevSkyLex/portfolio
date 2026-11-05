@@ -99,6 +99,13 @@
       "when": 1793820813737,
       "tag": "0013_seo_dashboard",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793870421126,
+      "tag": "0014_initial_profile",
+      "breakpoints": true
     }
   ]
 }

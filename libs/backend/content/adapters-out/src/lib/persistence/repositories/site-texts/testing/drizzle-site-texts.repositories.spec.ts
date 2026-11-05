@@ -165,10 +165,10 @@ describe('Site texts administration (Postgres via PGlite)', (): void => {
     await expect(repository.loadLegalDocuments()).rejects.toThrow(LegalDocumentsMissingError);
   });
 
-  it('refuses to load a profile before the seed', async (): Promise<void> => {
+  it('refuses to load a missing profile', async (): Promise<void> => {
     await handle.db.delete(profile);
     await expect(new DrizzleProfileRepository(handle.db).load()).rejects.toThrow(
-      'run the content service seed target',
+      'check the content migrations',
     );
   });
 });
