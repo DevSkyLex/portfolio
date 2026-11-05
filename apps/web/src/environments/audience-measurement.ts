@@ -9,4 +9,6 @@ import type { AudienceMeasurementSettings } from '@vfortin/web-shell';
  * consent banner, no « Gérer les cookies » link, no request to Google. The `e2e` build configuration
  * replaces this file with `audience-measurement.e2e.ts`.
  */
-export const audienceMeasurement: AudienceMeasurementSettings = { ga4MeasurementId: '' };
+export const audienceMeasurement: AudienceMeasurementSettings = {
+  ga4MeasurementId: 'G-93B30YHEMG',
+};
