@@ -28,7 +28,13 @@
     },
     "prune": {
       "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
-      "executor": "nx:noop"
+      "executor": "nx:run-commands",
+      "cache": true,
+      "outputs": ["{workspaceRoot}/dist/apps/content-service/package-lock.json"],
+      "options": {
+        "cwd": "dist/apps/content-service",
+        "command": "npm install --package-lock-only --ignore-scripts --no-audit --no-fund"
+      }
     },
     "serve": {
       "continuous": true,

@@ -133,7 +133,24 @@ export function runStackAcceptance(execute = spawnSync) {
   const cleanupErrors = [];
   try {
     started = true;
-    docker(['up', '--build', '--detach', '--wait']);
+    try {
+      docker(['up', '--build', '--detach', '--wait']);
+    } catch (error) {
+      try {
+        // Migration jobs contain startup diagnostics; bootstrap/key jobs may contain credentials.
+        docker([
+          'logs',
+          '--no-color',
+          '--tail=80',
+          'content-migrate',
+          'contact-migrate',
+          'identity-migrate',
+        ]);
+      } catch {
+        // A diagnostic failure must not replace the startup failure or prevent owned cleanup.
+      }
+      throw error;
+    }
     docker(['--profile', 'seed', 'run', '--rm', 'content-seed']);
     env.IDENTITY_BOOTSTRAP_PASSWORD = randomBytes(24).toString('base64url');
     const output = docker(

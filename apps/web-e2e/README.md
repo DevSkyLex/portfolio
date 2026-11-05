@@ -46,6 +46,11 @@ keys, seed and bootstrap reuse the three service images instead of creating sepa
 Existing image tags are refused before building; ambient Compose env files, project names and profiles
 cannot redirect the runner's generated namespace. BuildKit caches are retained.
 
+On Compose startup failure, the runner prints at most the last 80 lines from each of the three
+migration jobs before teardown. It never requests bootstrap or key-generation logs, environment dumps
+or rendered configuration. A diagnostic logging failure preserves the original startup error and
+still proceeds with owned cleanup.
+
 `@stack` journeys cover the password-only login, one-time code enrollment, the two-step login once it
 is enabled, cookie refresh, project navigation and dirty
 draft decisions, real form saves, visible optimistic revision conflicts and reload, UI publication,

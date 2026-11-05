@@ -193,3 +193,35 @@ test('cleanup failure after a successful journey remains a failed acceptance run
   const fixture = acceptanceFixture({ failCleanup: true });
   assert.throws(() => runStackAcceptance(fixture.execute), /Acceptance cleanup failed/);
 });
+
+for (const diagnosticFailure of [false, true]) {
+  test(`startup failure logs only migration jobs before cleanup (diagnostic failure: ${diagnosticFailure})`, () => {
+    const fixture = acceptanceFixture({ failAt: 'up' });
+    assert.throws(
+      () =>
+        runStackAcceptance((command, args) => {
+          const result = fixture.execute(command, args);
+          if (args.includes('logs') && diagnosticFailure)
+            throw new Error('Diagnostic unavailable.');
+          return result;
+        }),
+      (error) => {
+        assert.equal(error.message, 'Acceptance command failed: docker (exit 1)');
+        assert.ok(!(error instanceof AggregateError));
+        return true;
+      },
+    );
+    const diagnostic = fixture.commands.findIndex(({ args }) => args.includes('logs'));
+    const teardown = fixture.commands.findIndex(({ args }) => args.includes('down'));
+    assert.ok(diagnostic >= 0 && teardown > diagnostic);
+    assert.deepEqual(fixture.commands[diagnostic].args.slice(7), [
+      'logs',
+      '--no-color',
+      '--tail=80',
+      'content-migrate',
+      'contact-migrate',
+      'identity-migrate',
+    ]);
+    assert.equal(fixture.images.size, 0);
+  });
+}

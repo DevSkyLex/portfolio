@@ -912,7 +912,9 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
 - **Errors and edge**: protocol errors remain JSON-RPC; known application failures become safe tool
   errors and unexpected failures are redacted. Nginx gives the exact MCP endpoint the same 1100 kB
   ceiling as rich project/legal administration, above the service's 1 MB JSON ceiling. Stateless JSON
-  responses use the ordinary proxy configuration.
+  responses use the ordinary proxy configuration. The service's authored production manifest includes
+  the SDK. Its prune target finalizes the generated lockfile with npm, preserving a valid nested
+  dependency layout for the SDK's Express version before the image's strict `npm ci` installation.
 - **Client access**: clients register and obtain consent through D45. The owner can revoke them from
   Security / Connected applications; refreshes stop immediately and issued access tokens expire in
   five minutes. MCP availability does not grant permission for an assistant to publish content.
