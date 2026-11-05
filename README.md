@@ -117,7 +117,7 @@ The public browser suite uses a built-site preview. The stack suite requires Doc
 
 Production is designed for an existing shared Traefik edge on a VPS. Traefik terminates TLS and forwards traffic over `traefik_proxy` to a private Nginx origin. Nginx serves static releases and routes API requests to the services; PostgreSQL stays on a separate internal network. The portfolio does not publish production host ports or manage Traefik's certificates.
 
-GitHub Actions runs CI, publishes service images to GHCR and invokes the Ansible deployment and site publication workflows. Successful CI on `main` can trigger production workflows. The `production` GitHub environment, reviewed trusted proxy address, DNS, SSH access and Vault-managed credentials must be configured for the target server before deployment. Never commit credentials or private keys.
+GitHub Actions runs CI, publishes service images to GHCR and invokes the Ansible deployment and site publication workflows. Successful CI on `main` can trigger production workflows. The `production` GitHub environment, reviewed trusted proxy address, DNS, SSH access and GitHub environment secrets must be configured for the target server before deployment. Never commit credentials or private keys.
 
 Follow [deployment and operations](docs/operations/deployment.md) for the complete environment contract, first installation, backups, restore checks, rotation and rollback procedures. The public configuration template is [`docker/.env.example`](docker/.env.example).
 

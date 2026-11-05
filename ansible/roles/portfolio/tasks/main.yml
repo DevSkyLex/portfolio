@@ -1,4 +1,4 @@
-# Deployment files (compose, Nginx, Postgres, scripts), secrets rendered from the vault, backup timers,
+# Deployment files (compose, Nginx, Postgres, scripts), secrets supplied by the controller, backup timers,
 # then deployment by scripts/deploy.sh (images → backup → roles → migrations → services → Nginx).
 - name: Shared Traefik configuration
   ansible.builtin.assert:
@@ -40,19 +40,37 @@
       or deploying this application. This repository does not create or manage that stack.
     quiet: true
 
-- name: Vault secrets filled in
+- name: Collect configured signing keys
+  ansible.builtin.set_fact:
+    portfolio_identity_signing_keys: >-
+      {{ {} | combine({'k1': lookup('ansible.builtin.env', 'IDENTITY_SIGNING_KEY_K1')}
+           if lookup('ansible.builtin.env', 'IDENTITY_SIGNING_KEY_K1') | length > 0 else {})
+         | combine({'k2': lookup('ansible.builtin.env', 'IDENTITY_SIGNING_KEY_K2')}
+           if lookup('ansible.builtin.env', 'IDENTITY_SIGNING_KEY_K2') | length > 0 else {}) }}
+  no_log: true
+
+- name: Required application secrets are valid
   ansible.builtin.assert:
     that:
-      - "'CHANGE_ME' not in (vault_db | to_json)"
-      - vault_db | dict2items | map(attribute='value') | map('dict2items') | flatten
+      - portfolio_db | dict2items | map(attribute='value') | map('dict2items') | flatten
         | map(attribute='value') | reject('match', '^[A-Za-z0-9]{24,}$') | list | length == 0
-      - vault_postgres_password is match('^[A-Za-z0-9]{24,}$')
-      - vault_contact_smtp_url is match('^smtps?://')
-      - vault_contact_client_key_secret | length >= 32
-      - vault_site_build_token != 'CHANGE_ME'
-      - identity_signing_kid in vault_identity_signing_keys
-      - "'CHANGE_ME' not in (vault_identity_signing_keys | to_json)"
-    fail_msg: inventory/group_vars/all/vault.yml is incomplete (see vault.example.yml)
+      - portfolio_postgres_password is match('^[A-Za-z0-9]{24,}$')
+      - portfolio_all_postgres_passwords | unique(case_sensitive=true) | list | length == 7
+      - portfolio_brevo_smtp_login | length > 0
+      - portfolio_brevo_smtp_login != 'CHANGE_ME'
+      - portfolio_brevo_smtp_login is not search('\\s')
+      - portfolio_brevo_smtp_key | length > 0
+      - portfolio_brevo_smtp_key != 'CHANGE_ME'
+      - portfolio_brevo_smtp_key is not search('\\s')
+      - portfolio_contact_client_key_secret | length >= 32
+      - portfolio_site_build_token | length > 0
+      - portfolio_site_build_token != 'CHANGE_ME'
+      - portfolio_ghcr_user | length > 0
+      - portfolio_ghcr_token | length > 0
+      - identity_signing_kid in portfolio_identity_signing_keys
+      - portfolio_identity_signing_keys | dict2items | map(attribute='value')
+        | reject('match', '(?s)^-----BEGIN PRIVATE KEY-----\\s+.+\\s+-----END PRIVATE KEY-----\\s*$') | list | length == 0
+    fail_msg: Required application secrets are missing or invalid; see docs/operations/deployment.md.
     quiet: true
   no_log: true
 
@@ -181,7 +199,7 @@
     owner: '{{ deploy_user }}'
     group: '{{ deploy_user }}'
     mode: '0444'
-  loop: "{{ vault_db | dict2items | product(['migrator', 'app']) | list }}"
+  loop: "{{ portfolio_db | dict2items | product(['migrator', 'app']) | list }}"
   loop_control:
     label: '{{ item.0.key }}_{{ item.1 }}'
   no_log: true
@@ -194,7 +212,7 @@
     group: '{{ deploy_user }}'
     mode: '0444'
   loop: >-
-    {{ vault_db | dict2items | product([{'role': 'app', 'file': 'database_url'},
+    {{ portfolio_db | dict2items | product([{'role': 'app', 'file': 'database_url'},
                                         {'role': 'migrator', 'file': 'migrator_url'}]) | list }}
   loop_control:
     label: '{{ item.0.key }}_{{ item.1.file }}'
@@ -208,18 +226,12 @@
     group: '{{ deploy_user }}'
     mode: '0444'
   loop:
-    - { name: postgres_password, value: '{{ vault_postgres_password }}' }
-    - { name: contact_smtp_url, value: '{{ vault_contact_smtp_url }}' }
-    - { name: contact_client_key_secret, value: '{{ vault_contact_client_key_secret }}' }
-    - { name: site_build_token, value: '{{ vault_site_build_token }}' }
-    # SEO dashboard (D47): optional, written empty when absent from the vault (the section then
-    # answers "not-configured"). A key pasted as a YAML mapping is written back as JSON.
-    - name: seo_google_credentials
-      value: >-
-        {{ vault_seo_google_credentials | default('')
-           if vault_seo_google_credentials | default('') is string
-           else vault_seo_google_credentials | to_json }}
-    - { name: seo_pagespeed_api_key, value: "{{ vault_seo_pagespeed_api_key | default('') }}" }
+    - { name: postgres_password, value: '{{ portfolio_postgres_password }}' }
+    - { name: contact_smtp_url, value: '{{ portfolio_contact_smtp_url }}' }
+    - { name: contact_client_key_secret, value: '{{ portfolio_contact_client_key_secret }}' }
+    - { name: site_build_token, value: '{{ portfolio_site_build_token }}' }
+    - { name: seo_google_credentials, value: '{{ portfolio_seo_google_credentials }}' }
+    - { name: seo_pagespeed_api_key, value: '{{ portfolio_seo_pagespeed_api_key }}' }
   loop_control:
     label: '{{ item.name }}'
   no_log: true
@@ -239,31 +251,31 @@
     owner: '{{ service_uid }}'
     group: '{{ service_uid }}'
     mode: '0400'
-  loop: '{{ vault_identity_signing_keys | dict2items }}'
+  loop: '{{ portfolio_identity_signing_keys | dict2items }}'
   loop_control:
     label: '{{ item.key }}'
   no_log: true
 
-# Keys removed from the vault (rotation) are removed from the server.
+# Keys removed from the configured rotation slots are removed from the server.
 - name: Find signing keys on the server
   ansible.builtin.find:
     paths: '{{ app_root }}/secrets/identity-keys'
     patterns: '*.pem'
   register: portfolio_signing_key_files
 
-- name: Remove signing keys no longer in the vault
+- name: Remove signing keys no longer configured
   ansible.builtin.file:
     path: '{{ item.path }}'
     state: absent
   loop: '{{ portfolio_signing_key_files.files }}'
   loop_control:
     label: '{{ item.path | basename }}'
-  when: (item.path | basename | regex_replace('\.pem$', '')) not in vault_identity_signing_keys
+  when: (item.path | basename | regex_replace('\.pem$', '')) not in portfolio_identity_signing_keys
 
 - name: Log in to the image registry (GHCR, read-only)
-  ansible.builtin.command: docker login ghcr.io --username {{ vault_ghcr_user }} --password-stdin
+  ansible.builtin.command: docker login ghcr.io --username {{ portfolio_ghcr_user }} --password-stdin
   args:
-    stdin: '{{ vault_ghcr_token }}'
+    stdin: '{{ portfolio_ghcr_token }}'
   become: true
   become_user: '{{ deploy_user }}'
   changed_when: false

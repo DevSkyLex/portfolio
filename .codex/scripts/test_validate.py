@@ -148,6 +148,13 @@ class ValidatorIntegrationTests(unittest.TestCase):
         self.write('.claude/rules/x.md', 'See `docs/real.md`, `libs/*/x.ts`, `apps/{a,b}`.\n')
         self.assertGreaterEqual(validate_repository_paths(self.root), 1)
 
+    def test_optional_development_secrets_directory_need_not_exist(self):
+        self.write('.claude/rules/x.md', 'Never read `docker/dev/secrets/`.\n')
+        self.assertGreaterEqual(validate_repository_paths(self.root), 1)
+        self.write('.claude/rules/x.md', 'See `docker/dev/missing/`.\n')
+        with self.assertRaisesRegex(ValueError, 'docker/dev/missing'):
+            validate_repository_paths(self.root)
+
     def test_client_scoped_codex_files_cannot_name_the_claude_folder(self):
         self.write('.codex/workflow.md', 'Read .claude/rules/state.md.\n')
         with self.assertRaisesRegex(ValueError, 'other client'):

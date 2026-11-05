@@ -90,7 +90,8 @@ def validate_repository_paths(root: Path) -> int:
     for document in instruction_files(root):
         for relative in repository_paths(document.read_text(encoding='utf-8')):
             count += 1
-            if not (root / relative).exists():
+            # This ignored directory is created only when a developer sets up local secrets.
+            if relative.rstrip('/') != 'docker/dev/secrets' and not (root / relative).exists():
                 missing.append(f'{document.relative_to(root).as_posix()}: {relative}')
     if missing:
         raise ValueError('Instruction files name missing repository paths:\n' + '\n'.join(sorted(set(missing))))

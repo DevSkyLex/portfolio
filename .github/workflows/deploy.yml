@@ -144,6 +144,8 @@ jobs:
       SEO_SEARCH_CONSOLE_PROPERTY: ${{ vars.SEO_SEARCH_CONSOLE_PROPERTY }}
       SEO_GA4_PROPERTY_ID: ${{ vars.SEO_GA4_PROPERTY_ID }}
       SEO_WEB_VITALS_URLS: ${{ vars.SEO_WEB_VITALS_URLS }}
+      IDENTITY_SIGNING_KID: ${{ vars.IDENTITY_SIGNING_KID || 'k1' }}
+      GHCR_USERNAME: ${{ vars.GHCR_USERNAME || github.actor }}
     steps:
       # Images take minutes: a newer commit may have reached main meanwhile, and its own run deploys it.
       - name: Still the head of main
@@ -165,24 +167,39 @@ jobs:
         run: |
           pipx install ansible-core==2.21.5
           ansible-galaxy collection install -r requirements.yml -p .collections
-      - name: VPS access (SSH key, server fingerprint, vault password)
+      - name: VPS access (SSH key and verified server key)
         env:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
-          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
         run: |
           install -m 700 -d ~/.ssh
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          printf '%s\n' "$ANSIBLE_VAULT_PASSWORD" > ansible/.vault-pass
-          chmod 600 ansible/.vault-pass
       - name: Deploy (backup, migrations, restart, health)
         working-directory: ansible
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
-        run: >-
-          ansible-playbook playbooks/deploy.yml --vault-password-file .vault-pass
-          -e ansible_host="$VPS_HOST"
-          -e "registry=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}"
-          -e tag=${{ needs.resolve.outputs.sha }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          CONTENT_MIGRATOR_PASSWORD: ${{ secrets.CONTENT_MIGRATOR_PASSWORD }}
+          CONTENT_APP_PASSWORD: ${{ secrets.CONTENT_APP_PASSWORD }}
+          CONTACT_MIGRATOR_PASSWORD: ${{ secrets.CONTACT_MIGRATOR_PASSWORD }}
+          CONTACT_APP_PASSWORD: ${{ secrets.CONTACT_APP_PASSWORD }}
+          IDENTITY_MIGRATOR_PASSWORD: ${{ secrets.IDENTITY_MIGRATOR_PASSWORD }}
+          IDENTITY_APP_PASSWORD: ${{ secrets.IDENTITY_APP_PASSWORD }}
+          BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
+          BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
+          CONTACT_CLIENT_KEY_SECRET: ${{ secrets.CONTACT_CLIENT_KEY_SECRET }}
+          SITE_BUILD_TOKEN: ${{ secrets.SITE_BUILD_TOKEN }}
+          IDENTITY_SIGNING_KEY_K1: ${{ secrets.IDENTITY_SIGNING_KEY_K1 }}
+          IDENTITY_SIGNING_KEY_K2: ${{ secrets.IDENTITY_SIGNING_KEY_K2 }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN || github.token }}
+          SEO_GOOGLE_CREDENTIALS: ${{ secrets.SEO_GOOGLE_CREDENTIALS }}
+          SEO_PAGESPEED_API_KEY: ${{ secrets.SEO_PAGESPEED_API_KEY }}
+        run: |
+          set -euo pipefail
+          node ../.github/scripts/validate-production-secrets.mjs
+          ansible-playbook playbooks/deploy.yml \
+            -e ansible_host="$VPS_HOST" \
+            -e "registry=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" \
+            -e tag=${{ needs.resolve.outputs.sha }}

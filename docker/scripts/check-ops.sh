@@ -96,6 +96,7 @@ check_ansible() {
       cp -r /repo/ansible /work && cd /work && rm -rf .collections
       ansible-galaxy collection install -r requirements.yml -p .collections > /dev/null
       for playbook in playbooks/*.yml; do ansible-playbook --syntax-check \"\$playbook\"; done
+      python -m unittest discover -s tests -p 'test_*.py'
       ansible-lint --profile production
     "
 }

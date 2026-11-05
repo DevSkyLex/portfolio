@@ -1,5 +1,5 @@
 # Prepare application files, secrets and timers on an already provisioned shared VPS:
-#   ansible-playbook playbooks/provision.yml --ask-vault-pass
+#   ansible-playbook playbooks/provision.yml
 # SSH access, the deployment account, Docker and shared Traefik are managed separately.
 - name: Prepare the portfolio on the shared VPS
   hosts: vps

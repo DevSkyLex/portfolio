@@ -12,7 +12,7 @@ Resolve the checkout from the assigned workspace; do not assume the initial shel
 Review the assigned files under docker/, ansible/ and docs/operations/deployment.md statically: the service
 image (pinned base, pruned lockfile, non-root, healthcheck), Compose secrets, networks, healthchecks and profiles,
 Postgres migrator/app roles (D23), Nginx routing, maintenance and headers (D2, D20), deploy/publish/backup scripts
-(backup before migrate, atomic switch, retention), Ansible idempotence, no_log and vault use (D24). Allowed:
+(backup before migrate, atomic switch, retention), Ansible idempotence, no_log and GitHub environment secret handling (D24). Allowed:
 docker compose ... config, sh -n, ansible-playbook --syntax-check. Never run playbooks, open the vault or touch
 production.
 The parent assigns files and responsibility. You are not alone: preserve other edits, stay within

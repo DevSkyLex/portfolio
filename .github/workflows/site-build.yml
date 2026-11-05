@@ -103,19 +103,16 @@ jobs:
         run: |
           pipx install ansible-core==2.21.5
           ansible-galaxy collection install -r requirements.yml -p .collections
-      - name: VPS access (SSH key, server fingerprint, vault password)
+      - name: VPS access (SSH key and verified server key)
         if: steps.target.outputs.publish == 'true'
         env:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
-          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
         run: |
           install -m 700 -d ~/.ssh
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          printf '%s\n' "$ANSIBLE_VAULT_PASSWORD" > ansible/.vault-pass
-          chmod 600 ansible/.vault-pass
       # The build takes minutes: a newer commit may have reached main meanwhile, and its own run publishes it.
       - name: Still the head of main
         if: steps.target.outputs.publish == 'true' && github.event_name == 'workflow_run'
@@ -134,6 +131,6 @@ jobs:
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
         run: >-
-          ansible-playbook playbooks/publish-site.yml --vault-password-file .vault-pass
+          ansible-playbook playbooks/publish-site.yml
           -e ansible_host="$VPS_HOST"
           -e release=${{ steps.release.outputs.name }}

@@ -9,7 +9,7 @@ portfolio_traefik_secure_middlewares: "{{ lookup('ansible.builtin.env', 'TRAEFIK
 # Exact Traefik address or a reviewed narrow CIDR; never the whole shared application network.
 portfolio_trusted_proxies: "{{ lookup('ansible.builtin.env', 'TRUSTED_PROXIES') }}"
 portfolio_log_level: "{{ lookup('ansible.builtin.env', 'LOG_LEVEL') | default('info', true) }}"
-portfolio_contact_mail_from: "{{ lookup('ansible.builtin.env', 'CONTACT_MAIL_FROM') | default('Portfolio <noreply@' ~ domain ~ '>', true) }}"
+portfolio_contact_mail_from: "{{ lookup('ansible.builtin.env', 'CONTACT_MAIL_FROM') | default('Portfolio <noreply@send.' ~ domain ~ '>', true) }}"
 portfolio_contact_notify_to: "{{ lookup('ansible.builtin.env', 'CONTACT_NOTIFY_TO') | default('contact@' ~ domain, true) }}"
 portfolio_web_memory_limit: "{{ lookup('ansible.builtin.env', 'WEB_MEMORY_LIMIT') | default('128M', true) }}"
 portfolio_web_cpu_limit: "{{ lookup('ansible.builtin.env', 'WEB_CPU_LIMIT') | default('1.0', true) }}"

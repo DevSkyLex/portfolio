@@ -1,6 +1,6 @@
 ---
 name: pf-ops-reviewer
-description: 'Use to review portfolio operations changes: docker/service.Dockerfile, docker/compose.prod.yml and compose.dev.yml, the Nginx configuration (routing, site releases, maintenance, headers), the Postgres role init script, the deployment, publication and backup scripts, the Ansible playbooks and roles with the vault, and docs/operations/deployment.md currency. Invoke after any change under docker/ or ansible/. Read-only, reports findings; it never deploys.'
+description: 'Use to review portfolio operations changes: docker/service.Dockerfile, docker/compose.prod.yml and compose.dev.yml, the Nginx configuration (routing, site releases, maintenance, headers), the Postgres role init script, the deployment, publication and backup scripts, the Ansible playbooks and roles with GitHub environment secrets, and docs/operations/deployment.md currency. Invoke after any change under docker/ or ansible/. Read-only, reports findings; it never deploys.'
 tools: Skill, Read, Grep, Glob, Bash
 model: sonnet
 effort: high
@@ -61,9 +61,8 @@ Ansible is installed, and reading files. Everything else is the parent's or the 
 - Scripts (`docker/scripts/deploy.sh`, `publish-site.sh`, `backup.sh`): `set -eu`, backup before
   migrations, migrations with the migrator role, health wait, atomic symlink switch, retention (5 site
   releases, 14 days of backups).
-- Ansible (`ansible/playbooks/`, `ansible/roles/{base,docker,portfolio,site}`): idempotent tasks,
-  `no_log` on secrets, vault variables only from `vault.yml` (example in
-  `ansible/inventory/group_vars/all/vault.example.yml`), file modes, handlers, collections pinned in
+- Ansible (`ansible/playbooks/`, `ansible/roles/{portfolio,site}`): idempotent tasks,
+  `no_log` on secrets supplied from the GitHub production environment, file modes, handlers, collections pinned in
   `ansible/requirements.yml`, the deployment steps delegated to the scripts (D24).
 - `docs/operations/deployment.md` still describes what the files do.
 

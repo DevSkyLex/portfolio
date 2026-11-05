@@ -115,7 +115,7 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await expect(page.getByRole('heading', { name: 'Tableau de bord', exact: true })).toBeVisible();
     await assertAdminAccessibility(page);
     await page.goto('/admin/projects');
-    await expect(page.getByRole('heading', { name: 'Projets', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Projets(?:\s|$)/ })).toBeVisible();
     await assertAdminAccessibility(page);
     const session: APIResponse<unknown> = await page.request.post('/api/auth/refresh', {
       headers: { 'x-csrf': '1' },
@@ -126,6 +126,12 @@ test.describe('isolated stack acceptance @stack', (): void => {
       authorization: `Bearer ${token}`,
       'x-csrf': '1',
     };
+    const redirect: APIResponse<unknown> = await page.request.get('/api/content/admin/projects', {
+      headers,
+      maxRedirects: 0,
+    });
+    expect(redirect.status()).toBe(301);
+    expect(redirect.headers()['location']).toBe('/api/content/admin/projects/');
     const listed: APIResponse<unknown> = await page.request.get('/api/content/admin/projects', {
       headers,
     });
@@ -147,7 +153,10 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await expect(page).toHaveURL(new RegExp(`/admin/projects/${second.id}$`));
     await expect(page.getByRole('heading', { name: second.title.fr, exact: true })).toBeVisible();
 
-    const titleField: Locator = page.getByLabel(/Titre.*FR/);
+    const titleField: Locator = page.getByRole('textbox', {
+      name: 'Titre en français',
+      exact: true,
+    });
     await titleField.fill(`${second.title.fr} draft`);
     await page.getByRole('link', { name: 'Tous les projets', exact: true }).click();
     const discard: Locator = page.getByRole('alertdialog', { name: 'Quitter sans enregistrer ?' });
@@ -159,10 +168,13 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await expect(page).toHaveURL(/\/admin\/projects$/);
 
     await page.goto(`/admin/projects/${first.id}`);
-    const editorTitle: Locator = page.getByLabel(/Titre.*FR/);
+    const editorTitle: Locator = page.getByRole('textbox', {
+      name: 'Titre en français',
+      exact: true,
+    });
     await expect(editorTitle).toHaveValue(first.title.fr);
     await assertAdminAccessibility(page);
-    const siteUrl: Locator = page.getByPlaceholder('https://', { exact: true });
+    const siteUrl: Locator = page.getByRole('textbox', { name: 'Site', exact: true });
     const initialUrl: string = await siteUrl.inputValue();
     await siteUrl.fill('http://invalid.example');
     await page.getByRole('button', { name: 'Enregistrer', exact: false }).click();
@@ -197,6 +209,8 @@ test.describe('isolated stack acceptance @stack', (): void => {
       'techs',
       'featured',
       'article',
+      'cover',
+      'seo',
     ];
     const revision: Record<string, unknown> = Object.fromEntries(
       fields.map((field: string): [string, unknown] => [field, project[field]]),
@@ -235,14 +249,16 @@ test.describe('isolated stack acceptance @stack', (): void => {
     );
     await page.getByRole('button', { name: 'Publier', exact: true }).click();
     expect((await publication).status()).toBe(200);
-    await expect(
-      page.getByText('Publié. Le site public sera reconstruit dans quelques minutes.', {
-        exact: true,
-      }),
-    ).toBeVisible();
+    const publishedNotice: Locator = page.getByRole('status').filter({ hasText: 'Publié.' });
+    await expect(publishedNotice).toBeVisible();
+    await expect(publishedNotice).toContainText(
+      'Le site public sera mis à jour dans quelques minutes.',
+    );
 
     const content: string = `Acceptance message ${Date.now()}: please verify delivery to the local inbox.`;
     await page.goto('/#contact');
+    // The contact section is deferred until its placeholder approaches the viewport.
+    await page.locator('#contact').scrollIntoViewIfNeeded();
     const contact: Locator = page.getByRole('form', { name: 'Formulaire de contact' });
     await contact.getByRole('textbox', { name: 'Nom', exact: false }).fill('Acceptance sender');
     await contact
@@ -268,7 +284,7 @@ test.describe('isolated stack acceptance @stack', (): void => {
       )
       .toBeGreaterThan(0);
     await page.goto('/admin/messages');
-    await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Messages(?:\s|$)/ })).toBeVisible();
     const messageLink: Locator = page
       .getByRole('navigation', { name: 'Administration', exact: true })
       .getByRole('link', { name: /Messages/ });

@@ -155,6 +155,10 @@ describe('Site texts administration (Postgres via PGlite)', (): void => {
     const legal: Awaited<ReturnType<DrizzleContentRepository['loadLegalDocuments']>> =
       await repository.loadLegalDocuments();
     expect(legal.notice.body.fr.toProps()).toEqual(SEED_LEGAL_NOTICE.fr);
+    expect(JSON.stringify(legal.privacy.body.fr.toProps())).toContain('Brevo');
+    expect(JSON.stringify(legal.privacy.body.fr.toProps())).toContain('Allemagne');
+    expect(JSON.stringify(legal.privacy.body.en.toProps())).toContain('Brevo');
+    expect(JSON.stringify(legal.privacy.body.en.toProps())).toContain('Germany');
     await handle.db.delete(legalDocuments).where(eq(legalDocuments.kind, 'privacy'));
     await expect(repository.loadLegalDocuments()).rejects.toThrow(LegalDocumentsMissingError);
     await handle.db.delete(legalDocuments);

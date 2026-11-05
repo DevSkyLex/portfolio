@@ -15,7 +15,7 @@ paths:
   `docs/operations/deployment.md` is the procedure: keep it current in the same change.
 - Agents never run playbooks, open the vault, use `compose.prod.yml` (except `config`), run the deployment
   scripts, push images or trigger the deploy and site-build workflows; the `guard-git` hook refuses them.
-- Secrets are Docker secret files rendered from Ansible Vault (`vault.example.yml` documents the keys);
+- Secrets are Docker secret files rendered from GitHub environment secrets (`docs/operations/deployment.md` documents the keys);
   development values live only in `docker/compose.dev.yml` and `docker/dev/secrets/`. Never write a real
   secret, never `echo` one in a workflow.
 - Images: pinned base, pruned lockfile (`npx nx run <service>:prune`), non-root, healthcheck. Postgres:

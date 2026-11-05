@@ -1,0 +1,28 @@
+# Read application credentials only from the controller environment. GitHub Actions supplies these
+# from the protected production environment; manual operators must supply the same variables.
+portfolio_postgres_password: "{{ lookup('ansible.builtin.env', 'POSTGRES_PASSWORD') }}"
+portfolio_db:
+  content:
+    migrator: "{{ lookup('ansible.builtin.env', 'CONTENT_MIGRATOR_PASSWORD') }}"
+    app: "{{ lookup('ansible.builtin.env', 'CONTENT_APP_PASSWORD') }}"
+  contact:
+    migrator: "{{ lookup('ansible.builtin.env', 'CONTACT_MIGRATOR_PASSWORD') }}"
+    app: "{{ lookup('ansible.builtin.env', 'CONTACT_APP_PASSWORD') }}"
+  identity:
+    migrator: "{{ lookup('ansible.builtin.env', 'IDENTITY_MIGRATOR_PASSWORD') }}"
+    app: "{{ lookup('ansible.builtin.env', 'IDENTITY_APP_PASSWORD') }}"
+portfolio_all_postgres_passwords: >-
+  {{ [portfolio_postgres_password] + (portfolio_db | dict2items | map(attribute='value')
+     | map('dict2items') | flatten | map(attribute='value') | list) }}
+portfolio_brevo_smtp_login: "{{ lookup('ansible.builtin.env', 'BREVO_SMTP_LOGIN') }}"
+portfolio_brevo_smtp_key: "{{ lookup('ansible.builtin.env', 'BREVO_SMTP_KEY') }}"
+portfolio_contact_smtp_url: >-
+  {{ 'smtps://' ~ (portfolio_brevo_smtp_login | urlencode | replace('/', '%2F'))
+     ~ ':' ~ (portfolio_brevo_smtp_key | urlencode | replace('/', '%2F'))
+     ~ '@smtp-relay.brevo.com:465' }}
+portfolio_contact_client_key_secret: "{{ lookup('ansible.builtin.env', 'CONTACT_CLIENT_KEY_SECRET') }}"
+portfolio_site_build_token: "{{ lookup('ansible.builtin.env', 'SITE_BUILD_TOKEN') }}"
+portfolio_seo_google_credentials: "{{ lookup('ansible.builtin.env', 'SEO_GOOGLE_CREDENTIALS') }}"
+portfolio_seo_pagespeed_api_key: "{{ lookup('ansible.builtin.env', 'SEO_PAGESPEED_API_KEY') }}"
+portfolio_ghcr_user: "{{ lookup('ansible.builtin.env', 'GHCR_USERNAME') }}"
+portfolio_ghcr_token: "{{ lookup('ansible.builtin.env', 'GHCR_TOKEN') }}"
