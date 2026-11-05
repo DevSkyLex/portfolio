@@ -76,7 +76,8 @@ jobs:
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
       - name: Tests with coverage (affected on pull requests, everything on main)
-        run: npx nx ${{ github.event_name == 'pull_request' && 'affected' || 'run-many' }} -t test --coverage --parallel=3 --exclude=web-e2e,architecture
+        # Each test target starts its own workers; serial targets avoid exhausting the hosted runner.
+        run: npx nx ${{ github.event_name == 'pull_request' && 'affected' || 'run-many' }} -t test --coverage --parallel=1 --exclude=web-e2e,architecture
       - name: Coverage summary
         if: always()
         run: node .github/scripts/coverage-summary.mjs >> "$GITHUB_STEP_SUMMARY"
