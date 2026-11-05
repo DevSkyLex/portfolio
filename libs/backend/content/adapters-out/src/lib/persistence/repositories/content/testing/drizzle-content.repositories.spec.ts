@@ -1,4 +1,5 @@
 import { GetPublishedContent, type PublishedContent } from '@vfortin/content-application';
+import type { Profile } from '@vfortin/content-domain';
 import { sql } from 'drizzle-orm';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -52,8 +53,8 @@ describe('DrizzleContentRepository (Postgres via PGlite)', (): void => {
   it('does not replace an existing profile when the initialization SQL is repeated', async (): Promise<void> => {
     await seedContent(handle.db);
     const repository: DrizzleContentRepository = new DrizzleContentRepository(handle.db);
-    const original = await repository.loadProfile();
-    const migration = readFileSync(
+    const original: Profile = await repository.loadProfile();
+    const migration: string = readFileSync(
       new URL(
         '../../../../../../../../../../apps/content-service/migrations/0014_initial_profile.sql',
         import.meta.url,
