@@ -1,3 +1,4 @@
+import { AdminPublicationSectionComponent } from '@internal/content-web-feature-admin/lib/ui/sections/admin-publication-section/admin-publication-section.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -73,6 +74,7 @@ import { type Subscription, forkJoin } from 'rxjs';
 @Component({
   selector: 'content-admin-timeline-edit-page',
   imports: [
+    AdminPublicationSectionComponent,
     AlertDescriptionDirective,
     AlertDirective,
     AlertTitleDirective,

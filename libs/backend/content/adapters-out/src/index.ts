@@ -42,3 +42,5 @@ export {
 export { GoogleSearchConsoleReader } from '@internal/content-adapters-out/lib/seo/search-console/search-console.reader';
 export { GoogleAnalyticsReader } from '@internal/content-adapters-out/lib/seo/analytics/google-analytics.reader';
 export { PageSpeedWebVitalsReader } from '@internal/content-adapters-out/lib/seo/page-speed/page-speed.reader';
+
+export { DrizzlePublicationRepository } from '@internal/content-adapters-out/lib/persistence/repositories/publication/drizzle-publication.repository';

@@ -1,3 +1,4 @@
+import { lockContentRevision } from '@internal/content-adapters-out/lib/persistence/repositories/publication/publication-lock';
 import {
   type LegalDocumentRepository,
   type ProfileRepository,
@@ -190,13 +191,14 @@ export class DrizzleSiteTextsUnitOfWork implements SiteTextsUnitOfWork {
    * @returns {Promise<T>} Callback result after commit.
    */
   public run<T>(work: (repositories: SiteTextsRepositories) => Promise<T>): Promise<T> {
-    return this.db.transaction((tx: ContentTransaction): Promise<T> =>
-      work({
+    return this.db.transaction(async (tx: ContentTransaction): Promise<T> => {
+      await lockContentRevision(tx);
+      return work({
         profiles: new DrizzleProfileRepository(tx),
         legalDocuments: new DrizzleLegalDocumentRepository(tx),
         buildRequests: new DrizzleSiteBuildRequestRepository(tx),
-      }),
-    );
+      });
+    });
   }
   // #endregion
 }

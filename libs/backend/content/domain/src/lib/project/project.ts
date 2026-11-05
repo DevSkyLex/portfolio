@@ -306,6 +306,44 @@ export class Project {
 
   // #region Methods
   /**
+   * Method create
+   * @method create
+   *
+   * @description
+   * Starts a new project as a draft at version 1. The revision is copied field by field, so that an
+   * object carrying more (status, version…) sets nothing else.
+   *
+   * @param {Pick<ProjectProps, 'id' | 'slug' | 'position'>} identity - Identifier, slug and position.
+   * @param {ProjectRevision} revision - Editable content of the new project.
+   * @returns {Project} New draft aggregate.
+   */
+  public static create(
+    identity: Pick<ProjectProps, 'id' | 'slug' | 'position'>,
+    revision: ProjectRevision,
+  ): Project {
+    return Project.rehydrate({
+      id: identity.id,
+      slug: identity.slug,
+      position: identity.position,
+      title: revision.title,
+      summary: revision.summary,
+      lead: revision.lead,
+      period: revision.period,
+      client: revision.client,
+      role: revision.role,
+      place: revision.place,
+      siteUrl: revision.siteUrl,
+      techs: revision.techs,
+      featured: revision.featured,
+      article: revision.article,
+      cover: revision.cover,
+      seo: revision.seo,
+      status: 'draft',
+      version: 1,
+    });
+  }
+
+  /**
    * Method rehydrate
    * @method rehydrate
    *

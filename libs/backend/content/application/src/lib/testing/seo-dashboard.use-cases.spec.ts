@@ -118,6 +118,7 @@ const repository: ProjectRepository = {
   list: async (): Promise<Project[]> => [...PROJECTS],
   get: async (): Promise<Project | null> => null,
   save: async (): Promise<number> => 1,
+  insert: async (): Promise<void> => undefined,
 };
 
 /**

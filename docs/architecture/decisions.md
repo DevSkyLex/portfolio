@@ -894,10 +894,11 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
   requires `content:read`; write, publish and delete scopes imply reading. Each tool call checks its
   own required scopes before execution, with HTTP 403 and the OAuth `insufficient_scope` challenge
   for a missing permission. Invalid origins are refused against the configured resource origin.
-- **Tools**: `list_projects`, `get_project`, `revise_project`, `publish_project`, `unpublish_project`,
+- **Tools**: `list_projects`, `get_project`, `create_project`, `revise_project`, `publish_project`, `unpublish_project`,
   `list_timeline`, `get_timeline_entry`, `create_timeline_entry`, `revise_timeline_entry`,
   `reorder_timeline`, `delete_timeline_entry`, `get_profile`, `revise_profile`, `get_legal_document`
-  and `revise_legal_document`. Queries need reading; project revisions need writing and, when the
+  and `revise_legal_document`. Queries need reading; project creation needs writing only, since a new project is a draft whose
+  slug derives from its French title; project revisions need writing and, when the
   project is already published, publishing as well: revisions preserve its publication state and
   queue a rebuild. Project publication and unpublication need publishing. Timeline, profile and legal
   edits need both writing and publishing, since those existing use cases immediately change public content. Timeline deletion
@@ -918,3 +919,24 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
 - **Client access**: clients register and obtain consent through D45. The owner can revoke them from
   Security / Connected applications; refreshes stop immediately and issued access tokens expire in
   five minutes. MCP availability does not grant permission for an assistant to publish content.
+
+## D50 — Explicit grouped content publication
+
+Normal editing retains automatic publication. Before preparing several changes, the owner can start
+a publication batch from the content administration or MCP. Starting persists a frozen copy of the
+current public content. Administration continues to read and edit the working records; public snapshot
+requests, including builds triggered by a code deployment, keep reading the frozen copy until the
+owner publishes the batch. The freeze survives service restarts.
+
+Content writes and publication transitions serialize on the content revision row before modifying
+records. Starting and publishing require the publication version observed by the caller; intervening
+public-content changes invalidate a stale publication attempt. During a batch, changes increment the
+working revision without creating individual rebuild requests. Publishing releases the working content
+and queues one request in the same transaction. Closing an unchanged batch requests no rebuild.
+The worker defers dispatch while a batch is open, and media purge preserves frozen references.
+
+The publication status distinguishes the working revision from the revision exposed by the public
+snapshot API. Neither is confirmation that the static site has finished deploying. The administration
+announces a requested reconstruction only; deployment progress requires a separate verified signal.
+Existing publication permissions still apply to writes, and releasing a batch requires publication
+consent. This mechanism stages a whole editing session; it is not per-field draft history or rollback.

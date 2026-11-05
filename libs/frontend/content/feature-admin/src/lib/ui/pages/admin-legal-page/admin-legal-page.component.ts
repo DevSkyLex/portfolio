@@ -1,3 +1,4 @@
+import { AdminPublicationSectionComponent } from '@internal/content-web-feature-admin/lib/ui/sections/admin-publication-section/admin-publication-section.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -60,6 +61,7 @@ import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/u
 @Component({
   selector: 'content-admin-legal-page',
   imports: [
+    AdminPublicationSectionComponent,
     AlertDescriptionDirective,
     AlertDirective,
     AlertTitleDirective,

@@ -1,3 +1,4 @@
+import { PUBLICATION_TEST_PROVIDER } from '@internal/content-web-feature-admin/lib/testing/publication-test-provider';
 import type { Mock } from 'vitest';
 import type { AdminProjectEditPageComponent } from '@internal/content-web-feature-admin/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component';
 import { registerLocaleData } from '@angular/common';
@@ -266,6 +267,7 @@ const descriptions: () => (string | undefined)[] = (): (string | undefined)[] =>
 async function open(url: string, providers: Provider[] = []): Promise<OpenedProjectHarness> {
   TestBed.configureTestingModule({
     providers: [
+      PUBLICATION_TEST_PROVIDER,
       ...providers,
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -751,7 +753,9 @@ describe('projects admin (front end)', (): void => {
     call.flush({ ...project('a', 'published'), version: 5 });
     await settle();
     expect(toasts()).toEqual([['success', 'Publié.']]);
-    expect(descriptions()).toEqual(['Le site public sera mis à jour dans quelques minutes.']);
+    expect(descriptions()).toEqual([
+      'Les modifications seront visibles après publication et reconstruction du site.',
+    ]);
   });
 
   it('unpublishes from the list only once confirmed, and reloads after a conflict', async (): Promise<void> => {
@@ -1612,6 +1616,30 @@ describe('AdminProjectEditPageComponent', (): void => {
     );
   });
 
+  it('opens an empty draft editor on /new without loading anything, and sends nothing incomplete', async (): Promise<void> => {
+    const { backend, harness, navigation } = await open('/admin/projects/new');
+    await navigation;
+    await flush();
+    await harness.fixture.whenStable();
+    backend.expectNone('/api/content/admin/projects/new');
+    const root: HTMLElement = harness.routeNativeElement as HTMLElement;
+    expect(root.querySelector('ui-page-header h1')?.textContent?.trim()).toBe('Nouveau projet');
+    expect(root.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('Nouveau projet');
+    expect(root.querySelector<HTMLInputElement>('#edit-title-fr')?.value).toBe('');
+    // A draft yet to exist: no publication, no status rows, the shared settings only.
+    expect(root.textContent).not.toContain('Publier');
+    const aside: HTMLElement | null = root.querySelector('aside[aria-label="Propriétés"]');
+    expect(aside?.querySelector('dl')).toBeNull();
+    expect(aside?.querySelector('#edit-period')).not.toBeNull();
+    expect(TestBed.inject<Title>(Title).getTitle()).toBe(
+      'Nouveau projet — Projets — Administration',
+    );
+    root.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+    await flush();
+    await harness.fixture.whenStable();
+    backend.expectNone('/api/content/admin/projects');
+  });
+
   it('says the project cannot be found when it does not load', async (): Promise<void> => {
     const { backend, harness, navigation } = await open('/admin/projects/ghost');
     await navigation;
@@ -1680,7 +1708,9 @@ describe('AdminProjectEditPageComponent', (): void => {
     });
     await settle();
     expect(toasts()).toEqual([['success', 'Enregistré.']]);
-    expect(descriptions()).toEqual(['Le site public sera mis à jour dans quelques minutes.']);
+    expect(descriptions()).toEqual([
+      'Les modifications seront visibles après publication et reconstruction du site.',
+    ]);
   });
 
   it('keeps a published project complete before sending, showing the language in error', async (): Promise<void> => {
@@ -1763,7 +1793,9 @@ describe('AdminProjectEditPageComponent', (): void => {
     call.flush({ ...project('a', 'draft'), version: 5 });
     await settle();
     expect(toasts()).toEqual([['success', 'Retiré du site public.']]);
-    expect(descriptions()).toEqual(['Le site public sera mis à jour dans quelques minutes.']);
+    expect(descriptions()).toEqual([
+      'Les modifications seront visibles après publication et reconstruction du site.',
+    ]);
     expect(button(root, 'Publier')).toBeTruthy();
   });
 
@@ -1878,6 +1910,9 @@ describe('AdminProjectsPageComponent', (): void => {
     expect(title?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Projets 2 projets');
     // No rebuild note under the title: the header carries the title and its count only.
     expect(root.querySelector('[data-slot="page-header-meta"]')).toBeNull();
+    expect(root.querySelector('a[href="/admin/projects/new"]')?.textContent?.trim()).toBe(
+      'Nouveau projet',
+    );
   });
 
   it('counts the projects kept by the search and the facets as "N sur M", in the singular below two', async (): Promise<void> => {
@@ -1910,7 +1945,9 @@ describe('AdminProjectsPageComponent', (): void => {
     backend.expectNone('/api/content/admin/projects');
     expect(root.querySelector('tbody tr')?.textContent).toContain('Publié');
     expect(toasts()).toEqual([['success', '« Titre b » publié.']]);
-    expect(descriptions()).toEqual(['Le site public sera mis à jour dans quelques minutes.']);
+    expect(descriptions()).toEqual([
+      'Les modifications seront visibles après publication et reconstruction du site.',
+    ]);
     expect(await action(0, 'Dépublier')).toBeTruthy();
   });
 
@@ -2017,7 +2054,9 @@ describe('AdminProjectsPageComponent', (): void => {
     backend.expectNone('/api/content/admin/projects');
     expect(root.querySelector('tbody tr')?.textContent).toContain('Brouillon');
     expect(toasts()).toEqual([['success', '« Titre a » retiré du site public.']]);
-    expect(descriptions()).toEqual(['Le site public sera mis à jour dans quelques minutes.']);
+    expect(descriptions()).toEqual([
+      'Les modifications seront visibles après publication et reconstruction du site.',
+    ]);
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Actions pour « Titre a »');
   });
 
@@ -2330,7 +2369,9 @@ describe('AdminProjectsPageComponent', (): void => {
     await settle();
     backend.expectNone('/api/content/admin/projects/c/publish');
     expect(toasts()).toEqual([['success', '2 projets publiés.']]);
-    expect(descriptions()).toEqual(['Le site public sera mis à jour dans quelques minutes.']);
+    expect(descriptions()).toEqual([
+      'Les modifications seront visibles après publication et reconstruction du site.',
+    ]);
     expect(root.querySelector('[data-slot="selection-bar-panel"]')).toBeNull();
     expect(root.querySelectorAll('tbody tr')[1]?.textContent).toContain('Publié');
   });
@@ -2360,7 +2401,7 @@ describe('AdminProjectsPageComponent', (): void => {
     backend.expectNone('/api/content/admin/projects');
     expect(toasts()).toEqual([['warning', '1 projet dépublié sur 2.']]);
     expect(TestBed.inject<ToastService>(ToastService).toasts()[0]?.description).toBe(
-      '1 échec : Le service ne répond pas. Réessayez dans un moment. Le site public sera mis à jour dans quelques minutes.',
+      '1 échec : Le service ne répond pas. Réessayez dans un moment. Les modifications seront visibles après publication et reconstruction du site.',
     );
     expect(root.querySelector('[data-slot="selection-bar-count"]')?.textContent?.trim()).toBe(
       '1 sélectionné',
@@ -2464,9 +2505,10 @@ describe('ADMIN_CONTENT_ROUTES', (): void => {
     expect(write.request.body.title.en).toHaveLength(4000);
     write.flush(project('a', 'draft'));
   });
-  it('lists the projects at the root and edits one by id', (): void => {
+  it('lists the projects at the root, creates one on new and edits one by id', (): void => {
     expect(ADMIN_CONTENT_ROUTES.map((route): string | undefined => route.path)).toEqual([
       '',
+      'new',
       ':id',
     ]);
   });

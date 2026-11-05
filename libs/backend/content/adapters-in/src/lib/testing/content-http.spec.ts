@@ -19,6 +19,7 @@ import {
   type PublishedContent,
   PurgeMedia,
   ReviseProject,
+  CreateProject,
   UnpublishProject,
   UnsupportedMediaError,
   UploadMedia,
@@ -233,6 +234,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
     published: { execute: vi.fn<GetPublishedContent['execute']>() },
     list: { execute: vi.fn<ListAdminProjects['execute']>() },
     get: { execute: vi.fn<GetAdminProject['execute']>() },
+    create: { execute: vi.fn<CreateProject['execute']>() },
     revise: { execute: vi.fn<ReviseProject['execute']>() },
     publish: { execute: vi.fn<PublishProject['execute']>() },
     unpublish: { execute: vi.fn<UnpublishProject['execute']>() },
@@ -241,6 +243,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
     published: Pick<GetPublishedContent, 'execute'>;
     list: Pick<ListAdminProjects, 'execute'>;
     get: Pick<GetAdminProject, 'execute'>;
+    create: Pick<CreateProject, 'execute'>;
     revise: Pick<ReviseProject, 'execute'>;
     publish: Pick<PublishProject, 'execute'>;
     unpublish: Pick<UnpublishProject, 'execute'>;
@@ -267,6 +270,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
         { provide: GetPublishedContent, useValue: useCases.published },
         { provide: ListAdminProjects, useValue: useCases.list },
         { provide: GetAdminProject, useValue: useCases.get },
+        { provide: CreateProject, useValue: useCases.create },
         { provide: ReviseProject, useValue: useCases.revise },
         { provide: PublishProject, useValue: useCases.publish },
         { provide: UnpublishProject, useValue: useCases.unpublish },
@@ -431,6 +435,33 @@ describe('ContentController, AdminContentController and AdminMediaController', (
         AdminProjectDtoSchema.parse(FIXTURE),
       );
       expect(useCases.get.execute).toHaveBeenCalledWith('project-movah');
+    });
+
+    it('creates a draft project and answers 201 with its ETag', async (): Promise<void> => {
+      useCases.create.execute.mockResolvedValue({
+        project: projectFromFixture(),
+        version: 1,
+        revision: null,
+        media: [COVER, FIGURE],
+      });
+      const response: request.Response = await admin(
+        server().post('/content/admin/projects').send(FIXTURE),
+      );
+      expect(response.status).toBe(201);
+      expect(response.headers['etag']).toBe('"1"');
+      const [revision] = useCases.create.execute.mock.calls[0] ?? [];
+      expect(revision?.title.en).toBe('Movah');
+      expect(revision?.cover).toEqual({ media: COVER.id, alt: { fr: 'Accueil de Movah' } });
+    });
+
+    it('rejects a malformed creation (400) before reaching the use case', async (): Promise<void> => {
+      const response: request.Response = await admin(
+        server()
+          .post('/content/admin/projects')
+          .send({ ...FIXTURE, title: { fr: '' } }),
+      );
+      expect(response.status).toBe(400);
+      expect(useCases.create.execute).not.toHaveBeenCalled();
     });
 
     it('revises a project with the version read, and returns the new ETag', async (): Promise<void> => {

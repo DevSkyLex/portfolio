@@ -45,6 +45,15 @@ describe('Slug', (): void => {
     expect(Slug.of('movah').equals(Slug.of('movah'))).toBe(true);
     expect(Slug.of('movah').equals(Slug.of('crm'))).toBe(false);
   });
+
+  it('derives a free slug from a title', (): void => {
+    expect(Slug.fromTitle('  Refonte : Café & Crème !', new Set()).value).toBe(
+      'refonte-cafe-creme',
+    );
+    expect(Slug.fromTitle('Movah', new Set(['movah', 'movah-2'])).value).toBe('movah-3');
+    expect(Slug.fromTitle('—', new Set()).value).toBe('projet');
+    expect(Slug.fromTitle('a'.repeat(120), new Set()).value).toHaveLength(72);
+  });
 });
 
 describe('Period', (): void => {

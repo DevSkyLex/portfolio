@@ -1,0 +1,72 @@
+<section
+  class="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-6 py-3 text-[13px]"
+  aria-label="Publication"
+  i18n-aria-label="@@admin.publication.label"
+  [attr.aria-busy]="store.loading() || store.writing()"
+>
+  <div class="min-w-0 flex-1 basis-full sm:basis-0" aria-live="polite">
+    @if (store.conflict()) {
+      <p class="text-danger" i18n="@@admin.publication.conflict">
+        Des modifications ont été enregistrées. Actualisez l’état avant de publier.
+      </p>
+    } @else if (store.loadCallState().error || store.writeCallState().error) {
+      <p class="text-danger" i18n="@@admin.publication.error">
+        Impossible de récupérer ou modifier l’état de publication. Réessayez.
+      </p>
+    } @else if (store.publication(); as publication) {
+      @if (publication.batching) {
+        <p class="font-medium text-fg" i18n="@@admin.publication.active">
+          Publication groupée en cours
+        </p>
+        <p class="text-fg-muted" i18n="@@admin.publication.hint">
+          Les modifications enregistrées restent en attente jusqu’à la publication du groupe.
+        </p>
+      } @else {
+        <p class="text-fg-muted" i18n="@@admin.publication.immediate">
+          Les modifications publiques demandent automatiquement une reconstruction.
+        </p>
+      }
+    } @else {
+      <p class="text-fg-muted" i18n="@@admin.publication.loading">
+        Chargement de l’état de publication…
+      </p>
+    }
+  </div>
+  <button
+    uiBtn
+    variant="ghost"
+    size="xs"
+    type="button"
+    [disabled]="store.loading() || store.writing()"
+    (click)="store.load()"
+    i18n="@@admin.publication.refresh"
+  >
+    Actualiser l’état
+  </button>
+  @if (store.publication(); as publication) {
+    @if (publication.batching) {
+      <button
+        uiBtn
+        size="xs"
+        type="button"
+        [disabled]="store.loading() || store.writing() || store.conflict()"
+        (click)="change('publish')"
+        i18n="@@admin.publication.publish"
+      >
+        Publier le groupe
+      </button>
+    } @else {
+      <button
+        uiBtn
+        variant="secondary"
+        size="xs"
+        type="button"
+        [disabled]="store.loading() || store.writing()"
+        (click)="change('start')"
+        i18n="@@admin.publication.start"
+      >
+        Préparer une publication groupée
+      </button>
+    }
+  }
+</section>

@@ -12,3 +12,5 @@ export { SeoDashboardJobs } from '@internal/content-adapters-in/lib/jobs/seo-das
 /** OAuth-protected content MCP transport and its application-backed tool catalogue (D49). */
 export { ContentMcpController } from '@internal/content-adapters-in/lib/http/controllers/content-mcp/content-mcp.controller';
 export { ContentMcpTools } from '@internal/content-adapters-in/lib/mcp/content-mcp-tools/content-mcp-tools';
+
+export { AdminPublicationController } from '@internal/content-adapters-in/lib/http/controllers/admin-publication/admin-publication.controller';

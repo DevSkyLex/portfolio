@@ -1,3 +1,4 @@
+import { lockContentRevision } from '@internal/content-adapters-out/lib/persistence/repositories/publication/publication-lock';
 import {
   type ContentRepositories,
   type ContentUnitOfWork,
@@ -23,6 +24,7 @@ import {
   contentRevision,
   projects,
   siteBuildRequests,
+  publicationState,
 } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
 
 /**
@@ -32,6 +34,53 @@ import {
  * Converts normalized localized text back to the JSON representation stored in PostgreSQL.
  */
 const props = (text: LocalizedText): LocalizedTextProps => text.toProps();
+
+/**
+ * Function editableColumns
+ *
+ * @description
+ * Stored values of a project's editable content and status, shared by the insert and the update.
+ *
+ * @param {Project} project - Aggregate to persist.
+ * @returns {Omit<typeof projects.$inferInsert, 'id' | 'slug' | 'position' | 'version'>} Column values.
+ */
+function editableColumns(
+  project: Project,
+): Omit<typeof projects.$inferInsert, 'id' | 'slug' | 'position' | 'version'> {
+  const p: ProjectProps = project.snapshot();
+  const article: ProjectArticle = p.article;
+  const { keywords, ...seoTexts } = p.seo.toProps();
+  return {
+    title: props(p.title),
+    summary: props(p.summary),
+    lead: props(p.lead),
+    period: p.period.toProps(),
+    client: props(p.client),
+    role: props(p.role),
+    place: props(p.place),
+    siteUrl: p.siteUrl,
+    techs: [...p.techs],
+    featured: p.featured,
+    status: p.status,
+    article:
+      article.en === undefined
+        ? { fr: article.fr.toProps() }
+        : { fr: article.fr.toProps(), en: article.en.toProps() },
+    cover:
+      p.cover === null
+        ? null
+        : {
+            media: p.cover.media,
+            alt:
+              p.cover.alt.en === undefined
+                ? { fr: p.cover.alt.fr }
+                : { fr: p.cover.alt.fr, en: p.cover.alt.en },
+          },
+    // Texts and keywords live in separate columns (migration 0005).
+    seo: seoTexts,
+    seoKeywords: keywords,
+  };
+}
 
 /**
  * Class DrizzleProjectRepository
@@ -97,39 +146,10 @@ export class DrizzleProjectRepository implements ProjectRepository {
    */
   public async save(project: Project, expectedVersion: number): Promise<number> {
     const p: ProjectProps = project.snapshot();
-    const article: ProjectArticle = p.article;
-    const { keywords, ...seoTexts } = p.seo.toProps();
     const updated: { version: number }[] = await this.db
       .update(projects)
       .set({
-        title: props(p.title),
-        summary: props(p.summary),
-        lead: props(p.lead),
-        period: p.period.toProps(),
-        client: props(p.client),
-        role: props(p.role),
-        place: props(p.place),
-        siteUrl: p.siteUrl,
-        techs: [...p.techs],
-        featured: p.featured,
-        status: p.status,
-        article:
-          article.en === undefined
-            ? { fr: article.fr.toProps() }
-            : { fr: article.fr.toProps(), en: article.en.toProps() },
-        cover:
-          p.cover === null
-            ? null
-            : {
-                media: p.cover.media,
-                alt:
-                  p.cover.alt.en === undefined
-                    ? { fr: p.cover.alt.fr }
-                    : { fr: p.cover.alt.fr, en: p.cover.alt.en },
-              },
-        // Texts and keywords live in separate columns (migration 0005).
-        seo: seoTexts,
-        seoKeywords: keywords,
+        ...editableColumns(project),
         version: sql`${projects.version} + 1`,
       })
       // Optimistic locking: no row updated if someone saved in the meantime.
@@ -140,6 +160,27 @@ export class DrizzleProjectRepository implements ProjectRepository {
       throw new VersionMismatchError();
     }
     return row.version;
+  }
+
+  /**
+   * Method insert
+   * @method insert
+   *
+   * @description
+   * Inserts a new project row with its identity, position and version 1.
+   *
+   * @param {Project} project - New aggregate.
+   * @returns {Promise<void>} Completion after the insert.
+   */
+  public async insert(project: Project): Promise<void> {
+    const p: ProjectProps = project.snapshot();
+    await this.db.insert(projects).values({
+      id: p.id,
+      slug: p.slug.value,
+      position: p.position,
+      version: p.version,
+      ...editableColumns(project),
+    });
   }
   // #endregion
 }
@@ -186,6 +227,11 @@ export class DrizzleSiteBuildRequestRepository implements SiteBuildRequestReposi
       })
       .returning({ revision: contentRevision.revision });
     const revision: number = row?.revision ?? 1;
+    const [batch] = await this.db
+      .select({ frozen: publicationState.frozen })
+      .from(publicationState)
+      .where(eq(publicationState.id, 1));
+    if (batch?.frozen !== null && batch?.frozen !== undefined) return revision;
     await this.db
       .insert(siteBuildRequests)
       .values({ revision, status: 'pending', requestedAt: now, nextAttemptAt: now });
@@ -218,6 +264,11 @@ export class DrizzleSiteBuildRequestRepository implements SiteBuildRequestReposi
           .from(contentRevision)
           .where(eq(contentRevision.id, 1))
           .for('update');
+        const [batch] = await tx
+          .select({ frozen: publicationState.frozen })
+          .from(publicationState)
+          .where(eq(publicationState.id, 1));
+        if (batch?.frozen !== null && batch?.frozen !== undefined) return null;
         const [active] = await tx
           .select({ revision: siteBuildRequests.revision })
           .from(siteBuildRequests)
@@ -336,13 +387,14 @@ export class DrizzleContentUnitOfWork implements ContentUnitOfWork {
    * @returns {Promise<T>} Callback result after transaction completion.
    */
   public run<T>(work: (repositories: ContentRepositories) => Promise<T>): Promise<T> {
-    return this.db.transaction((tx: ContentTransaction): Promise<T> =>
-      work({
+    return this.db.transaction(async (tx: ContentTransaction): Promise<T> => {
+      await lockContentRevision(tx);
+      return work({
         projects: new DrizzleProjectRepository(tx),
         buildRequests: new DrizzleSiteBuildRequestRepository(tx),
         media: new DrizzleMediaRepository(tx),
-      }),
-    );
+      });
+    });
   }
   // #endregion
 }

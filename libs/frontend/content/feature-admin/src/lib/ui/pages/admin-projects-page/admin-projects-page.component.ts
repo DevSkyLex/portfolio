@@ -1,3 +1,4 @@
+import { AdminPublicationSectionComponent } from '@internal/content-web-feature-admin/lib/ui/sections/admin-publication-section/admin-publication-section.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,9 +10,10 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, type ParamMap } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, type ParamMap } from '@angular/router';
 import { type AdminProject, AdminProjectsStore } from '@vfortin/content-web-data-access/admin';
 import {
+  ButtonDirective,
   ConfirmDialogService,
   DATA_TABLE_INITIAL_STATE,
   type DataTableState,
@@ -54,7 +56,14 @@ import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/u
  */
 @Component({
   selector: 'content-admin-projects-page',
-  imports: [PAGE_HEADER_IMPORTS, ProjectListDataviewComponent, ProjectListToolbarComponent],
+  imports: [
+    AdminPublicationSectionComponent,
+    ButtonDirective,
+    PAGE_HEADER_IMPORTS,
+    ProjectListDataviewComponent,
+    ProjectListToolbarComponent,
+    RouterLink,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Fills the layout's main column, so that the table's selection bar rests at the bottom of the window.
   host: { class: 'flex flex-auto flex-col' },

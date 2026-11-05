@@ -94,6 +94,34 @@ describe('downloadContentSnapshots', () => {
     );
   });
 
+  it(
+    'starts both locale requests before waiting for either response',
+    { timeout: 1_000 },
+    async () => {
+      /** @type {(() => void) | undefined} */
+      let releaseFirst;
+      const firstReady = new Promise((resolve) => {
+        releaseFirst = () => resolve(undefined);
+      });
+      const summaries = await downloadContentSnapshots({
+        outputDirectory,
+        fetcher: async (url) => {
+          if (String(url).endsWith('locale=fr')) {
+            await firstReady;
+            return response('fr', 9);
+          }
+          assert.ok(releaseFirst);
+          releaseFirst();
+          return response('en', 9);
+        },
+      });
+      assert.deepEqual(
+        summaries.map((summary) => summary.revision),
+        [9, 9],
+      );
+    },
+  );
+
   it('does not create output after three incoherent locale pairs', async () => {
     let requests = 0;
     /** @type {number[]} */

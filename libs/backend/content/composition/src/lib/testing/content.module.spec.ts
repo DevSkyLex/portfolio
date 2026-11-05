@@ -41,6 +41,7 @@ interface AdminProject {
   readonly id: string;
   readonly slug: string;
   readonly version: number;
+  readonly position: number;
   readonly title: { readonly fr: string; readonly en?: string };
   readonly missing: readonly string[];
   readonly media: readonly Media[];
@@ -455,6 +456,32 @@ describe('ContentModule', (): void => {
           .send(project);
         expect([project.slug, response.status]).toEqual([project.slug, 200]);
       }
+    });
+
+    it('creates a draft after the last project, with a free slug from its French title', async (): Promise<void> => {
+      const list: { member: AdminProject[] } = (
+        await admin().get('/api/content/admin/projects').set(auth)
+      ).body;
+      const source: AdminProject | undefined = list.member.find(
+        (project: AdminProject): boolean => project.slug === 'movah',
+      );
+      if (!source) throw new Error('movah missing');
+      const created: request.Response = await admin()
+        .post('/api/content/admin/projects')
+        .set(auth)
+        .send({ ...source, title: { fr: 'Movah', en: 'Movah' } });
+      expect(created.status).toBe(201);
+      expect(created.headers['etag']).toBe('"1"');
+      expect(created.body).toMatchObject({ slug: 'movah-2', status: 'draft', version: 1 });
+      expect(created.body.position).toBeGreaterThan(
+        Math.max(...list.member.map((project: AdminProject): number => project.position)),
+      );
+      const read: request.Response = await admin()
+        .get(`/api/content/admin/projects/${created.body.id}`)
+        .set(auth);
+      expect(read.status).toBe(200);
+      expect(read.body.title).toEqual({ fr: 'Movah', en: 'Movah' });
+      expect((await admin().post('/api/content/admin/projects').send(source)).status).toBe(401);
     });
 
     describe('timeline', (): void => {

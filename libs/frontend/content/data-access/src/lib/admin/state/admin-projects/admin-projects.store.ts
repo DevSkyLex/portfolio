@@ -155,6 +155,19 @@ export const AdminProjectsStore = signalStore(
             return null;
           }
         },
+        /**
+         * Method create
+         *
+         * @description
+         * Adds the draft as a new project, appended to the collection on success.
+         *
+         * @param {ProjectDraft} draft - Form values of the new project.
+         *
+         * @returns {Promise<AdminProject | null>} Created project, or `null` on failure.
+         */
+        create(draft: ProjectDraft): Promise<AdminProject | null> {
+          return write(api.create(toRevisionRequest(draft)));
+        },
         save(project: AdminProject, draft: ProjectDraft): Promise<AdminProject | null> {
           return write(api.revise(project.id, project.version, toRevisionRequest(draft)));
         },

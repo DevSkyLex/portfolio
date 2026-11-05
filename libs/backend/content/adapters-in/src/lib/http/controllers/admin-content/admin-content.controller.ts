@@ -15,6 +15,7 @@ import { AdminOnly } from '@vfortin/backend-auth';
 import { IfMatchVersion, ZodValidationPipe, versionEtag } from '@vfortin/backend-http';
 import {
   type AdminProjectView,
+  CreateProject,
   GetAdminProject,
   ListAdminProjects,
   type MediaRecord,
@@ -56,6 +57,7 @@ export class AdminContentController {
    *
    * @param {ListAdminProjects} listProjects - Lists drafts and published projects.
    * @param {GetAdminProject} getProject - Loads a project by identifier.
+   * @param {CreateProject} createProject - Adds a draft project.
    * @param {ReviseProject} reviseProject - Applies project text edits.
    * @param {PublishProject} publishProject - Publishes a complete project.
    * @param {UnpublishProject} unpublishProject - Returns a project to draft state.
@@ -63,6 +65,7 @@ export class AdminContentController {
   public constructor(
     @Inject(ListAdminProjects) private readonly listProjects: ListAdminProjects,
     @Inject(GetAdminProject) private readonly getProject: GetAdminProject,
+    @Inject(CreateProject) private readonly createProject: CreateProject,
     @Inject(ReviseProject) private readonly reviseProject: ReviseProject,
     @Inject(PublishProject) private readonly publishProject: PublishProject,
     @Inject(UnpublishProject) private readonly unpublishProject: UnpublishProject,
@@ -107,6 +110,27 @@ export class AdminContentController {
   ): Promise<AdminProjectDto> {
     const view: AdminProjectView = await this.getProject.execute(id);
     return this.respond(response, view.project, view.media);
+  }
+
+  /**
+   * Method create
+   * @method create
+   *
+   * @description
+   * Validates the content, adds it as a draft project and answers 201 with its version as `ETag`.
+   *
+   * @param {ProjectRevisionRequest} body - Contract-validated editable fields.
+   * @param {Response} response - Express response receiving the ETag.
+   * @returns {Promise<AdminProjectDto>} Created project representation.
+   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  public async create(
+    @Body(new ZodValidationPipe(ProjectRevisionRequestSchema)) body: ProjectRevisionRequest,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AdminProjectDto> {
+    const result: ProjectChangeResult = await this.createProject.execute(toProjectRevision(body));
+    return this.respond(response, result.project, result.media, result.version);
   }
 
   /**

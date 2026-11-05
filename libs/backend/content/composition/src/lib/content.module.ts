@@ -13,6 +13,7 @@ import { READINESS_CHECKS, type ReadinessCheck } from '@vfortin/backend-observab
 import { databaseReadinessCheck } from '@vfortin/backend-persistence';
 import {
   AdminContentController,
+  AdminPublicationController,
   AdminLegalController,
   AdminMediaController,
   AdminProfileController,
@@ -30,6 +31,7 @@ import {
   type ContentDatabaseHandle,
   DiskMediaStorage,
   DrizzleContentSnapshotReader,
+  DrizzlePublicationRepository,
   DrizzleContentUnitOfWork,
   DrizzleLegalDocumentRepository,
   DrizzleMediaRepository,
@@ -64,6 +66,7 @@ import {
   GetAdminProject,
   GetAdminTimelineEntry,
   GetPublishedContent,
+  ManagePublication,
   GetSeoDashboard,
   type ImageProcessor,
   ListAdminProjects,
@@ -76,6 +79,7 @@ import {
   ReviseLegalDocument,
   ReviseProfile,
   ReviseProject,
+  CreateProject,
   ReviseTimelineEntry,
   type SeoSources,
   type SiteBuildDispatcher,
@@ -399,6 +403,7 @@ export class ContentModule implements OnApplicationShutdown {
         ...(options.mcp ? [ContentMcpController] : []),
         ContentController,
         AdminContentController,
+        AdminPublicationController,
         AdminTimelineController,
         AdminProfileController,
         AdminLegalController,
@@ -406,6 +411,12 @@ export class ContentModule implements OnApplicationShutdown {
         AdminSeoDashboardController,
       ],
       providers: [
+        {
+          provide: ManagePublication,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): ManagePublication =>
+            new ManagePublication(new DrizzlePublicationRepository(database.db), clock),
+        },
         ...(options.mcp ? [ContentMcpTools] : []),
         {
           provide: CONTENT_DATABASE,
@@ -443,6 +454,12 @@ export class ContentModule implements OnApplicationShutdown {
               new DrizzleProjectRepository(database.db),
               new DrizzleMediaRepository(database.db),
             ),
+        },
+        {
+          provide: CreateProject,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): CreateProject =>
+            new CreateProject(unitOfWork(database), new RandomIdGenerator()),
         },
         {
           provide: ReviseProject,

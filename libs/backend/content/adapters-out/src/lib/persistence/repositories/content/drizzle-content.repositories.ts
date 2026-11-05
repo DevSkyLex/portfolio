@@ -26,6 +26,8 @@ import {
 } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
 import {
   contentRevision,
+  publicationState,
+  type FrozenContentRows,
   legalDocuments,
   media,
   profile,
@@ -101,7 +103,11 @@ export class DrizzleContentRepository implements ContentRepository {
    *
    * @param {ContentDatabase} db - Typed Drizzle database.
    */
-  public constructor(private readonly db: ContentDatabase) {}
+  public constructor(
+    private readonly db: ContentDatabase,
+    private readonly frozen: FrozenContentRows | null = null,
+    private readonly frozenRevision: number = 0,
+  ) {}
   // #endregion
 
   // #region Methods
@@ -115,7 +121,8 @@ export class DrizzleContentRepository implements ContentRepository {
    * @returns {Promise<Profile>} Validated profile domain model.
    */
   public async loadProfile(): Promise<Profile> {
-    const [row] = await this.db.select().from(profile).where(eq(profile.id, 1));
+    const [row] =
+      this.frozen?.profile ?? (await this.db.select().from(profile).where(eq(profile.id, 1)));
     if (row === undefined) {
       throw new ProfileMissingError();
     }
@@ -132,7 +139,8 @@ export class DrizzleContentRepository implements ContentRepository {
    * @returns {Promise<Project[]>} Persisted project aggregates.
    */
   public async listProjects(): Promise<Project[]> {
-    const rows: (typeof projects.$inferSelect)[] = await this.db.select().from(projects);
+    const rows: (typeof projects.$inferSelect)[] =
+      this.frozen?.projects ?? (await this.db.select().from(projects));
     return rows.map(toProject);
   }
 
@@ -146,9 +154,8 @@ export class DrizzleContentRepository implements ContentRepository {
    * @returns {Promise<TimelineEntry[]>} Domain timeline entries.
    */
   public async listTimeline(): Promise<TimelineEntry[]> {
-    const rows: (typeof timelineEntries.$inferSelect)[] = await this.db
-      .select()
-      .from(timelineEntries);
+    const rows: (typeof timelineEntries.$inferSelect)[] =
+      this.frozen?.timeline ?? (await this.db.select().from(timelineEntries));
     return rows.map(toTimelineEntry);
   }
 
@@ -162,7 +169,8 @@ export class DrizzleContentRepository implements ContentRepository {
    * @returns {Promise<SkillGroup[]>} Domain skill groups.
    */
   public async listSkillGroups(): Promise<SkillGroup[]> {
-    const rows: (typeof skillGroups.$inferSelect)[] = await this.db.select().from(skillGroups);
+    const rows: (typeof skillGroups.$inferSelect)[] =
+      this.frozen?.skills ?? (await this.db.select().from(skillGroups));
     return rows.map(toSkillGroup);
   }
 
@@ -177,12 +185,13 @@ export class DrizzleContentRepository implements ContentRepository {
    */
   public async loadLegalDocuments(): Promise<Readonly<Record<LegalDocumentKind, LegalDocument>>> {
     const byKind: Map<LegalDocumentKind, LegalDocument> = new Map(
-      (await this.db.select().from(legalDocuments)).map(
-        (row: typeof legalDocuments.$inferSelect): [LegalDocumentKind, LegalDocument] => [
-          row.kind,
-          toLegalDocument(row),
-        ],
-      ),
+      (
+        this.frozen?.legal.map((row) => ({ ...row, updatedAt: new Date(row.updatedAt) })) ??
+        (await this.db.select().from(legalDocuments))
+      ).map((row: typeof legalDocuments.$inferSelect): [LegalDocumentKind, LegalDocument] => [
+        row.kind,
+        toLegalDocument(row),
+      ]),
     );
     const notice: LegalDocument | undefined = byKind.get('notice');
     const privacy: LegalDocument | undefined = byKind.get('privacy');
@@ -202,6 +211,17 @@ export class DrizzleContentRepository implements ContentRepository {
    * @returns {Promise<MediaRecord[]>} Rows found.
    */
   public async loadMedia(ids: readonly string[]): Promise<MediaRecord[]> {
+    if (this.frozen !== null) {
+      return this.frozen.media
+        .filter((row) => ids.includes(row.id))
+        .map((row) =>
+          toMediaRecord({
+            ...row,
+            createdAt: new Date(row.createdAt),
+            unlinkedAt: row.unlinkedAt === null ? null : new Date(row.unlinkedAt),
+          }),
+        );
+    }
     if (ids.length === 0) {
       return [];
     }
@@ -222,6 +242,7 @@ export class DrizzleContentRepository implements ContentRepository {
    * @returns {Promise<number>} Current published-content revision.
    */
   public async currentRevision(): Promise<number> {
+    if (this.frozen !== null) return this.frozenRevision;
     const [row] = await this.db.select().from(contentRevision).where(eq(contentRevision.id, 1));
     return row?.revision ?? 0;
   }
@@ -263,7 +284,12 @@ export class DrizzleContentSnapshotReader implements ContentSnapshotReader {
    */
   public read<T>(work: (content: ContentRepository) => Promise<T>): Promise<T> {
     return this.db.transaction(
-      (tx: ContentTransaction): Promise<T> => work(new DrizzleContentRepository(tx)),
+      async (tx: ContentTransaction): Promise<T> => {
+        const [state] = await tx.select().from(publicationState).where(eq(publicationState.id, 1));
+        return work(
+          new DrizzleContentRepository(tx, state?.frozen ?? null, state?.baseRevision ?? 0),
+        );
+      },
       {
         isolationLevel: 'repeatable read',
         accessMode: 'read only',

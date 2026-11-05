@@ -5,7 +5,7 @@ import { leaveProjectEditor } from '@internal/content-web-feature-admin/lib/http
  * Configuration ADMIN_CONTENT_ROUTES
  *
  * @description
- * Lazy administration pages with editor draft protection.
+ * Lazy list, creation (`new`) and editor (`:id`) pages, both editors with draft protection.
  */
 export const ADMIN_CONTENT_ROUTES: Routes = [
   {
@@ -15,6 +15,15 @@ export const ADMIN_CONTENT_ROUTES: Routes = [
         (m) => m.AdminProjectsPageComponent,
       ),
     title: $localize`:@@admin.projects.routeTitle:Projets — Administration`,
+  },
+  {
+    path: 'new',
+    loadComponent: () =>
+      import('@internal/content-web-feature-admin/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component').then(
+        (m) => m.AdminProjectEditPageComponent,
+      ),
+    canDeactivate: [leaveProjectEditor],
+    title: $localize`:@@admin.project.create.documentTitle:Nouveau projet — Projets — Administration`,
   },
   {
     path: ':id',

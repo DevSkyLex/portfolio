@@ -1,3 +1,5 @@
+<content-admin-publication-section />
+
 <header
   class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface px-6 text-[13px] @max-[640px]:px-4"
 >
@@ -12,13 +14,23 @@
   @if (project(); as current) {
     <ng-icon class="shrink-0 text-fg-faint" [svg]="icons.chevron" size="14" aria-hidden="true" />
     <span class="truncate font-medium text-fg" aria-current="page">{{ current.title.fr }}</span>
+  } @else if (creating()) {
+    <ng-icon class="shrink-0 text-fg-faint" [svg]="icons.chevron" size="14" aria-hidden="true" />
+    <span class="truncate font-medium text-fg" aria-current="page">{{ createLabel }}</span>
   }
 </header>
 
 <div class="flex flex-1 flex-col">
-  @if (project(); as current) {
+  @if (project() || creating()) {
+    @let current = project();
     <ui-page-header>
-      <h1 uiPageHeaderTitle>{{ current.title.fr }}</h1>
+      <h1 uiPageHeaderTitle>{{ current?.title?.fr ?? createLabel }}</h1>
+      <!-- One node per branch: content projection only reaches a branch's single root (NG8011). -->
+      @if (!current) {
+        <p uiPageHeaderMeta i18n="@@admin.project.create.hint">
+          Le projet est créé en brouillon ; son adresse découle du titre français.
+        </p>
+      }
       <div uiPageHeaderActions>
         <button
           uiBtn
@@ -41,7 +53,7 @@
           </div>
           <content-project-properties-panel [project]="current" [settings]="settings()" />
         </ng-template>
-        @if (current.status === 'published') {
+        @if (current?.status === 'published') {
           <a
             uiBtn
             variant="ghost"
@@ -54,23 +66,27 @@
             <ng-container i18n="@@admin.project.viewPage">Voir la page</ng-container>
           </a>
         }
-        <button
-          uiBtn
-          size="xs"
-          [variant]="current.status === 'published' ? 'secondary' : 'primary'"
-          type="button"
-          [disabled]="
-            store.writing() || dirty() || (current.status === 'draft' && current.missing.length > 0)
-          "
-          [title]="dirty() ? saveFirst : ''"
-          (click)="togglePublication()"
-        >
-          @if (current.status === 'published') {
-            <ng-container i18n="@@admin.projects.action.unpublish">Dépublier</ng-container>
-          } @else {
-            <ng-container i18n="@@admin.projects.action.publish">Publier</ng-container>
-          }
-        </button>
+        @if (current) {
+          <button
+            uiBtn
+            size="xs"
+            [variant]="current.status === 'published' ? 'secondary' : 'primary'"
+            type="button"
+            [disabled]="
+              store.writing() ||
+              dirty() ||
+              (current.status === 'draft' && current.missing.length > 0)
+            "
+            [title]="dirty() ? saveFirst : ''"
+            (click)="togglePublication()"
+          >
+            @if (current.status === 'published') {
+              <ng-container i18n="@@admin.projects.action.unpublish">Dépublier</ng-container>
+            } @else {
+              <ng-container i18n="@@admin.projects.action.publish">Publier</ng-container>
+            }
+          </button>
+        }
       </div>
     </ui-page-header>
 
@@ -122,14 +138,14 @@
             <content-project-form
               class="flex flex-1 flex-col"
               [values]="initial"
-              [slug]="current.slug"
-              [complete]="current.status === 'published'"
+              [slug]="current?.slug ?? ''"
+              [complete]="current?.status === 'published'"
               [pending]="store.writing()"
               [upload]="upload"
               [media]="media()"
               [serverErrors]="store.writeError()?.fieldErrors ?? []"
               (submitted)="save($event)"
-              (cancelled)="reload()"
+              (cancelled)="cancel()"
             />
           }
         </div>

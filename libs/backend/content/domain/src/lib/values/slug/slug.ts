@@ -31,6 +31,35 @@ export class Slug {
 
   // #region Methods
   /**
+   * Method fromTitle
+   * @method fromTitle
+   *
+   * @description
+   * Derives a slug from a title: accents dropped, lowercase, every run of other characters turned into
+   * one hyphen, cut to leave room for a suffix. A slug already taken gets the first free `-2`, `-3`…
+   * suffix; a title with no letter or digit falls back on `projet`.
+   *
+   * @param {string} title - Source title.
+   * @param {ReadonlySet<string>} taken - Slugs already in use.
+   * @returns {Slug} Free slug.
+   */
+  public static fromTitle(title: string, taken: ReadonlySet<string>): Slug {
+    const base: string =
+      title
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .slice(0, 72)
+        .replace(/^-+|-+$/g, '') || 'projet';
+    let candidate: string = base;
+    for (let suffix: number = 2; taken.has(candidate); suffix++) {
+      candidate = `${base}-${suffix}`;
+    }
+    return Slug.of(candidate);
+  }
+
+  /**
    * Method of
    * @method of
    *

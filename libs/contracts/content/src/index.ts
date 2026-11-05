@@ -205,3 +205,8 @@ export {
   type SeoSourceErrorDto,
   type WebVitalsDataDto,
 } from '@internal/content-contracts/lib/admin-seo-dashboard.contract';
+
+export {
+  PublicationStatusSchema,
+  type PublicationStatusDto,
+} from '@internal/content-contracts/lib/admin-publication.contract';

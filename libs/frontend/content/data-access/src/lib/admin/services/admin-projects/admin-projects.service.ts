@@ -67,6 +67,20 @@ export class AdminProjectsApiService {
   }
 
   /**
+   * Method create
+   * @method create
+   *
+   * @description
+   * Adds a draft project; the server derives its slug from the French title.
+   *
+   * @param {ProjectRevisionRequest} body - Content of the new project.
+   * @returns {Observable<AdminProject>} Created project at version 1.
+   */
+  public create(body: ProjectRevisionRequest): Observable<AdminProject> {
+    return this.http.post<AdminProjectDto>(ADMIN_PROJECTS_ENDPOINT, body).pipe(map(toAdminProject));
+  }
+
+  /**
    * Method revise
    * @method revise
    *

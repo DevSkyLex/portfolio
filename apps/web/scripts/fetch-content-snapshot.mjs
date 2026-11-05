@@ -67,18 +67,19 @@ export async function downloadContentSnapshots({
   /** @type {SnapshotEnvelope[]} */
   let snapshots = [];
   for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
-    snapshots = [];
-    for (const locale of LOCALES) {
-      const url = `${apiURL.replace(/\/$/, '')}/api/content/snapshot?locale=${locale}`;
-      const response = await fetcher(url, {
-        headers: { 'x-request-id': `site-build-${locale}-${Date.now()}` },
-        signal: AbortSignal.timeout(timeoutMs),
-      });
-      if (!response.ok) {
-        throw new Error(`${url} → ${response.status} ${await response.text()}`);
-      }
-      snapshots.push(snapshotEnvelope(await response.json(), locale));
-    }
+    snapshots = await Promise.all(
+      LOCALES.map(async (locale) => {
+        const url = `${apiURL.replace(/\/$/, '')}/api/content/snapshot?locale=${locale}`;
+        const response = await fetcher(url, {
+          headers: { 'x-request-id': `site-build-${locale}-${Date.now()}` },
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+        if (!response.ok) {
+          throw new Error(`${url} → ${response.status} ${await response.text()}`);
+        }
+        return snapshotEnvelope(await response.json(), locale);
+      }),
+    );
     const revisions = new Set(snapshots.map((snapshot) => snapshot.revision));
     if (revisions.size === 1) break;
     if (attempt === ATTEMPTS) {

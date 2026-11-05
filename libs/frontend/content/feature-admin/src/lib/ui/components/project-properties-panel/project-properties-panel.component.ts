@@ -45,11 +45,11 @@ export class ProjectPropertiesPanelComponent {
    * @readonly
    *
    * @description
-   * Project as last loaded or saved.
+   * Project as last loaded or saved; `null` while it is being created, which shows the settings only.
    *
-   * @type {InputSignal<AdminProject>}
+   * @type {InputSignal<AdminProject | null>}
    */
-  public readonly project: InputSignal<AdminProject> = input.required<AdminProject>();
+  public readonly project: InputSignal<AdminProject | null> = input.required<AdminProject | null>();
 
   /**
    * Property settings
@@ -74,7 +74,7 @@ export class ProjectPropertiesPanelComponent {
    * @type {Signal<string[]>}
    */
   protected readonly missing: Signal<string[]> = computed<string[]>((): string[] =>
-    this.project().missing.map(missingLabel),
+    (this.project()?.missing ?? []).map(missingLabel),
   );
 
   /**
@@ -97,9 +97,10 @@ export class ProjectPropertiesPanelComponent {
    *
    * @type {Signal<string>}
    */
-  protected readonly path: Signal<string> = computed<string>((): string =>
-    projectPublicPath(this.project().slug, this.localeId),
-  );
+  protected readonly path: Signal<string> = computed<string>((): string => {
+    const project: AdminProject | null = this.project();
+    return project ? projectPublicPath(project.slug, this.localeId) : '';
+  });
 
   /**
    * Property icons

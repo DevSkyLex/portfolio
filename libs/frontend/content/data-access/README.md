@@ -32,6 +32,10 @@ activate. Readiness is lazy and shared per locale, and prerender parameter disco
 Administration pages provide their own stores. The protected administration route binds the navigation
 capability. HTTP services own transport, not view state.
 
+`/admin` also exports `AdminPublicationApiService`, `AdminPublicationStatus` and the section-scoped
+`AdminPublicationStore`. Publication commands quote the observed status version. Obsolete reads cannot
+replace accepted writes, and a conflict requires a deliberate refresh rather than an automatic retry.
+
 ## Invariants
 
 - Public snapshots are read-only for a build and adapted to `content-web-model` for the active locale.

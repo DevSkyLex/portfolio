@@ -190,20 +190,24 @@ describe('ContentModule', (): void => {
     const tools: { name: string; inputSchema: { required?: string[] } }[] =
       listed.body.result.tools;
     expect(tools.map((tool): string => tool.name).sort()).toEqual([
+      'create_project',
       'create_timeline_entry',
       'delete_timeline_entry',
       'get_legal_document',
       'get_profile',
       'get_project',
+      'get_publication_status',
       'get_timeline_entry',
       'list_projects',
       'list_timeline',
       'publish_project',
+      'publish_publication_batch',
       'reorder_timeline',
       'revise_legal_document',
       'revise_profile',
       'revise_project',
       'revise_timeline_entry',
+      'start_publication_batch',
       'unpublish_project',
     ]);
     expect(
@@ -256,7 +260,7 @@ describe('ContentModule', (): void => {
     );
     try {
       await client.connect(transport);
-      expect((await client.listTools()).tools).toHaveLength(15);
+      expect((await client.listTools()).tools).toHaveLength(19);
       const result: Awaited<ReturnType<Client['callTool']>> = await client.callTool({
         name: 'get_project',
         arguments: { id: 'project-crm-kodoka' },
@@ -321,6 +325,20 @@ describe('ContentModule', (): void => {
     );
     expect(deleteDenied.status).toBe(403);
     expect(deleteDenied.headers['www-authenticate']).toContain('content:delete');
+  });
+
+  it('creates a draft project with write consent only, its slug free and from the French title', async (): Promise<void> => {
+    // A project read back is a valid creation input: the contract drops its identity fields.
+    const source: ProjectResponse = data(await call('get_project', { id: 'project-crm-kodoka' }));
+    const created: ProjectResponse = data(
+      await call('create_project', { project: source }, writeToken),
+    );
+    expect(created).toMatchObject({ status: 'draft', version: 1, title: source.title });
+    expect(created.id).not.toBe(source.id);
+    // An earlier test renamed the source, so its slug and the new one differ.
+    expect(created['slug']).not.toBe(source['slug']);
+    expect(String(created['slug'])).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+    expect(data<ProjectResponse>(await call('get_project', { id: created.id })).version).toBe(1);
   });
 
   it('publishes and unpublishes using the current project version', async (): Promise<void> => {

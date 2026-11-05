@@ -48,6 +48,7 @@ export {
   MEDIA_GRACE_MS,
   PurgeMedia,
 } from '@internal/content-application/lib/use-cases/purge-media/purge-media.use-case';
+export { CreateProject } from '@internal/content-application/lib/use-cases/create-project/create-project.use-case';
 export { ReviseProject } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
 export { UnpublishProject } from '@internal/content-application/lib/use-cases/unpublish-project/unpublish-project.use-case';
 export { UploadMedia } from '@internal/content-application/lib/use-cases/upload-media/upload-media.use-case';
@@ -140,3 +141,9 @@ export {
   type SeoRefreshSummary,
   type SeoRefreshTicket,
 } from '@internal/content-application/lib/use-cases/refresh-seo-dashboard/refresh-seo-dashboard.use-case';
+
+export { ManagePublication } from '@internal/content-application/lib/use-cases/manage-publication/manage-publication.use-case';
+export type {
+  PublicationStatus,
+  PublicationRepository,
+} from '@internal/content-application/lib/ports/publication/publication.ports';

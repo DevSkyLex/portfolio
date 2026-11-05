@@ -31,6 +31,7 @@ import {
 } from '@internal/content-application/lib/use-cases/get-admin-project/get-admin-project.use-case';
 import { ListAdminProjects } from '@internal/content-application/lib/use-cases/list-admin-projects/list-admin-projects.use-case';
 import { PublishProject } from '@internal/content-application/lib/use-cases/publish-project/publish-project.use-case';
+import { CreateProject } from '@internal/content-application/lib/use-cases/create-project/create-project.use-case';
 import { ReviseProject } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
 import { UnpublishProject } from '@internal/content-application/lib/use-cases/unpublish-project/unpublish-project.use-case';
 import {
@@ -119,6 +120,7 @@ interface ProjectTestHarness {
   readonly requests: { revision: number; status: string; attempts: number }[];
   readonly stored: Map<string, Project>;
   readonly media: InMemoryMediaRepository;
+  readonly create: CreateProject;
   readonly revise: ReviseProject;
   readonly publish: PublishProject;
   readonly unpublish: UnpublishProject;
@@ -161,6 +163,10 @@ function setup(initial: Project[], media: readonly MediaRecord[] = []): ProjectT
       stored.set(p.id, p);
       return expected + 1;
     },
+    insert: async (p: Project): Promise<void> => {
+      versions.set(p.id, p.version);
+      stored.set(p.id, p);
+    },
   };
   const buildRequests: SiteBuildRequestRepository = {
     request: async (): Promise<number> => {
@@ -199,6 +205,7 @@ function setup(initial: Project[], media: readonly MediaRecord[] = []): ProjectT
     requests,
     stored,
     media: mediaRepository,
+    create: new CreateProject(unitOfWork, { next: (): string => `new-${stored.size}` }),
     revise: new ReviseProject(unitOfWork, clock),
     publish: new PublishProject(unitOfWork, clock),
     unpublish: new UnpublishProject(unitOfWork, clock),
@@ -230,6 +237,35 @@ const revision = (
 };
 
 describe('project administration', (): void => {
+  it('creates a draft after the last project with a free slug from the French title', async (): Promise<void> => {
+    const existing: Project = Project.rehydrate({
+      ...project('etude-de-cas', 'published').snapshot(),
+      position: 3,
+    });
+    const { create, stored, requests } = setup([existing]);
+    const result: ProjectChangeResult = await create.execute(
+      revision(existing, 'Étude de cas', { title: text('Étude de cas') }),
+    );
+    expect(result).toMatchObject({ version: 1, revision: null, media: [] });
+    expect(result.project.snapshot()).toMatchObject({
+      id: 'new-1',
+      status: 'draft',
+      position: 4,
+    });
+    expect(result.project.slug.value).toBe('etude-de-cas-2');
+    expect(stored.get('new-1')).toBe(result.project);
+    expect(requests).toEqual([]);
+  });
+
+  it('refuses to create a project referencing an unknown media', async (): Promise<void> => {
+    const { create, stored } = setup([]);
+    const base: Project = project('p1', 'draft', true, [M[0]]);
+    await expect(create.execute(revision(base, 'Titre'))).rejects.toBeInstanceOf(
+      MediaNotFoundError,
+    );
+    expect(stored.size).toBe(0);
+  });
+
   it('edits a draft without rebuilding the site', async (): Promise<void> => {
     const draft: Project = project('p1', 'draft');
     const { revise, requests } = setup([draft]);

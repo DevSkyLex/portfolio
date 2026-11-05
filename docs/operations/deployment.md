@@ -191,6 +191,26 @@ Both deployment and site release copies use the configured SSH port and verify t
 - `Deploy services` (after CI on `main`): GHCR images, then `playbooks/deploy.yml -e tag=<sha>` → `scripts/deploy.sh`.
 - `Site build` (after successful automatic service deployment, or triggered by content-service on each publication): snapshot of the published content, prerendered build with `sitemap.xml` and `robots.txt` generated from the same snapshot (`npx nx run web:seo-files`, which runs `web:build` first; origin `SITE_ORIGIN`, default `https://valentin-fortin.pro`, D42), then `playbooks/publish-site.yml -e release=<name>` (release copy, pre-compression and atomic switch). A new rebuild replaces a pending one.
 
+Site builds fetch the French and English snapshots concurrently, validate that their revisions match,
+and retry the pair when publication changes between reads. Only a coherent pair reaches the build.
+The existing npm download cache is complemented by a cache of pinned Ansible collections and pip
+downloads, keyed by runner OS, Ansible Core version and `ansible/requirements.yml`. Ansible Core is
+still installed in each runner; collection installation is skipped only on an exact cache hit.
+Angular's compilation disk cache is enabled in CI as well as locally and restored across site builds
+with the same package lock, runner OS and Node major. Each successful run saves a refreshed cache;
+Angular still rebuilds and prerenders from the freshly downloaded content. Snapshots are always
+downloaded afresh and the site build still bypasses the Nx output cache.
+
+For a grouped update, start a publication batch in the content administration before editing. Save
+the required changes, then publish the group. The batch freezes the public snapshot while allowing
+administration edits; restarting content-service or building a new code release does not expose the
+working changes. The publication control also appears on the journey, information and legal pages.
+MCP clients can use `get_publication_status`, `start_publication_batch` and
+`publish_publication_batch`, supplying the version just read for either mutation. A stale version
+requires a new read and review. Closing an unchanged batch does not request a build.
+The public snapshot revision is not a deployment acknowledgement: a requested build can still fail,
+and the previous static release remains visible until the new release is switched successfully.
+
 ## Migrating an existing standalone installation
 
 Keep `DOCKER_PROJECT_NAME=portfolio` and the existing data-volume identity when adapting an already populated installation. Changing the Compose project name selects different project-scoped volumes; never use `docker compose down -v` for this migration.

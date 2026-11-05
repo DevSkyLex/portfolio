@@ -170,6 +170,20 @@ describe('AdminProjectsStore', (): void => {
     expect(store.writeError()).toBeNull();
   });
 
+  it('creates a project with a POST without If-Match and appends it to the list', async (): Promise<void> => {
+    const { store, backend } = setup();
+    const draft: ProjectDraft = toProjectDraft(project('a', 4));
+    const creating: Promise<AdminProject | null> = store.create(draft);
+    expect(store.writing()).toBe(true);
+    const call: TestRequest = backend.expectOne(BASE);
+    expect(call.request.method).toBe('POST');
+    expect(call.request.headers.has('if-match')).toBe(false);
+    expect(call.request.body.title).toEqual({ fr: 'Titre a', en: 'Title a' });
+    call.flush(project('new', 1));
+    await expect(creating).resolves.toMatchObject({ id: 'new', version: 1 });
+    expect(store.projects().map((item: AdminProject): string => item.id)).toEqual(['new']);
+  });
+
   it('publishes and unpublishes, and flags a stale version', async (): Promise<void> => {
     const { store, backend } = setup();
     const publishing: Promise<AdminProject | null> = store.publish(project('a', 2));

@@ -7,6 +7,7 @@ import { PROBLEM_MAPPER, ProblemDetailsFilter } from '@vfortin/backend-http';
 import {
   GetAdminLegalDocument,
   GetAdminProfile,
+  ManagePublication,
   ReviseLegalDocument,
   ReviseProfile,
   VersionMismatchError,
@@ -16,6 +17,7 @@ import {
   AdminProfileDtoSchema,
   type LegalDocumentRevisionRequest,
   type ProfileRevisionRequest,
+  type PublicationStatusDto,
 } from '@vfortin/content-contracts';
 import {
   type ArticleDocumentProps,
@@ -27,6 +29,7 @@ import {
 } from '@vfortin/content-domain';
 import { type JWK, SignJWT, exportJWK, generateKeyPair } from 'jose';
 import request from 'supertest';
+import { AdminPublicationController } from '@internal/content-adapters-in/lib/http/controllers/admin-publication/admin-publication.controller';
 import { AdminLegalController } from '@internal/content-adapters-in/lib/http/controllers/admin-legal/admin-legal.controller';
 import { AdminProfileController } from '@internal/content-adapters-in/lib/http/controllers/admin-profile/admin-profile.controller';
 import { contentProblemMapper } from '@internal/content-adapters-in/lib/http/mappers/content-problem/content-problem.mapper';
@@ -113,6 +116,18 @@ function notice(version: number): LegalDocument {
 describe('AdminProfileController and AdminLegalController', (): void => {
   let app: INestApplication<Server>;
   let token: string;
+  const publication = {
+    status: vi.fn<ManagePublication['status']>(),
+    start: vi.fn<ManagePublication['start']>(),
+    publish: vi.fn<ManagePublication['publish']>(),
+  } satisfies Pick<ManagePublication, 'status' | 'start' | 'publish'>;
+  const state: PublicationStatusDto = {
+    version: 4,
+    batching: true,
+    pendingChanges: true,
+    revision: 2,
+    publishedRevision: 1,
+  };
   const useCases = {
     getProfile: { execute: vi.fn<GetAdminProfile['execute']>() },
     reviseProfile: { execute: vi.fn<ReviseProfile['execute']>() },
@@ -140,8 +155,9 @@ describe('AdminProfileController and AdminLegalController', (): void => {
       .sign(privateKey);
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AdminAuthModule.forRoot({ issuer: ISSUER, jwks: { keys: [jwk] } })],
-      controllers: [AdminProfileController, AdminLegalController],
+      controllers: [AdminProfileController, AdminLegalController, AdminPublicationController],
       providers: [
+        { provide: ManagePublication, useValue: publication },
         { provide: GetAdminProfile, useValue: useCases.getProfile },
         { provide: ReviseProfile, useValue: useCases.reviseProfile },
         { provide: GetAdminLegalDocument, useValue: useCases.getLegal },
@@ -169,6 +185,9 @@ describe('AdminProfileController and AdminLegalController', (): void => {
   it('answers 401 before reading the body of an anonymous call', async (): Promise<void> => {
     const calls: (() => request.Test)[] = [
       (): request.Test => server().get('/content/admin/profile'),
+      (): request.Test => server().get('/content/admin/publication'),
+      (): request.Test => server().post('/content/admin/publication/start'),
+      (): request.Test => server().post('/content/admin/publication/publish'),
       (): request.Test => server().put('/content/admin/profile').send('not json'),
       (): request.Test => server().get('/content/admin/legal/notice'),
       (): request.Test => server().put('/content/admin/legal/cookies').send({ body: 42 }),
@@ -180,6 +199,43 @@ describe('AdminProfileController and AdminLegalController', (): void => {
     }
     expect(useCases.reviseProfile.execute).not.toHaveBeenCalled();
     expect(useCases.reviseLegal.execute).not.toHaveBeenCalled();
+  });
+
+  it('reads publication status and quotes versions on both transitions', async (): Promise<void> => {
+    publication.status.mockResolvedValue(state);
+    publication.start.mockResolvedValue(state);
+    publication.publish.mockResolvedValue({
+      ...state,
+      version: 5,
+      batching: false,
+      pendingChanges: false,
+      publishedRevision: 2,
+    });
+    const loaded: request.Response = await admin(server().get('/content/admin/publication'));
+    expect(loaded.status).toBe(200);
+    expect(loaded.headers['etag']).toBe('"4"');
+    expect(loaded.headers['cache-control']).toBe('no-store');
+    expect(loaded.body).toEqual(state);
+    const started: request.Response = await admin(
+      server().post('/content/admin/publication/start').set('if-match', '"3"'),
+    );
+    expect(started.status).toBe(200);
+    expect(publication.start).toHaveBeenCalledWith(3);
+    const published: request.Response = await admin(
+      server().post('/content/admin/publication/publish').set('if-match', '"4"'),
+    );
+    expect(published.status).toBe(200);
+    expect(published.headers['etag']).toBe('"5"');
+    expect(publication.publish).toHaveBeenCalledWith(4);
+  });
+
+  it('requires a publication version and reports a stale batch', async (): Promise<void> => {
+    expect((await admin(server().post('/content/admin/publication/start'))).status).toBe(428);
+    publication.publish.mockRejectedValueOnce(new VersionMismatchError());
+    expect(
+      (await admin(server().post('/content/admin/publication/publish').set('if-match', '"1"')))
+        .status,
+    ).toBe(412);
   });
 
   it('serves the profile with its version as ETag, matching the contract', async (): Promise<void> => {

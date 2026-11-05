@@ -319,6 +319,27 @@ export const contentRevision = contentSchema.table('content_revision', {
  * Outbox table with one rebuild request per published revision; dispatching the newest revision
  * covers earlier requests.
  */
+/** Persisted rows retained while editors prepare a grouped publication. */
+export interface FrozenContentRows {
+  readonly projects: (typeof projects.$inferSelect)[];
+  readonly profile: (typeof profile.$inferSelect)[];
+  readonly timeline: (typeof timelineEntries.$inferSelect)[];
+  readonly skills: (typeof skillGroups.$inferSelect)[];
+  readonly legal: (Omit<typeof legalDocuments.$inferSelect, 'updatedAt'> & { updatedAt: string })[];
+  readonly media: (Omit<typeof media.$inferSelect, 'createdAt' | 'unlinkedAt'> & {
+    createdAt: string;
+    unlinkedAt: string | null;
+  })[];
+}
+
+/** Explicit publication batch; its frozen rows survive service restarts. */
+export const publicationState = contentSchema.table('publication_state', {
+  id: integer('id').primaryKey(),
+  version: integer('version').notNull().default(1),
+  baseRevision: integer('base_revision').notNull().default(0),
+  frozen: jsonb('frozen').$type<FrozenContentRows>(),
+});
+
 export const siteBuildRequests = contentSchema.table('site_build_requests', {
   revision: integer('revision').primaryKey(),
   status: text('status', { enum: ['pending', 'dispatched'] }).notNull(),
@@ -378,6 +399,7 @@ export const contentTables = {
   profile,
   legalDocuments,
   contentRevision,
+  publicationState,
   siteBuildRequests,
   media,
   seoReports,

@@ -173,3 +173,11 @@ export {
   AdminSeoDashboardStore,
   type AdminSeoDashboardStoreType,
 } from '@internal/content-web-data-access/lib/admin/state/admin-seo-dashboard/admin-seo-dashboard.store';
+
+/** Explicit grouped publication status and commands. */
+export type { PublicationStatusDto as AdminPublicationStatus } from '@vfortin/content-contracts';
+export { AdminPublicationApiService } from '@internal/content-web-data-access/lib/admin/services/admin-publication/admin-publication.service';
+export {
+  AdminPublicationStore,
+  type AdminPublicationStoreType,
+} from '@internal/content-web-data-access/lib/admin/state/admin-publication/admin-publication.store';

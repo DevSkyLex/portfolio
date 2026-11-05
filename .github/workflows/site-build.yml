@@ -86,6 +86,14 @@ jobs:
           cache: npm
       - if: steps.target.outputs.publish == 'true'
         run: npm ci
+      - name: Restore Angular compilation cache
+        if: steps.target.outputs.publish == 'true'
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: site-angular-${{ runner.os }}-node24-${{ hashFiles('package-lock.json') }}-${{ steps.target.outputs.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            site-angular-${{ runner.os }}-node24-${{ hashFiles('package-lock.json') }}-
       - name: Snapshot of the published content
         if: steps.target.outputs.publish == 'true'
         run: npx nx run web:content-snapshot
@@ -100,12 +108,22 @@ jobs:
         run: |
           revision=$(node -p "require('./apps/web/content-snapshot/fr.json').revision")
           echo "name=r${revision}-$(git rev-parse --short HEAD)-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+      - name: Restore Ansible dependencies
+        if: steps.target.outputs.publish == 'true'
+        id: collections
+        uses: actions/cache@v4
+        with:
+          path: |
+            ansible/.collections
+            ~/.cache/pip
+          key: site-ansible-${{ runner.os }}-core-2.21.5-${{ hashFiles('ansible/requirements.yml') }}
       - name: Ansible
         if: steps.target.outputs.publish == 'true'
+        run: pipx install ansible-core==2.21.5
+      - name: Install pinned Ansible collections
+        if: steps.target.outputs.publish == 'true' && steps.collections.outputs.cache-hit != 'true'
         working-directory: ansible
-        run: |
-          pipx install ansible-core==2.21.5
-          ansible-galaxy collection install -r requirements.yml -p .collections
+        run: ansible-galaxy collection install -r requirements.yml -p .collections
       - name: VPS access (SSH key and verified server key)
         if: steps.target.outputs.publish == 'true'
         env:

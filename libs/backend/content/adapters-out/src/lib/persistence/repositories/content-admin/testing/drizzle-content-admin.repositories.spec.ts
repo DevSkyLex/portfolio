@@ -1,4 +1,4 @@
-import { type Project, ProjectSeo } from '@vfortin/content-domain';
+import { Project, ProjectSeo, Slug } from '@vfortin/content-domain';
 import { eq } from 'drizzle-orm';
 import { PUBLISHED_LOCALES, VersionMismatchError } from '@vfortin/content-application';
 import { fileURLToPath } from 'node:url';
@@ -69,6 +69,29 @@ describe('Content administration (Postgres via PGlite)', (): void => {
     expect((await repository.get('project-movah'))?.status).toBe('draft');
     await expect(repository.get('absent')).resolves.toBeNull();
     expect((await repository.list()).map((p): string => p.id)).toContain('project-movah');
+  });
+
+  it('inserts a new project at version 1 and refuses a slug already used', async (): Promise<void> => {
+    const repository: DrizzleProjectRepository = new DrizzleProjectRepository(handle.db);
+    const source: Project | null = await repository.get('project-movah');
+    if (!source) throw new Error('project missing');
+    const created: Project = Project.create(
+      { id: 'project-new', slug: Slug.of('nouveau'), position: 99 },
+      source.snapshot(),
+    );
+    await repository.insert(created);
+    const read: Project | null = await repository.get('project-new');
+    expect(read?.snapshot()).toMatchObject({ status: 'draft', version: 1, position: 99 });
+    expect(read?.slug.value).toBe('nouveau');
+    expect(read?.snapshot().title.toProps()).toEqual(source.snapshot().title.toProps());
+    await expect(
+      repository.insert(
+        Project.create(
+          { id: 'project-other', slug: Slug.of('nouveau'), position: 100 },
+          source.snapshot(),
+        ),
+      ),
+    ).rejects.toThrow();
   });
 
   it('stores the search texts as trimmed jsonb, seeded rows starting from the empty default', async (): Promise<void> => {

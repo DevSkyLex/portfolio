@@ -13,6 +13,7 @@ import {
   GetAdminProject,
   GetAdminTimelineEntry,
   ListAdminProjects,
+  ManagePublication,
   ListAdminTimeline,
   NotFoundError,
   PublishProject,
@@ -20,6 +21,7 @@ import {
   ReviseLegalDocument,
   ReviseProfile,
   ReviseProject,
+  CreateProject,
   ReviseTimelineEntry,
   UnpublishProject,
   VersionMismatchError,
@@ -92,6 +94,7 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
   const useCases = {
     listProjects: { execute: vi.fn<ListAdminProjects['execute']>() },
     getProject: { execute: vi.fn<GetAdminProject['execute']>() },
+    createProject: { execute: vi.fn<CreateProject['execute']>() },
     reviseProject: { execute: vi.fn<ReviseProject['execute']>() },
     publish: { execute: vi.fn<PublishProject['execute']>() },
     unpublish: { execute: vi.fn<UnpublishProject['execute']>() },
@@ -128,8 +131,23 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
       controllers: [ContentMcpController],
       providers: [
         ContentMcpTools,
+        {
+          provide: ManagePublication,
+          useValue: {
+            status: vi.fn().mockResolvedValue({
+              version: 1,
+              batching: false,
+              pendingChanges: false,
+              revision: 0,
+              publishedRevision: 0,
+            }),
+            start: vi.fn(),
+            publish: vi.fn(),
+          },
+        },
         { provide: ListAdminProjects, useValue: useCases.listProjects },
         { provide: GetAdminProject, useValue: useCases.getProject },
+        { provide: CreateProject, useValue: useCases.createProject },
         { provide: ReviseProject, useValue: useCases.reviseProject },
         { provide: PublishProject, useValue: useCases.publish },
         { provide: UnpublishProject, useValue: useCases.unpublish },
@@ -188,6 +206,12 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     });
     useCases.listProjects.execute.mockResolvedValue([{ project: aggregate, media: [] }]);
     useCases.getProject.execute.mockResolvedValue({ project: aggregate, media: [] });
+    useCases.createProject.execute.mockResolvedValue({
+      project: aggregate,
+      media: [],
+      version: 1,
+      revision: null,
+    });
     for (const mock of [useCases.reviseProject, useCases.publish, useCases.unpublish])
       mock.execute.mockResolvedValue({ project: aggregate, media: [], version: 5, revision: null });
     for (const mock of [useCases.listTimeline, useCases.reorder, useCases.deleteEntry])
@@ -213,6 +237,7 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     const cases: [string, Record<string, unknown>, Record<string, unknown>][] = [
       ['list_projects', {}, { totalItems: 1 }],
       ['get_project', { id: FIXTURE.id }, { id: FIXTURE.id, version: 3 }],
+      ['create_project', { project: FIXTURE }, { version: 1 }],
       ['revise_project', { id: FIXTURE.id, expectedVersion: 3, revision: FIXTURE }, { version: 5 }],
       ['publish_project', { id: FIXTURE.id, expectedVersion: 3 }, { version: 5 }],
       ['unpublish_project', { id: FIXTURE.id, expectedVersion: 3 }, { version: 5 }],
@@ -252,6 +277,9 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
         response.body.result.structuredContent,
       );
     }
+    expect(useCases.createProject.execute).toHaveBeenCalledWith(
+      toProjectRevision(ProjectRevisionRequestSchema.parse(FIXTURE)),
+    );
     expect(useCases.reviseProject.execute).toHaveBeenCalledWith(
       FIXTURE.id,
       3,
@@ -266,7 +294,7 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
 
   it('advertises schemas, handles notifications and reports unknown methods and tools', async (): Promise<void> => {
     const listed: request.Response = await rpc('tools/list');
-    expect(listed.body.result.tools).toHaveLength(15);
+    expect(listed.body.result.tools).toHaveLength(19);
     const unknownMethod: request.Response = await rpc('no-such-method');
     expect(unknownMethod.body.error.code).toBe(-32601);
     expect((await call('unknown')).body.error.code).toBe(-32602);
@@ -293,6 +321,24 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
         .set('content-type', 'application/json')
         .send(body ?? 'null');
       expect([400, 202]).toContain(malformed.status);
+    }
+  });
+
+  it('exposes batch state and requires publication consent for batch transitions', async (): Promise<void> => {
+    const status: request.Response = await call('get_publication_status');
+    expect(status.body.result.structuredContent).toEqual({
+      version: 1,
+      batching: false,
+      pendingChanges: false,
+      revision: 0,
+      publishedRevision: 0,
+    });
+    for (const name of ['start_publication_batch', 'publish_publication_batch']) {
+      const denied: request.Response = await call(name, { expectedVersion: 1 }, 'write');
+      expect(denied.status).toBe(403);
+      expect(denied.headers['www-authenticate']).toContain('content:publish');
+      const invalid: request.Response = await call(name, { expectedVersion: 0 });
+      expect(invalid.body.error.code).toBe(-32602);
     }
   });
 

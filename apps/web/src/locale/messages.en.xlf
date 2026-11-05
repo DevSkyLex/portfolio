@@ -1437,8 +1437,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.content.rebuildNotice" datatype="html">
-        <source>Le site public sera mis à jour dans quelques minutes.</source>
-        <target>The public site will be updated in a few minutes.</target>
+        <source>Les modifications seront visibles après publication et reconstruction du site.</source>
+        <target>Changes will be visible after publication and the site rebuild.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/site-rebuild-notice.constants.ts</context>
           <context context-type="linenumber">10</context>
@@ -8461,6 +8461,110 @@
       <trans-unit id="ui.spinner.label" datatype="html">
         <source>Chargement</source>
         <target>Loading</target>
+      </trans-unit>
+      <trans-unit id="admin.project.create.title" datatype="html">
+        <source>Nouveau projet</source>
+        <target>New project</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
+          <context context-type="linenumber">202</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.project.create.hint" datatype="html">
+        <source> Le projet est créé en brouillon ; son adresse découle du titre français. </source>
+        <target> The project is created as a draft; its address comes from the French title. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
+          <context context-type="linenumber">29,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.project.create.documentTitle" datatype="html">
+        <source>Nouveau projet — Projets — Administration</source>
+        <target>New project — Projects — Administration</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/admin-content.routes.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
+          <context context-type="linenumber">867</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.project.toast.created" datatype="html">
+        <source>« <x id="title" equiv-text="created.title.fr"/> » créé (brouillon).</source>
+        <target>"<x id="title" equiv-text="created.title.fr"/>" created (draft).</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
+          <context context-type="linenumber">759</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.projects.action.create" datatype="html">
+        <source>Nouveau projet</source>
+        <target>New project</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.html</context>
+          <context context-type="linenumber">19,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.publication.label" datatype="html">
+        <source>Publication</source>
+        <target>Publication</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.conflict" datatype="html">
+        <source>Des modifications ont été enregistrées. Actualisez l’état avant de publier.</source>
+        <target>Changes have been saved. Refresh the status before publishing.</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.error" datatype="html">
+        <source>Impossible de récupérer ou modifier l’état de publication. Réessayez.</source>
+        <target>Unable to retrieve or change the publication status. Try again.</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.active" datatype="html">
+        <source>Publication groupée en cours</source>
+        <target>Grouped publication in progress</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.hint" datatype="html">
+        <source>Les modifications enregistrées restent en attente jusqu’à la publication du groupe.</source>
+        <target>Saved changes remain pending until the group is published.</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.immediate" datatype="html">
+        <source>Les modifications publiques demandent automatiquement une reconstruction.</source>
+        <target>Public changes automatically request a site rebuild.</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.loading" datatype="html">
+        <source>Chargement de l’état de publication…</source>
+        <target>Loading publication status…</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.refresh" datatype="html">
+        <source>Actualiser l’état</source>
+        <target>Refresh status</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.publish" datatype="html">
+        <source>Publier le groupe</source>
+        <target>Publish the group</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.start" datatype="html">
+        <source>Préparer une publication groupée</source>
+        <target>Prepare a grouped publication</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.started" datatype="html">
+        <source>Publication groupée activée.</source>
+        <target>Grouped publication enabled.</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.requested" datatype="html">
+        <source>Publication demandée. Le site sera mis à jour après la reconstruction.</source>
+        <target>Publication requested. The site will be updated after the rebuild.</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.closed" datatype="html">
+        <source>Publication groupée terminée sans modification.</source>
+        <target>Grouped publication ended without changes.</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.confirm.title" datatype="html">
+        <source>Publier les modifications enregistrées ?</source>
+        <target>Publish the saved changes?</target>
+      </trans-unit>
+      <trans-unit id="admin.publication.confirm.description" datatype="html">
+        <source>Tous les changements enregistrés dans les projets, le parcours, les informations et les documents légaux seront publiés ensemble. Les champs non enregistrés ne sont pas inclus.</source>
+        <target>All saved changes to projects, your journey, profile information and legal documents will be published together. Unsaved fields are not included.</target>
       </trans-unit>
     </body>
   </file>

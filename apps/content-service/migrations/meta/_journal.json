@@ -106,6 +106,13 @@
       "when": 1793870421126,
       "tag": "0014_initial_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793889258801,
+      "tag": "0015_freezing_joystick",
+      "breakpoints": true
     }
   ]
 }

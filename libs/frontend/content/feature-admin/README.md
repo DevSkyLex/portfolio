@@ -28,6 +28,11 @@ page `AdminLegalStore`, the dashboard page `AdminSeoDashboardStore` (its refresh
 The editor reacts to its bound route ID and invalidates obsolete reads; page scope alone does not
 make a reused route input static.
 
+Project, timeline, profile and legal pages include the owner publication section. It starts an explicit
+batch, keeps saved edits pending, and refreshes the batch status before asking confirmation to publish
+all saved changes. Unsaved form fields are excluded. The section reports only that a rebuild was
+requested; it does not infer build completion or the version actually served by the public site.
+
 ## Invariants
 
 - The dashboard window lives in `?periode=` (`7j`, `90j`; the default 28 days writes none) and

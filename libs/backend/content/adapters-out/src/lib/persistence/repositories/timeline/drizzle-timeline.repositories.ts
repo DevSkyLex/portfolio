@@ -1,3 +1,4 @@
+import { lockContentRevision } from '@internal/content-adapters-out/lib/persistence/repositories/publication/publication-lock';
 import {
   type TimelineEntryRepository,
   type TimelineListRepository,
@@ -291,13 +292,14 @@ export class DrizzleTimelineUnitOfWork implements TimelineUnitOfWork {
    * @returns {Promise<T>} Callback result after commit.
    */
   public run<T>(work: (repositories: TimelineRepositories) => Promise<T>): Promise<T> {
-    return this.db.transaction((tx: ContentTransaction): Promise<T> =>
-      work({
+    return this.db.transaction(async (tx: ContentTransaction): Promise<T> => {
+      await lockContentRevision(tx);
+      return work({
         entries: new DrizzleTimelineEntryRepository(tx),
         lists: new DrizzleTimelineListRepository(tx),
         buildRequests: new DrizzleSiteBuildRequestRepository(tx),
-      }),
-    );
+      });
+    });
   }
   // #endregion
 }

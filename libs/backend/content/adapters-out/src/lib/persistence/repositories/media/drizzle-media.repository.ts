@@ -1,12 +1,17 @@
 import type { MediaRecord, MediaRepository } from '@vfortin/content-application';
 import { type SQL, and, eq, inArray, isNotNull, lt, not, sql } from 'drizzle-orm';
-import type { ContentDatabase } from '@internal/content-adapters-out/lib/persistence/database/content-database';
+import { lockContentRevision } from '@internal/content-adapters-out/lib/persistence/repositories/publication/publication-lock';
+import type {
+  ContentDatabase,
+  ContentTransaction,
+} from '@internal/content-adapters-out/lib/persistence/database/content-database';
 import {
   type MediaRow,
   toMediaRecord,
 } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
 import {
   media,
+  publicationState,
   projects,
 } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
 
@@ -37,7 +42,12 @@ const referenced: SQL = sql`exists (
  * @returns {SQL | undefined} Drizzle condition.
  */
 function staleBefore(before: Date): SQL | undefined {
-  return and(isNotNull(media.unlinkedAt), lt(media.unlinkedAt, before), not(referenced));
+  return and(
+    isNotNull(media.unlinkedAt),
+    lt(media.unlinkedAt, before),
+    not(referenced),
+    sql`not exists (select 1 from ${publicationState} where ${publicationState.frozen} is not null)`,
+  );
 }
 
 /**
@@ -180,11 +190,14 @@ export class DrizzleMediaRepository implements MediaRepository {
    * @returns {Promise<boolean>} Whether a row was deleted.
    */
   public async delete(id: string, before: Date): Promise<boolean> {
-    const deleted: { id: string }[] = await this.db
-      .delete(media)
-      .where(and(eq(media.id, id), staleBefore(before)))
-      .returning({ id: media.id });
-    return deleted.length > 0;
+    return this.db.transaction(async (tx: ContentTransaction): Promise<boolean> => {
+      await lockContentRevision(tx);
+      const deleted: { id: string }[] = await tx
+        .delete(media)
+        .where(and(eq(media.id, id), staleBefore(before)))
+        .returning({ id: media.id });
+      return deleted.length > 0;
+    });
   }
   // #endregion
 }

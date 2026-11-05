@@ -1,75 +1,76 @@
-@let current = project();
-<dl class="flex flex-col gap-3.5 text-[13px]/5">
-  <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
-    <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.status">Statut</dt>
-    <dd>
-      @if (current.status === 'published') {
-        <span
-          uiBadge
-          variant="success"
-          dot
-          appearance="ghost"
-          class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
-          i18n="@@admin.projects.status.published"
-          >Publié</span
-        >
-      } @else {
-        <span
-          uiBadge
-          variant="outline"
-          dot
-          appearance="ghost"
-          class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
-          i18n="@@admin.projects.status.draft"
-          >Brouillon</span
-        >
-      }
-    </dd>
-  </div>
-  <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
-    <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.version">Version</dt>
-    <dd class="text-fg">{{ current.version }}</dd>
-  </div>
-  <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
-    <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.address">Adresse</dt>
-    <dd class="font-mono text-[12px]/5 break-all text-fg-muted">{{ path() }}</dd>
-  </div>
-  <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
-    <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.completeness">
-      Complétude
-    </dt>
-    <dd class="flex flex-col gap-2">
-      @if (missing().length > 0) {
-        <span
-          uiBadge
-          variant="warning"
-          appearance="ghost"
-          class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
-        >
-          <ng-icon [svg]="icons.missing" size="12" aria-hidden="true" />
-          <ng-container i18n="@@admin.projects.completeness.missingCount"
-            >{{ missing().length }} à compléter</ng-container
+@if (project(); as current) {
+  <dl class="flex flex-col gap-3.5 text-[13px]/5">
+    <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
+      <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.status">Statut</dt>
+      <dd>
+        @if (current.status === 'published') {
+          <span
+            uiBadge
+            variant="success"
+            dot
+            appearance="ghost"
+            class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
+            i18n="@@admin.projects.status.published"
+            >Publié</span
           >
-        </span>
-        <ul class="flex flex-col gap-1 text-[12px]/5 text-fg-muted">
-          @for (label of missing(); track label) {
-            <li>{{ label }}</li>
-          }
-        </ul>
-      } @else {
-        <span
-          uiBadge
-          variant="success"
-          appearance="ghost"
-          class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
-        >
-          <ng-icon [svg]="icons.complete" size="12" aria-hidden="true" />
-          <ng-container i18n="@@admin.projects.completeness.complete">Complet</ng-container>
-        </span>
-      }
-    </dd>
-  </div>
-</dl>
+        } @else {
+          <span
+            uiBadge
+            variant="outline"
+            dot
+            appearance="ghost"
+            class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
+            i18n="@@admin.projects.status.draft"
+            >Brouillon</span
+          >
+        }
+      </dd>
+    </div>
+    <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
+      <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.version">Version</dt>
+      <dd class="text-fg">{{ current.version }}</dd>
+    </div>
+    <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
+      <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.address">Adresse</dt>
+      <dd class="font-mono text-[12px]/5 break-all text-fg-muted">{{ path() }}</dd>
+    </div>
+    <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
+      <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.completeness">
+        Complétude
+      </dt>
+      <dd class="flex flex-col gap-2">
+        @if (missing().length > 0) {
+          <span
+            uiBadge
+            variant="warning"
+            appearance="ghost"
+            class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
+          >
+            <ng-icon [svg]="icons.missing" size="12" aria-hidden="true" />
+            <ng-container i18n="@@admin.projects.completeness.missingCount"
+              >{{ missing().length }} à compléter</ng-container
+            >
+          </span>
+          <ul class="flex flex-col gap-1 text-[12px]/5 text-fg-muted">
+            @for (label of missing(); track label) {
+              <li>{{ label }}</li>
+            }
+          </ul>
+        } @else {
+          <span
+            uiBadge
+            variant="success"
+            appearance="ghost"
+            class="h-auto px-0 ps-0 text-[13px]/5 font-normal text-fg"
+          >
+            <ng-icon [svg]="icons.complete" size="12" aria-hidden="true" />
+            <ng-container i18n="@@admin.projects.completeness.complete">Complet</ng-container>
+          </span>
+        }
+      </dd>
+    </div>
+  </dl>
+}
 @if (settings(); as fields) {
   <ng-container [ngTemplateOutlet]="fields" />
 }

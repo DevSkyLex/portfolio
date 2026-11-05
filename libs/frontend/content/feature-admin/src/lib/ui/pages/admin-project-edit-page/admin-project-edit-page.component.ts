@@ -1,3 +1,4 @@
+import { AdminPublicationSectionComponent } from '@internal/content-web-feature-admin/lib/ui/sections/admin-publication-section/admin-publication-section.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,7 +20,7 @@ import {
 import { DOCUMENT } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import {
   lucideArrowLeft,
@@ -58,6 +59,7 @@ import {
   type DialogRef,
   type PanelSize,
 } from '@vfortin/ui';
+import { EMPTY_PROJECT_DRAFT } from '@internal/content-web-feature-admin/lib/constants/empty-project-draft.constants';
 import {
   PROJECT_EDITOR_LAYOUT,
   PROJECT_EDITOR_NARROW_QUERY,
@@ -87,6 +89,7 @@ import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/u
 @Component({
   selector: 'content-admin-project-edit-page',
   imports: [
+    AdminPublicationSectionComponent,
     AlertDescriptionDirective,
     AlertDirective,
     AlertTitleDirective,
@@ -125,7 +128,23 @@ export class AdminProjectEditPageComponent {
    *
    * @type {InputSignal<string>}
    */
-  public readonly id: InputSignal<string> = input.required<string>();
+  public readonly id: InputSignal<string | undefined> = input<string | undefined>(undefined);
+
+  /**
+   * Property creating
+   * @readonly
+   *
+   * @description
+   * Whether the page creates a project (the `new` route, without identifier).
+   */
+  protected readonly creating: Signal<boolean> = computed<boolean>((): boolean => !this.id());
+
+  private readonly router: Router = inject<Router>(Router);
+
+  private readonly route: ActivatedRoute = inject<ActivatedRoute>(ActivatedRoute);
+
+  // Set once the creation succeeded, so that moving to the new project's address asks nothing.
+  private leaving: boolean = false;
 
   /**
    * Property store
@@ -182,6 +201,8 @@ export class AdminProjectEditPageComponent {
    *
    * @type {string}
    */
+  protected readonly createLabel: string = $localize`:@@admin.project.create.title:Nouveau projet`;
+
   protected readonly saveFirst: string = $localize`:@@admin.project.publish.saveFirst:Enregistrez d’abord les modifications.`;
 
   /**
@@ -274,7 +295,8 @@ export class AdminProjectEditPageComponent {
   protected readonly values: Signal<ProjectFormValues | null> = computed<ProjectDraft | null>(
     (): ProjectDraft | null => {
       const project: AdminProject | null = this.project();
-      return project ? toProjectDraft(project) : null;
+      if (project) return toProjectDraft(project);
+      return this.creating() ? EMPTY_PROJECT_DRAFT : null;
     },
   );
 
@@ -481,7 +503,7 @@ export class AdminProjectEditPageComponent {
   public constructor() {
     const destroy: DestroyRef = inject<DestroyRef>(DestroyRef);
     effect((onCleanup): void => {
-      const id: string = this.id();
+      const id: string | undefined = this.id();
       let active: boolean = true;
       onCleanup((): void => {
         active = false;
@@ -489,6 +511,7 @@ export class AdminProjectEditPageComponent {
       untracked((): void => {
         this.project.set(null);
         this.store.resetWriteState();
+        if (id === undefined) return;
         void this.store.loadOne(id).then((project: AdminProject | null): void => {
           if (active && project) this.project.set(project);
         });
@@ -589,6 +612,7 @@ export class AdminProjectEditPageComponent {
    * @returns {Promise<boolean>} Whether route deactivation is accepted.
    */
   public async canLeave(): Promise<boolean> {
+    if (this.leaving) return true;
     if (this.store.writing()) return false;
     if (!this.dirty()) return true;
     const accepted: boolean = await this.confirmations.confirm({
@@ -626,8 +650,8 @@ export class AdminProjectEditPageComponent {
    * @returns {Promise<void>} Completion after the load attempt.
    */
   protected async reload(): Promise<void> {
-    if (this.store.writing()) return;
-    const id: string = this.id();
+    const id: string | undefined = this.id();
+    if (this.store.writing() || id === undefined) return;
     const project: AdminProject | null = await this.store.loadOne(id);
     if (project && id === this.id()) {
       this.store.resetWriteState();
@@ -644,6 +668,23 @@ export class AdminProjectEditPageComponent {
    *
    * @param {Event} event - Keyboard event of the shortcut.
    */
+  /**
+   * Method cancel
+   * @method cancel
+   *
+   * @description
+   * After the form dropped its changes: reloads the project, or leaves the creation page.
+   *
+   * @returns {Promise<void>} Completion after the reload or the navigation.
+   */
+  protected async cancel(): Promise<void> {
+    if (this.creating()) {
+      await this.router.navigate(['..'], { relativeTo: this.route });
+      return;
+    }
+    await this.reload();
+  }
+
   protected shortcut(event: Event): void {
     event.preventDefault();
     const form: ProjectFormComponent | undefined = this.form();
@@ -665,6 +706,10 @@ export class AdminProjectEditPageComponent {
    * @returns {Promise<void>} Completion after the save response.
    */
   protected async save(values: ProjectFormValues): Promise<void> {
+    if (this.creating()) {
+      await this.create(values);
+      return;
+    }
     const project: AdminProject | null = this.project();
     // The fields are disabled while a write is running: the answer then replaces the values without loss.
     if (!project || this.store.writing()) {
@@ -695,6 +740,30 @@ export class AdminProjectEditPageComponent {
    *
    * @returns {Promise<void>} Completion after the publication request.
    */
+  /**
+   * Method create
+   * @method create
+   *
+   * @description
+   * Adds the project as a draft, then moves to its address in place of the creation page.
+   *
+   * @param {ProjectFormValues} values - Submitted form values.
+   * @returns {Promise<void>} Completion after the request and the navigation.
+   */
+  private async create(values: ProjectFormValues): Promise<void> {
+    if (this.store.writing()) return;
+    const created: AdminProject | null = await this.store.create(values);
+    if (!created) {
+      this.reportFailure();
+      return;
+    }
+    this.toasts.success(
+      $localize`:@@admin.project.toast.created:« ${created.title.fr}:title: » créé (brouillon).`,
+    );
+    this.leaving = true;
+    await this.router.navigate(['..', created.id], { relativeTo: this.route, replaceUrl: true });
+  }
+
   protected async togglePublication(): Promise<void> {
     const project: AdminProject | null = this.project();
     if (!project || this.dirty()) {
@@ -795,6 +864,12 @@ export class AdminProjectEditPageComponent {
     const title: Title = inject<Title>(Title);
     effect((): void => {
       const current: AdminProject | null = this.project();
+      if (this.creating()) {
+        title.setTitle(
+          $localize`:@@admin.project.create.documentTitle:Nouveau projet — Projets — Administration`,
+        );
+        return;
+      }
       const missing: boolean = !current && this.store.loadCallState().error?.status === 404;
       if (current || missing) {
         title.setTitle(

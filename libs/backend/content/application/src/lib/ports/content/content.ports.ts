@@ -167,6 +167,18 @@ export interface ProjectRepository {
    * @returns {Promise<number>} New stored version.
    */
   save(project: Project, expectedVersion: number): Promise<number>;
+
+  /**
+   * Method insert
+   * @method insert
+   *
+   * @description
+   * Stores a new project at version 1; a slug already used fails with the store's unique violation.
+   *
+   * @param {Project} project - New aggregate.
+   * @returns {Promise<void>} Completion after the insert.
+   */
+  insert(project: Project): Promise<void>;
   // #endregion
 }
 
