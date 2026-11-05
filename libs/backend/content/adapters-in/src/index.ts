@@ -9,3 +9,6 @@ export { MediaPurgeJobs } from '@internal/content-adapters-in/lib/jobs/media-pur
 export { SiteBuildJobs } from '@internal/content-adapters-in/lib/jobs/site-build/site-build.jobs';
 export { AdminSeoDashboardController } from '@internal/content-adapters-in/lib/http/controllers/admin-seo-dashboard/admin-seo-dashboard.controller';
 export { SeoDashboardJobs } from '@internal/content-adapters-in/lib/jobs/seo-dashboard/seo-dashboard.jobs';
+/** OAuth-protected content MCP transport and its application-backed tool catalogue (D49). */
+export { ContentMcpController } from '@internal/content-adapters-in/lib/http/controllers/content-mcp/content-mcp.controller';
+export { ContentMcpTools } from '@internal/content-adapters-in/lib/mcp/content-mcp-tools/content-mcp-tools';

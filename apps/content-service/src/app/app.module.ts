@@ -40,6 +40,11 @@ export class AppModule {
         }),
         AdminAuthModule.forRoot({ issuer: config.AUTH_ISSUER, jwksUrl: config.AUTH_JWKS_URL }),
         ContentModule.register({
+          mcp: {
+            issuer: config.AUTH_ISSUER,
+            jwksUrl: config.AUTH_JWKS_URL,
+            resource: new URL('/api/content/mcp', config.AUTH_ISSUER).href,
+          },
           databaseUrl: config.CONTENT_DATABASE_URL,
           siteBuild:
             config.SITE_BUILD_REPOSITORY && config.SITE_BUILD_TOKEN

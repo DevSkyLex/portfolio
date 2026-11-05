@@ -205,19 +205,20 @@ Downtime: each service is recreated in place (one replica), so its API answers `
 
 ## MCP access (OAuth authorization server, D45)
 
-identity-service is the OAuth 2.1 authorization server of the future MCP endpoint
+identity-service is the OAuth 2.1 authorization server of the MCP endpoint
 `https://<APP_HOST>/api/content/mcp`. It needs no new secret or variable:
 
 - **Issuer and keys**: the issuer is `IDENTITY_ISSUER` (`https://<APP_HOST>/api/auth`), and the MCP
   access tokens are signed with the same Ed25519 key as the administrator's and published in the same
   JWKS, so the signing key rotation above covers them (they also live five minutes).
 - **Resource**: `IDENTITY_MCP_RESOURCE` is optional and defaults to the issuer's origin followed by
-  `/api/content/mcp`; set it only if the MCP endpoint moves. content-service will verify the tokens with
-  `McpAuthModule` from `AUTH_ISSUER`, `AUTH_JWKS_URL` and the same resource.
+  `/api/content/mcp`; the content-service app uses that default resource, so keep both services
+  aligned. It verifies tokens with `McpAuthModule` from `AUTH_ISSUER`, `AUTH_JWKS_URL` and the same
+  resource.
 - **Edge**: Nginx serves the discovery documents at `/.well-known/oauth-authorization-server/api/auth`
-  (identity) and `/.well-known/oauth-protected-resource/api/content/mcp` (content-service, 404 until the
-  MCP endpoint exists), and rate-limits `/api/auth/oauth/token` and `/revoke` (`oauth` zone, 30 requests
-  per minute per address) and `/api/auth/oauth/register` (login budget). The consent page
+  (identity) and `/.well-known/oauth-protected-resource/api/content/mcp` (content-service), and
+  rate-limits `/api/auth/oauth/token` and `/revoke` (`oauth` zone, 30 requests per minute per address)
+  and `/api/auth/oauth/register` (login budget). The consent page
   `/admin/oauth/authorize` is an ordinary admin page (`no-store`, `noindex`, never framed).
 - **Outbound HTTPS**: identity-service fetches the clients' metadata documents and logos (port 443,
   public addresses only, 5 kB / 64 kB, 5 seconds). It reaches the Internet through the `proxy` network;
@@ -228,6 +229,40 @@ identity-service is the OAuth 2.1 authorization server of the future MCP endpoin
   stops its refreshes at once, and an access token already issued expires within five minutes. To cut
   every client at once, revoke them there one by one, or rotate the signing key (which also ends the
   administrator's access tokens).
+
+### Connect a Codex client (D49)
+
+After the service version containing the MCP endpoint is available, configure the remote server and
+start the browser consent flow from a terminal with the Codex CLI installed:
+
+```powershell
+codex mcp add portfolio --url https://valentin-fortin.pro/api/content/mcp
+codex mcp login portfolio --scopes content:read
+codex mcp list
+```
+
+Sign in to the portfolio administration and review the requested permissions. Read access lists drafts
+and published projects, timeline entries, profile and legal documents. To authorize a broader task,
+repeat login with only the scopes it needs, for example:
+
+```powershell
+codex mcp login portfolio --scopes content:read,content:write
+```
+
+`content:write` permits draft project revisions. Revising a published project also requires
+`content:publish`, because the revision preserves its publication state and queues a rebuild.
+`content:publish` permits project publication and unpublication. Timeline, profile and legal edits
+require both `content:write` and `content:publish` because they immediately change public content.
+Timeline deletion requires `content:delete` and
+`content:publish`. No scope exposes contact messages. Revisions, publish/unpublish, deletion and
+reordering require the `expectedVersion` returned by the corresponding read (the list version for
+reordering); reread and reconcile after a version conflict. Media uploads remain in the admin UI.
+
+The endpoint uses stateless Streamable HTTP with JSON responses and freshly verified bearer tokens
+on each request. The RFC 9728 document remains public; a missing token yields a 401 discovery
+challenge and a missing tool permission yields 403 `insufficient_scope`. Nginx accepts up to 1100 kB
+at `/api/content/mcp`, while the service caps parsed JSON at 1 MB. See D49 for the complete tool list.
+Revoke the client under Security / Connected applications when access is no longer needed.
 
 ## SEO dashboard and audience measurement (D47, D48)
 
