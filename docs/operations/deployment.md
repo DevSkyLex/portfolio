@@ -138,11 +138,13 @@ The worker retries failed deliveries; its Message-ID is stable, but delivery rem
 
    On a blank server the backup step reports "Database never migrated" and continues.
 
-6. **Content and admin account**, once, on the VPS (the password is read without echo, never in the shell history):
+6. **Content and admin account**: the content migration creates a minimal bilingual profile for a
+   fresh database, with no example projects, skills or timeline entries. Complete the profile and
+   review the legal documents in the administration. Create the administrator once on the VPS (the
+   password is read without echo, never in the shell history):
 
    ```bash
    cd /srv/apps/portfolio/production
-   docker compose -f compose.prod.yml --profile ops run --rm content-seed
    read -rs IDENTITY_BOOTSTRAP_PASSWORD && export IDENTITY_BOOTSTRAP_PASSWORD
    docker compose -f compose.prod.yml --profile ops run --rm -e IDENTITY_BOOTSTRAP_PASSWORD \
      identity-bootstrap contact@valentin-fortin.pro
@@ -153,6 +155,9 @@ The worker retries failed deliveries; its Message-ID is stable, but delivery rem
    printed. Sign in at `/admin/`, then enable the one-time code (TOTP) from the "Sécurité" page: it asks
    for the password again, shows the QR code and manual key once, and activates the code after a first
    code from the authenticator app (D17). Until then the login asks for the password alone.
+
+   The optional `content-seed` job replaces all content with the mockup examples; do not run it on an
+   existing site or when starting with an empty portfolio.
 
    Existing installation: the release adds migration `0003_optional_totp` (nullable `totp_secret`, new
    `pending_totp_secret`), applied by the usual migration step; an account created before keeps its

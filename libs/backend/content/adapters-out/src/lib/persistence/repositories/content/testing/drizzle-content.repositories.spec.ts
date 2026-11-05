@@ -1,4 +1,6 @@
 import { GetPublishedContent, type PublishedContent } from '@vfortin/content-application';
+import { sql } from 'drizzle-orm';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { toTimelineEntry } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
 import { seedContent } from '@internal/content-adapters-out/lib/seed/content.seed';
@@ -10,7 +12,6 @@ import {
 import {
   DrizzleContentRepository,
   DrizzleContentSnapshotReader,
-  ProfileMissingError,
 } from '@internal/content-adapters-out/lib/persistence/repositories/content/drizzle-content.repositories';
 
 /**
@@ -35,10 +36,33 @@ describe('DrizzleContentRepository (Postgres via PGlite)', (): void => {
     await handle.close();
   });
 
-  it('reports a database without a profile, at revision 0', async (): Promise<void> => {
+  it('publishes a minimal profile without sample collections on a fresh database', async (): Promise<void> => {
+    const content: PublishedContent = await new GetPublishedContent(
+      new DrizzleContentSnapshotReader(handle.db),
+    ).execute();
+    expect(content.revision).toBe(0);
+    expect(content.profile.heroIntro.fr).toBe('Portfolio de Valentin Fortin.');
+    expect(content.profile.heroIntro.en).toBe("Valentin Fortin's portfolio.");
+    expect(content.projects).toEqual([]);
+    expect(content.timeline).toEqual([]);
+    expect(content.skills).toEqual([]);
+    expect(JSON.stringify(content.legal.privacy.body)).toContain('Brevo');
+  });
+
+  it('does not replace an existing profile when the initialization SQL is repeated', async (): Promise<void> => {
+    await seedContent(handle.db);
     const repository: DrizzleContentRepository = new DrizzleContentRepository(handle.db);
-    await expect(repository.loadProfile()).rejects.toThrow(ProfileMissingError);
-    await expect(repository.currentRevision()).resolves.toBe(0);
+    const original = await repository.loadProfile();
+    const migration = readFileSync(
+      new URL(
+        '../../../../../../../../../../apps/content-service/migrations/0014_initial_profile.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    await handle.db.execute(sql.raw(migration));
+    expect(await repository.loadProfile()).toEqual(original);
+    expect(await repository.currentRevision()).toBe(1);
   });
 
   it('reads the mockup content back as domain objects', async (): Promise<void> => {

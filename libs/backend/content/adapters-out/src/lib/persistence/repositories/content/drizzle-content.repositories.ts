@@ -39,7 +39,7 @@ import {
  * @class ProfileMissingError
  *
  * @description
- * Indicates the singleton profile row is absent and the content seed must be applied.
+ * Indicates the singleton profile row is absent after the content migrations.
  */
 export class ProfileMissingError extends Error {
   // #region Constructor
@@ -48,10 +48,10 @@ export class ProfileMissingError extends Error {
    * @constructor
    *
    * @description
-   * Creates the missing-profile persistence error with the seed instruction.
+   * Creates the missing-profile persistence error with the migration instruction.
    */
   public constructor() {
-    super('No profile in the database: run the content service seed target.');
+    super('No profile in the database: check the content migrations.');
     this.name = 'ProfileMissingError';
   }
   // #endregion
