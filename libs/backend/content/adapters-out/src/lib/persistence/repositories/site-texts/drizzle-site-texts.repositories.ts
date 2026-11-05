@@ -162,7 +162,7 @@ export class DrizzleLegalDocumentRepository implements LegalDocumentRepository {
  * @class DrizzleSiteTextsUnitOfWork
  *
  * @description
- * Runs profile, legal document and rebuild outbox writes in one transaction (D3).
+ * Runs profile, legal document and revision writes in one transaction.
  */
 export class DrizzleSiteTextsUnitOfWork implements SiteTextsUnitOfWork {
   // #region Constructor

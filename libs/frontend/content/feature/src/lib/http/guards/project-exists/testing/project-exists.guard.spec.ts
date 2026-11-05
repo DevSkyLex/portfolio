@@ -65,6 +65,7 @@ describe('projectExistsGuard', (): void => {
               canActivate: [projectExistsGuard],
             },
             { path: 'error/404', component: NotFoundPageComponent },
+            { path: '**', component: NotFoundPageComponent },
           ],
           withComponentInputBinding(),
         ),

@@ -6,7 +6,6 @@ export { AdminContentController } from '@internal/content-adapters-in/lib/http/c
 export { ContentController } from '@internal/content-adapters-in/lib/http/controllers/content/content.controller';
 export { contentProblemMapper } from '@internal/content-adapters-in/lib/http/mappers/content-problem/content-problem.mapper';
 export { MediaPurgeJobs } from '@internal/content-adapters-in/lib/jobs/media-purge/media-purge.jobs';
-export { SiteBuildJobs } from '@internal/content-adapters-in/lib/jobs/site-build/site-build.jobs';
 export { AdminSeoDashboardController } from '@internal/content-adapters-in/lib/http/controllers/admin-seo-dashboard/admin-seo-dashboard.controller';
 export { SeoDashboardJobs } from '@internal/content-adapters-in/lib/jobs/seo-dashboard/seo-dashboard.jobs';
 /** OAuth-protected content MCP transport and its application-backed tool catalogue (D49). */

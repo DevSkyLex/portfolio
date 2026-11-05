@@ -18,10 +18,7 @@ import {
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
 import { DrizzlePublicationRepository } from '@internal/content-adapters-out/lib/persistence/repositories/publication/drizzle-publication.repository';
 import { DrizzleContentSnapshotReader } from '@internal/content-adapters-out/lib/persistence/repositories/content/drizzle-content.repositories';
-import {
-  DrizzleContentUnitOfWork,
-  DrizzleSiteBuildRequestRepository,
-} from '@internal/content-adapters-out/lib/persistence/repositories/content-admin/drizzle-content-admin.repositories';
+import { DrizzleContentUnitOfWork } from '@internal/content-adapters-out/lib/persistence/repositories/content-admin/drizzle-content-admin.repositories';
 import { DrizzleSiteTextsUnitOfWork } from '@internal/content-adapters-out/lib/persistence/repositories/site-texts/drizzle-site-texts.repositories';
 import { DrizzleMediaRepository } from '@internal/content-adapters-out/lib/persistence/repositories/media/drizzle-media.repository';
 import {
@@ -108,33 +105,39 @@ describe('Grouped publication (migrated PGlite)', (): void => {
     expect(after.timeline.map((item) => item.id)).not.toContain(entry.id);
     expect(after.profile.heroIntro.fr).toBe('Nouvelle introduction');
     expect(after.projects.map((project) => project.id)).not.toContain('project-movah');
-    expect((await handle.db.select().from(siteBuildRequests)).map((row) => row.revision)).toEqual([
-      changed.revision,
-    ]);
+    expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
     await expect(publication.publish(result.version, NOW)).rejects.toBeInstanceOf(
       VersionMismatchError,
     );
   });
 
-  it('rejects stale starts, suppresses old dispatch during a batch and closes an unchanged batch without a new request', async (): Promise<void> => {
-    const requests: DrizzleSiteBuildRequestRepository = new DrizzleSiteBuildRequestRepository(
-      handle.db,
+  it('recovers an existing frozen batch at startup without dispatching a rebuild', async (): Promise<void> => {
+    const before: PublishedContent = await read();
+    await publication.start((await publication.status()).version);
+    const draft: ProfileDraft = {
+      heroIntro: { fr: 'Nouvelle introduction', en: 'New introduction' },
+      aboutStatement: before.profile.aboutStatement.toProps(),
+      aboutLead: before.profile.aboutLead.toProps(),
+      facts: [],
+      links: [],
+    };
+    await new ReviseProfile(new DrizzleSiteTextsUnitOfWork(handle.db), CLOCK).execute(
+      before.profile.version,
+      draft,
     );
-    await requests.request(NOW);
-    const initial: PublicationStatus = await publication.status();
-    await expect(publication.start(initial.version - 1)).rejects.toBeInstanceOf(
-      VersionMismatchError,
-    );
-    const batch: PublicationStatus = await publication.start(initial.version);
-    await expect(publication.start(batch.version)).rejects.toBeInstanceOf(VersionMismatchError);
-    expect(await requests.claimLatest(NOW, new Date(NOW.getTime() + 10000))).toBeNull();
-    const count: number = (await handle.db.select().from(siteBuildRequests)).length;
-    await publication.publish(batch.version, NOW);
-    expect((await handle.db.select().from(siteBuildRequests)).length).toBe(count);
-    expect(await requests.claimLatest(NOW, new Date(NOW.getTime() + 10000))).not.toBeNull();
+    expect((await read()).profile.heroIntro.fr).toBe(before.profile.heroIntro.fr);
+    await publication.recover(NOW);
+    expect((await read()).profile.heroIntro.fr).toBe('Nouvelle introduction');
+    expect(await publication.status()).toMatchObject({
+      batching: false,
+      revision: before.revision + 1,
+    });
+    expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
+    await publication.recover(NOW);
+    expect((await publication.status()).batching).toBe(false);
   });
 
-  it('restarts the grace period for media retained throughout a long batch', async (): Promise<void> => {
+  it('restarts the grace period for media retained throughout a legacy batch', async (): Promise<void> => {
     const id: string = '00000000-0000-4000-8000-000000000002';
     await handle.db.insert(media).values({
       id,
@@ -146,8 +149,8 @@ describe('Grouped publication (migrated PGlite)', (): void => {
       createdAt: new Date(0),
       unlinkedAt: new Date(0),
     });
-    const batch: PublicationStatus = await publication.start((await publication.status()).version);
-    await publication.publish(batch.version, NOW);
+    await publication.start((await publication.status()).version);
+    await publication.recover(NOW);
     const mediaRepository: DrizzleMediaRepository = new DrizzleMediaRepository(handle.db);
     expect(await mediaRepository.delete(id, new Date(NOW.getTime() - 7 * 86400000))).toBe(false);
     expect((await handle.db.select().from(media).where(eq(media.id, id)))[0]?.unlinkedAt).toEqual(

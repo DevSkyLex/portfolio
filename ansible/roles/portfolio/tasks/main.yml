@@ -63,8 +63,6 @@
       - portfolio_brevo_smtp_key != 'CHANGE_ME'
       - portfolio_brevo_smtp_key is not search('\\s')
       - portfolio_contact_client_key_secret | length >= 32
-      - portfolio_site_build_token | length > 0
-      - portfolio_site_build_token != 'CHANGE_ME'
       - portfolio_ghcr_user | length > 0
       - portfolio_ghcr_token | length > 0
       - identity_signing_kid in portfolio_identity_signing_keys
@@ -91,18 +89,6 @@
   loop:
     - '{{ app_root }}'
     - '{{ backup_root }}'
-
-# Public static site: readable by the Nginx workers (UID 101 in the container).
-- name: Site directories
-  ansible.builtin.file:
-    path: '{{ item }}'
-    state: directory
-    owner: '{{ deploy_user }}'
-    group: '{{ deploy_user }}'
-    mode: '0755'
-  loop:
-    - '{{ site_root }}'
-    - '{{ site_root }}/releases'
 
 # Uploaded images (D40): written by content-service (container user), read by the Nginx workers (UID 101)
 # and by the backup script (deployment account). Not part of the synchronized deployment files.
@@ -148,18 +134,18 @@
     - { key: TRAEFIK_ROUTER_NAME, value: '{{ portfolio_traefik_router_name }}' }
     - { key: TRAEFIK_SECURE_MIDDLEWARES, value: '{{ portfolio_traefik_secure_middlewares }}' }
     - { key: TRUSTED_PROXIES, value: '{{ portfolio_trusted_proxies }}' }
-    - { key: SITE_ROOT, value: '{{ site_root }}' }
     - { key: MEDIA_ROOT, value: '{{ portfolio_media_root }}' }
     - { key: LOG_LEVEL, value: '{{ portfolio_log_level }}' }
     - { key: CONTACT_MAIL_FROM, value: '{{ portfolio_contact_mail_from }}' }
     - { key: CONTACT_NOTIFY_TO, value: '{{ portfolio_contact_notify_to }}' }
     - { key: WEB_MEMORY_LIMIT, value: '{{ portfolio_web_memory_limit }}' }
     - { key: WEB_CPU_LIMIT, value: '{{ portfolio_web_cpu_limit }}' }
+    - { key: SSR_MEMORY_LIMIT, value: '{{ portfolio_ssr_memory_limit }}' }
+    - { key: SSR_CPU_LIMIT, value: '{{ portfolio_ssr_cpu_limit }}' }
     - { key: LOG_MAX_SIZE, value: '{{ portfolio_log_max_size }}' }
     - { key: LOG_MAX_FILES, value: '{{ portfolio_log_max_files }}' }
     - { key: REGISTRY, value: '{{ registry }}' }
     - { key: IDENTITY_SIGNING_KID, value: '{{ identity_signing_kid }}' }
-    - { key: SITE_BUILD_REPOSITORY, value: '{{ site_build_repository }}' }
     - { key: SEO_SEARCH_CONSOLE_PROPERTY, value: '{{ portfolio_seo_search_console_property }}' }
     - { key: SEO_GA4_PROPERTY_ID, value: '{{ portfolio_seo_ga4_property_id }}' }
     - { key: SEO_WEB_VITALS_URLS, value: '{{ portfolio_seo_web_vitals_urls }}' }
@@ -231,7 +217,6 @@
     - { name: postgres_password, value: '{{ portfolio_postgres_password }}' }
     - { name: contact_smtp_url, value: '{{ portfolio_contact_smtp_url }}' }
     - { name: contact_client_key_secret, value: '{{ portfolio_contact_client_key_secret }}' }
-    - { name: site_build_token, value: '{{ portfolio_site_build_token }}' }
     - { name: seo_google_credentials, value: '{{ portfolio_seo_google_credentials }}' }
     - { name: seo_pagespeed_api_key, value: '{{ portfolio_seo_pagespeed_api_key }}' }
   loop_control:

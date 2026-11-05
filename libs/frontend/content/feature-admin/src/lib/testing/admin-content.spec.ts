@@ -1,4 +1,3 @@
-import { PUBLICATION_TEST_PROVIDER } from '@internal/content-web-feature-admin/lib/testing/publication-test-provider';
 import type { Mock } from 'vitest';
 import type { AdminProjectEditPageComponent } from '@internal/content-web-feature-admin/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component';
 import { registerLocaleData } from '@angular/common';
@@ -267,7 +266,6 @@ const descriptions: () => (string | undefined)[] = (): (string | undefined)[] =>
 async function open(url: string, providers: Provider[] = []): Promise<OpenedProjectHarness> {
   TestBed.configureTestingModule({
     providers: [
-      PUBLICATION_TEST_PROVIDER,
       ...providers,
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -584,6 +582,13 @@ const answer: (label: string) => void = (label: string): void => {
 };
 
 describe('projects admin (front end)', (): void => {
+  it('opens the project list without a manual publication workflow', async (): Promise<void> => {
+    const { root, backend } = await list([]);
+    backend.expectNone('/api/content/admin/publication');
+    expect(root.textContent).not.toContain('Préparer une publication groupée');
+    expect(root.textContent).not.toContain('Publier le groupe');
+  });
+
   it('lists the projects and blocks publishing an incomplete project', async (): Promise<void> => {
     const { root, action } = await list([
       project('a', 'published'),
@@ -754,7 +759,7 @@ describe('projects admin (front end)', (): void => {
     await settle();
     expect(toasts()).toEqual([['success', 'Publié.']]);
     expect(descriptions()).toEqual([
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     ]);
   });
 
@@ -1709,7 +1714,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     await settle();
     expect(toasts()).toEqual([['success', 'Enregistré.']]);
     expect(descriptions()).toEqual([
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     ]);
   });
 
@@ -1794,7 +1799,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     await settle();
     expect(toasts()).toEqual([['success', 'Retiré du site public.']]);
     expect(descriptions()).toEqual([
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     ]);
     expect(button(root, 'Publier')).toBeTruthy();
   });
@@ -1946,7 +1951,7 @@ describe('AdminProjectsPageComponent', (): void => {
     expect(root.querySelector('tbody tr')?.textContent).toContain('Publié');
     expect(toasts()).toEqual([['success', '« Titre b » publié.']]);
     expect(descriptions()).toEqual([
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     ]);
     expect(await action(0, 'Dépublier')).toBeTruthy();
   });
@@ -2055,7 +2060,7 @@ describe('AdminProjectsPageComponent', (): void => {
     expect(root.querySelector('tbody tr')?.textContent).toContain('Brouillon');
     expect(toasts()).toEqual([['success', '« Titre a » retiré du site public.']]);
     expect(descriptions()).toEqual([
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     ]);
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Actions pour « Titre a »');
   });
@@ -2370,7 +2375,7 @@ describe('AdminProjectsPageComponent', (): void => {
     backend.expectNone('/api/content/admin/projects/c/publish');
     expect(toasts()).toEqual([['success', '2 projets publiés.']]);
     expect(descriptions()).toEqual([
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     ]);
     expect(root.querySelector('[data-slot="selection-bar-panel"]')).toBeNull();
     expect(root.querySelectorAll('tbody tr')[1]?.textContent).toContain('Publié');
@@ -2401,7 +2406,7 @@ describe('AdminProjectsPageComponent', (): void => {
     backend.expectNone('/api/content/admin/projects');
     expect(toasts()).toEqual([['warning', '1 projet dépublié sur 2.']]);
     expect(TestBed.inject<ToastService>(ToastService).toasts()[0]?.description).toBe(
-      '1 échec : Le service ne répond pas. Réessayez dans un moment. Les modifications seront visibles après publication et reconstruction du site.',
+      '1 échec : Le service ne répond pas. Réessayez dans un moment. Le site sera mis à jour automatiquement après les modifications.',
     );
     expect(root.querySelector('[data-slot="selection-bar-count"]')?.textContent?.trim()).toBe(
       '1 sélectionné',

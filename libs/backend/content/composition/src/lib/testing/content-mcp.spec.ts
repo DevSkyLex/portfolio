@@ -115,7 +115,6 @@ describe('ContentModule', (): void => {
         AdminAuthModule.forRoot({ issuer: ISSUER, jwks: { keys: [jwk] } }),
         ContentModule.register({
           databaseUrl: 'pglite:memory',
-          siteBuild: null,
           workers: false,
           mediaDirectory,
           mcp: { issuer: ISSUER, resource: RESOURCE, jwks: { keys: [jwk] } },
@@ -201,13 +200,11 @@ describe('ContentModule', (): void => {
       'list_projects',
       'list_timeline',
       'publish_project',
-      'publish_publication_batch',
       'reorder_timeline',
       'revise_legal_document',
       'revise_profile',
       'revise_project',
       'revise_timeline_entry',
-      'start_publication_batch',
       'unpublish_project',
     ]);
     expect(
@@ -260,7 +257,7 @@ describe('ContentModule', (): void => {
     );
     try {
       await client.connect(transport);
-      expect((await client.listTools()).tools).toHaveLength(19);
+      expect((await client.listTools()).tools).toHaveLength(17);
       const result: Awaited<ReturnType<Client['callTool']>> = await client.callTool({
         name: 'get_project',
         arguments: { id: 'project-crm-kodoka' },

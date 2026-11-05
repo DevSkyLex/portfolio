@@ -13,18 +13,28 @@ import { NgIcon } from '@ng-icons/core';
 import { lucideCircleCheck, lucideTriangleAlert } from '@ng-icons/lucide';
 import type { SeoAudit, SeoAuditIssue } from '@vfortin/content-web-data-access/admin';
 import {
-  BadgeDirective,
+  BarListComponent,
   DataTableCellDirective,
   DataTableComponent,
   DataTableEmptyDirective,
   EMPTY_IMPORTS,
-  type BadgeVariant,
+  StackedBarsComponent,
+  TooltipDirective,
+  type BarListItem,
+  type ChartLegendEntry,
   type DataTableColumn,
   type DataTableFacet,
+  type StackedBarRow,
 } from '@vfortin/ui';
-import { SEO_SEVERITY_LABELS } from '@internal/content-web-feature-admin/lib/constants/seo-dashboard-labels.constants';
+import {
+  SEO_AUDIT_CODE_LABELS,
+  SEO_SEVERITY_LABELS,
+} from '@internal/content-web-feature-admin/lib/constants/seo-dashboard-labels.constants';
 import type { SeoFormatter } from '@internal/content-web-feature-admin/lib/models/seo-formatter/seo-formatter.interface';
 import { SeoKpiTileComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-kpi-tile/seo-kpi-tile.component';
+import { SeoSectionHeaderComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-section-header/seo-section-header.component';
+import { SEO_SEVERITY_ICONS } from '@internal/content-web-feature-admin/lib/constants/seo-status-icons.constants';
+import type { SeoStatusIcon } from '@internal/content-web-feature-admin/lib/models/seo-status-icon/seo-status-icon.interface';
 import { seoAuditMessage } from '@internal/content-web-feature-admin/lib/utils/seo-audit-message/seo-audit-message.utils';
 import { seoFormatter } from '@internal/content-web-feature-admin/lib/utils/seo-format/seo-format.utils';
 
@@ -48,7 +58,7 @@ interface IssueRow {
   readonly project: string;
   readonly severity: Severity;
   readonly severityLabel: string;
-  readonly variant: BadgeVariant;
+  readonly status: SeoStatusIcon;
   readonly locale: string;
   readonly message: string;
 }
@@ -76,34 +86,22 @@ interface Total {
 const SEVERITY_RANK: Readonly<Record<Severity, number>> = { error: 0, warning: 1, info: 2 };
 
 /**
- * Constant SEVERITY_VARIANTS
- *
- * @description
- * Status family of each severity (D37).
- *
- * @type {Readonly<Record<Severity, BadgeVariant>>}
- */
-const SEVERITY_VARIANTS: Readonly<Record<Severity, BadgeVariant>> = {
-  error: 'danger',
-  warning: 'warning',
-  info: 'info',
-};
-
-/**
  * Component SeoAuditPanelComponent
  * @class SeoAuditPanelComponent
  *
  * @description
- * Internal SEO audit of the « Tableau de bord » (D47): the counts of findings per severity, of
- * published projects and drafts and of the next sitemap's URLs, then one table row per finding,
- * the most serious first, with its severity (status dot and word), its project (a link to the
+ * Internal SEO audit tab of the « Tableau de bord » (D47, D51), full width: a strip of figure cells
+ * (findings per severity, published projects and drafts, the next sitemap's URLs); when there are
+ * findings, each project's findings split by severity as stacked bars on one scale and the findings
+ * counted by kind as ranked bars; then a full-width table with one row per finding,
+ * the most serious first, with its severity (icon, its word as a tooltip and hidden text), its project (a link to the
  * project editor), its language and the French message built from its code and measured length;
  * search and a severity facet narrow it.
  */
 @Component({
   selector: 'content-seo-audit-panel',
   imports: [
-    BadgeDirective,
+    BarListComponent,
     DataTableCellDirective,
     DataTableComponent,
     DataTableEmptyDirective,
@@ -111,9 +109,12 @@ const SEVERITY_VARIANTS: Readonly<Record<Severity, BadgeVariant>> = {
     NgIcon,
     RouterLink,
     SeoKpiTileComponent,
+    SeoSectionHeaderComponent,
+    StackedBarsComponent,
+    TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-col gap-3' },
+  host: { class: 'flex flex-col' },
   templateUrl: './seo-audit-panel.component.html',
 })
 export class SeoAuditPanelComponent {
@@ -219,7 +220,7 @@ export class SeoAuditPanelComponent {
             project: project.title,
             severity: issue.severity,
             severityLabel: SEO_SEVERITY_LABELS[issue.severity],
-            variant: SEVERITY_VARIANTS[issue.severity],
+            status: SEO_SEVERITY_ICONS[issue.severity],
             locale: issue.locale ? issue.locale.toUpperCase() : '',
             message: seoAuditMessage(issue),
           })),
@@ -228,6 +229,80 @@ export class SeoAuditPanelComponent {
           (a: IssueRow, b: IssueRow): number =>
             SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity],
         ),
+  );
+
+  /**
+   * Property severityLegend
+   * @readonly
+   *
+   * @description
+   * Severities, most serious first, in their status tones.
+   *
+   * @type {readonly ChartLegendEntry[]}
+   */
+  protected readonly severityLegend: readonly ChartLegendEntry[] = [
+    { key: 'error', label: SEO_SEVERITY_LABELS.error, tone: 'danger' },
+    { key: 'warning', label: SEO_SEVERITY_LABELS.warning, tone: 'warning' },
+    { key: 'info', label: SEO_SEVERITY_LABELS.info, tone: 'info' },
+  ];
+
+  /**
+   * Property byProject
+   * @readonly
+   *
+   * @description
+   * Findings of each project with any, split by severity, the most findings first.
+   *
+   * @type {Signal<readonly StackedBarRow[]>}
+   */
+  protected readonly byProject: Signal<readonly StackedBarRow[]> = computed<
+    readonly StackedBarRow[]
+  >((): readonly StackedBarRow[] =>
+    this.audit()
+      .projects.filter(
+        (project: SeoAudit['projects'][number]): boolean => project.issues.length > 0,
+      )
+      .sort(
+        (a: SeoAudit['projects'][number], b: SeoAudit['projects'][number]): number =>
+          b.issues.length - a.issues.length,
+      )
+      .map((project: SeoAudit['projects'][number]): StackedBarRow => ({
+        key: project.id,
+        label: project.title,
+        display: this.format.count(project.issues.length),
+        segments: this.severityLegend.map((entry: ChartLegendEntry) => {
+          const count: number = project.issues.filter(
+            (issue: SeoAuditIssue): boolean => issue.severity === entry.key,
+          ).length;
+          return { key: entry.key, value: count, display: this.format.count(count) };
+        }),
+      })),
+  );
+
+  /**
+   * Property byKind
+   * @readonly
+   *
+   * @description
+   * Findings counted by code across the published projects, the most frequent first.
+   *
+   * @type {Signal<readonly BarListItem[]>}
+   */
+  protected readonly byKind: Signal<readonly BarListItem[]> = computed<readonly BarListItem[]>(
+    (): readonly BarListItem[] => {
+      const counts: Map<SeoAuditIssue['code'], number> = new Map();
+      for (const project of this.audit().projects)
+        for (const issue of project.issues)
+          counts.set(issue.code, (counts.get(issue.code) ?? 0) + 1);
+      return [...counts]
+        .sort((a: [string, number], b: [string, number]): number => b[1] - a[1])
+        .map(([code, count]: [SeoAuditIssue['code'], number]): BarListItem => ({
+          key: code,
+          label: SEO_AUDIT_CODE_LABELS[code],
+          value: count,
+          display: this.format.count(count),
+        }));
+    },
   );
 
   /**
@@ -242,6 +317,8 @@ export class SeoAuditPanelComponent {
   protected readonly columns: readonly DataTableColumn<IssueRow>[] = [
     {
       id: 'gravite',
+      width: 88,
+      maxWidth: 112,
       header: $localize`:@@admin.dashboard.audit.severity:Gravité`,
       sortValue: (row: IssueRow): number => SEVERITY_RANK[row.severity],
       sortable: true,
@@ -249,12 +326,15 @@ export class SeoAuditPanelComponent {
     },
     {
       id: 'projet',
+      width: 176,
       header: $localize`:@@admin.dashboard.audit.project:Projet`,
       cell: (row: IssueRow): string => row.project,
       sortable: true,
     },
     {
       id: 'langue',
+      width: 88,
+      maxWidth: 112,
       header: $localize`:@@admin.dashboard.audit.locale:Langue`,
       cell: (row: IssueRow): string => row.locale,
       sortable: true,
@@ -263,7 +343,9 @@ export class SeoAuditPanelComponent {
       id: 'probleme',
       header: $localize`:@@admin.dashboard.audit.message:Problème`,
       cell: (row: IssueRow): string => row.message,
-      class: 'max-w-0 w-full',
+      width: 400,
+      minWidth: 200,
+      maxWidth: 1200,
     },
   ];
 

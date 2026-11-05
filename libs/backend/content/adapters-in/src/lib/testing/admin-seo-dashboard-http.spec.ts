@@ -122,6 +122,7 @@ const SEARCH: SearchConsoleData = {
 function view(): SeoDashboardView {
   return {
     range: '28d',
+    demo: false,
     refresh: { running: false, startedAt: FETCHED, finishedAt: FETCHED, nextAllowedAt: null },
     searchConsole: { status: 'ok', fetchedAt: FETCHED, data: SEARCH },
     analytics: { status: 'not-configured', missing: ['SEO_GA4_PROPERTY_ID'] },

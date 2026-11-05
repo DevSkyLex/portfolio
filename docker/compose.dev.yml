@@ -4,7 +4,7 @@
 #
 #   bash docker/scripts/dev-secrets.sh                                              # dev secrets (once)
 #   npx nx run-many -t prune -p identity-service content-service contact-service   # service bundles
-#   npx nx build web                                                                # prerendered site
+#   npx nx build web                                                                # SSR application
 #   docker compose -f docker/compose.dev.yml up --build -d --wait
 #   docker compose -f docker/compose.dev.yml --profile seed run --rm content-seed   # mockup content
 #   read -rs IDENTITY_BOOTSTRAP_PASSWORD && export IDENTITY_BOOTSTRAP_PASSWORD
@@ -193,8 +193,10 @@ services:
       CONTENT_DATABASE_URL_FILE: /run/secrets/content_database_url
       # Served by Nginx (/media/), as in production: CONTENT_MEDIA_SERVE stays off.
       CONTENT_MEDIA_DIR: /srv/media
-      # SEO dashboard (D47): no Google source locally, its sections answer "not-configured".
+      # SEO dashboard (D47): no Google account locally, so demonstration figures fill its Google
+      # sections (D52); the dashboard says so.
       SEO_SITE_ORIGIN: http://localhost:8080
+      SEO_DEMO_DATA: 'true'
       NODE_ENV: production
     secrets: [content_database_url]
     volumes: ['media:/srv/media']
@@ -215,6 +217,26 @@ services:
     secrets: [contact_database_url, contact_client_key_secret]
     depends_on: { contact-migrate: { condition: service_completed_successfully } }
 
+  web:
+    <<: *hardening
+    image: ${COMPOSE_PROJECT_NAME:-portfolio-dev}-web
+    pull_policy: never
+    build:
+      context: ../dist/apps/web
+      dockerfile: ../../../docker/web.Dockerfile
+    restart: unless-stopped
+    init: true
+    tmpfs: ['/tmp:size=32m']
+    environment:
+      PORT: '4000'
+      HOST: 0.0.0.0
+      CONTENT_API_URL: http://content-service:3101
+      SITE_ORIGIN: http://localhost:8080
+      NODE_ENV: production
+    networks: [proxy]
+    depends_on:
+      content-service: { condition: service_healthy }
+
   nginx:
     <<: *hardening
     image: nginx:1.29.8-alpine3.23@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
@@ -227,7 +249,6 @@ services:
       - ./nginx/dev/portfolio.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/snippets:/etc/nginx/snippets:ro
       - ./nginx/dev/security-headers.conf:/etc/nginx/snippets/security-headers.conf:ro
-      - ../dist/apps/web:/srv/site/current:ro
       - media:/srv/media:ro
     healthcheck:
       test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:8081/health']

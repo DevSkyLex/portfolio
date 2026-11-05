@@ -294,7 +294,7 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
 
   it('advertises schemas, handles notifications and reports unknown methods and tools', async (): Promise<void> => {
     const listed: request.Response = await rpc('tools/list');
-    expect(listed.body.result.tools).toHaveLength(19);
+    expect(listed.body.result.tools).toHaveLength(17);
     const unknownMethod: request.Response = await rpc('no-such-method');
     expect(unknownMethod.body.error.code).toBe(-32601);
     expect((await call('unknown')).body.error.code).toBe(-32602);
@@ -324,7 +324,7 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     }
   });
 
-  it('exposes batch state and requires publication consent for batch transitions', async (): Promise<void> => {
+  it('exposes publication state without manual batch tools', async (): Promise<void> => {
     const status: request.Response = await call('get_publication_status');
     expect(status.body.result.structuredContent).toEqual({
       version: 1,
@@ -333,13 +333,12 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
       revision: 0,
       publishedRevision: 0,
     });
-    for (const name of ['start_publication_batch', 'publish_publication_batch']) {
-      const denied: request.Response = await call(name, { expectedVersion: 1 }, 'write');
-      expect(denied.status).toBe(403);
-      expect(denied.headers['www-authenticate']).toContain('content:publish');
-      const invalid: request.Response = await call(name, { expectedVersion: 0 });
-      expect(invalid.body.error.code).toBe(-32602);
-    }
+    expect((await call('start_publication_batch', { expectedVersion: 1 })).body.error.code).toBe(
+      -32602,
+    );
+    expect((await call('publish_publication_batch', { expectedVersion: 1 })).body.error.code).toBe(
+      -32602,
+    );
   });
 
   it('validates tool arguments and exposes safe application failures without internal details', async (): Promise<void> => {

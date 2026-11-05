@@ -1,7 +1,7 @@
 # Browser acceptance
 
 This application tests built artifacts through their public browser and HTTP boundaries. It does not
-import feature implementation code. Public tests use the built-site simulator; authenticated tests
+import feature implementation code. Public tests use the built Angular SSR runtime with an isolated fixture content API; authenticated tests
 use a disposable Compose project with actual Postgres, identity/content/contact services and Mailpit.
 
 ## Commands
@@ -12,13 +12,8 @@ npx nx run web-e2e:e2e-stack
 npx nx run web-e2e:test-tooling
 ```
 
-`npx nx e2e web-e2e` depends on `web:e2e-site`, which builds `web:build:e2e` into
-`dist/apps/web-e2e-site` and writes its `sitemap.xml` and `robots.txt`: the production configuration with
-the placeholder GA4 measurement id of `apps/web/src/environments/audience-measurement.e2e.ts` (D48), so
-the consent banner and the Google tag loader are exercised. `consent.spec.ts` answers every Google host
-itself (nothing leaves the machine) and checks the banner, refusal, acceptance with Consent Mode v2,
-« Personnaliser », withdrawal and axe; every other spec starts with a stored refusal
-(`storageState` in `playwright.config.mts`) so the banner covers nothing.
+Standalone acceptance starts the built server entry through
+apps/web-e2e/support/preview/serve-ssr.mjs. The harness supplies the committed FR/EN content fixtures over an isolated localhost API. Its test-only snapshot control changes published content between requests without rebuilding, exercising fresh HTML, project metadata, localized 404s and the sitemap. The production runtime contains no fixture controls.
 
 Set `E2E_PORT` to an available dedicated localhost port when 4200 is occupied. It must be an integer
 between 1 and 65535; the same value configures the browser URL, readiness probe and preview server.
@@ -59,9 +54,9 @@ and failed logout followed by retry. Axe checks include login, project list/edit
 serious or critical WCAG A/AA violations without excluding controls. Trace recording is disabled for these tests
 so authentication bodies are not retained in trace artifacts. Normal public runs skip stack tests.
 
-The startup tests block the active locale snapshot chunk and prove that public hydration consumes
-its prerendered state without fetching that chunk, while administration starts independently. They
-also block the application bundle and assert actual readable prerendered text, including descendant
+The startup tests block browser snapshot API requests and prove that public hydration consumes
+its server-transferred state without a duplicate fetch, while administration starts independently. They
+also block the application bundle and assert actual readable server-rendered text, including descendant
 opacity, rather than treating a removed marker alone as proof of progressive enhancement.
 
 Changes to owner workflows must update their acceptance contracts here, while detailed behavior and

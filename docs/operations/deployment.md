@@ -1,6 +1,6 @@
 # Deployment and operations
 
-Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing shared Traefik edge, a private Nginx origin and Postgres 17. The public site is a set of static pages published per release; the three services (identity, content, contact) are images published to GHCR. Ansible prepares and deploys the portfolio on an existing shared VPS; the GitHub workflows call it. Host provisioning, SSH access and Docker are managed separately. Traefik is managed separately, using the same network and deployment conventions as Dentalstock and Fireguard.
+Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing shared Traefik edge, a private Nginx origin and Postgres 17. The public site is rendered per request by an Angular SSR image; it and the three API services (identity, content, contact) are published to GHCR. Ansible prepares and deploys the portfolio on an existing shared VPS; the GitHub workflows call it. Host provisioning, SSH access and Docker are managed separately. Traefik is managed separately, using the same network and deployment conventions as Dentalstock and Fireguard.
 
 | Item                    | Where                                                                                                                                                            |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -25,7 +25,7 @@ Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing
   addresses redirect to `/fr/` while keeping their query; APIs and media remain at their existing paths.
   The French redirect activates only once a release with the `/fr/` build is present, so either
   workflow can finish first during the transition.
-- **Nginx**: the official entrypoint renders `nginx/templates/portfolio.conf.template` into `/tmp/portfolio.conf` on tmpfs. `APP_PORT` is the internal HTTP listening port, not a published host port. Only the reviewed Traefik peer from `TRUSTED_PROXIES` may reach the origin or supply the client address; this restored address drives rate limits and logs. HTTPS is preserved when forwarding to services. Upstreams resolve through Docker DNS at runtime, so recreated services need no Nginx reload. JSON access logs carry `request_id`, also returned in `X-Request-Id` and passed to services. Pages are revalidated (`no-cache`); hashed assets are cached for a year and other static files for an hour, except `/admin.css`, the unhashed administration stylesheet loaded by the admin area only (D31), which is revalidated like the pages. Missing hashed assets fall back to the previous release. `/media/` serves only names matching `<uuid>.webp` or `<uuid>-960.webp` (immutable, one year, with the server's security headers including `nosniff`); any other path under `/media/` answers 404. Request bodies are 64 kB by default; `/api/content/admin/projects/` and `/api/content/admin/legal/` accept 1100 kB (the service's JSON limit is 1 MB) and `POST /api/content/admin/media` 11 MB (the service caps the file at 10 MiB); larger bodies get a problem+json 413 (`http.413`, `content.media-too-large`). Uploaded images come from the same origin (`img-src 'self' data:`); the CSP only adds the Google tag origin to `script-src` and the GA4 collection hosts to `img-src` and `connect-src`, for the audience measurement loaded after consent (D48).
+- **Nginx**: the official entrypoint renders `nginx/templates/portfolio.conf.template` into `/tmp/portfolio.conf` on tmpfs. `APP_PORT` is the internal HTTP listening port, not a published host port. Only the reviewed Traefik peer from `TRUSTED_PROXIES` may reach the origin or supply the client address; this restored address drives rate limits and logs. HTTPS is preserved when forwarding to services. Upstreams resolve through Docker DNS at runtime, so recreated services need no Nginx reload. JSON access logs carry `request_id`, also returned in `X-Request-Id` and passed to services. Public HTML and SEO documents are never cached by Nginx; hashed assets are cached for a year. `/admin.css`, the unhashed administration stylesheet loaded by the admin area only (D31), is revalidated. The private SSR service owns the assets of its deployed code version. `/media/` serves only names matching `<uuid>.webp` or `<uuid>-960.webp` (immutable, one year, with the server's security headers including `nosniff`); any other path under `/media/` answers 404. Request bodies are 64 kB by default; `/api/content/admin/projects/` and `/api/content/admin/legal/` accept 1100 kB (the service's JSON limit is 1 MB) and `POST /api/content/admin/media` 11 MB (the service caps the file at 10 MiB); larger bodies get a problem+json 413 (`http.413`, `content.media-too-large`). Uploaded images come from the same origin (`img-src 'self' data:`); the CSP only adds the Google tag origin to `script-src` and the GA4 collection hosts to `img-src` and `connect-src`, for the audience measurement loaded after consent (D48).
 
 ## Building service images
 
@@ -67,6 +67,7 @@ snapshot independently of these service artifacts.
 | `TRAEFIK_SECURE_MIDDLEWARES`              | Existing secure middleware chain                     | Empty                             |
 | `TRUSTED_PROXIES`                         | One reviewed Traefik IP address or narrow CIDR       | Required; no default              |
 | `WEB_MEMORY_LIMIT` / `WEB_CPU_LIMIT`      | Nginx resource limits                                | `128M` / `1.0`                    |
+| `SSR_MEMORY_LIMIT` / `SSR_CPU_LIMIT`      | Angular SSR runtime resource limits                  | `512M` / `1.0`                    |
 | `LOG_MAX_SIZE` / `LOG_MAX_FILES`          | Container log rotation                               | `10m` / `5`                       |
 | `LOG_LEVEL`                               | Service log level                                    | `info`                            |
 | `CONTACT_MAIL_FROM` / `CONTACT_NOTIFY_TO` | Sender and notification recipient                    | Addresses derived from `APP_HOST` |
@@ -77,7 +78,7 @@ snapshot independently of these service artifacts.
 
 Obtain `TRUSTED_PROXIES` from the existing Traefik configuration. Use a stable, reviewed proxy address; do not trust the whole shared Docker network, all private ranges or an unrestricted CIDR. A changed Traefik address requires updating this setting and recreating the origin. Ansible validates the address and requires the external `traefik_proxy` network to exist; it does not create the shared proxy or its network.
 
-The portfolio has three distinct service images, so it retains `REGISTRY` and a common commit `TAG` instead of a single `IMAGE_REF`. `IDENTITY_SIGNING_KID` defaults to `k1` and can be set as a GitHub variable; `SITE_BUILD_REPOSITORY` and `SITE_ROOT` are supplied by the existing Ansible inventory; `MEDIA_ROOT` comes from the role default `portfolio_media_root` (`<app_root>/media`, so `/srv/apps/portfolio/production/media`), also written to `backup.env` as `BACKUP_MEDIA_DIR`. Image tags identify the deployed commit; base images remain pinned by digest.
+The portfolio has four distinct API and SSR images, so it retains `REGISTRY` and a common commit `TAG` instead of a single `IMAGE_REF`. `IDENTITY_SIGNING_KID` defaults to `k1` and can be set as a GitHub variable; `MEDIA_ROOT` comes from the role default `portfolio_media_root` (`<app_root>/media`, so `/srv/apps/portfolio/production/media`), also written to `backup.env` as `BACKUP_MEDIA_DIR`. Image tags identify the deployed commit; base images remain pinned by digest.
 
 The site, media and backup paths follow `VPS_APP_DIR`: `<app_root>/site`, `<app_root>/media` and `<app_root>/backups`. The paths above use its default. Nginx still sees the site at `/srv/site` inside its container.
 
@@ -89,19 +90,18 @@ Configure these secrets in the GitHub `production` environment. They are passed 
 
 An old local `ansible/inventory/group_vars/all/vault.yml`, if present, is still automatically loaded by Ansible even though it is no longer used by the project. Before a manual run, move any retained encrypted vault outside the inventory directory; preserve it securely if it contains credentials you still need.
 
-| Secret                                                | Purpose                                                                                   |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `POSTGRES_PASSWORD`                                   | Postgres administrator password.                                                          |
-| `CONTENT_MIGRATOR_PASSWORD`, `CONTENT_APP_PASSWORD`   | Content migration and application database passwords.                                     |
-| `CONTACT_MIGRATOR_PASSWORD`, `CONTACT_APP_PASSWORD`   | Contact migration and application database passwords.                                     |
-| `IDENTITY_MIGRATOR_PASSWORD`, `IDENTITY_APP_PASSWORD` | Identity migration and application database passwords.                                    |
-| `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`                  | Brevo SMTP login and SMTP key; the SMTP key is not an API key.                            |
-| `CONTACT_CLIENT_KEY_SECRET`                           | Contact fingerprint HMAC key, at least 32 characters.                                     |
-| `SITE_BUILD_TOKEN`                                    | Fine-grained token with Actions write access to this repository for publication dispatch. |
-| `IDENTITY_SIGNING_KEY_K1`                             | Unencrypted Ed25519 PKCS#8 private key, including PEM delimiters and newlines.            |
-| `GHCR_TOKEN`                                          | Optional classic token with read:packages and access to the service images.               |
-| `IDENTITY_SIGNING_KEY_K2`                             | Optional second Ed25519 key for rotation.                                                 |
-| `SEO_GOOGLE_CREDENTIALS`, `SEO_PAGESPEED_API_KEY`     | Optional SEO dashboard credentials.                                                       |
+| Secret                                                | Purpose                                                                        |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `POSTGRES_PASSWORD`                                   | Postgres administrator password.                                               |
+| `CONTENT_MIGRATOR_PASSWORD`, `CONTENT_APP_PASSWORD`   | Content migration and application database passwords.                          |
+| `CONTACT_MIGRATOR_PASSWORD`, `CONTACT_APP_PASSWORD`   | Contact migration and application database passwords.                          |
+| `IDENTITY_MIGRATOR_PASSWORD`, `IDENTITY_APP_PASSWORD` | Identity migration and application database passwords.                         |
+| `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`                  | Brevo SMTP login and SMTP key; the SMTP key is not an API key.                 |
+| `CONTACT_CLIENT_KEY_SECRET`                           | Contact fingerprint HMAC key, at least 32 characters.                          |
+| `IDENTITY_SIGNING_KEY_K1`                             | Unencrypted Ed25519 PKCS#8 private key, including PEM delimiters and newlines. |
+| `GHCR_TOKEN`                                          | Optional classic token with read:packages and access to the service images.    |
+| `IDENTITY_SIGNING_KEY_K2`                             | Optional second Ed25519 key for rotation.                                      |
+| `SEO_GOOGLE_CREDENTIALS`, `SEO_PAGESPEED_API_KEY`     | Optional SEO dashboard credentials.                                            |
 
 All seven Postgres passwords must be distinct, alphanumeric and at least 24 characters; generate each independently, for example with `openssl rand -hex 24`. Generate the HMAC key with `openssl rand -hex 32`. Generate the signing key in a trusted environment and provide its entire PKCS#8 PEM as the GitHub secret; do not commit it. The active slot is selected by `IDENTITY_SIGNING_KID` (`k1` by default); the active key must be present. The workflow defaults `GHCR_TOKEN` to the job's temporary GitHub token and `GHCR_USERNAME` to the GitHub actor, as in Fireguard. An optional `GHCR_TOKEN` secret and `GHCR_USERNAME` variable can select a dedicated account with access to the service images; manual Ansible runs must supply both. The SSH secrets are listed in [GitHub](#github). Do not put secret values in tickets or chat.
 
@@ -172,13 +172,10 @@ The worker retries failed deliveries; its Message-ID is stable, but delivery rem
    families and refresh tokens), applied by the usual migration step; nothing else changes for the
    administrator.
 
-7. **Site**: run the `Site build` workflow (or publish a change from the admin).
-
-   Existing installation: content migrations `0008_site_texts_admin` and `0009_site_texts_data` (D44)
-   move the public links into the profile and create the legal notice and privacy policy from the former
-   static pages, then queue one site rebuild, which content-service dispatches once it runs. The new site
-   requires `legal` in the snapshot: a `Site build` that fetches it from the previous content-service
-   fails at prerender and keeps the current release, the queued rebuild publishing after the deployment.
+7. **Site**: the same deployment starts the `web` SSR image after content-service is healthy.
+   Public content is fetched from the fixed internal content-service URL for each render. Content
+   changes require no workflow, image build or container restart. Historical frozen publication
+   batches are recovered by content-service at startup.
 
 ## GitHub
 
@@ -188,40 +185,30 @@ Both deployment and site release copies use the configured SSH port and verify t
 `known_hosts`.
 
 - `CI`: format, lint, typecheck, tests, build, architecture test; operations checks (`docker/scripts/check-ops.sh`); e2e (Playwright, four browsers) on `main`.
-- `Deploy services` (after CI on `main`): GHCR images, then `playbooks/deploy.yml -e tag=<sha>` → `scripts/deploy.sh`.
-- `Site build` (after successful automatic service deployment, or triggered by content-service on each publication): snapshot of the published content, prerendered build with `sitemap.xml` and `robots.txt` generated from the same snapshot (`npx nx run web:seo-files`, which runs `web:build` first; origin `SITE_ORIGIN`, default `https://valentin-fortin.pro`, D42), then `playbooks/publish-site.yml -e release=<name>` (release copy, pre-compression and atomic switch). A new rebuild replaces a pending one.
+- `Deploy services` (after CI on `main`): builds the three API contexts and the Angular SSR code,
+  publishes four immutable images to GHCR, then runs `playbooks/deploy.yml -e tag=<sha>` through the
+  existing deployment script. The same head-of-main and explicit rollback ref checks apply to all
+  four images. There is no separate site-build workflow and no content publication credential.
 
-Site builds fetch the French and English snapshots concurrently, validate that their revisions match,
-and retry the pair when publication changes between reads. Only a coherent pair reaches the build.
-The existing npm download cache is complemented by a cache of pinned Ansible collections and pip
-downloads, keyed by runner OS, Ansible Core version and `ansible/requirements.yml`. Ansible Core is
-still installed in each runner; collection installation is skipped only on an exact cache hit.
-Angular's compilation disk cache is enabled in CI as well as locally and restored across site builds
-with the same package lock, runner OS and Node major. Each successful run saves a refreshed cache;
-Angular still rebuilds and prerenders from the freshly downloaded content. Snapshots are always
-downloaded afresh and the site build still bypasses the Nx output cache.
-
-For a grouped update, start a publication batch in the content administration before editing. Save
-the required changes, then publish the group. The batch freezes the public snapshot while allowing
-administration edits; restarting content-service or building a new code release does not expose the
-working changes. The publication control also appears on the journey, information and legal pages.
-MCP clients can use `get_publication_status`, `start_publication_batch` and
-`publish_publication_batch`, supplying the version just read for either mutation. A stale version
-requires a new read and review. Closing an unchanged batch does not request a build.
-The public snapshot revision is not a deployment acknowledgement: a requested build can still fail,
-and the previous static release remains visible until the new release is switched successfully.
+The `web` container runs as UID 1000 with a read-only filesystem and bounded temporary storage.
+Its memory and CPU limits use separate `SSR_MEMORY_LIMIT` / `SSR_CPU_LIMIT` variables, preserving the
+existing Nginx limits during migration. It listens only on the private proxy network at port 4000, reads content from
+`http://content-service:3101`, and receives the fixed public `SITE_ORIGIN`. Nginx retains the public
+security headers, API budgets and uploaded-media routing and proxies page requests to this runtime.
+Administration remains client-rendered, `noindex` and `no-store`. Public API or SSR failure returns
+an error status instead of a successful response containing stale fixture content.
 
 ## Migrating an existing standalone installation
 
 Keep `DOCKER_PROJECT_NAME=portfolio` and the existing data-volume identity when adapting an already populated installation. Changing the Compose project name selects different project-scoped volumes; never use `docker compose down -v` for this migration.
 
-Arrange a maintenance window and a current backup. The old portfolio Nginx must release host ports 80/443 before the shared Traefik edge takes them. Recreate the portfolio origin with the new Compose configuration, verify routing and restored client addresses through Traefik, then verify API health and static release serving. Database roles, secret files and static release paths remain compatible. Review any old portfolio-specific Certbot renewal hook manually; shared host certificate tooling may serve other applications and must not be disabled indiscriminately.
+Arrange a maintenance window and a current backup. The old portfolio Nginx must release host ports 80/443 before the shared Traefik edge takes them. Recreate the portfolio origin with the new Compose configuration, verify routing and restored client addresses through Traefik, then verify API health and SSR page serving. Database roles, application secret files and media storage remain compatible. The former site release directory is no longer mounted or used by Nginx. Review any old portfolio-specific Certbot renewal hook manually; shared host certificate tooling may serve other applications and must not be disabled indiscriminately.
 
 ## Deployment (`scripts/deploy.sh`)
 
 One deployment at a time (`flock`). Order: images pulled → Postgres up and healthy → backup (skipped only on a never-migrated database) → roles and passwords synced → migrations with the migration roles → roles synced again (grants) → services recreated, `docker compose up --wait` until every container is healthy → Nginx template rendered, configuration tested and reloaded → `TAG` saved in `.env`. The deployment does not prune Docker images on the shared VPS. Ansible does not reload the previous container while copying the new configuration. A failure stops the script and leaves the previous `TAG` in `.env`.
 
-Downtime: each service is recreated in place (one replica), so its API answers `503` (problem+json) for a few seconds; the static site is not affected. Migrations run while the previous version still serves: they must stay backward compatible (expand now, contract in a later release). Exception: the D40 release converts the stored articles in place (sections to one document per language); between that migration and the recreation of content-service, the previous version may answer errors on project reads. Deploy it outside a publication.
+Downtime: containers are recreated in place (one replica). API and SSR requests can answer `503` briefly during deployment; content-service downtime also affects public page rendering. Migrations run while the previous version still serves: they must stay backward compatible (expand now, contract in a later release). Exception: the D40 release converts the stored articles in place (sections to one document per language); between that migration and the recreation of content-service, the previous version may answer errors on project reads. Deploy it outside a publication.
 
 ## MCP access (OAuth authorization server, D45)
 
@@ -291,6 +278,11 @@ content-service, cached once a day (05:30 server time) and on request; the publi
 audience with GA4 after the visitor's consent. Every source is optional; a missing setting shows as
 `not-configured` with the variables to set, a Google error as `error` with its reason.
 
+Locally, `SEO_DEMO_DATA=true` (set in `docker/compose.dev.yml` and `apps/content-service/.env.example`)
+replaces each unconfigured source by demonstration figures (D52): the dashboard fills on the first
+« Actualiser », without any notice on screen. It changes nothing for a configured source; never set
+it in production.
+
 | Setting                                | Where                                                                           |
 | -------------------------------------- | ------------------------------------------------------------------------------- |
 | Service account key (JSON)             | GitHub secret `SEO_GOOGLE_CREDENTIALS` → Docker secret `seo_google_credentials` |
@@ -350,27 +342,27 @@ delete the old key in the console.
 ## Routine operations
 
 - **Service rollback**: rerun `playbooks/deploy.yml -e tag=<previous sha>` (the script prints the previous tag), or on the VPS `TAG=<sha> bash scripts/deploy.sh`. A migration is not reverted: in case of an incompatible migration, restore the backup taken just before.
-- **Site rollback**: `bash /srv/apps/portfolio/production/scripts/publish-site.sh "$(basename "$(readlink /srv/apps/portfolio/production/site/previous)")"`, or any of the last 5 releases in `/srv/apps/portfolio/production/site/releases`.
+- **Site rollback**: use the same previous code tag as the service rollback; the SSR image is versioned with the APIs. Content rollback remains a content edit or database restoration.
 - **Backups**: `bash scripts/backup.sh` (also run by the timer: `systemctl list-timers portfolio-*`, `journalctl -u portfolio-backup`). Each run writes `portfolio-<stamp>.dump`, checked with `pg_restore --list`, then `portfolio-<stamp>.media.tar.gz`, a tar of the media directory (`BACKUP_MEDIA_DIR`, temporary `.tmp` files left out) checked with `tar --list`; the archive is taken after the dump, so it holds every image the dump references. Old dumps and archives are removed after the same retention, only after a successful backup. Optional encryption: set `portfolio_backup_age_recipient` (an `age1…` public key) — both files are then stored as `.dump.age` and `.media.tar.gz.age` and only the holder of the private key can restore them. Off-site copy: not set up yet (see open items).
 - **Restore test**: `bash scripts/restore-check.sh [file]` restores the latest backup into a throwaway Postgres container without network and checks every schema's migration history, then checks the media archive of the same stamp: readable, only `<uuid>.webp` / `<uuid>-960.webp` entries, and every image recorded in the restored `content.media` table present. A backup without media archive fails while a media directory exists. Weekly by `portfolio-restore-check.timer` (`journalctl -u portfolio-restore-check`). Encrypted backups need `BACKUP_AGE_IDENTITY=<key file>`, so run it where the key is.
 - **Database restore**:
 
   ```bash
   cd /srv/apps/portfolio/production
-  docker compose -f compose.prod.yml stop identity-service content-service contact-service
+  docker compose -f compose.prod.yml stop web identity-service content-service contact-service
   docker compose -f compose.prod.yml exec -T -u postgres postgres \
     pg_restore --dbname portfolio --clean --if-exists --exit-on-error < /srv/apps/portfolio/production/backups/portfolio-<date>.dump
   docker compose -f compose.prod.yml exec -T -u postgres postgres sh /docker-entrypoint-initdb.d/01-roles.sh
   # Media of the same stamp (as root: files keep UID 1000); decrypt first with age for a .age archive.
   sudo tar --extract --gzip --same-owner --file /srv/apps/portfolio/production/backups/portfolio-<date>.media.tar.gz \
     --directory /srv/apps/portfolio/production/media
-  docker compose -f compose.prod.yml start identity-service content-service contact-service
+  docker compose -f compose.prod.yml start identity-service content-service contact-service web
   ```
 
   Extracting does not remove images uploaded after the backup: they have no row in the restored database and stay unused on disk (the purge only selects recorded images).
 
 - **Nginx configuration**: `bash scripts/reload-nginx.sh` renders bind-mounted templates with the container's restricted environment filter, tests the resulting configuration and reloads it. Environment changes require recreating the container first so it receives the new values.
-- **Maintenance**: `touch /srv/apps/portfolio/production/site/maintenance` (Nginx answers 503 with the prerendered page), `rm` to reopen.
+- **Maintenance**: stop the private `web` service to return a truthful 503 for public page requests; API and media routes remain independent. Restart it to reopen.
 - **Signing key rotation**: set `IDENTITY_SIGNING_KEY_K2` and deploy (published in the JWKS, not used yet); wait at least ten minutes (JWKS cache), set the GitHub variable `IDENTITY_SIGNING_KID` to `k2` and deploy, then remove `IDENTITY_SIGNING_KEY_K1` at least ten minutes later and deploy again. The role removes unconfigured key files. Reverse the slots for the next rotation.
 - **Password rotation (Postgres roles)**: update the relevant GitHub secret and deploy: the secrets are rewritten and the roles script applies the new password before the services restart.
 - **Logs**: `docker compose -f compose.prod.yml logs -f <service>` (JSON; `request_id` / `x-request-id` links Nginx, the browser and the services). Host jobs: `journalctl -u portfolio-backup -u portfolio-restore-check`.
@@ -384,7 +376,7 @@ bash docker/scripts/check-ops.sh                 # all
 bash docker/scripts/check-ops.sh nginx compose   # some: shellcheck hadolint compose nginx csp ansible
 ```
 
-- `shellcheck` on `docker/scripts/*.sh` and the Postgres init script; `hadolint` on `docker/service.Dockerfile`;
+- `shellcheck` on `docker/scripts/*.sh` and the Postgres init script; `hadolint` on `docker/service.Dockerfile` and `docker/web.Dockerfile`;
 - `docker compose config` on production and the combined development/acceptance files with public fixture configuration and committed development-secret examples; no temporary Compose file is generated;
 - `nginx -t` on the rendered production template and the development configuration; no certificate is required because Traefik terminates TLS;
 - `csp`: production and development send the same Content-Security-Policy;
@@ -396,14 +388,14 @@ No Molecule scenario: the portfolio role manages systemd timers and host files, 
 
 - `docker/compose.dev.yml`: a standalone local stack (Postgres with the production roles, Mailpit, services built from source, Nginx over HTTP on `http://localhost:8080`), with production hardening. It needs no Traefik or external network. This file is for local source builds, unlike the remote-development overlays used in some sibling repositories. Usage is at the top of the file. Development secrets: `bash docker/scripts/dev-secrets.sh` copies `docker/dev/secrets.example/*` to `docker/dev/secrets/` (git-ignored) without overwriting.
 - `docker/compose.dev.yml` keeps uploaded images in the named volume `media` (handed to UID 1000 by the one-off `media-init` job), mounted read-write into content-service and read-only into Nginx, which serves `/media/` as in production. The acceptance overlay reuses it; the runner removes it with the project's other volumes.
-- **Seeing admin changes locally.** The publication dispatch is disabled outside production, so nothing rebuilds the site by itself:
-  - `npx nx serve web` (development configuration) renders the public pages from the content API, not the committed snapshot: `apps/web/src/environments/content-snapshot.ts` is replaced by `content-snapshot.development.ts` through `fileReplacements`. Server rendering calls the `/api/content` target of `apps/web/proxy.conf.json` (`http://localhost:3101`), the browser goes through the dev proxy, and `TransferState` hands the server's copy to hydration. Reload the page after an admin change. When the content service is down, the page falls back on the committed snapshot with a console warning. Production builds and prerendering never contain this loader (D7).
-  - Docker stack: `node apps/web/scripts/local-refresh.mjs` (or `npx nx run web:local-refresh`) fetches the published pair from `http://localhost:8080/api/content/snapshot`, checks it like `web:content-snapshot`, builds the production site into `dist/apps/web` and writes `sitemap.xml` and `robots.txt`, like `web:seo-files`. Nginx serves that folder directly, so a reload shows the change; no container restarts. Pass another address as the argument or in `CONTENT_API_URL` (for example `http://localhost:3101` for a content service started with `nx serve`). The committed `apps/web/content-snapshot/*.json` stay untouched: the pair goes to `tmp/local-refresh/` (git-ignored) and the build reads it through a generated tsconfig that only remaps `@internal/web-snapshot/*`. The build always runs (`--skip-nx-cache`), because the Nx cache hashes the committed snapshot. A plain `npx nx run web:seo-files` afterwards puts the committed content back in `dist`. Each step prints its duration.
-- `npx nx run-many -t serve -p content-service contact-service identity-service` then `npx nx serve web`: development without Docker (PGlite, `apps/*-service/.env`). `apps/web/proxy.conf.json` also maps the OAuth discovery URL `/.well-known/oauth-authorization-server/api/auth` onto identity-service (D45); a dev server started before that change must be restarted to serve it. Without Nginx, content-service serves `/media/*` itself when `CONTENT_MEDIA_SERVE=true` (images in `CONTENT_MEDIA_DIR`); `apps/web/proxy.conf.json` forwards `/media` to it. The built-site preview (`apps/web-e2e/support/preview/serve-site.mjs`) serves `/media/` from `MEDIA_DIR` when set, with the same name pattern and cache headers as Nginx.
+- **Seeing admin changes locally.** Reload a public page after saving in the administration. Both
+  development and the Docker `web` SSR service fetch current published content at request time; no
+  local refresh build is required. The Docker runtime reaches `http://content-service:3101` directly.
+- `npx nx run-many -t serve -p content-service contact-service identity-service` then `npx nx serve web`: development without Docker (PGlite, `apps/*-service/.env`). `apps/web/proxy.conf.json` also maps the OAuth discovery URL `/.well-known/oauth-authorization-server/api/auth` onto identity-service (D45); a dev server started before that change must be restarted to serve it. Without Nginx, content-service serves `/media/*` itself when `CONTENT_MEDIA_SERVE=true` (images in `CONTENT_MEDIA_DIR`); `apps/web/proxy.conf.json` forwards `/media` to it. The SSR preview (`apps/web-e2e/support/preview/serve-ssr.mjs`) runs the built runtime against a disposable fixture content API; authenticated stack acceptance uses the real internal content service.
 
 Authenticated acceptance uses `npx nx run web-e2e:e2e-stack`. The runner fixes its generated Compose
 project and ignores ambient Compose env files/profiles. It refuses existing resources or image tags,
-then removes only its own containers, volumes and three image tags after the run. BuildKit cache and
+then removes only its own containers, volumes and four image tags after the run. BuildKit cache and
 shared image layers remain reusable. See [Docker optimization verification](docker-optimization-2026-11-03.md).
 
 ## Open items

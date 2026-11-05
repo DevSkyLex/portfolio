@@ -13,7 +13,7 @@ import type { TimelineListChangeResult } from '@internal/content-application/lib
  *
  * @description
  * Deletes an entry with optimistic locking, closes the gap in its kind's positions and requests the
- * site rebuild in the same unit of work.
+ * content revision in the same unit of work.
  */
 export class DeleteTimelineEntry {
   // #region Constructor
@@ -24,7 +24,7 @@ export class DeleteTimelineEntry {
    * @description
    * Wires the transaction boundary and the request clock.
    *
-   * @param {TimelineUnitOfWork} unitOfWork - Atomic timeline and outbox writes.
+   * @param {TimelineUnitOfWork} unitOfWork - Atomic timeline and revision writes.
    * @param {Clock} clock - Rebuild request time.
    */
   public constructor(

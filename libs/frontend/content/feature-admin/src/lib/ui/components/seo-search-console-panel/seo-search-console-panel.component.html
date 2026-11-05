@@ -1,96 +1,236 @@
-<div class="grid grid-cols-2 gap-3 @min-[48rem]/dashboard:grid-cols-4">
-  @for (kpi of kpis(); track kpi.id) {
-    <content-seo-kpi-tile
-      [label]="kpi.label"
-      [value]="kpi.value"
-      [delta]="kpi.delta"
-      [comparison]="comparison()"
-    />
-  }
-</div>
-
-<div class="grid gap-3 @min-[48rem]/dashboard:grid-cols-2">
-  <div uiCard variant="outline" class="min-w-0 gap-4 p-4">
-    <h3
-      class="text-[13px]/5 font-medium text-fg"
-      i18n="@@admin.dashboard.searchConsole.clicksPerDay"
-    >
-      Clics par jour
-    </h3>
-    <ui-area-chart
-      label="Clics par jour"
-      i18n-label="@@admin.dashboard.searchConsole.clicksPerDay"
-      valueHeader="Clics"
-      i18n-valueHeader="@@admin.dashboard.searchConsole.clicks"
-      [points]="clicks()"
-      [formatTick]="format.compact"
-      [stale]="stale()"
-    />
-  </div>
-  <div uiCard variant="outline" class="min-w-0 gap-4 p-4">
-    <h3
-      class="text-[13px]/5 font-medium text-fg"
-      i18n="@@admin.dashboard.searchConsole.impressionsPerDay"
-    >
-      Impressions par jour
-    </h3>
-    <ui-area-chart
-      label="Impressions par jour"
-      i18n-label="@@admin.dashboard.searchConsole.impressionsPerDay"
-      valueHeader="Impressions"
-      i18n-valueHeader="@@admin.dashboard.searchConsole.impressions"
-      [points]="impressions()"
-      [formatTick]="format.compact"
-      [stale]="stale()"
-    />
-  </div>
-</div>
-
-<div class="grid gap-3 @min-[72rem]/dashboard:grid-cols-2">
-  <div class="flex min-w-0 flex-col gap-2">
-    <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.searchConsole.topQueries">
-      Requêtes principales
-    </h3>
-    <ui-data-table
-      density="compact"
-      caption="Requêtes principales"
-      i18n-caption="@@admin.dashboard.searchConsole.topQueries"
-      [class]="stale() ? 'opacity-50' : ''"
-      [data]="data().queries"
-      [columns]="queryColumns"
-      [rowKey]="rowKey"
-      [searchable]="false"
-      [columnMenu]="false"
-      [paginated]="false"
-    />
-  </div>
-  <div class="flex min-w-0 flex-col gap-2">
-    <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.searchConsole.topPages">
-      Pages principales
-    </h3>
-    <ui-data-table
-      density="compact"
-      caption="Pages principales"
-      i18n-caption="@@admin.dashboard.searchConsole.topPages"
-      [class]="stale() ? 'opacity-50' : ''"
-      [data]="data().pages"
-      [columns]="pageColumns"
-      [rowKey]="rowKey"
-      [searchable]="false"
-      [columnMenu]="false"
-      [paginated]="false"
-    />
-  </div>
-</div>
-
-<div uiCard variant="outline" class="gap-4 p-4">
-  <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.searchConsole.devices">
-    Clics par appareil
-  </h3>
-  <ui-bar-list
-    label="Clics par appareil"
-    i18n-label="@@admin.dashboard.searchConsole.devices"
-    [items]="devices()"
-    [stale]="stale()"
+<!-- Full-width figure strip and chart grid: the hairlines between cells replace cards (D36). -->
+<section aria-labelledby="sc-performance">
+  <content-seo-section-header
+    headingId="sc-performance"
+    heading="Performance dans Google"
+    i18n-heading="@@admin.dashboard.searchConsole.performance"
+    description="Clics, impressions, taux de clic et position moyenne de la période, comparés à la période précédente."
+    i18n-description="@@admin.dashboard.searchConsole.performanceHint"
   />
-</div>
+  <div class="overflow-hidden border-b border-border">
+    <div class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-4">
+      @for (kpi of kpis(); track kpi.id) {
+        <content-seo-kpi-tile
+          [label]="kpi.label"
+          [value]="kpi.value"
+          [delta]="kpi.delta"
+          [comparison]="comparison()"
+        />
+      }
+    </div>
+  </div>
+
+  <div class="overflow-hidden border-b border-border">
+    <div class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2">
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="sc-clicks"
+      >
+        <h3
+          id="sc-clicks"
+          class="text-[13px]/5 font-medium text-fg"
+          i18n="@@admin.dashboard.searchConsole.clicksPerDay"
+        >
+          Clics par jour
+        </h3>
+        <ui-column-chart
+          label="Clics par jour"
+          i18n-label="@@admin.dashboard.searchConsole.clicksPerDay"
+          valueHeader="Clics"
+          i18n-valueHeader="@@admin.dashboard.searchConsole.clicks"
+          [points]="clicks()"
+          [formatTick]="format.compact"
+          [stale]="stale()"
+        />
+      </section>
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="sc-impressions"
+      >
+        <h3
+          id="sc-impressions"
+          class="text-[13px]/5 font-medium text-fg"
+          i18n="@@admin.dashboard.searchConsole.impressionsPerDay"
+        >
+          Impressions par jour
+        </h3>
+        <ui-area-chart
+          label="Impressions par jour"
+          i18n-label="@@admin.dashboard.searchConsole.impressionsPerDay"
+          valueHeader="Impressions"
+          i18n-valueHeader="@@admin.dashboard.searchConsole.impressions"
+          [points]="impressions()"
+          [formatTick]="format.compact"
+          [stale]="stale()"
+        />
+      </section>
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="sc-ctr"
+      >
+        <h3
+          id="sc-ctr"
+          class="text-[13px]/5 font-medium text-fg"
+          i18n="@@admin.dashboard.searchConsole.ctrPerDay"
+        >
+          CTR par jour
+        </h3>
+        <ui-line-chart
+          label="CTR par jour"
+          i18n-label="@@admin.dashboard.searchConsole.ctrPerDay"
+          [series]="ctr()"
+          [formatTick]="format.percent"
+          [stale]="stale()"
+        />
+      </section>
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="sc-position"
+      >
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h3
+            id="sc-position"
+            class="text-[13px]/5 font-medium text-fg"
+            i18n="@@admin.dashboard.searchConsole.positionPerDay"
+          >
+            Position moyenne par jour
+          </h3>
+          <p
+            class="text-[12px]/4 text-fg-faint"
+            i18n="@@admin.dashboard.searchConsole.positionHint"
+          >
+            Plus haut est meilleur
+          </p>
+        </div>
+        <ui-line-chart
+          label="Position moyenne par jour"
+          i18n-label="@@admin.dashboard.searchConsole.positionPerDay"
+          invert
+          [series]="position()"
+          [formatTick]="format.decimal"
+          [stale]="stale()"
+        />
+      </section>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="sc-reach">
+  <content-seo-section-header
+    headingId="sc-reach"
+    heading="Requêtes et appareils"
+    i18n-heading="@@admin.dashboard.searchConsole.reach"
+    description="Position et taux de clic de chaque requête, et appareils des clics."
+    i18n-description="@@admin.dashboard.searchConsole.reachHint"
+  />
+  <div class="overflow-hidden border-b border-border">
+    <div class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2">
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="sc-opportunities"
+      >
+        <div class="flex flex-col gap-1">
+          <h3
+            id="sc-opportunities"
+            class="text-[13px]/5 font-medium text-fg"
+            i18n="@@admin.dashboard.searchConsole.ctrByPosition"
+          >
+            CTR selon la position, par requête
+          </h3>
+          <p
+            class="text-[12px]/4 text-fg-faint"
+            i18n="@@admin.dashboard.searchConsole.ctrByPositionHint"
+          >
+            Une requête bien placée mais peu cliquée appelle un meilleur titre ou une meilleure
+            description.
+          </p>
+        </div>
+        <ui-scatter-chart
+          label="CTR selon la position, par requête"
+          i18n-label="@@admin.dashboard.searchConsole.ctrByPosition"
+          nameHeader="Requête"
+          i18n-nameHeader="@@admin.dashboard.searchConsole.query"
+          xHeader="Position"
+          i18n-xHeader="@@admin.dashboard.searchConsole.positionShort"
+          yHeader="CTR"
+          i18n-yHeader="@@admin.dashboard.searchConsole.ctr"
+          [points]="opportunities()"
+          [formatY]="format.percent"
+          [stale]="stale()"
+        />
+      </section>
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="sc-devices"
+      >
+        <h3
+          id="sc-devices"
+          class="text-[13px]/5 font-medium text-fg"
+          i18n="@@admin.dashboard.searchConsole.devices"
+        >
+          Clics par appareil
+        </h3>
+        <ui-stacked-bars
+          label="Clics par appareil"
+          i18n-label="@@admin.dashboard.searchConsole.devices"
+          size="tall"
+          [rows]="devices()"
+          [legend]="deviceLegend()"
+          [stale]="stale()"
+        />
+      </section>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="sc-queries">
+  <content-seo-section-header
+    headingId="sc-queries"
+    heading="Requêtes principales"
+    i18n-heading="@@admin.dashboard.searchConsole.topQueries"
+    description="Les requêtes les plus cliquées de la période, avec leurs impressions, leur taux de clic et leur position."
+    i18n-description="@@admin.dashboard.searchConsole.topQueriesHint"
+  />
+  <ui-data-table
+    resizableColumns
+    distributeColumns
+    columnWidthsKey="portfolio.admin.table.seo-queries"
+    density="compact"
+    caption="Requêtes principales"
+    i18n-caption="@@admin.dashboard.searchConsole.topQueries"
+    [framed]="false"
+    [class]="stale() ? 'opacity-50' : ''"
+    [data]="data().queries"
+    [columns]="queryColumns"
+    [rowKey]="rowKey"
+    [searchable]="false"
+    [columnMenu]="false"
+    [paginated]="false"
+  />
+</section>
+
+<section aria-labelledby="sc-pages">
+  <content-seo-section-header
+    headingId="sc-pages"
+    heading="Pages principales"
+    i18n-heading="@@admin.dashboard.searchConsole.topPages"
+    description="Les pages du site qui reçoivent le plus de clics depuis Google."
+    i18n-description="@@admin.dashboard.searchConsole.topPagesHint"
+  />
+  <ui-data-table
+    resizableColumns
+    distributeColumns
+    columnWidthsKey="portfolio.admin.table.seo-search-pages"
+    density="compact"
+    caption="Pages principales"
+    i18n-caption="@@admin.dashboard.searchConsole.topPages"
+    [framed]="false"
+    [class]="stale() ? 'opacity-50' : ''"
+    [data]="data().pages"
+    [columns]="pageColumns"
+    [rowKey]="rowKey"
+    [searchable]="false"
+    [columnMenu]="false"
+    [paginated]="false"
+  />
+</section>

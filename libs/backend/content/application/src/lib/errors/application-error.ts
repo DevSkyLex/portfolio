@@ -79,6 +79,17 @@ export class VersionMismatchError extends ApplicationError {
   // #endregion
 }
 
+/** Rejects the retired manual publication workflow; publication is now automatic. */
+export class ManualPublicationDisabledError extends ApplicationError {
+  public constructor() {
+    super(
+      'content.manual-publication-disabled',
+      'Publication is automatic; manual batches are no longer supported.',
+    );
+    this.name = 'ManualPublicationDisabledError';
+  }
+}
+
 /**
  * Class MediaMissingError
  * @class MediaMissingError

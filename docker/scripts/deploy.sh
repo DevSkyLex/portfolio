@@ -18,7 +18,7 @@ command -v flock > /dev/null || { echo "flock (util-linux) is required." >&2; ex
 exec 9> .deploy.lock
 flock --nonblock 9 || { echo "Another deployment is running." >&2; exit 1; }
 
-services=(identity-service content-service contact-service)
+services=(identity-service content-service contact-service web)
 step() { printf '\n[%s] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 sync_roles() {
   docker compose exec -T -u postgres postgres sh /docker-entrypoint-initdb.d/01-roles.sh

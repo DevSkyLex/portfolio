@@ -70,7 +70,9 @@ jobs:
       - run: npm ci
       - name: Prepare service build contexts
         run: npx nx run-many -t prune -p identity-service content-service contact-service --parallel=2
-      # The shared root is dist/apps, so each service keeps its own directory in the artifact.
+      - name: Build request-time SSR application
+        run: npx nx build web
+      # The shared root is dist/apps, so each image keeps its own directory in the artifact.
       - uses: actions/upload-artifact@v4
         with:
           name: service-contexts-${{ needs.resolve.outputs.sha }}
@@ -80,6 +82,9 @@ jobs:
             dist/apps/*-service/main.js
             dist/apps/*-service/cli.js
             dist/apps/*-service/migrations/
+            dist/apps/web/browser/
+            dist/apps/web/server/
+            dist/apps/web/3rdpartylicenses.txt
           if-no-files-found: error
           retention-days: 1
           overwrite: true
@@ -90,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [identity-service, content-service, contact-service]
+        service: [identity-service, content-service, contact-service, web]
     steps:
       - uses: actions/checkout@v5
         with:
@@ -110,7 +115,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: dist/apps/${{ matrix.service }}
-          file: docker/service.Dockerfile
+          file: ${{ matrix.service == 'web' && 'docker/web.Dockerfile' || 'docker/service.Dockerfile' }}
           build-args: SERVICE=${{ matrix.service }}
           cache-from: type=gha,version=2,scope=portfolio-${{ matrix.service }}
           cache-to: type=gha,version=2,scope=portfolio-${{ matrix.service }},mode=max,ignore-error=true
@@ -136,6 +141,8 @@ jobs:
       TRUSTED_PROXIES: ${{ vars.TRUSTED_PROXIES }}
       WEB_MEMORY_LIMIT: ${{ vars.WEB_MEMORY_LIMIT }}
       WEB_CPU_LIMIT: ${{ vars.WEB_CPU_LIMIT }}
+      SSR_MEMORY_LIMIT: ${{ vars.SSR_MEMORY_LIMIT }}
+      SSR_CPU_LIMIT: ${{ vars.SSR_CPU_LIMIT }}
       LOG_MAX_SIZE: ${{ vars.LOG_MAX_SIZE }}
       LOG_MAX_FILES: ${{ vars.LOG_MAX_FILES }}
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
@@ -190,7 +197,6 @@ jobs:
           BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
           BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
           CONTACT_CLIENT_KEY_SECRET: ${{ secrets.CONTACT_CLIENT_KEY_SECRET }}
-          SITE_BUILD_TOKEN: ${{ secrets.SITE_BUILD_TOKEN }}
           IDENTITY_SIGNING_KEY_K1: ${{ secrets.IDENTITY_SIGNING_KEY_K1 }}
           IDENTITY_SIGNING_KEY_K2: ${{ secrets.IDENTITY_SIGNING_KEY_K2 }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN || github.token }}

@@ -22,14 +22,14 @@ function assertDisposableProject(project) {
  * Function acceptanceImages
  *
  * @description
- * Names the three project-owned image tags reused by services and their migration/bootstrap jobs.
+ * Names the project-owned service and SSR web image tags used by the isolated stack.
  *
  * @param {string} project - Validated disposable acceptance project.
  * @returns {string[]} Exact local image references; no shared image or wildcard is included.
  */
 export function acceptanceImages(project) {
   assertDisposableProject(project);
-  return ['identity-service', 'content-service', 'contact-service'].map(
+  return ['identity-service', 'content-service', 'contact-service', 'web'].map(
     (service) => `${project}-${service}:latest`,
   );
 }

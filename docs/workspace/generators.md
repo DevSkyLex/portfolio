@@ -35,9 +35,9 @@ The libraries are neither buildable nor publishable: there is no need for public
 npx nx run content-service:db-migrate
 npx nx run content-service:db-seed
 
-# Content snapshot for prerendering (service running), then FR/EN static build
-npx nx run web:content-snapshot
+# Build the localized SSR runtime; public content is fetched when serving requests
 npx nx build web
+npx nx run web:serve-ssr
 ```
 
 The targets are named `db-migrate` and `db-seed`: `nx migrate` is a command of Nx itself.

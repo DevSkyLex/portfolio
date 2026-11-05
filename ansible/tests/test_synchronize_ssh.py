@@ -1,4 +1,4 @@
-"""Exercise both rsync tasks with a fake destination and executable."""
+"""Exercise the deployment rsync task with a fake destination and executable."""
 
 import json
 import os
@@ -39,7 +39,7 @@ class SynchronizeSshTest(unittest.TestCase):
                 encoding='utf-8',
             )
             tasks = []
-            for role in ('portfolio', 'site'):
+            for role in ('portfolio',):
                 role_tasks = yaml.safe_load((ansible_root / f'roles/{role}/tasks/main.yml').read_text(encoding='utf-8'))
                 synchronize = next(task['ansible.posix.synchronize'] for task in role_tasks if 'ansible.posix.synchronize' in task)
                 synchronize.update(src=str(root) + '/', dest='/tmp/fixture/', rsync_opts=[])
@@ -57,7 +57,7 @@ class SynchronizeSshTest(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             commands = [json.loads(line) for line in log.read_text(encoding='utf-8').splitlines()]
-            self.assertEqual(len(commands), 2)
+            self.assertEqual(len(commands), 1)
             for command in commands:
                 ssh = next(arg for arg in command if arg.startswith('--rsh='))
                 self.assertIn('Port=2222', ssh)

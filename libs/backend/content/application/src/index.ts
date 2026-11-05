@@ -6,6 +6,7 @@ export {
   NotFoundError,
   UnsupportedMediaError,
   VersionMismatchError,
+  ManualPublicationDisabledError,
 } from '@internal/content-application/lib/errors/application-error';
 export type {
   Clock,

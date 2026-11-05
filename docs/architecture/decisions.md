@@ -12,10 +12,9 @@ Nginx routes `/api/content`, `/api/contact` and `/api/auth`. No response composi
 
 ## D3 — No broker, no integration events
 
-No business fact of one service is consumed by another. The two reliable side effects are internal to their service:
-
-- `contact`: message and notification task written in the same transaction, then delivered by a worker (local outbox);
-- `content`: publication and site rebuild request written in the same transaction, then forwarded to GitHub Actions by the same mechanism.
+No business fact of one service is consumed by another. Contact messages and their notification tasks
+are written in the same transaction, then delivered by a worker (local outbox). Public content changes
+and their revision are committed together; request-time rendering reads them without a build event.
 
 ## D4 — No CQRS, event sourcing or saga
 
@@ -29,11 +28,18 @@ In a monorepo, the frontend reads the contract schemas directly (`libs/contracts
 
 `@nx/enforce-module-boundaries` and `nx format` rely on ESLint and Prettier. oxlint can be added later as a fast pre-lint.
 
-## D7 — Prerendering from a content snapshot
+## D7 — Public content rendered on each request
 
-The public site is prerendered from `apps/web/content-snapshot/{fr,en}.json`, downloaded before the build. The Nx cache therefore depends on the actual content, and prerendering calls no API live.
+The public site uses Angular server-side rendering from the content service's public locale snapshot.
+Content changes require no web build, workflow dispatch or manual publication group. The Node runtime
+fetches the fixed, configured content-service endpoint with bounded requests and validates the result;
+there is no fallback to a committed snapshot that could silently publish stale content.
 
-Development exception: the `development` build configuration replaces `apps/web/src/environments/content-snapshot.ts` with `content-snapshot.development.ts` (`fileReplacements`, as in Angular's environments guide), so `nx serve web` renders the content API's published snapshot and falls back on the committed one when the service is down. The snapshot still goes through the same validator, `TransferState` and hydration path. The production configuration never resolves that file, so neither its code nor its URL reaches a production bundle. `apps/web/scripts/local-refresh.mjs` rebuilds the Docker stack's `dist` from a local service without writing the committed files.
+Each render owns its snapshot and transfers only public data through Angular `TransferState`, which
+the browser consumes for hydration. Administration remains client-rendered and does not fetch public
+content. A content-service failure produces an unavailable response rather than an empty indexed page.
+Code changes still require building and deploying the web runtime. D50 describes the retirement of the
+former rebuild and manual-group mechanisms.
 
 ## D8 — Projects created on demand
 
@@ -43,9 +49,12 @@ An Nx project is only generated when it receives its first code. Ports exist for
 
 Nx 24 (`@nx/nest`) targets NestJS 11, and NestJS 12 is published as ESM only, which is incompatible with the services' CommonJS webpack build. Move to 12 once `@nx/nest` supports it.
 
-## D10 — Contracts in `zod/mini`, validated at prerender time only
+## D10 — Contracts in `zod/mini`, validated on the server
 
-The contracts use `zod/mini` (functional API, lighter). On the web side, the snapshot is validated only during server rendering (`provideContentSnapshotValidation`, secondary entry point `@vfortin/content-web-data-access/server`): an invalid snapshot breaks the build, and the browser bundle does not contain Zod. Likewise, `@angular/ssr` is only provided by `@vfortin/web-shell/server`.
+The contracts use `zod/mini` (functional API, lighter). On the web side, the snapshot is validated during
+server rendering (`provideContentSnapshotValidation`, secondary entry point
+`@vfortin/content-web-data-access/server`): an invalid snapshot fails the request, and the browser
+bundle does not contain Zod. Likewise, `@angular/ssr` is only provided by `@vfortin/web-shell/server`.
 
 ## D11 — `layer:ui` may read `layer:model`
 
@@ -89,7 +98,11 @@ Revision (2026-11-04, owner decision): the administration is bilingual like the 
 
 ## D19 — Admin scope
 
-Delivered: projects (FR/EN editing, publication, optimistic lock `If-Match` → 412, site rebuild through the outbox and `workflow_dispatch`), the project article as a rich document with uploaded images and a cover (D40), inbox (read, archived, erasure) and the optional one-time code ("Sécurité", D17). Not delivered, to add if the need is confirmed: editing the journey, skills and profile, adding and reordering projects, a media library beyond the images of a project, password change (today: a new `bootstrap-admin` on an empty database).
+Delivered: projects (FR/EN editing, creation, publication and optimistic lock `If-Match` → 412), the
+project article as a rich document with uploaded images and a cover (D40), journey, profile and legal
+editing, inbox (read, archived, erasure) and the optional one-time code ("Sécurité", D17). Public changes
+are read by SSR without a site build. A media library beyond project images, project reordering and
+password change remain outside this scope.
 
 ## D20 — Strict CSP set by Nginx
 
@@ -115,7 +128,12 @@ Ansible prepares portfolio files and secrets supplied by the GitHub production e
 
 ## D25 — E2E on the built site
 
-The Playwright tests serve `dist/apps/web` with `apps/web-e2e/support/preview/serve-site.mjs`, which reproduces the application route contract: prerendered pages, `/admin` → `index.csr.html` and `/en/admin` → `en/index.csr.html` (D18 revision), admin `no-store` / `noindex` headers and real 404 responses. Node HTTP tests compare those cases at the server boundary. TLS, proxy trust, rate limiting and pre-compression remain Nginx/Compose concerns; the preview is not a complete edge simulator. The Nx SPA server returned the home page for any address and hid defects. Revision (D48): the standalone suite serves `dist/apps/web-e2e-site`, the production build with a placeholder GA4 measurement id (`web:e2e-site`).
+The Playwright tests exercise the built Angular SSR runtime with an isolated public content API
+fixture. They check rendered HTML before JavaScript, hydration without a duplicate snapshot request,
+locale routes, administration without public content, HTTP status codes and live content changes
+without a rebuild. The standalone suite uses `dist/apps/web-e2e-site`, the production configuration
+with a placeholder GA4 measurement id (`web:e2e-site`). TLS, proxy trust and rate limiting remain
+Nginx/Compose concerns; the preview is not a complete edge simulator.
 
 ## D26 — A full UI catalogue, tree-shaken
 
@@ -125,9 +143,12 @@ The Playwright tests serve `dist/apps/web` with `apps/web-e2e/support/preview/se
 
 Two parallel logins with the same TOTP code, or parallel wrong attempts, raced on the account row: a code could be accepted twice and failures were lost (no lockout). A login now runs in one transaction that locks the account row (`SELECT … FOR UPDATE`) during the attempt. Each login opens a row in `identity.refresh_token_families`; refresh, replay detection and logout lock that row, and revoking it refuses every token of the session, including a descendant issued concurrently. Replay is checked before expiry, so an old stolen token still revokes a live session. Families whose most recent token expired are deleted at the next login.
 
-## D28 — Outbox leases with a token, one rebuild trigger at a time
+## D28 — Notification outbox leases with a token
 
-A notification claimed by a worker carries a lease token (`notification_jobs.claim_token`); the outcome is only recorded with that token, so a worker whose lease expired cannot overwrite the work of the worker that took over. Delivery stays at least once (a send can be repeated after a crash), and SMTP timeouts are kept well below the lease. For the site rebuild, a claim locks the `content_revision` row and is refused while another request is being sent: rebuild triggers never overlap, even with several instances.
+A notification claimed by a worker carries a lease token (`notification_jobs.claim_token`); the outcome
+is only recorded with that token, so a worker whose lease expired cannot overwrite the work of the
+worker that took over. Delivery stays at least once (a send can be repeated after a crash), and SMTP
+timeouts are kept well below the lease. Public content needs no build dispatcher (D7).
 
 ## D29 — Published content read from one snapshot
 
@@ -145,13 +166,23 @@ Revision (2026-11-04): the initial total had reached 701 kB (the global styleshe
 
 ## D32 — Progressive enhancement of the animated content
 
-Prerendered content must stay readable when JavaScript fails or is blocked. The blocking `apps/web/public/theme.js` sets `data-js` on `<html>`; reveal states (`in-data-js:not-data-in:*`) only hide content while it is set. Public content routes explicitly await their locale snapshot. During prerendering the server validates that public data and serializes it in Angular `TransferState`; hydration consumes and removes the active locale entry before any dynamic import, avoiding a second network dependency. Administration, legal pages and error pages do not require the public snapshot. A CSR content load failure goes to the independently renderable 503 page; server validation failures still reject the build. Prerender route enumeration explicitly awaits readiness too.
+Server-rendered content must stay readable when JavaScript fails or is blocked. The blocking
+`apps/web/public/theme.js` sets `data-js` on `<html>`; reveal states
+(`in-data-js:not-data-in:*`) only hide content while it is set. Public content routes explicitly await
+their locale snapshot. The server validates public data and serializes it in Angular `TransferState`;
+hydration consumes and removes the active locale entry before any dynamic import, avoiding a second
+network dependency. Administration and error pages do not require the public snapshot. Content load
+failures produce the independently renderable 503 page with an unavailable HTTP status on the server.
 
 The shell sets `data-app` only after successful navigation. Without that marker after 4 s, the theme script removes `data-js` and reveals the static page when the main application bundle is unavailable. A navigation error also removes the hiding markers. Browser tests assert actual readable text, rather than treating marker removal as sufficient proof: an earlier route-error design lost the prerendered DOM during hydration cleanup. The Parcours scene has a `scene-static` variant (reduced motion, no `data-js`, failed chunk or missing canvas context) that lays all steps out in a static two-column flow instead of the mockup's still frame showing only the active steps. A failed decorative planet chunk retains a stationary token-based fallback and never mutates a destroyed owner.
 
 ## D33 — Shared Traefik edge, private Nginx origin
 
-The portfolio joins the existing `traefik_proxy` network used by Dentalstock and Fireguard. Traefik owns public HTTP/HTTPS ports, redirects and certificate renewal (`web`, `websecure`, `letsencrypt`); the portfolio no longer provisions Certbot or mounts certificates. Only Nginx joins this shared network. Nginx keeps the prerendered releases, cache policy, maintenance page, security headers and same-origin API routing (D2); services and Postgres stay on private networks.
+The portfolio joins the existing `traefik_proxy` network used by Dentalstock and Fireguard. Traefik
+owns public HTTP/HTTPS ports, redirects and certificate renewal (`web`, `websecure`, `letsencrypt`).
+Only Nginx joins this shared network. Nginx proxies public requests to the private Angular SSR runtime,
+preserves security and cache headers, and routes the same-origin APIs and media (D2). The web runtime,
+services and Postgres stay on private networks.
 
 Deployment uses the sibling applications' host, port, container, router, middleware, resource-limit and log variables. `TRUSTED_PROXIES` is an explicit reviewed Traefik address or narrow CIDR, never the entire shared application network: Nginx accepts only that peer and restores its forwarded client address before rate limiting and API forwarding. Three separately built service images retain `REGISTRY` and a common commit `TAG`. Local `compose.dev.yml` remains standalone and does not require the shared edge.
 
@@ -542,12 +573,12 @@ search and sharing metadata, from the snapshot alone (D7), so the prerendered HT
   form values, so the editor shows exactly what the public page will emit.
 - **Origin**: one `SITE_ORIGIN` token, provided by the web shell through `provideSiteOrigin()`, default
   `https://valentin-fortin.pro`.
-- **Generated files**: `npx nx run web:seo-files` runs after `web:build` and writes `sitemap.xml` (home,
+- **Runtime SEO endpoints**: the SSR server serves `sitemap.xml` (home,
   legal pages and every project, one `<url>` per language with `xhtml:link` alternates and `x-default`; no
-  `lastmod`) and `robots.txt` (everything allowed except `/admin`, `/en/admin` and `/api/`, sitemap announced)
-  into `dist/apps/web/browser`, from the same snapshot (`apps/web/scripts/generate-seo-files.mjs`, origin
-  `SITE_ORIGIN`, same default). The `Site build` workflow and `web-e2e:e2e` run it; Nginx and the preview
-  server already serve `.xml` and `.txt` as short-cached static files.
+  `lastmod`) and `robots.txt` (everything allowed except the administration and API paths, sitemap announced)
+  from current public snapshots, using the configured `SITE_ORIGIN`. Publishing or removing a project
+  therefore updates discovery without generating files during a build. Upstream failures return an
+  unavailable response rather than a successful empty sitemap.
 
 ## D43 — Radius scale and page headers
 
@@ -900,7 +931,7 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
   and `revise_legal_document`. Queries need reading; project creation needs writing only, since a new project is a draft whose
   slug derives from its French title; project revisions need writing and, when the
   project is already published, publishing as well: revisions preserve its publication state and
-  queue a rebuild. Project publication and unpublication need publishing. Timeline, profile and legal
+  become visible to SSR. Project publication and unpublication need publishing. Timeline, profile and legal
   edits need both writing and publishing, since those existing use cases immediately change public content. Timeline deletion
   needs both deleting and publishing. No contact inbox, upload, SEO provider or arbitrary network/file
   access is exposed.
@@ -920,23 +951,48 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
   Security / Connected applications; refreshes stop immediately and issued access tokens expire in
   five minutes. MCP availability does not grant permission for an assistant to publish content.
 
-## D50 — Explicit grouped content publication
+## D50 — Content publication without rebuilds or manual groups
 
-Normal editing retains automatic publication. Before preparing several changes, the owner can start
-a publication batch from the content administration or MCP. Starting persists a frozen copy of the
-current public content. Administration continues to read and edit the working records; public snapshot
-requests, including builds triggered by a code deployment, keep reading the frozen copy until the
-owner publishes the batch. The freeze survives service restarts.
+Public content edits remain independent, versioned writes. Their revision changes in the same
+transaction, and the next SSR request reads the published data. No content mutation dispatches a GitHub
+workflow or creates a site rebuild request. Project drafts retain their explicit project-level
+publication action; the extra workflow for starting and publishing a group is removed.
 
-Content writes and publication transitions serialize on the content revision row before modifying
-records. Starting and publishing require the publication version observed by the caller; intervening
-public-content changes invalidate a stale publication attempt. During a batch, changes increment the
-working revision without creating individual rebuild requests. Publishing releases the working content
-and queues one request in the same transaction. Closing an unchanged batch requests no rebuild.
-The worker defers dispatch while a batch is open, and media purge preserves frozen references.
+Any frozen batch left by the former workflow is released automatically before serving content, with a
+fresh grace period for retained media. No manual action is required to recover those edits. Historical
+tables can remain for a compatible database upgrade, but they do not drive a background build worker.
 
-The publication status distinguishes the working revision from the revision exposed by the public
-snapshot API. Neither is confirmation that the static site has finished deploying. The administration
-announces a requested reconstruction only; deployment progress requires a separate verified signal.
-Existing publication permissions still apply to writes, and releasing a batch requires publication
-consent. This mechanism stages a whole editing session; it is not per-field draft history or rollback.
+## D51 — Dashboard tabs, full-width cells and chart forms
+
+The « Tableau de bord » shows one source per tab (Search Console, Audience, Core Web Vitals, Audit
+SEO), its triggers in the page header and the tab kept in `?onglet=` (the first one without a
+parameter, the history entry replaced). Each tab is laid out full width like the project and timeline
+lists: a strip of figure cells, a grid of chart cells separated by hairlines instead of cards, then
+full-width tables (`[framed]="false"`).
+
+The chart form follows the data: daily counts as columns, a continuous measure as an area or a line,
+three counts of one unit on one line chart, the average position as an inverted line, queries placed by
+position and CTR as a scatter, a whole split in a few parts as a tall segmented bar, category shares and
+per-project severities as stacked bars, two scores of one scale as dumbbells, sessions by weekday and
+week as a heatmap, ranked shares as bar lists. Never two y scales on one chart.
+
+Series colours are the tokens `chart-1` to `chart-3` (violet, cyan, pink stepped into the chart
+lightness band, colour-vision separation checked on every pair in both themes), assigned in that fixed
+order and following the entity (a device keeps its tone); status colours only where the mark is a
+verdict, always with a legend. The heat ramp is four steps of `chart-1` over the surface (50, 65, 80,
+100 %), the faintest still 2:1 against it. Every chart keeps a visually hidden table view and a
+keyboard or printed reading of each value.
+
+## D52 — Demonstration SEO data in development
+
+Without a Google account, the local dashboard would only show « non configuré ». With
+`SEO_DEMO_DATA=true` (development only: `docker/compose.dev.yml`, `.env.example`), the composition gives
+each unconfigured source a stand-in reader of `@vfortin/content-adapters-out` (`DemoSearchConsoleReader`,
+`DemoAnalyticsReader`, `DemoWebVitalsReader`). They implement the same ports and go through the same
+refresh, cache and presenter as Google's, so every chart and table renders; their figures are
+deterministic per window (seeded by its dates), follow the weekday and stay internally consistent
+(totals equal the days, shares add up, categories follow Google's thresholds).
+
+The setup marks such a source `demo` and the dashboard DTO carries `demo: true`; the dashboard shows the
+figures like real ones, without a notice (the owner asked for none). A configured source always keeps
+its Google adapter; production never sets the flag.

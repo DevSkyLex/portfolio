@@ -24,8 +24,8 @@ import {
  *
  * @description
  * Administration of the profile (« Informations »: home introduction, « À propos », facts and public
- * links) under `/api/content/admin/profile`. A revision takes the version in `If-Match` and queues a
- * site rebuild, since the profile is always public. `@AdminOnly` runs before the body pipe, so an
+ * links) under `/api/content/admin/profile`. A revision takes the version in `If-Match` and advances
+ * the public content revision. `@AdminOnly` runs before the body pipe, so an
  * anonymous call is answered 401 whatever it sends.
  */
 @Controller('content/admin/profile')

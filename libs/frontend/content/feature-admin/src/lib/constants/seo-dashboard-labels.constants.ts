@@ -1,4 +1,9 @@
-import type { SeoRange, SeoSourceError } from '@vfortin/content-web-data-access/admin';
+import type {
+  SeoAuditIssue,
+  SeoRange,
+  SeoSourceError,
+} from '@vfortin/content-web-data-access/admin';
+import type { ChartTone } from '@vfortin/ui';
 
 /**
  * Constant SEO_SOURCE_ERROR_LABELS
@@ -54,6 +59,21 @@ export const SEO_DEVICE_LABELS: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Constant SEO_DEVICE_ORDER
+ *
+ * @description
+ * Search Console devices in their fixed legend order and series tone: a device keeps its colour
+ * whichever devices the window has (D51).
+ *
+ * @type {readonly { key: string; tone: ChartTone }[]}
+ */
+export const SEO_DEVICE_ORDER: readonly { readonly key: string; readonly tone: ChartTone }[] = [
+  { key: 'desktop', tone: 'chart-1' },
+  { key: 'mobile', tone: 'chart-2' },
+  { key: 'tablet', tone: 'chart-3' },
+];
+
+/**
  * Constant SEO_STRATEGY_LABELS
  *
  * @description
@@ -94,4 +114,26 @@ export const SEO_SEVERITY_LABELS: Readonly<Record<'error' | 'warning' | 'info', 
   error: $localize`:@@admin.dashboard.audit.severity.error:Erreur`,
   warning: $localize`:@@admin.dashboard.audit.severity.warning:Avertissement`,
   info: $localize`:@@admin.dashboard.audit.severity.info:Info`,
+};
+
+/**
+ * Constant SEO_AUDIT_CODE_LABELS
+ *
+ * @description
+ * Short names of the audit findings, one per code, for counting them by kind.
+ *
+ * @type {Readonly<Record<SeoAuditIssue['code'], string>>}
+ */
+export const SEO_AUDIT_CODE_LABELS: Readonly<Record<SeoAuditIssue['code'], string>> = {
+  'search-title-missing': $localize`:@@admin.dashboard.audit.code.searchTitleMissing:Titre de recherche absent`,
+  'search-title-too-short': $localize`:@@admin.dashboard.audit.code.searchTitleTooShort:Titre de recherche trop court`,
+  'search-title-too-long': $localize`:@@admin.dashboard.audit.code.searchTitleTooLong:Titre de recherche trop long`,
+  'search-description-missing': $localize`:@@admin.dashboard.audit.code.searchDescriptionMissing:Description de recherche absente`,
+  'search-description-too-short': $localize`:@@admin.dashboard.audit.code.searchDescriptionTooShort:Description de recherche trop courte`,
+  'search-description-too-long': $localize`:@@admin.dashboard.audit.code.searchDescriptionTooLong:Description de recherche trop longue`,
+  'keywords-missing': $localize`:@@admin.dashboard.audit.code.keywordsMissing:Mots-clés absents`,
+  'cover-missing': $localize`:@@admin.dashboard.audit.code.coverMissing:Couverture absente`,
+  'cover-alt-missing': $localize`:@@admin.dashboard.audit.code.coverAltMissing:Couverture sans texte alternatif`,
+  'image-alt-missing': $localize`:@@admin.dashboard.audit.code.imageAltMissing:Images sans texte alternatif`,
+  'translation-missing': $localize`:@@admin.dashboard.audit.code.translationMissing:Traduction manquante`,
 };

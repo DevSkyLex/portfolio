@@ -1,22 +1,21 @@
-import type { Clock } from '@internal/content-application/lib/ports/content/content.ports';
+import { ManualPublicationDisabledError } from '@internal/content-application/lib/errors/application-error';
 import type {
   PublicationRepository,
   PublicationStatus,
 } from '@internal/content-application/lib/ports/publication/publication.ports';
 
-/** Coordinates explicit publication batches without transport or persistence dependencies. */
+/** Maintains compatibility with existing publication state and closes legacy batches. */
 export class ManagePublication {
-  public constructor(
-    private readonly repository: PublicationRepository,
-    private readonly clock: Clock,
-  ) {}
+  public constructor(private readonly repository: PublicationRepository) {}
   public status(): Promise<PublicationStatus> {
     return this.repository.status();
   }
-  public start(expectedVersion: number): Promise<PublicationStatus> {
-    return this.repository.start(expectedVersion);
+  public async start(_expectedVersion: number): Promise<PublicationStatus> {
+    void _expectedVersion;
+    throw new ManualPublicationDisabledError();
   }
-  public publish(expectedVersion: number): Promise<PublicationStatus> {
-    return this.repository.publish(expectedVersion, this.clock.now());
+  public async publish(_expectedVersion: number): Promise<PublicationStatus> {
+    void _expectedVersion;
+    throw new ManualPublicationDisabledError();
   }
 }

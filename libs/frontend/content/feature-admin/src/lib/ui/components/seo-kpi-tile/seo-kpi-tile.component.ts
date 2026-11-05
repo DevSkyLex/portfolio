@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
 import { lucideArrowDownRight, lucideArrowUpRight, lucideMinus } from '@ng-icons/lucide';
-import { CARD_IMPORTS } from '@vfortin/ui';
 import type { SeoDelta } from '@internal/content-web-feature-admin/lib/models/seo-delta/seo-delta.interface';
 
 /**
@@ -39,11 +38,12 @@ const TONE_CLASSES: Readonly<Record<SeoDelta['tone'], string>> = {
  */
 @Component({
   selector: 'content-seo-kpi-tile',
-  imports: [CARD_IMPORTS, NgIcon],
+  imports: [NgIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block min-w-0' },
+  // One cell of the dashboard's full-width figure strip: the strip draws the hairlines between cells.
+  host: { class: 'block min-w-0 border-e border-b border-border' },
   template: `
-    <div uiCard variant="outline" class="h-full gap-1 px-4 py-3.5">
+    <div class="flex h-full flex-col gap-1 px-6 py-4 @max-[640px]:px-4">
       <p class="truncate text-[13px]/5 text-fg-muted">{{ label() }}</p>
       <p class="text-[22px]/7 font-semibold tracking-tight text-fg">{{ value() }}</p>
       @if (delta(); as change) {

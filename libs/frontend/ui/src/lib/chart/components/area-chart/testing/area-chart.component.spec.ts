@@ -61,7 +61,7 @@ describe('AreaChartComponent', (): void => {
       ),
     ).toEqual(['0', '5', '10', '15']);
     const table: HTMLTableElement | null = host.querySelector('table');
-    expect(table?.className).toBe('sr-only');
+    expect(table?.parentElement?.className).toBe('sr-only');
     expect(table?.querySelector('caption')?.textContent?.trim()).toBe('Clics par jour');
     expect(
       [...(table?.querySelectorAll('thead th') ?? [])].map((th: Element) => th.textContent),

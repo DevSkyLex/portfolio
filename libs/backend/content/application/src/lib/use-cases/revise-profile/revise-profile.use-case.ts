@@ -28,7 +28,7 @@ export interface ProfileChangeResult {
    * @readonly
    *
    * @description
-   * Published-content revision whose rebuild was requested.
+   * Published-content revision of the change.
    */
   readonly revision: number;
   // #endregion
@@ -39,7 +39,7 @@ export interface ProfileChangeResult {
  * @class ReviseProfile
  *
  * @description
- * Replaces the profile's texts, facts and links with optimistic locking and requests the site rebuild
+ * Replaces the profile with optimistic locking and advances the public content revision
  * in the same unit of work, since the profile is always public.
  */
 export class ReviseProfile {
@@ -51,7 +51,7 @@ export class ReviseProfile {
    * @description
    * Wires the transaction boundary and the request clock.
    *
-   * @param {SiteTextsUnitOfWork} unitOfWork - Atomic profile and outbox writes.
+   * @param {SiteTextsUnitOfWork} unitOfWork - Atomic profile and revision writes.
    * @param {Clock} clock - Rebuild request time.
    */
   public constructor(

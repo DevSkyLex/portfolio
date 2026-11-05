@@ -2,9 +2,15 @@
  * Export contentSnapshot
  *
  * @description
- * Content snapshot loader of the build: the committed snapshot, so that production prerendering calls
- * no API (D7). The `development` build configuration swaps this file for
- * `content-snapshot.development.ts` through `fileReplacements` (Angular environments guide), so the
- * live loader never enters a production bundle.
+ * Browser-only source used after client navigation without transferred content. Initial hydration
+ * consumes the request's validated TransferState; server configuration supplies its own fixed origin.
  */
-export { loadCommittedContentSnapshot as contentSnapshot } from '@internal/web/environments/committed-content-snapshot';
+export const contentSnapshot = async (locale: 'fr' | 'en'): Promise<unknown> => {
+  const response: Response = await fetch(`/api/content/snapshot?locale=${locale}`, {
+    headers: { accept: 'application/json' },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(5_000),
+  });
+  if (!response.ok) throw new Error(`Public content upstream returned ${response.status}.`);
+  return response.json();
+};

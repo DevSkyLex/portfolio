@@ -44,6 +44,9 @@ export interface DataTableColumnDrag {
   /** Width the user had stored for the column before the drag, restored by Escape; `undefined` for none. */
   readonly previous: number | undefined;
 
+  /** Whether this drag pinned a distributed layout (`distributeColumns`), undone by Escape. */
+  readonly pinned: boolean;
+
   /** Latest pointer `clientX`, applied on the next animation frame. */
   latestX: number;
 

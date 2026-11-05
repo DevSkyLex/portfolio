@@ -21,7 +21,6 @@ portfolio_contact_smtp_url: >-
      ~ ':' ~ (portfolio_brevo_smtp_key | urlencode | replace('/', '%2F'))
      ~ '@smtp-relay.brevo.com:465' }}
 portfolio_contact_client_key_secret: "{{ lookup('ansible.builtin.env', 'CONTACT_CLIENT_KEY_SECRET') }}"
-portfolio_site_build_token: "{{ lookup('ansible.builtin.env', 'SITE_BUILD_TOKEN') }}"
 portfolio_seo_google_credentials: "{{ lookup('ansible.builtin.env', 'SEO_GOOGLE_CREDENTIALS') }}"
 portfolio_seo_pagespeed_api_key: "{{ lookup('ansible.builtin.env', 'SEO_PAGESPEED_API_KEY') }}"
 portfolio_ghcr_user: "{{ lookup('ansible.builtin.env', 'GHCR_USERNAME') }}"

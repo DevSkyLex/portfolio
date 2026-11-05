@@ -24,7 +24,7 @@ import { toAdminLegalDocumentDto } from '@internal/content-adapters-in/lib/http/
  * @description
  * Administration of the legal notice and the privacy policy (« Légal ») under
  * `/api/content/admin/legal/:kind`. A revision takes the document version in `If-Match`, dates the
- * save and queues a site rebuild. `@AdminOnly` runs before the body pipe, so an anonymous call is
+ * save and advances the public content revision. `@AdminOnly` runs before the body pipe, so an anonymous call is
  * answered 401 whatever it sends.
  */
 @Controller('content/admin/legal/:kind')

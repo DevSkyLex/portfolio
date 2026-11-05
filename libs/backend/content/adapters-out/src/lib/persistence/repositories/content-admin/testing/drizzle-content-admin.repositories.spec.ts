@@ -36,16 +36,6 @@ const MIGRATIONS: string = fileURLToPath(
  */
 const now: Date = new Date('2026-11-02T10:00:00Z');
 
-/**
- * Function later
- *
- * @description
- * Returns a timestamp offset from the fixed test instant.
- * @param {number} ms - Milliseconds added to `now`.
- * @returns {Date} Offset timestamp.
- */
-const later: (ms: number) => Date = (ms: number): Date => new Date(now.getTime() + ms);
-
 describe('Content administration (Postgres via PGlite)', (): void => {
   let handle: ContentDatabaseHandle;
 
@@ -147,82 +137,12 @@ describe('Content administration (Postgres via PGlite)', (): void => {
     expect(reread?.snapshot()).toMatchObject({ status: 'published', version: 1 });
   });
 
-  it('claims only the most recent request, and sending covers the previous ones', async (): Promise<void> => {
+  it('increments live content revisions without queueing a rebuild', async (): Promise<void> => {
     const requests: DrizzleSiteBuildRequestRepository = new DrizzleSiteBuildRequestRepository(
       handle.db,
     );
-    const r2: number = await requests.request(now);
-    const r3: number = await requests.request(now);
-    expect([r2, r3]).toEqual([2, 3]);
-    await expect(requests.claimLatest(now, later(60_000))).resolves.toEqual({
-      revision: 3,
-      attempts: 0,
-    });
-    await expect(requests.claimLatest(now, later(60_000))).resolves.toBeNull();
-    await requests.markDispatched(3, now);
-    const rows: {
-      revision: number;
-      status: 'pending' | 'dispatched';
-      attempts: number;
-      requestedAt: Date;
-      nextAttemptAt: Date;
-      claimedUntil: Date | null;
-      dispatchedAt: Date | null;
-      lastError: string | null;
-    }[] = await handle.db.select().from(siteBuildRequests);
-    expect(
-      rows.every(
-        (row: {
-          revision: number;
-          status: 'pending' | 'dispatched';
-          attempts: number;
-          requestedAt: Date;
-          nextAttemptAt: Date;
-          claimedUntil: Date | null;
-          dispatchedAt: Date | null;
-          lastError: string | null;
-        }): boolean => row.status === 'dispatched',
-      ),
-    ).toBe(true);
-  });
-
-  it('claims nothing while another request is being sent, even a newer one', async (): Promise<void> => {
-    const requests: DrizzleSiteBuildRequestRepository = new DrizzleSiteBuildRequestRepository(
-      handle.db,
-    );
-    await requests.request(now);
-    await expect(requests.claimLatest(now, later(60_000))).resolves.toMatchObject({ revision: 2 });
-    await requests.request(now);
-    await expect(requests.claimLatest(now, later(60_000))).resolves.toBeNull();
-    await requests.markDispatched(2, later(1_000));
-    await expect(requests.claimLatest(later(1_000), later(60_000))).resolves.toMatchObject({
-      revision: 3,
-    });
-  });
-
-  it('takes over a request whose lease expired', async (): Promise<void> => {
-    const requests: DrizzleSiteBuildRequestRepository = new DrizzleSiteBuildRequestRepository(
-      handle.db,
-    );
-    await requests.request(now);
-    await requests.claimLatest(now, later(60_000));
-    await expect(requests.claimLatest(later(60_000), later(120_000))).resolves.toEqual({
-      revision: 2,
-      attempts: 0,
-    });
-  });
-
-  it('retries a failed send after its delay', async (): Promise<void> => {
-    const requests: DrizzleSiteBuildRequestRepository = new DrizzleSiteBuildRequestRepository(
-      handle.db,
-    );
-    await requests.request(now);
-    await requests.claimLatest(now, later(60_000));
-    await requests.markFailed(2, 'GitHub 502', later(120_000));
-    await expect(requests.claimLatest(later(60_000), later(90_000))).resolves.toBeNull();
-    await expect(requests.claimLatest(later(120_000), later(180_000))).resolves.toEqual({
-      revision: 2,
-      attempts: 1,
-    });
+    expect(await requests.request(now)).toBe(2);
+    expect(await requests.request(now)).toBe(3);
+    expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
   });
 });

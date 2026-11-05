@@ -11,10 +11,18 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, type ParamMap } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
-import { lucideCircleAlert, lucideRefreshCw } from '@ng-icons/lucide';
+import {
+  lucideCircleAlert,
+  lucideGauge,
+  lucideListChecks,
+  lucideRefreshCw,
+  lucideSearch,
+  lucideUsers,
+} from '@ng-icons/lucide';
 import {
   AdminSeoDashboardStore,
   SEO_RANGES,
@@ -33,6 +41,10 @@ import {
   SidebarTriggerComponent,
   SkeletonDirective,
   SpinnerComponent,
+  TabsContentDirective,
+  TabsDirective,
+  TabsListDirective,
+  TabsTriggerDirective,
   ToastService,
   ToggleGroupDirective,
   ToggleGroupItemDirective,
@@ -41,6 +53,7 @@ import {
 } from '@vfortin/ui';
 import { SEO_RANGE_LABELS } from '@internal/content-web-feature-admin/lib/constants/seo-dashboard-labels.constants';
 import type { SeoFormatter } from '@internal/content-web-feature-admin/lib/models/seo-formatter/seo-formatter.interface';
+import type { SeoTab } from '@internal/content-web-feature-admin/lib/models/seo-tab/seo-tab.type';
 import type { SeoSectionView } from '@internal/content-web-feature-admin/lib/models/seo-section-view/seo-section-view.interface';
 import { SeoAnalyticsPanelComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component';
 import { SeoAuditPanelComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-audit-panel/seo-audit-panel.component';
@@ -53,6 +66,11 @@ import {
   seoRangeParam,
 } from '@internal/content-web-feature-admin/lib/utils/seo-range-query/seo-range-query.utils';
 import { seoSectionView } from '@internal/content-web-feature-admin/lib/utils/seo-section/seo-section.utils';
+import {
+  SEO_TABS,
+  seoTabFromParam,
+  seoTabParam,
+} from '@internal/content-web-feature-admin/lib/utils/seo-tab-query/seo-tab-query.utils';
 
 /**
  * Constant CLOCK_MS
@@ -85,6 +103,7 @@ const CLOCK_MS: number = 30_000;
     ALERT_IMPORTS,
     ButtonDirective,
     NgIcon,
+    NgTemplateOutlet,
     PAGE_HEADER_IMPORTS,
     SeoAnalyticsPanelComponent,
     SeoAuditPanelComponent,
@@ -94,6 +113,10 @@ const CLOCK_MS: number = 30_000;
     SidebarTriggerComponent,
     SkeletonDirective,
     SpinnerComponent,
+    TabsContentDirective,
+    TabsDirective,
+    TabsListDirective,
+    TabsTriggerDirective,
     ToggleGroupDirective,
     ToggleGroupItemDirective,
     TooltipDirective,
@@ -139,6 +162,24 @@ export class AdminDashboardPageComponent {
     refresh: lucideRefreshCw,
     error: lucideCircleAlert,
   } as const;
+
+  /**
+   * Property tab
+   * @readonly
+   *
+   * @description
+   * Tab shown, read from `?onglet=` so that a report can be linked and survives a reload.
+   */
+  protected readonly tab: WritableSignal<SeoTab> = signal<SeoTab>('search-console');
+
+  /**
+   * Property skeletonCells
+   * @readonly
+   *
+   * @description
+   * Figure cells of the loading placeholder, as many as the widest strip row.
+   */
+  protected readonly skeletonCells: readonly number[] = [0, 1, 2, 3];
 
   /**
    * Property format
@@ -244,6 +285,50 @@ export class AdminDashboardPageComponent {
    *
    * @type {Signal<string | null>}
    */
+  /**
+   * Property tabs
+   * @readonly
+   *
+   * @description
+   * Triggers of the tab set: name, icon and whether the source's last collection failed, which a
+   * warning dot and a visually hidden phrase say on the trigger.
+   */
+  protected readonly tabs: Signal<
+    readonly {
+      readonly id: SeoTab;
+      readonly label: string;
+      readonly icon: string;
+      readonly failed: boolean;
+    }[]
+  > = computed((): { id: SeoTab; label: string; icon: string; failed: boolean }[] => {
+    const labels: Readonly<Record<SeoTab, string>> = {
+      'search-console': 'Search Console',
+      audience: $localize`:@@admin.dashboard.analytics.title:Audience`,
+      vitals: 'Core Web Vitals',
+      audit: $localize`:@@admin.dashboard.audit.title:Audit SEO`,
+    };
+    const icons: Readonly<Record<SeoTab, string>> = {
+      'search-console': lucideSearch,
+      audience: lucideUsers,
+      vitals: lucideGauge,
+      audit: lucideListChecks,
+    };
+    const failed: Readonly<Record<SeoTab, boolean>> = {
+      'search-console': this.searchConsole()?.status === 'error',
+      audience: this.analytics()?.status === 'error',
+      vitals: this.webVitals()?.status === 'error',
+      audit: false,
+    };
+    return SEO_TABS.map(
+      (id: SeoTab): { id: SeoTab; label: string; icon: string; failed: boolean } => ({
+        id,
+        label: labels[id],
+        icon: icons[id],
+        failed: failed[id],
+      }),
+    );
+  });
+
   protected readonly lastFetched: Signal<string | null> = computed<string | null>(
     (): string | null => {
       const times: number[] = [this.searchConsole(), this.analytics(), this.webVitals()]
@@ -253,33 +338,6 @@ export class AdminDashboardPageComponent {
       return times.length ? this.format.dateTime(new Date(Math.max(...times)).toISOString()) : null;
     },
   );
-
-  /**
-   * Property windowSpan
-   * @readonly
-   *
-   * @description
-   * Days of a section's window (`8 oct. – 4 nov. 2026`).
-   *
-   * @type {(window: { readonly current: { readonly start: string; readonly end: string } }) => string}
-   */
-  protected readonly windowSpan: (window: {
-    readonly current: { readonly start: string; readonly end: string };
-  }) => string = (window: {
-    readonly current: { readonly start: string; readonly end: string };
-  }): string => this.format.span(window.current.start, window.current.end);
-
-  /**
-   * Property fetchedLabel
-   * @readonly
-   *
-   * @description
-   * Time of a section's report.
-   *
-   * @type {(iso: string) => string}
-   */
-  protected readonly fetchedLabel: (iso: string) => string = (iso: string): string =>
-    this.format.dateTime(iso);
 
   /**
    * Property tooSoonUntil
@@ -360,6 +418,7 @@ export class AdminDashboardPageComponent {
    */
   public constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params: ParamMap): void => {
+      this.tab.set(seoTabFromParam(params.get('onglet')));
       const range: SeoRange = seoRangeFromParam(params.get('periode'));
       if (range !== this.store.range() || this.store.loadCallState().status === 'idle')
         void this.store.load(range);
@@ -403,6 +462,29 @@ export class AdminDashboardPageComponent {
       relativeTo: this.route,
       queryParams: { periode: seoRangeParam(range) },
       queryParamsHandling: 'merge',
+    });
+  }
+
+  /**
+   * Method selectTab
+   * @method selectTab
+   *
+   * @description
+   * Shows a tab and keeps it in `?onglet=`, replacing the history entry so that Back leaves the
+   * dashboard instead of walking the tabs; the window parameter is kept.
+   *
+   * @param {string | null} value - Value of the selected trigger.
+   * @returns {void}
+   */
+  protected selectTab(value: string | null): void {
+    const tab: SeoTab = seoTabFromParam(value);
+    if (tab === this.tab()) return;
+    this.tab.set(tab);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { onglet: seoTabParam(tab) },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
     });
   }
 

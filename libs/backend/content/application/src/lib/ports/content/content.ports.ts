@@ -196,7 +196,7 @@ export interface SiteBuildRequestRepository {
    * @method request
    *
    * @description
-   * Increments the published-content revision and records a rebuild request.
+   * Increments the published-content revision for live readers.
    *
    * @param {Date} now - Request creation time.
    * @returns {Promise<number>} New revision associated with the request.
@@ -252,7 +252,7 @@ export interface SiteBuildRequestRepository {
  * @interface ContentRepositories
  *
  * @description
- * Project and rebuild-outbox repositories exposed inside one content write transaction.
+ * Project and content-revision repositories exposed inside one content write transaction.
  */
 export interface ContentRepositories {
   // #region Properties
@@ -270,7 +270,7 @@ export interface ContentRepositories {
    * @readonly
    *
    * @description
-   * Outbox repository for rebuild requests written with project changes.
+   * Content revision incremented with public project changes.
    */
   readonly buildRequests: SiteBuildRequestRepository;
 
@@ -290,7 +290,7 @@ export interface ContentRepositories {
  * @interface ContentUnitOfWork
  *
  * @description
- * Coordinates atomic project and outbox writes for content commands.
+ * Coordinates atomic project and revision writes for content commands.
  */
 export interface ContentUnitOfWork {
   // #region Methods
@@ -444,7 +444,7 @@ export interface TimelineListRepository {
  * @interface TimelineRepositories
  *
  * @description
- * Timeline, list version and rebuild-outbox repositories exposed inside one write transaction.
+ * Timeline, list version and content revision repositories exposed inside one write transaction.
  */
 export interface TimelineRepositories {
   // #region Properties
@@ -471,7 +471,7 @@ export interface TimelineRepositories {
    * @readonly
    *
    * @description
-   * Rebuild outbox written with every timeline change, since entries are always public (D3).
+   * Content revision incremented with every public timeline change.
    */
   readonly buildRequests: SiteBuildRequestRepository;
   // #endregion
@@ -482,7 +482,7 @@ export interface TimelineRepositories {
  * @interface TimelineUnitOfWork
  *
  * @description
- * Runs a timeline change and its rebuild request atomically.
+ * Runs a timeline change and its revision increment atomically.
  */
 export interface TimelineUnitOfWork {
   // #region Methods
@@ -582,7 +582,7 @@ export interface LegalDocumentRepository {
  * @interface SiteTextsRepositories
  *
  * @description
- * Profile, legal document and rebuild-outbox repositories exposed inside one write transaction.
+ * Profile, legal document and content revision repositories exposed inside one write transaction.
  */
 export interface SiteTextsRepositories {
   // #region Properties
@@ -609,7 +609,7 @@ export interface SiteTextsRepositories {
    * @readonly
    *
    * @description
-   * Rebuild outbox written with every change, since these texts are always public (D3).
+   * Content revision incremented with every public text change.
    */
   readonly buildRequests: SiteBuildRequestRepository;
   // #endregion
@@ -620,7 +620,7 @@ export interface SiteTextsRepositories {
  * @interface SiteTextsUnitOfWork
  *
  * @description
- * Runs a profile or legal document change and its rebuild request atomically.
+ * Runs a profile or legal document change and its revision increment atomically.
  */
 export interface SiteTextsUnitOfWork {
   // #region Methods

@@ -17,13 +17,12 @@ it('uses the requested version and clock without inferring a newer state', async
     start: vi.fn().mockResolvedValue(state),
     publish: vi.fn().mockResolvedValue(state),
   };
-  const now: Date = new Date('2026-11-05T12:00:00Z');
-  const publication: ManagePublication = new ManagePublication(repository, {
-    now: (): Date => now,
-  });
+  const publication: ManagePublication = new ManagePublication(repository);
   expect(await publication.status()).toBe(state);
-  expect(await publication.start(1)).toBe(state);
-  expect(await publication.publish(2)).toBe(state);
-  expect(repository.start).toHaveBeenCalledWith(1);
-  expect(repository.publish).toHaveBeenCalledWith(2, now);
+  await expect(publication.start(1)).rejects.toThrow(
+    'Publication is automatic; manual batches are no longer supported.',
+  );
+  await expect(publication.publish(2)).rejects.toThrow('Publication is automatic');
+  expect(repository.start).not.toHaveBeenCalled();
+  expect(repository.publish).not.toHaveBeenCalled();
 });

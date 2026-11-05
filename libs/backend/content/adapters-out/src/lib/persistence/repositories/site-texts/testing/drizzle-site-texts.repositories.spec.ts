@@ -111,7 +111,7 @@ describe('Site texts administration (Postgres via PGlite)', (): void => {
     expect(loaded.heroIntro.en).toBe(SEED_PROFILE.heroIntro.en);
   });
 
-  it('saves a profile revision with the read version and an outbox row', async (): Promise<void> => {
+  it('saves a profile revision with the read version and increments public content', async (): Promise<void> => {
     const result: ProfileChangeResult = await new ReviseProfile(
       new DrizzleSiteTextsUnitOfWork(handle.db),
       clock,
@@ -120,9 +120,8 @@ describe('Site texts administration (Postgres via PGlite)', (): void => {
     const loaded: Profile = await new DrizzleProfileRepository(handle.db).load();
     expect(loaded.links.map((link) => link.label)).toEqual([null, 'Malt']);
     expect(loaded.facts).toEqual([]);
-    expect((await handle.db.select().from(siteBuildRequests)).map((row) => row.revision)).toContain(
-      result.revision,
-    );
+    expect((await handle.db.select().from(contentRevision))[0]?.revision).toBe(result.revision);
+    expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
   });
 
   it('refuses a stale profile version and rolls back', async (): Promise<void> => {
@@ -132,7 +131,7 @@ describe('Site texts administration (Postgres via PGlite)', (): void => {
     expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
   });
 
-  it('saves a legal document with the read version, its date and an outbox row', async (): Promise<void> => {
+  it('saves a legal document with the read version and increments public content', async (): Promise<void> => {
     const result: LegalDocumentChangeResult = await new ReviseLegalDocument(
       new DrizzleSiteTextsUnitOfWork(handle.db),
       clock,
@@ -147,7 +146,8 @@ describe('Site texts administration (Postgres via PGlite)', (): void => {
     await expect(
       new DrizzleLegalDocumentRepository(handle.db).save(stored as LegalDocument, 1),
     ).rejects.toThrow(VersionMismatchError);
-    expect(await handle.db.select().from(siteBuildRequests)).toHaveLength(1);
+    expect((await handle.db.select().from(contentRevision))[0]?.revision).toBe(result.revision);
+    expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
   });
 
   it('reads both documents for the snapshot and refuses a missing one', async (): Promise<void> => {

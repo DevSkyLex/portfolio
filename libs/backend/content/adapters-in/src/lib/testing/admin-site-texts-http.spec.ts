@@ -8,6 +8,7 @@ import {
   GetAdminLegalDocument,
   GetAdminProfile,
   ManagePublication,
+  ManualPublicationDisabledError,
   ReviseLegalDocument,
   ReviseProfile,
   VersionMismatchError,
@@ -201,16 +202,10 @@ describe('AdminProfileController and AdminLegalController', (): void => {
     expect(useCases.reviseLegal.execute).not.toHaveBeenCalled();
   });
 
-  it('reads publication status and quotes versions on both transitions', async (): Promise<void> => {
+  it('reads publication status and rejects the retired manual start', async (): Promise<void> => {
     publication.status.mockResolvedValue(state);
-    publication.start.mockResolvedValue(state);
-    publication.publish.mockResolvedValue({
-      ...state,
-      version: 5,
-      batching: false,
-      pendingChanges: false,
-      publishedRevision: 2,
-    });
+    publication.start.mockRejectedValue(new ManualPublicationDisabledError());
+    publication.publish.mockRejectedValue(new ManualPublicationDisabledError());
     const loaded: request.Response = await admin(server().get('/content/admin/publication'));
     expect(loaded.status).toBe(200);
     expect(loaded.headers['etag']).toBe('"4"');
@@ -219,13 +214,14 @@ describe('AdminProfileController and AdminLegalController', (): void => {
     const started: request.Response = await admin(
       server().post('/content/admin/publication/start').set('if-match', '"3"'),
     );
-    expect(started.status).toBe(200);
+    expect(started.status).toBe(410);
+    expect(started.body.code).toBe('content.manual-publication-disabled');
     expect(publication.start).toHaveBeenCalledWith(3);
     const published: request.Response = await admin(
       server().post('/content/admin/publication/publish').set('if-match', '"4"'),
     );
-    expect(published.status).toBe(200);
-    expect(published.headers['etag']).toBe('"5"');
+    expect(published.status).toBe(410);
+    expect(published.body.code).toBe('content.manual-publication-disabled');
     expect(publication.publish).toHaveBeenCalledWith(4);
   });
 

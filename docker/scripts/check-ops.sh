@@ -37,7 +37,8 @@ check_shellcheck() {
 }
 
 check_hadolint() {
-  docker run --rm -i "$HADOLINT_IMAGE" hadolint --failure-threshold style - < docker/service.Dockerfile
+  docker run --rm -i "$HADOLINT_IMAGE" hadolint --failure-threshold style - < docker/service.Dockerfile || return 1
+  docker run --rm -i "$HADOLINT_IMAGE" hadolint --failure-threshold style - < docker/web.Dockerfile
 }
 
 check_compose() {

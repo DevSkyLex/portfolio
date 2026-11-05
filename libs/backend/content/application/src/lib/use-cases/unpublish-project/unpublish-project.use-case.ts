@@ -39,11 +39,11 @@ export class UnpublishProject {
    * @method execute
    *
    * @description
-   * Sets the project to draft and requests a rebuild when it was previously public.
+   * Sets the project to draft and advances the revision when it was previously public.
    *
    * @param {string} id - Project identifier.
    * @param {number} expectedVersion - Version read before the command.
-   * @returns {Promise<ProjectChangeResult>} Updated project and optional rebuild revision.
+   * @returns {Promise<ProjectChangeResult>} Updated project and optional public content revision.
    */
   public execute(id: string, expectedVersion: number): Promise<ProjectChangeResult> {
     return changeProject(

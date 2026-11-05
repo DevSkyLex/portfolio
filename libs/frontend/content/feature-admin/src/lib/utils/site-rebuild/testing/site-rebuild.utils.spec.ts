@@ -8,13 +8,13 @@ import {
 describe('site rebuild utils', (): void => {
   it('makes the notice the description, or appends it to an existing one', (): void => {
     expect(withSiteRebuildNotice()).toBe(
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     );
     expect(withSiteRebuildNotice('')).toBe(
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     );
     expect(withSiteRebuildNotice('1 échec : La requête a échoué.')).toBe(
-      '1 échec : La requête a échoué. Les modifications seront visibles après publication et reconstruction du site.',
+      '1 échec : La requête a échoué. Le site sera mis à jour automatiquement après les modifications.',
     );
   });
 
@@ -25,12 +25,6 @@ describe('site rebuild utils', (): void => {
       toasts
         .toasts()
         .map((toast): [string, string, string] => [toast.id, toast.type, toast.message]),
-    ).toEqual([
-      [
-        id,
-        'info',
-        'Les modifications seront visibles après publication et reconstruction du site.',
-      ],
-    ]);
+    ).toEqual([[id, 'info', 'Le site sera mis à jour automatiquement après les modifications.']]);
   });
 });

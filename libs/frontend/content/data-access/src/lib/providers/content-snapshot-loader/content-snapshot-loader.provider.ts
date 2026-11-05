@@ -16,25 +16,31 @@ import { CONTENT_SNAPSHOT_READY } from '@internal/content-web-data-access/lib/to
 import { contentSnapshotStateKey } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshot-state-key';
 import { CONTENT_SNAPSHOT_VALIDATOR } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshot-validator.token';
 import { localeOf } from '@internal/content-web-data-access/lib/utils/site-locale/site-locale.utils';
+import { CONTENT_SNAPSHOT_LOADER } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshot-loader.token';
 
 /**
  * Function provideContentSnapshotLoader
  *
  * @description
- * Public routes await a locale snapshot. Prerendering validates and transfers that public data so
- * hydration has no duplicate chunk dependency; CSR administration never requests it (D10, D18).
+ * Public routes await the current request's locale snapshot. SSR validates and transfers public data
+ * so hydration needs no duplicate request; CSR administration never loads it (D10, D18).
  *
  * @param {ContentSnapshotLoader} load - Loader that retrieves the snapshot selected by locale.
  *
  * @returns {EnvironmentProviders} Providers for raw snapshots and their shared readiness operation.
  */
 export function provideContentSnapshotLoader(load: ContentSnapshotLoader): EnvironmentProviders {
-  const snapshots: Partial<Record<SiteLocale, unknown>> = {};
   return makeEnvironmentProviders([
-    { provide: CONTENT_SNAPSHOTS, useValue: snapshots },
+    { provide: CONTENT_SNAPSHOT_LOADER, useValue: load },
+    { provide: CONTENT_SNAPSHOTS, useFactory: (): Partial<Record<SiteLocale, unknown>> => ({}) },
     {
       provide: CONTENT_SNAPSHOT_READY,
       useFactory: (): (() => Promise<void>) => {
+        const loader: ContentSnapshotLoader =
+          inject<ContentSnapshotLoader>(CONTENT_SNAPSHOT_LOADER);
+        // Providers can be reused by the SSR engine; mutable snapshots belong to this application.
+        const snapshots: Partial<Record<SiteLocale, unknown>> =
+          inject<Partial<Record<SiteLocale, unknown>>>(CONTENT_SNAPSHOTS);
         const locale: SiteLocale = localeOf(inject<string>(LOCALE_ID));
         const platform: object = inject<object>(PLATFORM_ID);
         const transfer: TransferState = inject<TransferState>(TransferState);
@@ -56,11 +62,11 @@ export function provideContentSnapshotLoader(load: ContentSnapshotLoader): Envir
             transfer.remove(key);
           }
           if (Object.hasOwn(snapshots, locale)) {
-            // Each prerender application needs its own transfer entry, even with a cached raw chunk.
+            // Reused readiness inside one application must preserve its transfer entry.
             remember(snapshots[locale]);
             return Promise.resolve();
           }
-          pending ??= load(locale)
+          pending ??= loader(locale)
             .then(remember)
             .finally((): void => {
               pending = null;

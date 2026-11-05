@@ -35,7 +35,12 @@ Each test proves the boundary its layer owns. Tests that only call methods, igno
 
 ## Coverage
 
-Every source file under `src/` counts, tested or not (`coverage.include: ['src/**/*.ts']`; excluded: `testing/`, specs, `test-setup.ts`, and for the web app its two bootstrap files). Lines and branches are enforced; statements and functions are reported.
+Every source file under `src/` counts, tested or not (`coverage.include: ['src/**/*.ts']`; excluded:
+`testing/`, specs and `test-setup.ts`). The web browser suite excludes its browser/server Angular
+bootstraps (`main.ts`, `main.server.ts`), the executable Node bootstrap (`server.ts`) and the
+acceptance-only audience-measurement configuration. The Node entry is exercised as a built server by
+the SSR browser and container tests; reusable request, content and SEO helpers remain in unit coverage.
+Lines and branches are enforced; statements and functions are reported.
 
 | Family                                                              | Lines | Branches | Where                                                       |
 | ------------------------------------------------------------------- | ----- | -------- | ----------------------------------------------------------- |
@@ -79,9 +84,21 @@ npx nx run web-e2e:e2e-stack                      # isolated real-service accept
 
 ## E2E scope
 
-`web-e2e` serves `dist/apps/web-e2e-site/browser` (`web:e2e-site`: the production build with the placeholder GA4 measurement id of `audience-measurement.e2e.ts`, D48) with `apps/web-e2e/support/preview/serve-site.mjs` (Nginx routing: prerendered pages, `/admin/*` → `index.csr.html`, administration locale redirects/cache/indexing headers, real 404, `/api/*` → 404). Its dedicated preview port is `E2E_PORT` (default 4200, validated integer 1–65535), shared by the server command, readiness and browser URLs. Choose an available port; never stop or reuse an unknown user's server. `BASE_URL` deliberately selects an existing endpoint and disables preview startup.
+`web-e2e` runs the built Angular SSR handler from `dist/apps/web-e2e-site`
+(`web:e2e-site`: the production configuration with the placeholder GA4 measurement id of
+`audience-measurement.e2e.ts`, D48). `apps/web-e2e/support/preview/serve-ssr.mjs` supplies an isolated
+public-content fixture API so tests exercise the production rendering engine without services.
+Its dedicated preview port is `E2E_PORT` (default 4200, validated integer 1–65535), shared by the server
+command, readiness and browser URLs. Choose an available port; never stop or reuse an unknown user's
+server. `BASE_URL` deliberately selects an existing endpoint and disables preview startup.
 
-Without services, it covers home/project pages, English/legal pages, FR/EN 404s, contact client validation, unauthenticated admin/keyboard/axe, theme persistence/system, language switching, mobile menu/focus, skip link and reduced motion. Startup probes prove that public hydration consumes TransferState without a duplicate snapshot fetch, administration does not load public snapshots, and failed application scripts leave prerendered text readable, including descendant opacity.
+Without services, it covers home/project pages, English/legal pages, FR/EN 404s, contact client
+validation, unauthenticated admin/keyboard/axe, theme persistence/system, language switching, mobile
+menu/focus, skip link and reduced motion. Runtime-content tests change the fixture between HTTP
+requests and verify fresh rendered HTML, SEO metadata and sitemap without rebuilding. Startup probes
+prove that public hydration consumes TransferState without a duplicate snapshot fetch, administration
+does not load public snapshots, and failed application scripts leave server-rendered text readable,
+including descendant opacity.
 
 ### Semantic checking of project tests
 

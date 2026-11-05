@@ -36,6 +36,7 @@ const URL: string = '/api/content/admin/seo/dashboard';
  */
 const dto = (range: SeoDashboardDto['range'], running: boolean = false): SeoDashboardDto => ({
   range,
+  demo: false,
   refresh: {
     running,
     startedAt: running ? '2026-11-04T10:00:00.000Z' : null,

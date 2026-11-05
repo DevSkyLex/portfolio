@@ -252,7 +252,7 @@ test.describe('isolated stack acceptance @stack', (): void => {
     const publishedNotice: Locator = page.getByRole('status').filter({ hasText: 'Publié.' });
     await expect(publishedNotice).toBeVisible();
     await expect(publishedNotice).toContainText(
-      'Les modifications seront visibles après publication et reconstruction du site.',
+      'Le site sera mis à jour automatiquement après les modifications.',
     );
 
     const content: string = `Acceptance message ${Date.now()}: please verify delivery to the local inbox.`;

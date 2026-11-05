@@ -13,7 +13,7 @@ import {
  * @class AppModule
  *
  * @description
- * Composes content persistence, admin token verification, observability and the publication worker for the service.
+ * Composes content persistence, admin token verification, observability and scheduled maintenance.
  */
 @Module({})
 export class AppModule {
@@ -24,7 +24,7 @@ export class AppModule {
    * @static
    *
    * @description
-   * Creates the Nest dynamic module using validated settings and configures rebuild dispatch only when credentials exist.
+   * Creates the Nest dynamic module using validated settings.
    *
    * @param {ContentServiceConfig} config - Validated environment settings for the content service.
    * @returns {DynamicModule} Nest module metadata for the configured service.
@@ -46,15 +46,6 @@ export class AppModule {
             resource: new URL('/api/content/mcp', config.AUTH_ISSUER).href,
           },
           databaseUrl: config.CONTENT_DATABASE_URL,
-          siteBuild:
-            config.SITE_BUILD_REPOSITORY && config.SITE_BUILD_TOKEN
-              ? {
-                  repository: config.SITE_BUILD_REPOSITORY,
-                  workflow: config.SITE_BUILD_WORKFLOW,
-                  ref: config.SITE_BUILD_REF,
-                  token: config.SITE_BUILD_TOKEN,
-                }
-              : null,
           workers: true,
           mediaDirectory: mediaDirectory(config),
           seo: seoDashboardOptions(config),

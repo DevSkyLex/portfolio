@@ -61,6 +61,7 @@ test('image references stay within the exact validated project namespace', () =>
     'portfolio-e2e-0123456789abcdef-identity-service:latest',
     'portfolio-e2e-0123456789abcdef-content-service:latest',
     'portfolio-e2e-0123456789abcdef-contact-service:latest',
+    'portfolio-e2e-0123456789abcdef-web:latest',
   ]);
 });
 
@@ -166,7 +167,7 @@ for (const failAt of ['up', 'bootstrap', 'browser']) {
     assert.ok(teardown.args.includes('--volumes'));
     assert.ok(teardown.args.includes('--remove-orphans'));
     const removed = fixture.commands.filter(({ args }) => args[0] === 'image' && args[1] === 'rm');
-    assert.equal(removed.length, failAt === 'up' ? 1 : 3);
+    assert.equal(removed.length, failAt === 'up' ? 1 : 4);
     assert.ok(removed.every(({ args }) => acceptanceImages(teardown.args[2]).includes(args[2])));
   });
 }
@@ -178,14 +179,14 @@ test('image cleanup failure preserves the original browser failure and attempts 
     (error) => {
       assert.ok(error instanceof AggregateError);
       assert.match(error.message, /Acceptance command failed.*cleanup also failed/);
-      assert.equal(error.errors.length, 4);
+      assert.equal(error.errors.length, 5);
       assert.match(error.errors[0].message, /Acceptance command failed/);
       return true;
     },
   );
   assert.equal(
     fixture.commands.filter(({ args }) => args[0] === 'image' && args[1] === 'rm').length,
-    3,
+    4,
   );
 });
 

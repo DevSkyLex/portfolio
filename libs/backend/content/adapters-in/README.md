@@ -12,7 +12,7 @@ transport handle each request; no token or session is shared across clients. Sup
 must match the configured resource origin. CORS runs before authentication, and credentials are never
 read from cookies.
 
-`ContentMcpTools` advertises 15 tools for projects, timeline entries, profile and legal documents. Input
+`ContentMcpTools` advertises 17 tools for projects, timeline entries, profile, legal documents and legacy publication status. Input
 JSON Schemas come from the existing administrator Zod contracts in input mode, including normalized
 fields. Every conditional mutation requires the caller's `expectedVersion`. Known content failures
 become safe tool errors; protocol/input failures remain JSON-RPC errors and unexpected failures are

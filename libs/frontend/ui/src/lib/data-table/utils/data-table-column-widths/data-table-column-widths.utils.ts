@@ -59,6 +59,8 @@ export function clampWidth(width: number, min: number, max: number): number {
  * @param {ReadonlyMap<string, number>} stored - Widths by column id, as stored.
  * @param {readonly C[]} columns - Column definitions.
  * @param {(column: C) => { readonly min: number; readonly max: number }} bounds - Bounds of a column.
+ * @param {boolean} pinned - Whether a pinned spread layout (`distributeColumns`) keeps the widths of the
+ * columns that do not resize too.
  * @returns {ReadonlyMap<string, number>} Kept widths by column id.
  */
 export function keptColumnWidths<
@@ -67,11 +69,17 @@ export function keptColumnWidths<
   stored: ReadonlyMap<string, number>,
   columns: readonly C[],
   bounds: (column: C) => { readonly min: number; readonly max: number },
+  pinned: boolean = false,
 ): ReadonlyMap<string, number> {
   const kept: Map<string, number> = new Map<string, number>();
   for (const column of columns) {
     const width: number | undefined = stored.get(column.id);
-    if (width === undefined || column.width === undefined || column.resizable === false) continue;
+    if (
+      width === undefined ||
+      column.width === undefined ||
+      (column.resizable === false && !pinned)
+    )
+      continue;
     const { min, max }: { readonly min: number; readonly max: number } = bounds(column);
     kept.set(column.id, clampWidth(width, min, max));
   }
@@ -162,4 +170,77 @@ export function contentWidth(cell: HTMLElement, rtl: boolean, skip: string): num
     }
   }
   return Math.ceil(reach + end);
+}
+
+/**
+ * Function distributedColumnWidths
+ *
+ * @description
+ * Spreads a frame's width over columns in proportion to their widths (`distributeColumns`): each
+ * width is a share and a minimum, a column stops at its maximum and its share of what is left goes
+ * to the others. Whole pixels, the rounding remainder to the first column still below its maximum;
+ * nothing when the frame does not exceed the widths (the table then keeps them and scrolls).
+ *
+ * @param {readonly { id: string; width: number; max: number }[]} columns - Columns in display order.
+ * @param {number} available - Room in pixels.
+ * @returns {ReadonlyMap<string, number>} Width of each column, empty when nothing is spread.
+ */
+export function distributedColumnWidths(
+  columns: readonly { readonly id: string; readonly width: number; readonly max: number }[],
+  available: number,
+): ReadonlyMap<string, number> {
+  const total: number = columns.reduce(
+    (sum: number, column: { readonly width: number }): number => sum + column.width,
+    0,
+  );
+  if (columns.length === 0 || total <= 0 || available <= total) return new Map<string, number>();
+  const widths: Map<string, number> = new Map<string, number>(
+    columns.map((column: { readonly id: string; readonly width: number }): [string, number] => [
+      column.id,
+      column.width,
+    ]),
+  );
+  let extra: number = available - total;
+  let open: (typeof columns)[number][] = columns.filter(
+    (column: { readonly width: number; readonly max: number }): boolean =>
+      column.width < column.max,
+  );
+  // Each pass gives every open column its share; a column that reaches its maximum closes.
+  while (extra > 0.5 && open.length > 0) {
+    const weight: number = open.reduce(
+      (sum: number, column: { readonly width: number }): number => sum + column.width,
+      0,
+    );
+    let given: number = 0;
+    const still: (typeof columns)[number][] = [];
+    for (const column of open) {
+      const current: number = widths.get(column.id) ?? column.width;
+      const wanted: number = current + (extra * column.width) / weight;
+      const next: number = Math.min(column.max, wanted);
+      given += next - current;
+      widths.set(column.id, next);
+      if (next < column.max) still.push(column);
+    }
+    extra -= given;
+    if (still.length === open.length) break;
+    open = still;
+  }
+  const rounded: Map<string, number> = new Map<string, number>(
+    [...widths].map(([id, width]: [string, number]): [string, number] => [id, Math.floor(width)]),
+  );
+  const used: number = [...rounded.values()].reduce(
+    (sum: number, width: number): number => sum + width,
+    0,
+  );
+  const target: number = Math.min(
+    available,
+    columns.reduce((sum: number, column: { readonly max: number }): number => sum + column.max, 0),
+  );
+  const first: (typeof columns)[number] | undefined = columns.find(
+    (column: { readonly id: string; readonly max: number }): boolean =>
+      (rounded.get(column.id) ?? 0) < column.max,
+  );
+  if (first && target > used)
+    rounded.set(first.id, Math.min(first.max, (rounded.get(first.id) ?? 0) + target - used));
+  return rounded;
 }

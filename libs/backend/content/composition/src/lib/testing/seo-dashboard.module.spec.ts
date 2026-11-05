@@ -6,6 +6,9 @@ import { AdminAuthModule } from '@vfortin/backend-auth';
 import { ObservabilityModule } from '@vfortin/backend-observability';
 import {
   type ContentDatabaseHandle,
+  DemoAnalyticsReader,
+  DemoSearchConsoleReader,
+  DemoWebVitalsReader,
   GoogleAnalyticsReader,
   GoogleSearchConsoleReader,
   PageSpeedWebVitalsReader,
@@ -137,10 +140,8 @@ describe('ContentModule', (): void => {
           AdminAuthModule.forRoot({ issuer: ISSUER, jwks: { keys: [jwk] } }),
           ContentModule.register({
             databaseUrl: 'pglite:memory',
-            siteBuild: null,
             workers: false,
             mediaDirectory,
-            siteBuildDispatcher: { dispatch: async (): Promise<void> => undefined },
             seo: { ...SEO, sources },
             prepare: async (database: ContentDatabaseHandle): Promise<void> => {
               await migrateContentDatabase(database, MIGRATIONS);
@@ -252,5 +253,20 @@ describe('seoSources', (): void => {
     expect('reader' in sources.webVitals && sources.webVitals.reader).toBeInstanceOf(
       PageSpeedWebVitalsReader,
     );
+  });
+
+  it('stands demonstration readers in for the unconfigured sources only when asked', (): void => {
+    const sources: SeoSources = seoSources({ ...SEO, demoData: true, pageSpeedApiKey: 'key' });
+    expect(sources.searchConsole).toEqual({
+      reader: expect.any(DemoSearchConsoleReader),
+      demo: true,
+    });
+    expect(sources.analytics).toEqual({ reader: expect.any(DemoAnalyticsReader), demo: true });
+    // A configured source keeps its Google adapter.
+    expect(sources.webVitals).toEqual({ reader: expect.any(PageSpeedWebVitalsReader) });
+    expect(seoSources({ ...SEO, demoData: true }).webVitals).toEqual({
+      reader: expect.any(DemoWebVitalsReader),
+      demo: true,
+    });
   });
 });

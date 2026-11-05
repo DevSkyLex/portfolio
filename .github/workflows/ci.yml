@@ -34,7 +34,7 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
       - run: npx nx format:check
       - run: npx nx run-many -t test typecheck lint -p architecture
-      - run: npx nx run-many -t test-tooling test-snapshot -p web-e2e web
+      - run: npx nx run web-e2e:test-tooling
       - run: npx nx affected -t lint typecheck build --parallel=3
 
   # Docker, Nginx, shell scripts and Ansible checks (docs/operations/deployment.md).
@@ -89,7 +89,7 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  # Built, prerendered site served with the Nginx routing (apps/web-e2e/support/preview/serve-site.mjs), no services.
+  # Built SSR application with a disposable content fixture API for browser acceptance.
   e2e:
     needs: quality
     # Keep the browser dependencies on a stable runner while ubuntu-latest migrates to 26.04.

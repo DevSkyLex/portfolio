@@ -1,0 +1,6 @@
+*
+!browser
+!browser/**
+!server
+!server/**
+!3rdpartylicenses.txt

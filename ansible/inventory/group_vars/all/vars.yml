@@ -1,16 +1,14 @@
 # Non-secret variables. Application secrets are supplied through the controller environment.
-# Extra variables given per run: `tag` (deploy.yml, commit SHA of the images), `release` (publish-site.yml).
+# Extra variable given per run: `tag` (deploy.yml, commit SHA of the API and SSR images).
 domain: "{{ lookup('ansible.builtin.env', 'APP_HOST') | default('valentin-fortin.pro', true) }}"
 
 # The existing SSH account owns application files and runs the portfolio timers and Docker commands.
 deploy_user: "{{ lookup('ansible.builtin.env', 'VPS_USER') | default('deploy', true) }}"
 
 app_root: "{{ lookup('ansible.builtin.env', 'VPS_APP_DIR') | default('/srv/apps/portfolio/production', true) }}"
-site_root: '{{ app_root }}/site'
 backup_root: '{{ app_root }}/backups'
 
 registry: ghcr.io/devskylex
-site_build_repository: DevSkyLex/portfolio
 identity_signing_kid: "{{ lookup('ansible.builtin.env', 'IDENTITY_SIGNING_KID') | default('k1', true) }}"
 # UID of the `node` user in the images: owner of the signing keys mounted into identity-service.
 service_uid: 1000

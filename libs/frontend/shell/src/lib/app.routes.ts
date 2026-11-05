@@ -21,7 +21,7 @@ import {
  * and not-found pages. The home, content and legal pages read the snapshot, so they wait for it
  * (`publicContentGuard`); the legal pages read their documents through `LEGAL_DOCUMENTS`, bound
  * here to the snapshot. The admin area loads its own stylesheet alongside its routes and resolves once
- * both are ready (D31). The wildcard error route relies on Nginx serving the prerendered 404 document.
+ * both are ready (D31). The wildcard error route renders a real HTTP 404 during SSR.
  *
  * @type {Routes}
  */
@@ -57,7 +57,7 @@ export const APP_ROUTES: Routes = [
         ],
       },
       { path: 'error/:code', component: ErrorPageComponent, data: { footer: 'minimal' } },
-      // Unknown address: 404 page (Nginx already answers 404 with the prerendered /error/404).
+      // The error page also sets the SSR response status, preserving the requested unknown URL.
       { path: '**', component: ErrorPageComponent, data: { footer: 'minimal' } },
     ],
   },

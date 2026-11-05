@@ -132,8 +132,6 @@ services:
       CONTENT_PORT: '3101'
       SERVICE_PORT: '3101'
       CONTENT_DATABASE_URL_FILE: /run/secrets/content_database_url
-      SITE_BUILD_REPOSITORY: ${SITE_BUILD_REPOSITORY:-}
-      SITE_BUILD_TOKEN_FILE: /run/secrets/site_build_token
       # Uploaded images (D40): written here by the service, served by Nginx from the same directory.
       CONTENT_MEDIA_DIR: /srv/media
       # SEO dashboard (D47): each Google source is optional; an empty setting or secret file leaves
@@ -146,7 +144,7 @@ services:
       SEO_WEB_VITALS_URLS: ${SEO_WEB_VITALS_URLS:-}
       NODE_ENV: production
       LOG_LEVEL: ${LOG_LEVEL:-info}
-    secrets: [content_database_url, site_build_token, seo_google_credentials, seo_pagespeed_api_key]
+    secrets: [content_database_url, seo_google_credentials, seo_pagespeed_api_key]
     # The only writable path of its read-only file system: the host media directory (owner UID 1000).
     volumes:
       - ${MEDIA_ROOT:-/srv/apps/portfolio/production/media}:/srv/media
@@ -169,6 +167,26 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
     secrets: [contact_database_url, contact_smtp_url, contact_client_key_secret]
 
+  web:
+    <<: *hardening
+    image: ${REGISTRY:?REGISTRY is not set (.env)}/portfolio-web:${TAG:?TAG is not set (.env, scripts/deploy.sh)}
+    restart: unless-stopped
+    init: true
+    tmpfs: ['/tmp:size=32m']
+    stop_grace_period: 20s
+    environment:
+      PORT: '4000'
+      HOST: 0.0.0.0
+      CONTENT_API_URL: http://content-service:3101
+      SITE_ORIGIN: https://${APP_HOST:?APP_HOST is not set (.env)}
+      NODE_ENV: production
+    networks: [proxy]
+    depends_on:
+      content-service: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: '${SSR_CPU_LIMIT:-1.0}', memory: '${SSR_MEMORY_LIMIT:-512M}', pids: 128 }
+
   nginx:
     <<: *hardening
     container_name: ${CONTAINER_NAME:-portfolio}
@@ -188,7 +206,6 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/snippets:/etc/nginx/snippets:ro
       - ./nginx/templates:/etc/nginx/templates:ro
-      - ${SITE_ROOT:-/srv/apps/portfolio/production/site}:/srv/site:ro
       - ${MEDIA_ROOT:-/srv/apps/portfolio/production/media}:/srv/media:ro
     # Upstreams are resolved at runtime (`resolve`): no start order needed, recreated services are followed.
     healthcheck:
@@ -296,7 +313,6 @@ secrets:
   content_migrator_url: { file: ./secrets/content_migrator_url }
   contact_migrator_url: { file: ./secrets/contact_migrator_url }
   identity_migrator_url: { file: ./secrets/identity_migrator_url }
-  site_build_token: { file: ./secrets/site_build_token }
   seo_google_credentials: { file: ./secrets/seo_google_credentials }
   seo_pagespeed_api_key: { file: ./secrets/seo_pagespeed_api_key }
   contact_smtp_url: { file: ./secrets/contact_smtp_url }

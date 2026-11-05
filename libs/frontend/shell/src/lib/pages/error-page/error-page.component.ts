@@ -10,6 +10,7 @@ import {
   effect,
   inject,
   input,
+  RESPONSE_INIT,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { Title } from '@angular/platform-browser';
@@ -215,7 +216,18 @@ export class ErrorPageComponent {
    * Keeps the document title aligned with the localized error code, including reused error routes.
    */
   public constructor() {
-    effect(() => this.title.setTitle(`${this.copy().title} — Valentin Fortin`));
+    const response: ResponseInit | null = inject<ResponseInit | null>(RESPONSE_INIT, {
+      optional: true,
+    });
+    effect(() => {
+      this.title.setTitle(`${this.copy().title} — Valentin Fortin`);
+      if (response) {
+        response.status = Number(this.known());
+        const headers: Headers = new Headers(response.headers);
+        headers.set('X-Robots-Tag', 'noindex');
+        response.headers = headers;
+      }
+    });
   }
   // #endregion
 
