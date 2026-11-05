@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { McpAuthModule, type McpAuthOptions } from '@vfortin/backend-auth';
 import { PROBLEM_MAPPER, ProblemDetailsFilter } from '@vfortin/backend-http';
 import { READINESS_CHECKS, type ReadinessCheck } from '@vfortin/backend-observability';
 import { databaseReadinessCheck } from '@vfortin/backend-persistence';
@@ -18,6 +19,8 @@ import {
   AdminSeoDashboardController,
   AdminTimelineController,
   ContentController,
+  ContentMcpController,
+  ContentMcpTools,
   MediaPurgeJobs,
   SeoDashboardJobs,
   SiteBuildJobs,
@@ -259,6 +262,8 @@ export function seoSources(seo: ContentSeoOptions): SeoSources {
  * Runtime configuration for connecting the content module to persistence and rebuild dispatch.
  */
 export interface ContentModuleOptions {
+  /** Enables the stateless MCP resource with the identity service's issuer and keys (D49). */
+  readonly mcp?: McpAuthOptions;
   // #region Properties
   /**
    * Property databaseUrl
@@ -386,8 +391,12 @@ export class ContentModule implements OnApplicationShutdown {
     const seo: ContentSeoOptions = options.seo ?? UNCONFIGURED_SEO;
     return {
       module: ContentModule,
-      imports: options.workers ? [ScheduleModule.forRoot()] : [],
+      imports: [
+        ...(options.workers ? [ScheduleModule.forRoot()] : []),
+        ...(options.mcp ? [McpAuthModule.forRoot(options.mcp)] : []),
+      ],
       controllers: [
+        ...(options.mcp ? [ContentMcpController] : []),
         ContentController,
         AdminContentController,
         AdminTimelineController,
@@ -397,6 +406,7 @@ export class ContentModule implements OnApplicationShutdown {
         AdminSeoDashboardController,
       ],
       providers: [
+        ...(options.mcp ? [ContentMcpTools] : []),
         {
           provide: CONTENT_DATABASE,
           useFactory: async (): Promise<ContentDatabaseHandle> => {

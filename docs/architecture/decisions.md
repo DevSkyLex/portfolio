@@ -642,7 +642,7 @@ contact section and the footer, and the legal notice and the privacy policy were
 
 The owner wants AI clients (Claude, ChatGPT, Cursor…) to act on the content administration through a
 remote MCP server, after an explicit consent, rather than through personal tokens. The MCP endpoint
-will be `https://<host>/api/content/mcp` in content-service; identity-service becomes its OAuth 2.1
+is `https://<host>/api/content/mcp` in content-service (D49); identity-service is its OAuth 2.1
 authorization server, following the MCP authorization specification of 2026-07-28 (the draft is
 identical on these points). WebMCP comes later.
 
@@ -879,3 +879,38 @@ https://*.googletagmanager.com`. Nothing else, and still no `'unsafe-inline'` sc
 - **Budget** (D31): with the consent service and the loader in the initial bundle and the banner lazy,
   the initial total measured on 2026-11-04 is 670.99 kB raw (169.19 kB transferred), under the 700 kB
   warning.
+
+## D49 — Content MCP resource
+
+content-service serves `/api/content/mcp` through the official TypeScript MCP SDK v1 Streamable HTTP
+transport in stateless JSON response mode. Each request has its own server and transport; there is no
+shared authenticated session, SSE stream, background subscription or token forwarding. The optional
+`ContentModule.register({ mcp })` configuration installs the resource, and the service app supplies its
+issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that issuer's origin followed by
+`/api/content/mcp`, matching identity-service's default resource (D45).
+
+- **Discovery and authorization**: the public RFC 9728 document names that resource and the D45
+  authorization server. Every transport request verifies a resource token. Initial authentication
+  requires `content:read`; write, publish and delete scopes imply reading. Each tool call checks its
+  own required scopes before execution, with HTTP 403 and the OAuth `insufficient_scope` challenge
+  for a missing permission. Invalid origins are refused against the configured resource origin.
+- **Tools**: `list_projects`, `get_project`, `revise_project`, `publish_project`, `unpublish_project`,
+  `list_timeline`, `get_timeline_entry`, `create_timeline_entry`, `revise_timeline_entry`,
+  `reorder_timeline`, `delete_timeline_entry`, `get_profile`, `revise_profile`, `get_legal_document`
+  and `revise_legal_document`. Queries need reading; project revisions need writing and, when the
+  project is already published, publishing as well: revisions preserve its publication state and
+  queue a rebuild. Project publication and unpublication need publishing. Timeline, profile and legal
+  edits need both writing and publishing, since those existing use cases immediately change public content. Timeline deletion
+  needs both deleting and publishing. No contact inbox, upload, SEO provider or arbitrary network/file
+  access is exposed.
+- **Consistency**: tool inputs reuse the existing content contracts, presenters and application use
+  cases. Revisions, publication, unpublication, deletion and reordering require `expectedVersion`;
+  stale versions fail without overwriting newer changes. Existing transactional outbox behavior stays
+  responsible for site rebuild requests. Tool descriptions identify immediately public mutations.
+- **Errors and edge**: protocol errors remain JSON-RPC; known application failures become safe tool
+  errors and unexpected failures are redacted. Nginx gives the exact MCP endpoint the same 1100 kB
+  ceiling as rich project/legal administration, above the service's 1 MB JSON ceiling. Stateless JSON
+  responses use the ordinary proxy configuration.
+- **Client access**: clients register and obtain consent through D45. The owner can revoke them from
+  Security / Connected applications; refreshes stop immediately and issued access tokens expire in
+  five minutes. MCP availability does not grant permission for an assistant to publish content.
