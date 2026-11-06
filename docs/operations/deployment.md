@@ -25,7 +25,7 @@ Production: an OVH VPS, Docker Compose (`docker/compose.prod.yml`), the existing
   addresses redirect to `/fr/` while keeping their query; APIs and media remain at their existing paths.
   The French redirect activates only once a release with the `/fr/` build is present, so either
   workflow can finish first during the transition.
-- **Nginx**: the official entrypoint renders `nginx/templates/portfolio.conf.template` into `/tmp/portfolio.conf` on tmpfs. `APP_PORT` is the internal HTTP listening port, not a published host port. Only the reviewed Traefik peer from `TRUSTED_PROXIES` may reach the origin or supply the client address; this restored address drives rate limits and logs. HTTPS is preserved when forwarding to services. Upstreams resolve through Docker DNS at runtime, so recreated services need no Nginx reload. JSON access logs carry `request_id`, also returned in `X-Request-Id` and passed to services. Public HTML and SEO documents are never cached by Nginx; hashed assets are cached for a year. `/admin.css`, the unhashed administration stylesheet loaded by the admin area only (D31), is revalidated. The private SSR service owns the assets of its deployed code version. `/media/` serves only names matching `<uuid>.webp` or `<uuid>-960.webp` (immutable, one year, with the server's security headers including `nosniff`); any other path under `/media/` answers 404. Request bodies are 64 kB by default; `/api/content/admin/projects/` and `/api/content/admin/legal/` accept 1100 kB (the service's JSON limit is 1 MB) and `POST /api/content/admin/media` 11 MB (the service caps the file at 10 MiB); larger bodies get a problem+json 413 (`http.413`, `content.media-too-large`). Uploaded images come from the same origin (`img-src 'self' data:`); the CSP only adds the Google tag origin to `script-src` and the GA4 collection hosts to `img-src` and `connect-src`, for the audience measurement loaded after consent (D48).
+- **Nginx**: the official entrypoint renders `nginx/templates/portfolio.conf.template` into `/tmp/portfolio.conf` on tmpfs. `APP_PORT` is the internal HTTP listening port, not a published host port. Only the reviewed Traefik peer from `TRUSTED_PROXIES` may reach the origin or supply the client address; this restored address drives rate limits and logs. HTTPS is preserved when forwarding to services. Upstreams resolve through Docker DNS at runtime, so recreated services need no Nginx reload. JSON access logs carry `request_id`, also returned in `X-Request-Id` and passed to services. Public HTML and SEO documents are never cached by Nginx; hashed assets are cached for a year. `/admin.css`, the unhashed administration stylesheet loaded by the admin area only (D31), is revalidated. The private SSR service owns the assets of its deployed code version. `/media/` serves only names matching `<uuid>.webp` or `<uuid>-960.webp` (immutable, one year, with the server's security headers including `nosniff`); any other path under `/media/` answers 404. Request bodies are 64 kB by default; `/api/content/admin/projects/` and `/api/content/admin/legal/` accept 1100 kB (the service's JSON limit is 1 MB) and `POST /api/content/admin/media` 11 MB (the service caps the file at 10 MiB); larger bodies get a problem+json 413 (`http.413`, `content.media-too-large`). The CSP `script-src` carries a per-request nonce (`'nonce-$request_id'`), passed to the SSR service in `X-CSP-Nonce` and written on Angular's inline event replay scripts (D20 revision, D53). Uploaded images come from the same origin (`img-src 'self' data:`); the CSP only adds the Google tag origin to `script-src` and the GA4 collection hosts to `img-src` and `connect-src`, for the audience measurement loaded after consent (D48).
 
 ## Building service images
 
@@ -224,14 +224,20 @@ identity-service is the OAuth 2.1 authorization server of the MCP endpoint
   resource.
 - **Edge**: Nginx serves the discovery documents at `/.well-known/oauth-authorization-server/api/auth`
   (identity) and `/.well-known/oauth-protected-resource/api/content/mcp` (content-service), and
-  rate-limits `/api/auth/oauth/token` and `/revoke` (`oauth` zone, 30 requests per minute per address)
-  and `/api/auth/oauth/register` (login budget). The consent page
+  rate-limits per address `/api/auth/oauth/token` and `/revoke` (`oauth` zone, 60 requests per minute,
+  30 at once), `/api/auth/oauth/register` (`oauth_register` zone, 10 per minute, 10 at once, apart from
+  the login budget; the service also caps registrations at 60 per hour for all addresses), and the MCP
+  endpoint with its discovery documents (`mcp` zone, 30 per second, 300 at once, 64 requests in flight,
+  apart from the admin API's budget). Config: `docker/nginx/conf.d/00-http.conf`,
+  `docker/nginx/snippets/site.conf`. The consent page
   `/admin/oauth/authorize` is an ordinary admin page (`no-store`, `noindex`, never framed).
 - **Outbound HTTPS**: identity-service fetches the clients' metadata documents and logos (port 443,
   public addresses only, 5 kB / 64 kB, 5 seconds). It reaches the Internet through the `proxy` network;
   a host firewall restricting egress must allow outbound HTTPS from that container, otherwise clients
   using Client ID Metadata Documents (Claude, ChatGPT) are refused with `invalid_client` while dynamic
-  registration still works.
+  registration still works. content-service also downloads the image URLs given to the MCP
+  `upload_media` tool (port 443, public addresses only, 10 MiB, 15 seconds, D54): the same egress rule
+  applies to its container.
 - **Operations**: the owner revokes a client from « Sécurité › Applications connectées »; revocation
   stops its refreshes at once, and an access token already issued expires within five minutes. To cut
   every client at once, revoke them there one by one, or rotate the signing key (which also ends the

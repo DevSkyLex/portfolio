@@ -108,6 +108,17 @@ password change remain outside this scope.
 
 Angular's `autoCsp` is incompatible with prerendering. Critical CSS inlining (Beasties, the only inline script) is disabled: no page contains an inline script, so the fixed CSP `script-src 'self'` is enough. `style-src` keeps `'unsafe-inline'` (component styles and `style` attributes of the prerendered pages).
 
+Revision (2026-11-06, D53): with hydration actually running, Angular's event replay (enabled by
+`withIncrementalHydration()`, no opt-out) adds two inline scripts: the dispatch contract, inlined by the
+build, and a `window.__jsaction_bootstrap(...)` call written at render time with the page's event types,
+so its content varies and a hash cannot allow it. They are allowed by a nonce, Angular's documented
+mechanism: `<app-root ngCspNonce="ng-csp-nonce-placeholder">` in `apps/web/src/index.html` makes the
+build and the server render put that value on Angular's scripts; Nginx sends `'nonce-$request_id'`
+(its random 128-bit request id) in `script-src` and the same value to SSR in `X-CSP-Nonce`
+(`web-proxy.conf`, set by Nginx, never the client's); `apps/web/src/server.ts` replaces the placeholder in
+each HTML response (`apps/web/src/server/csp-nonce`), with a random nonce when the header is missing.
+`script-src 'self'` and the absence of any other inline script are unchanged.
+
 ## D21 — Self-hosted fonts
 
 Geist (headings and text) and Geist Mono (details) come from `@fontsource-variable/*`, served by the site; they replaced the mockup's Unbounded, Host Grotesk and Martian Mono, judged hard to read: no request to a third-party service (no IP address transfer to Google Fonts).
@@ -699,7 +710,7 @@ identical on these points). WebMCP comes later.
   logo is fetched once per validated copy, kept only when its magic bytes say PNG, JPEG, GIF or WebP
   (64 kB at most), and stored as a `data:` URL, which the admin CSP already allows. Dynamic
   registration (RFC 7591, deprecated by MCP, kept for older clients) is unauthenticated: the same
-  metadata rules, 20 registrations per hour for all addresses plus the Nginx login budget per address,
+  metadata rules, 60 registrations per hour for all addresses plus an Nginx budget per address,
   and registrations never consented to are deleted after a day; the consent screen and the list flag
   them « Non vérifiée ». Redirect URIs are `https` or HTTP to the loopback interface, nothing else
   (private-use schemes such as `cursor://` are refused), compared exactly except the port of a
@@ -757,7 +768,10 @@ jwksUrl })`, `@McpScope(...)` and `mcpPrincipalOf(request)`, `hasScopes` with th
   grants (one active grant per account and client, a partial unique index), pending requests, codes,
   families and refresh tokens, with their audit instants and revocation reasons. Nginx limits the
   token and revocation endpoints to 30 requests per minute per address (`oauth` zone), registration to
-  the login budget, the metadata to the API budget, and protocol bodies to 8 kB.
+  the login budget, the metadata to the API budget, and protocol bodies to 8 kB. Revision (2026-11-06,
+  owner request: agents hit 429s): token and revocation 60 per minute with 30 at once, registration on
+  its own zone (`oauth_register`, 10 per minute, 10 at once) so that it never uses up the login steps of
+  the consent, the service's hourly registration cap 60, the metadata on the MCP budget (D49).
 - **Accepted limits**: clients authenticated by `private_key_jwt` and private-use redirect schemes are
   refused; the consent is all or nothing (the client may ask for fewer scopes); access tokens are not
   introspected, so a revocation takes up to five minutes to reach the resource; a dynamically
@@ -933,8 +947,10 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
   project is already published, publishing as well: revisions preserve its publication state and
   become visible to SSR. Project publication and unpublication need publishing. Timeline, profile and legal
   edits need both writing and publishing, since those existing use cases immediately change public content. Timeline deletion
-  needs both deleting and publishing. No contact inbox, upload, SEO provider or arbitrary network/file
-  access is exposed.
+  needs both deleting and publishing. No contact inbox, SEO provider or arbitrary network/file
+  access is exposed; images are added through `upload_media` only (revision below).
+- **Revision (2026-11-06, D54)**: rich documents are read and written as Markdown and images are uploaded
+  through `upload_media`; see D54.
 - **Consistency**: tool inputs reuse the existing content contracts, presenters and application use
   cases. Revisions, publication, unpublication, deletion and reordering require `expectedVersion`;
   stale versions fail without overwriting newer changes. Existing transactional outbox behavior stays
@@ -944,7 +960,12 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
 - **Errors and edge**: protocol errors remain JSON-RPC; known application failures become safe tool
   errors and unexpected failures are redacted. Nginx gives the exact MCP endpoint the same 1100 kB
   ceiling as rich project/legal administration, above the service's 1 MB JSON ceiling. Stateless JSON
-  responses use the ordinary proxy configuration. The service's authored production manifest includes
+  responses use the ordinary proxy configuration. Revision (2026-11-06, owner request: agents hit 429s
+  during bulk work): the endpoint and its discovery documents have their own budget per address (`mcp`
+  zone, 30 requests per second, 300 at once; `mcp_conn`, 64 in flight) instead of the admin API's 20 per
+  second, 20 at once and 20 in flight, through `proxy-base.conf` (forwarding without the API's
+  concurrency limit). Every call still needs a valid token; the 1 MB body is parsed before the token is
+  checked, so the wider budget also widens what an unauthenticated address can make the service parse. The service's authored production manifest includes
   the SDK. Its prune target finalizes the generated lockfile with npm, preserving a valid nested
   dependency layout for the SDK's Express version before the image's strict `npm ci` installation.
 - **Client access**: clients register and obtain consent through D45. The owner can revoke them from
@@ -996,3 +1017,61 @@ deterministic per window (seeded by its dates), follow the weekday and stay inte
 The setup marks such a source `demo` and the dashboard DTO carries `demo: true`; the dashboard shows the
 figures like real ones, without a notice (the owner asked for none). A configured source always keeps
 its Google adapter; production never sets the flag.
+
+## D53 — Technology catalogue and deferred logos
+
+The technology tags of projects, the timeline and the skills come from a catalogue of 280 canonical keys
+(`libs/frontend/content/ui/src/lib/tech/constants/techs.constants.ts`, labels only), 99 aliases mapped
+to them (`tech-aliases.constants.ts`: `postgres`, `node.js`, `c#`, `k8s`…) and 272 logos
+(`tech-logos.constants.ts`) drawn from the `@ng-icons` packs only (owner's rule): Simple Icons, Bootstrap
+Icons for the brands Simple Icons removed (AWS, Azure, OpenAI, Slack, Windows), Lucide for CI/CD.
+`techKey` canonicalizes a typed name; the admin project and timeline forms store the canonical key, and
+the display resolves aliases for keys already stored. Unknown keys keep their text, without logo.
+
+- **Bundle**: the logos weigh about 415 kB, 160 kB gzip, more than the initial budget allows (D31).
+  They are imported only by `TechLogoComponent`, rendered inside `@defer (on immediate; hydrate never)`
+  of `TechIconComponent`. Bundlers split by module, not by export: since Simple Icons is one module,
+  any eager import of it would pull every used logo into the initial chunks. The profile and contact
+  link icons (GitHub, LinkedIn, Malt) therefore moved into deferred components too
+  (`app-profile-icon`, `contact-link-icon`), and only deferred code imports `@ng-icons/simple-icons`
+  and `@ng-icons/bootstrap-icons`. Initial bundle: 681.89 kB before, 670.81 kB after.
+- **Loading**: server-rendered pages keep the drawings from the HTML and never load the chunk
+  (`hydrate never`: static, decorative); a view rendered in the browser (client navigation) loads it
+  once (`on immediate`; `on idle` never fired on a page whose canvas animates continuously).
+- **Hydration**: this only holds because hydration runs. Without `withI18nSupport()`, Angular skipped
+  hydration of every component holding an i18n block, the site layout included, so every page was
+  re-rendered in the browser and incremental hydration (D16, D22) applied to nothing.
+  `provideClientHydration(withEventReplay(), withIncrementalHydration(), withI18nSupport())` restores
+  it; the inline event replay scripts it brings are allowed by the D20 nonce revision.
+
+## D54 — MCP rich documents in Markdown, images by URL or bytes
+
+The owner wants the AI to understand and use the whole article editor through MCP, images included
+(2026-11-06). The editor JSON Schema the tools exposed (88 kB for `revise_project`, inlined three
+times, without semantics) cost tokens and invited invalid documents.
+
+- **Markdown**: in the MCP tools, `article.fr/en` of projects and `body.fr/en` of legal documents are
+  written as Markdown, a CommonMark subset (`markdown-it` 15.0.3, without HTML, tables, strikethrough
+  or linkify) that names every editor construct: `##`/`###` headings, bold, italic, inline code, https
+  and mailto links, hard breaks, bullet and ordered lists (any start, three levels), blockquotes,
+  fenced code with the D40 languages, rules, and figures `![alt](media:<id> "caption")`
+  (`libs/backend/content/adapters-in/src/lib/mcp/article-markdown`). Its description
+  (`ARTICLE_MARKDOWN_GUIDE`) is in the tool schemas and the server instructions; `revise_project`'s
+  schema fell under 20 kB. Constructs the editor cannot hold are refused with their line (other
+  heading levels, external image URLs, an image inside text, several paragraphs in a list item, inline
+  code with another mark). The converted document is then checked against the administrator
+  contract, so the MCP accepts exactly what the API accepts.
+- **Exact reads**: a read returns Markdown only when reading that Markdown back gives the same
+  document (`exactMarkdown`; empty paragraphs aside, they are not kept); otherwise the editor JSON,
+  which the tools also accept. An AI rewriting the text therefore loses nothing it did not change.
+- **Contract = editor**: the editor's list item holds one paragraph then nested lists only, and its
+  code mark excludes the others (Tiptap); the contract accepted more, and Tiptap loads JSON without
+  checking it, so such a document would open in an invalid state. `EditableArticleDocumentSchema`
+  now has the editor's rules (list items as tuples, code alone), and so do the domain types.
+- **Images**: `upload_media` takes a public `https` URL (downloaded by content-service through
+  `HttpsFetcher`, `@vfortin/backend-http`: port 443, every resolved address public, at most three
+  redirects each checked again, 10 MiB, 15 seconds) or base64 bytes within the endpoint's 1 MB JSON
+  body (about 740 kB of image). Both go through `UploadMedia` (re-encoding, deduplication, unlinked
+  until referenced, purged after seven days, D40) and return the id for `cover.media` or a figure. The
+  address policy and the guarded transport moved from identity to `@vfortin/backend-http`, shared by
+  identity's metadata fetcher (D45, unchanged behaviour) and the image download.
