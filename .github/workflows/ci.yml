@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/prepare-node-workspace
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - run: bash docker/scripts/check-ops.sh
 
   # Tests and validators of the AI tooling (.claude/README.md, .codex/maintenance.md).
@@ -47,11 +47,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/prepare-node-workspace
         with:
           ignore-scripts: 'true'
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - run: node --test .claude/hooks/*.test.mjs .codex/hooks/*.test.mjs .codex/scripts/*.test.mjs
@@ -70,7 +70,7 @@ jobs:
       matrix:
         platform: [web, server, neutral]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/prepare-node-workspace
@@ -80,7 +80,7 @@ jobs:
       - name: Coverage summary
         if: always()
         run: node .github/scripts/coverage-summary.mjs >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-${{ matrix.platform }}
@@ -106,7 +106,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/prepare-node-workspace
@@ -126,7 +126,7 @@ jobs:
       # web-e2e:e2e depends on web:build and runs when the site is affected.
       - run: npx nx affected -t e2e
         if: steps.affected.outputs.run == 'true'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -139,12 +139,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/prepare-node-workspace
       - uses: ./.github/actions/prepare-playwright
       - name: Isolated authenticated acceptance
         run: npx nx run web-e2e:e2e-stack
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-stack-report
