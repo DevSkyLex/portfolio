@@ -1,0 +1,47 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: main
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(deps-dev)
+    groups:
+      angular:
+        patterns:
+          ['@angular/*', '@angular-devkit/*', '@schematics/angular', 'angular-eslint', 'typescript']
+      nx:
+        patterns: ['nx', '@nx/*']
+      nest:
+        patterns: ['@nestjs/*']
+      editor:
+        patterns: ['@tiptap/*']
+      testing:
+        patterns: ['vitest', '@vitest/*', '@analogjs/*', '@playwright/*', '@axe-core/*', 'jsdom']
+      styling:
+        patterns: ['tailwindcss', '@tailwindcss/*', 'postcss', 'tailwind-merge', '@ng-icons/*']
+      state:
+        patterns: ['@ngrx/*', 'rxjs']
+    ignore:
+      # Framework migrations require a coordinated workspace upgrade.
+      - dependency-name: '@angular/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@angular-devkit/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: nx
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@nx/*'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: main
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ['*']

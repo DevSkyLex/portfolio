@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a reproducible problem in the application or its tooling.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report security vulnerabilities privately using [SECURITY.md](https://github.com/DevSkyLex/portfolio/blob/main/SECURITY.md).
+        Remove credentials, tokens, personal messages and private content from all evidence.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Include the release tag or commit SHA, and whether this is local or deployed.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest reproducible case with public or synthetic data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, OS, language, theme and viewport; Node, npm and Docker versions for tooling issues.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Relevant logs, screenshots, failing commands and error messages.

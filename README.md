@@ -117,7 +117,7 @@ The public browser suite uses a built-site preview. The stack suite requires Doc
 
 Production is designed for an existing shared Traefik edge on a VPS. Traefik terminates TLS and forwards traffic over `traefik_proxy` to a private Nginx origin. Nginx serves static releases and routes API requests to the services; PostgreSQL stays on a separate internal network. The portfolio does not publish production host ports or manage Traefik's certificates.
 
-GitHub Actions runs CI, publishes service images to GHCR and invokes the Ansible deployment and site publication workflows. Successful CI on `main` can trigger production workflows. The `production` GitHub environment, reviewed trusted proxy address, DNS, SSH access and GitHub environment secrets must be configured for the target server before deployment. Never commit credentials or private keys.
+GitHub Actions runs CI on pull requests targeting `main`. Publishing a GitHub release builds the service and SSR images, publishes them to GHCR and deploys the release commit through Ansible. The `production` GitHub environment, reviewed trusted proxy address, DNS, SSH access and GitHub environment secrets must be configured for the target server before deployment. Never commit credentials or private keys.
 
 Follow [deployment and operations](docs/operations/deployment.md) for the complete environment contract, first installation, backups, restore checks, rotation and rollback procedures. The public configuration template is [`docker/.env.example`](docker/.env.example).
 
@@ -132,3 +132,14 @@ See [workspace generators](docs/workspace/generators.md), [testing](docs/workspa
 The workspace supports [Claude Code](.claude/README.md) and [Codex](.codex/README.md). Both use [AGENTS.md](AGENTS.md), shared Nx skills in `.agents/`, and their respective rules, agents and hooks. The root `.mcp.json` provides portable MCP configuration.
 
 Run `npm run ai:configure` to update the Nx integration for Claude and Codex.
+
+## Contributing and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and
+[SECURITY.md](SECURITY.md) for private vulnerability reporting. GitHub issue, PR and release templates
+are described in the [automation guide](.github/README.md).
+
+## License
+
+Copyright (c) 2026 Valentin Fortin. All rights reserved. This repository is proprietary; see
+[LICENSE](LICENSE). Third-party components retain their respective licenses.
