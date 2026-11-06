@@ -35,6 +35,9 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: '@nx/*'
         update-types: ['version-update:semver-major']
+      # Revisit when @nx/nest supports the next Nest major (D9).
+      - dependency-name: '@nestjs/*'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     target-branch: main
