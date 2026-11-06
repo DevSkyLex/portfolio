@@ -75,3 +75,11 @@ apps/*/.env.*
 *.p12
 *.pfx
 /ansible/inventory/group_vars/all/vault.yml
+
+# Python bytecode (Ansible and tooling tests)
+__pycache__/
+*.py[cod]
+
+# SSH host keys scanned while preparing a deployment (ssh-keyscan output)
+*_known_hosts
+known_hosts
