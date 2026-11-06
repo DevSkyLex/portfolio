@@ -84,8 +84,8 @@
     "node": ">=24"
   },
   "overrides": {
-    "@tiptap/core": "3.32.0",
-    "@tiptap/pm": "3.32.0",
+    "@tiptap/core": "3.32.2",
+    "@tiptap/pm": "3.32.2",
     "multer": "2.5.0"
   },
   "allowScripts": {
@@ -126,11 +126,11 @@
     "@ng-icons/simple-icons": "36.1.0",
     "@ngrx/operators": "22.0.1",
     "@ngrx/signals": "22.0.1",
-    "@tiptap/core": "3.32.0",
-    "@tiptap/extension-code-block-lowlight": "3.32.0",
-    "@tiptap/extensions": "3.32.0",
-    "@tiptap/pm": "3.32.0",
-    "@tiptap/starter-kit": "3.32.0",
+    "@tiptap/core": "3.32.2",
+    "@tiptap/extension-code-block-lowlight": "3.32.2",
+    "@tiptap/extensions": "3.32.2",
+    "@tiptap/pm": "3.32.2",
+    "@tiptap/starter-kit": "3.32.2",
     "axios": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
