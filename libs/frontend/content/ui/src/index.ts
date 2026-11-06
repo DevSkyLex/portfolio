@@ -7,6 +7,7 @@
 export { TECHS } from '@internal/content-web-ui/lib/tech/constants/techs.constants';
 export type { TechDefinition } from '@internal/content-web-ui/lib/tech/models/tech-definition/tech-definition.interface';
 export { techDefinition } from '@internal/content-web-ui/lib/tech/utils/tech-definition/tech-definition.utils';
+export { techKey } from '@internal/content-web-ui/lib/tech/utils/tech-key/tech-key.utils';
 
 /**
  * Constant technology icon export

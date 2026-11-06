@@ -14,9 +14,7 @@ import {
   type InputSignal,
 } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
-import { bootstrapLinkedin } from '@ng-icons/bootstrap-icons';
-import { lucideCheck, lucideGlobe, lucideMail } from '@ng-icons/lucide';
-import { simpleGithub, simpleMalt } from '@ng-icons/simple-icons';
+import { lucideCheck } from '@ng-icons/lucide';
 import {
   ContactFormStore,
   type ContactFormStoreType,
@@ -38,7 +36,7 @@ import {
 } from '@internal/contact-web-feature/lib/ui/sections/contact-section/constants/contact-section-classes.constants';
 import { ContactFormComponent } from '@internal/contact-web-feature/lib/ui/forms/contact-form/contact-form.component';
 import type { ContactLink } from '@internal/contact-web-feature/lib/ui/sections/contact-section/models/contact-link.interface';
-import type { ContactLinkKind } from '@internal/contact-web-feature/lib/ui/sections/contact-section/models/contact-link-kind.type';
+import { ContactLinkIconComponent } from '@internal/contact-web-feature/lib/ui/sections/contact-section/components/contact-link-icon/contact-link-icon.component';
 import type { ContactFormValues } from '@internal/contact-web-feature/lib/ui/forms/contact-form/models/contact-form-values.model';
 
 /**
@@ -53,6 +51,7 @@ import type { ContactFormValues } from '@internal/contact-web-feature/lib/ui/for
 @Component({
   selector: 'contact-section',
   imports: [
+    ContactLinkIconComponent,
     ButtonDirective,
     ContactFormComponent,
     DecoComponent,
@@ -146,23 +145,6 @@ export class ContactSectionComponent {
   protected readonly icons: { readonly check: typeof lucideCheck } = {
     check: lucideCheck,
   } as const;
-
-  /**
-   * Property linkIcons
-   * @readonly
-   *
-   * @description
-   * Icon of each link kind; the brand logos lose their `<title>`, the label beside them naming them.
-   *
-   * @type {Readonly<Record<ContactLinkKind, string>>}
-   */
-  protected readonly linkIcons: Readonly<Record<ContactLinkKind, string>> = {
-    email: lucideMail,
-    github: simpleGithub.replace(/<title>[^<]*<\/title>/, ''),
-    linkedin: bootstrapLinkedin,
-    malt: simpleMalt.replace(/<title>[^<]*<\/title>/, ''),
-    website: lucideGlobe,
-  };
 
   /**
    * Property reveal

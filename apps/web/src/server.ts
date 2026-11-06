@@ -10,6 +10,7 @@ import { runtimeSitemap } from '@vfortin/web-shell/server';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { join } from 'node:path';
 import type { ServerResponse } from 'node:http';
+import { CSP_NONCE_HEADER, cspNonce, withCspNonce } from '@internal/web/server/csp-nonce/csp-nonce';
 import { legacyLocaleRedirect } from '@internal/web/server/legacy-locale-redirect/legacy-locale-redirect';
 
 const siteOrigin: string = new URL(process.env['SITE_ORIGIN'] ?? 'https://valentin-fortin.pro')
@@ -78,8 +79,22 @@ app.use(
 app.use((req: Request, res: Response, next: NextFunction): void => {
   angularApp
     .handle(req, { contentApiUrl, siteOrigin })
-    .then((response: globalThis.Response | null): void | Promise<void> => {
-      if (response) return writeResponseToNodeResponse(response, res);
+    .then(async (response: globalThis.Response | null): Promise<void> => {
+      if (response) {
+        if (!response.headers.get('content-type')?.startsWith('text/html'))
+          return writeResponseToNodeResponse(response, res);
+        // The page carries the CSP nonce placeholder (index.html): give it this request's nonce.
+        const html: string = withCspNonce(
+          await response.text(),
+          cspNonce(req.headers[CSP_NONCE_HEADER]),
+        );
+        const headers: Headers = new Headers(response.headers);
+        headers.delete('content-length');
+        return writeResponseToNodeResponse(
+          new globalThis.Response(html, { status: response.status, headers }),
+          res,
+        );
+      }
       // Angular returns null when initial navigation fails. Localized applications have a
       // wildcard not-found route, so a missing render is an outage rather than a missing URL.
       if (/^\/(?:fr|en)(?:\/|$)/.test(req.path))

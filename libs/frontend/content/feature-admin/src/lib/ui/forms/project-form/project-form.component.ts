@@ -71,6 +71,7 @@ import {
   ToastService,
   type PeriodBound,
 } from '@vfortin/ui';
+import { techKey } from '@vfortin/content-web-ui';
 import { EMPTY_PROJECT_DRAFT } from '@internal/content-web-feature-admin/lib/constants/empty-project-draft.constants';
 import { INCOMPLETE_ERROR } from '@internal/content-web-feature-admin/lib/constants/incomplete-error.constants';
 import { PROJECT_FORM_MESSAGES } from '@internal/content-web-feature-admin/lib/constants/project-form-messages.constants';
@@ -768,13 +769,12 @@ export class ProjectFormComponent {
    * @readonly
    *
    * @description
-   * Stores a typed technology as a catalogue key: trimmed and lowercase; the validator then checks
-   * the kebab-case form.
+   * Stores a typed technology as a catalogue key (`techKey`: trimmed, lowercase, an alias such as
+   * `postgres` replaced by `postgresql`); the validator then checks the kebab-case form.
    *
    * @type {(raw: string) => string}
    */
-  protected readonly normalizeTech: (raw: string) => string = (raw: string): string =>
-    raw.trim().toLowerCase();
+  protected readonly normalizeTech: (raw: string) => string = techKey;
 
   /**
    * Property coverSrc

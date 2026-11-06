@@ -12,6 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   provideClientHydration,
   withEventReplay,
+  withI18nSupport,
   withIncrementalHydration,
 } from '@angular/platform-browser';
 import {
@@ -48,7 +49,9 @@ export function provideWebShell(options: WebShellOptions): EnvironmentProviders 
       withComponentInputBinding(),
       withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
     ),
-    provideClientHydration(withEventReplay(), withIncrementalHydration()),
+    // i18n support: without it Angular skips hydration of every component holding an i18n block (the
+    // site layout, so the whole page), re-rendering it in the browser (D53).
+    provideClientHydration(withEventReplay(), withIncrementalHydration(), withI18nSupport()),
     provideApiHttp([authInterceptor]),
     provideContentSnapshotLoader(options.contentSnapshot),
     // Origin of the canonical, alternate and sharing addresses (D42).

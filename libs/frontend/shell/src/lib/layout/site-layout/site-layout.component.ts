@@ -13,12 +13,10 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { bootstrapLinkedin } from '@ng-icons/bootstrap-icons';
 import { NgIcon } from '@ng-icons/core';
 import { flagFr, flagGb } from '@ng-icons/flag-icons';
 import {
   lucideFileDown,
-  lucideGlobe,
   lucideMail,
   lucideMenu,
   lucideMonitor,
@@ -26,7 +24,6 @@ import {
   lucideSun,
   lucideX,
 } from '@ng-icons/lucide';
-import { simpleGithub, simpleMalt } from '@ng-icons/simple-icons';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { PageSeoService, SiteLinksService } from '@vfortin/content-web-data-access';
 import {
@@ -50,6 +47,7 @@ import type { NavItem } from '@internal/web-shell/lib/layout/site-layout/models/
 import { leafRoute } from '@internal/web-shell/lib/layout/site-layout/utils/leaf-route/leaf-route.utils';
 import { ConsentService } from '@internal/web-shell/lib/consent/consent.service';
 import { ConsentBannerComponent } from '@internal/web-shell/lib/layout/site-layout/components/consent-banner/consent-banner.component';
+import { ProfileIconComponent } from '@internal/web-shell/lib/layout/site-layout/components/profile-icon/profile-icon.component';
 import type { ThemeMode } from '@internal/web-shell/lib/theme/models/theme-mode/theme-mode.type';
 import { ThemeService } from '@internal/web-shell/lib/theme/theme.service';
 
@@ -72,6 +70,7 @@ import { ThemeService } from '@internal/web-shell/lib/theme/theme.service';
     MenuSelectComponent,
     MenuSelectIconDirective,
     NgIcon,
+    ProfileIconComponent,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
@@ -120,23 +119,6 @@ export class SiteLayoutComponent {
    * @type {SiteLinksService}
    */
   protected readonly links: SiteLinksService = inject<SiteLinksService>(SiteLinksService);
-
-  /**
-   * Property linkIcons
-   * @readonly
-   *
-   * @description
-   * Icon of each profile link kind, the brand logos without their `<title>`.
-   *
-   * @type {Readonly<Record<string, string>>}
-   */
-  protected readonly linkIcons: Readonly<Record<string, string>> = {
-    email: lucideMail,
-    github: simpleGithub.replace(/<title>[^<]*<\/title>/, ''),
-    linkedin: bootstrapLinkedin,
-    malt: simpleMalt.replace(/<title>[^<]*<\/title>/, ''),
-    website: lucideGlobe,
-  };
 
   /**
    * Property icons
