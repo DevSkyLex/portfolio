@@ -252,6 +252,10 @@ test.describe('cookie consent', (): void => {
       name: 'Mesure d’audience (Google Analytics)',
     });
     await expect(purpose).toHaveAttribute('aria-checked', 'false');
+    // The entrance fades the panel and its contents; audit their settled contrast.
+    await dialog.evaluate(async (element: HTMLElement): Promise<void> => {
+      await Promise.all(element.getAnimations({ subtree: true }).map((motion) => motion.finished));
+    });
     expect(await seriousViolations(page)).toEqual([]);
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
