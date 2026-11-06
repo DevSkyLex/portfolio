@@ -15,6 +15,7 @@ import {
   BootstrapAdmin,
   type ClientMetadataFetcher,
   type FetchedClientMetadata,
+  MAX_REGISTRATIONS_PER_HOUR,
 } from '@vfortin/identity-application';
 import type { JSONWebKeySet } from 'jose';
 import { createHash } from 'node:crypto';
@@ -694,7 +695,7 @@ describe('IdentityModule OAuth authorization server', (): void => {
       expect(refused.status).toBe(400);
       expect(refused.body.error).toBe(error);
     }
-    for (let index: number = 1; index < 20; index++) {
+    for (let index: number = 1; index < MAX_REGISTRATIONS_PER_HOUR; index++) {
       expect(
         (
           await server()

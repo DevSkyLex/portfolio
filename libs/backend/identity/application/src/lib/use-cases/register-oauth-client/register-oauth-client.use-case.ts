@@ -14,7 +14,7 @@ import type { OAuthUnitOfWork } from '@internal/identity-application/lib/ports/o
  *
  * @type {number}
  */
-export const MAX_REGISTRATIONS_PER_HOUR = 20 as const;
+export const MAX_REGISTRATIONS_PER_HOUR = 60 as const;
 
 /**
  * Constant ABANDONED_REGISTRATION_MS
