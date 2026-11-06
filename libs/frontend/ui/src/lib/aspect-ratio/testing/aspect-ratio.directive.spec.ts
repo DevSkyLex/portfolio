@@ -29,6 +29,12 @@ class HostComponent {
   // #endregion
 }
 
+/** Reads both numeric and width/height CSSOM serializations of the same ratio. */
+function hostAspectRatio(element: HTMLElement): number {
+  const [width, height = '1']: string[] = element.style.aspectRatio.split('/');
+  return Number(width) / Number(height);
+}
+
 describe('AspectRatioDirective', () => {
   it('reads numbers and width/height strings', () => {
     expect(parseAspectRatio('16/9')).toBeCloseTo(16 / 9);
@@ -42,9 +48,9 @@ describe('AspectRatioDirective', () => {
     const fixture: ComponentFixture<HostComponent> = TestBed.createComponent(HostComponent);
     await fixture.whenStable();
     const box: HTMLElement = fixture.nativeElement.querySelector('[data-slot="aspect-ratio"]');
-    expect(Number(box.style.aspectRatio)).toBeCloseTo(16 / 9);
+    expect(hostAspectRatio(box)).toBeCloseTo(16 / 9);
     fixture.componentInstance.ratio.set(1);
     await fixture.whenStable();
-    expect(box.style.aspectRatio).toBe('1');
+    expect(hostAspectRatio(box)).toBe(1);
   });
 });
