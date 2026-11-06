@@ -49,7 +49,10 @@ const snapshot: Record<string, unknown> = {
             attrs: { level: 2 },
             content: [{ type: 'text', text: 'Éditeur du site' }],
           },
-          { type: 'paragraph', content: [{ type: 'text', text: 'Valentin Fortin, particulier.' }] },
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Morgan Exemple, personnage fictif.' }],
+          },
           {
             type: 'heading',
             attrs: { level: 2 },

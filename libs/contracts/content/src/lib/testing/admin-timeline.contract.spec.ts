@@ -37,8 +37,8 @@ function requestOf(dto: typeof entry): Record<string, unknown> {
 describe('AdminTimelineListSchema', (): void => {
   it('accepts the fixture shared by the service and the admin screen', (): void => {
     expect(AdminTimelineListSchema.parse(list).member.map((e): string => e.id)).toEqual([
-      'object-as-a-service',
-      'kodoka',
+      'independent-interface-practice',
+      'open-reading-collective',
     ]);
     expect(AdminTimelineEntryDtoSchema.parse(entry).end).toBeNull();
   });
@@ -90,7 +90,7 @@ describe('TimelineEntryRequestSchema', (): void => {
     ],
     ['a month 13', { start: { year: 2023, month: 13 } }, 'start.month'],
     ['a year before 1990', { start: { year: 1989, month: 1 } }, 'start.year'],
-    ['an end before the start', { end: { year: 2023, month: 8 } }, 'end'],
+    ['an end before the start', { end: { year: 2022, month: 12 } }, 'end'],
     ['a malformed tech key', { techs: ['Vue.js'] }, 'techs.0'],
     ['13 techs', { techs: Array.from({ length: 13 }, (_, i): string => `t${i}`) }, 'techs'],
   ])('rejects %s at its path', (_label, override, path): void => {

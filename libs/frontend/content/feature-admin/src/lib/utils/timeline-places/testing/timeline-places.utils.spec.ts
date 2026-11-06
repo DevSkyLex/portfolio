@@ -18,14 +18,14 @@ function entry(fr: string, en?: string): AdminTimelineEntry {
 describe('timelinePlaces', (): void => {
   it('offers each written place once per language, with the defaults, in French order', (): void => {
     const places: ReturnType<typeof timelinePlaces> = timelinePlaces([
-      entry('Tours', 'Tours'),
-      entry(' Joué-lès-Tours ', 'Joue-les-Tours'),
-      entry('tours'),
+      entry('Ville-Exemple', 'Ville-Exemple'),
+      entry(' Cité-des-Exemples ', 'Cite-des-Exemples'),
+      entry('ville-exemple'),
       entry('Paris', ''),
-      entry('Joue-les-Tours'),
+      entry('Cite-des-Exemples'),
     ]);
-    expect(places.fr).toEqual(['À distance', 'Joué-lès-Tours', 'Paris', 'Tours']);
-    expect(places.en).toEqual(['Joue-les-Tours', 'Remote', 'Tours']);
+    expect(places.fr).toEqual(['À distance', 'Cité-des-Exemples', 'Paris', 'Ville-Exemple']);
+    expect(places.en).toEqual(['Cite-des-Exemples', 'Remote', 'Ville-Exemple']);
   });
 
   it('keeps the defaults when no entry exists yet', (): void => {

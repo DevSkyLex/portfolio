@@ -16,7 +16,7 @@ import {
  */
 const values = (period: Partial<TimelineEntryFormValues>): TimelineEntryFormValues => ({
   title: { fr: 'Poste', en: 'Job' },
-  place: { fr: 'Tours', en: 'Tours' },
+  place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
   description: { fr: 'Texte.', en: 'Text.' },
   startMonth: null,
   startYear: null,

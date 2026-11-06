@@ -216,7 +216,9 @@ describe('ContentModule', (): void => {
   it('reads and revises a real project, rejecting a stale revision without changing it', async (): Promise<void> => {
     const listed: request.Response = await call('list_projects');
     expect(data<{ totalItems: number }>(listed).totalItems).toBeGreaterThan(0);
-    const original: ProjectResponse = data(await call('get_project', { id: 'project-crm-kodoka' }));
+    const original: ProjectResponse = data(
+      await call('get_project', { id: 'project-neighborhood-atlas' }),
+    );
     const revised: request.Response = await call(
       'revise_project',
       {
@@ -261,16 +263,18 @@ describe('ContentModule', (): void => {
       expect((await client.listTools()).tools).toHaveLength(18);
       const result: Awaited<ReturnType<Client['callTool']>> = await client.callTool({
         name: 'get_project',
-        arguments: { id: 'project-crm-kodoka' },
+        arguments: { id: 'project-neighborhood-atlas' },
       });
-      expect(result.structuredContent).toMatchObject({ id: 'project-crm-kodoka' });
+      expect(result.structuredContent).toMatchObject({ id: 'project-neighborhood-atlas' });
     } finally {
       await client.close();
     }
   });
 
   it('requires the precise scopes before mutation, preserving data on refusal', async (): Promise<void> => {
-    const original: ProjectResponse = data(await call('get_project', { id: 'project-crm-kodoka' }));
+    const original: ProjectResponse = data(
+      await call('get_project', { id: 'project-neighborhood-atlas' }),
+    );
     const denied: request.Response = await call('revise_project', {
       id: original.id,
       expectedVersion: original.version,
@@ -316,7 +320,7 @@ describe('ContentModule', (): void => {
       'delete_timeline_entry',
       {
         kind: 'experience',
-        id: 'kodoka',
+        id: 'open-reading-collective',
         expectedVersion: 1,
       },
       publishToken,
@@ -327,7 +331,9 @@ describe('ContentModule', (): void => {
 
   it('creates a draft project with write consent only, its slug free and from the French title', async (): Promise<void> => {
     // A project read back is a valid creation input: the contract drops its identity fields.
-    const source: ProjectResponse = data(await call('get_project', { id: 'project-crm-kodoka' }));
+    const source: ProjectResponse = data(
+      await call('get_project', { id: 'project-neighborhood-atlas' }),
+    );
     const created: ProjectResponse = data(
       await call('create_project', { project: source }, writeToken),
     );
@@ -340,7 +346,9 @@ describe('ContentModule', (): void => {
   });
 
   it('publishes and unpublishes using the current project version', async (): Promise<void> => {
-    const original: ProjectResponse = data(await call('get_project', { id: 'project-crm-kodoka' }));
+    const original: ProjectResponse = data(
+      await call('get_project', { id: 'project-neighborhood-atlas' }),
+    );
     const unpublished: request.Response = await call(
       'unpublish_project',
       {
@@ -376,7 +384,9 @@ describe('ContentModule', (): void => {
   });
 
   it('denies a predicted future draft version before a concurrent publication can authorize the edit', async (): Promise<void> => {
-    const current: ProjectResponse = data(await call('get_project', { id: 'project-iotplatform' }));
+    const current: ProjectResponse = data(
+      await call('get_project', { id: 'project-accessibility-notebook' }),
+    );
     const draft: ProjectResponse = data(
       await call(
         'unpublish_project',
@@ -426,7 +436,9 @@ describe('ContentModule', (): void => {
   });
 
   it('rejects an exact-version draft edit if publication races the mutation', async (): Promise<void> => {
-    const current: ProjectResponse = data(await call('get_project', { id: 'project-crm-kodoka' }));
+    const current: ProjectResponse = data(
+      await call('get_project', { id: 'project-neighborhood-atlas' }),
+    );
     const draft: ProjectResponse = data(
       await call(
         'unpublish_project',
@@ -475,7 +487,7 @@ describe('ContentModule', (): void => {
   it('creates, reads, revises, reorders and deletes a timeline entry', async (): Promise<void> => {
     const entry: Record<string, unknown> = {
       title: { fr: 'Internship', en: 'Internship' },
-      place: { fr: 'Blois', en: 'Blois' },
+      place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
       description: { fr: 'Internal tools.', en: 'Internal tools.' },
       start: { year: 2025, month: 2 },
       end: null,
@@ -566,7 +578,7 @@ describe('ContentModule', (): void => {
       const response: request.Response = await call(
         'publish_project',
         {
-          id: 'project-crm-kodoka',
+          id: 'project-neighborhood-atlas',
           expectedVersion,
         },
         publishToken,
@@ -576,7 +588,7 @@ describe('ContentModule', (): void => {
     const invalid: request.Response = await call(
       'revise_project',
       {
-        id: 'project-crm-kodoka',
+        id: 'project-neighborhood-atlas',
         expectedVersion: 1,
         revision: { title: 7 },
       },
@@ -593,7 +605,9 @@ describe('ContentModule', (): void => {
       .spyOn(app.get<GetAdminProject>(GetAdminProject), 'execute')
       .mockRejectedValueOnce(new Error('database-password-sensitive-stack'));
     try {
-      const failed: request.Response = await call('get_project', { id: 'project-crm-kodoka' });
+      const failed: request.Response = await call('get_project', {
+        id: 'project-neighborhood-atlas',
+      });
       expect(failed.body.result.isError).toBe(true);
       expect(JSON.stringify(failed.body)).not.toContain('database-password-sensitive-stack');
     } finally {
@@ -602,7 +616,9 @@ describe('ContentModule', (): void => {
   });
 
   it('fails closed when a project status lookup cannot establish permission to edit', async (): Promise<void> => {
-    const original: ProjectResponse = data(await call('get_project', { id: 'project-crm-kodoka' }));
+    const original: ProjectResponse = data(
+      await call('get_project', { id: 'project-neighborhood-atlas' }),
+    );
     const spy: ReturnType<typeof vi.spyOn> = vi
       .spyOn(app.get<GetAdminProject>(GetAdminProject), 'execute')
       .mockRejectedValueOnce(new Error('unavailable status lookup'));

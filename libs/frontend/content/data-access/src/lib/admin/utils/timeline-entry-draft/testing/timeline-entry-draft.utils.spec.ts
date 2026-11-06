@@ -19,7 +19,7 @@ const ENTRY: AdminTimelineEntry = {
   position: 0,
   version: 2,
   title: { fr: 'Développeur', en: 'Developer' },
-  place: { fr: 'Tours', en: 'Tours' },
+  place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
   description: { fr: 'Interfaces.' },
   start: { year: 2023, month: 9 },
   end: null,
@@ -56,7 +56,7 @@ describe('toTimelineEntryRequest', (): void => {
     });
     expect(request).toEqual({
       title: { fr: 'Développeur' },
-      place: { fr: 'Tours', en: 'Tours' },
+      place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
       description: { fr: 'Interfaces.' },
       start: { year: 2023, month: 9 },
       end: null,

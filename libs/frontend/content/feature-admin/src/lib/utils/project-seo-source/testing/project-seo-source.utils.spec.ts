@@ -24,12 +24,12 @@ const MEDIA: AdminMedia = {
  */
 const VALUES: ProjectFormValues = {
   ...EMPTY_PROJECT_DRAFT,
-  title: { fr: ' Movah ', en: 'Movah EN' },
+  title: { fr: ' Library Trails ', en: 'Library Trails EN' },
   summary: { fr: ' Covoiturage local. ', en: 'Local carpooling.' },
   techs: ['flutter'],
   cover: { media: MEDIA.id, alt: { fr: ' Accueil ', en: '' } },
   seo: {
-    title: { fr: '  ', en: ' Movah in short ' },
+    title: { fr: '  ', en: ' Library Trails in short ' },
     description: { fr: ' Une app. ', en: '' },
     keywords: { fr: [' Flutter ', ''], en: [] },
   },
@@ -38,22 +38,22 @@ const VALUES: ProjectFormValues = {
 describe('projectSeoSource', (): void => {
   it('trims the values of one language, blank search texts becoming null', (): void => {
     const media: ReadonlyMap<string, AdminMedia> = new Map([[MEDIA.id, MEDIA]]);
-    expect(projectSeoSource(VALUES, 'fr', 'movah', media)).toEqual({
-      slug: 'movah',
-      title: 'Movah',
+    expect(projectSeoSource(VALUES, 'fr', 'library-trails', media)).toEqual({
+      slug: 'library-trails',
+      title: 'Library Trails',
       summary: 'Covoiturage local.',
       techs: ['flutter'],
       cover: { src: MEDIA.src, small: null, width: 2400, height: 1350, alt: 'Accueil' },
       seo: { title: null, description: 'Une app.', keywords: ['Flutter'] },
     });
-    expect(projectSeoSource(VALUES, 'en', 'movah', media).seo).toEqual({
-      title: 'Movah in short',
+    expect(projectSeoSource(VALUES, 'en', 'library-trails', media).seo).toEqual({
+      title: 'Library Trails in short',
       description: null,
       keywords: [],
     });
   });
 
   it('leaves the cover out while its media is unknown to the page', (): void => {
-    expect(projectSeoSource(VALUES, 'fr', 'movah', new Map()).cover).toBeNull();
+    expect(projectSeoSource(VALUES, 'fr', 'library-trails', new Map()).cover).toBeNull();
   });
 });

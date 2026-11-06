@@ -22,7 +22,7 @@ import {
         <p id="extra">Après</p>
         <div uiPageHeaderActions id="actions"><button type="button">Publier</button></div>
         <p uiPageHeaderMeta id="meta">version 4</p>
-        <h1 uiPageHeaderTitle id="title" class="text-fg-muted">Movah</h1>
+        <h1 uiPageHeaderTitle id="title" class="text-fg-muted">Library Trails</h1>
         @if (tabs()) {
           <div uiPageHeaderTabs id="tabs">
             <div uiTabsList aria-label="Langue">

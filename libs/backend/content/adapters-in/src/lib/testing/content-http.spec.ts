@@ -193,9 +193,9 @@ const published = (media: readonly MediaRecord[] = [COVER, FIGURE]): PublishedCo
     heroIntro: t('Bonjour', 'Hello'),
     aboutStatement: t('A'),
     aboutLead: t('L'),
-    facts: [{ label: t('Basé à', 'Based in'), value: t('Blois') }],
+    facts: [{ label: t('Basé à', 'Based in'), value: t('Ville-Exemple', 'Example Town') }],
     links: profileLinks([
-      { kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null },
+      { kind: 'email', url: 'mailto:morgan@example.com', label: null },
       { kind: 'website', url: 'https://blog.example', label: 'Blog' },
     ]),
     version: 1,
@@ -205,8 +205,8 @@ const published = (media: readonly MediaRecord[] = [COVER, FIGURE]): PublishedCo
     TimelineEntry.rehydrate({
       id: 'bts',
       kind: 'education',
-      title: t('BTS'),
-      place: t('Tours'),
+      title: t('Diplôme de création visuelle fictif', 'Fictional visual design diploma'),
+      place: t('Ville-Exemple'),
       description: t('Lycée'),
       period: Period.of({ year: 2021, month: 9 }, { year: 2023, month: 6 }),
       techs: ['php'],
@@ -306,10 +306,10 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       expect(snapshot.profile.heroIntro).toBe('Hello');
 
       // Untranslated text falls back to French.
-      expect(snapshot.profile.facts[0]).toEqual({ label: 'Based in', value: 'Blois' });
+      expect(snapshot.profile.facts[0]).toEqual({ label: 'Based in', value: 'Example Town' });
       expect(snapshot.timeline[0]).toMatchObject({ start: { year: 2021, month: 9 } });
       expect(snapshot.profile.links).toEqual([
-        { kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null },
+        { kind: 'email', url: 'mailto:morgan@example.com', label: null },
         { kind: 'website', url: 'https://blog.example', label: 'Blog' },
       ]);
       // Dated in Paris time; the document of the requested locale.
@@ -327,26 +327,28 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       const fr: ContentSnapshot = ContentSnapshotSchema.parse(
         (await server().get('/content/snapshot?locale=fr')).body,
       );
-      const [movah] = fr.projects;
-      expect(movah?.cover).toEqual({
+      const [libraryTrails] = fr.projects;
+      expect(libraryTrails?.cover).toEqual({
         src: `/media/${COVER.id}.webp`,
         small: `/media/${COVER.id}-960.webp`,
         width: 2400,
         height: 1350,
-        alt: 'Accueil de Movah',
+        alt: 'Accueil de Library Trails',
       });
-      expect(movah?.article.content.find((block): boolean => block.type === 'figure')).toEqual({
+      expect(
+        libraryTrails?.article.content.find((block): boolean => block.type === 'figure'),
+      ).toEqual({
         type: 'figure',
         attrs: {
           src: `/media/${FIGURE.id}.webp`,
           small: `/media/${FIGURE.id}-960.webp`,
           width: 1200,
           height: 900,
-          alt: 'Écran du calendrier',
-          caption: 'Le calendrier des sorties.',
+          alt: 'Écran des parcours de lecture',
+          caption: 'Le catalogue de démonstration.',
         },
       });
-      expect(movah?.article.content[0]).toEqual({
+      expect(libraryTrails?.article.content[0]).toEqual({
         type: 'heading',
         attrs: { level: 2 },
         content: [{ type: 'text', text: 'Contexte' }],
@@ -354,7 +356,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       const en: ContentSnapshot = ContentSnapshotSchema.parse(
         (await server().get('/content/snapshot?locale=en')).body,
       );
-      expect(en.projects[0]?.cover?.alt).toBe('Accueil de Movah');
+      expect(en.projects[0]?.cover?.alt).toBe('Accueil de Library Trails');
       expect(en.projects[0]?.article.content).toHaveLength(3);
     });
 
@@ -364,10 +366,10 @@ describe('ContentController, AdminContentController and AdminMediaController', (
         (await server().get('/content/snapshot?locale=fr')).body,
       );
       expect(fr.projects[0]?.seo).toEqual({
-        title: 'Movah, suivi de séries en Flutter',
+        title: 'Library Trails, parcours de lecture en Vue',
         description:
-          'Application mobile Flutter et Supabase pour suivre ses séries, films et anime.',
-        keywords: ['Flutter', 'suivi de séries'],
+          'Interface Vue de démonstration pour explorer des parcours de lecture fictifs.',
+        keywords: ['Vue', 'lecture accessible'],
       });
       const en: ContentSnapshot = ContentSnapshotSchema.parse(
         (await server().get('/content/snapshot?locale=en')).body,
@@ -375,7 +377,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       // No fallback on the French values: the English page uses its own title and technologies.
       expect(en.projects[0]?.seo).toEqual({
         title: null,
-        description: 'A Flutter and Supabase mobile app to keep track of series, films and anime.',
+        description: 'A demonstration Vue interface for exploring fictional reading trails.',
         keywords: [],
       });
     });
@@ -417,7 +419,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       expect(response.headers['cache-control']).toBe('no-store');
       expect(response.body).toMatchObject({
         totalItems: 1,
-        member: [{ id: 'project-movah', version: 3, media: FIXTURE.media }],
+        member: [{ id: 'project-library-trails', version: 3, media: FIXTURE.media }],
       });
     });
 
@@ -427,14 +429,14 @@ describe('ContentController, AdminContentController and AdminMediaController', (
         media: [FIGURE, COVER],
       });
       const response: request.Response = await admin(
-        server().get('/content/admin/projects/project-movah'),
+        server().get('/content/admin/projects/project-library-trails'),
       );
       expect(response.status).toBe(200);
       expect(response.headers['etag']).toBe('"3"');
       expect(AdminProjectDtoSchema.parse(response.body)).toEqual(
         AdminProjectDtoSchema.parse(FIXTURE),
       );
-      expect(useCases.get.execute).toHaveBeenCalledWith('project-movah');
+      expect(useCases.get.execute).toHaveBeenCalledWith('project-library-trails');
     });
 
     it('creates a draft project and answers 201 with its ETag', async (): Promise<void> => {
@@ -450,8 +452,11 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       expect(response.status).toBe(201);
       expect(response.headers['etag']).toBe('"1"');
       const [revision] = useCases.create.execute.mock.calls[0] ?? [];
-      expect(revision?.title.en).toBe('Movah');
-      expect(revision?.cover).toEqual({ media: COVER.id, alt: { fr: 'Accueil de Movah' } });
+      expect(revision?.title.en).toBe('Library Trails');
+      expect(revision?.cover).toEqual({
+        media: COVER.id,
+        alt: { fr: 'Accueil de Library Trails' },
+      });
     });
 
     it('rejects a malformed creation (400) before reaching the use case', async (): Promise<void> => {
@@ -472,15 +477,21 @@ describe('ContentController, AdminContentController and AdminMediaController', (
         media: [COVER, FIGURE],
       });
       const response: request.Response = await admin(
-        server().put('/content/admin/projects/project-movah').set('if-match', '"3"').send(FIXTURE),
+        server()
+          .put('/content/admin/projects/project-library-trails')
+          .set('if-match', '"3"')
+          .send(FIXTURE),
       );
       expect(response.status).toBe(200);
       expect(response.headers['etag']).toBe('"4"');
       expect(response.body.version).toBe(4);
       const [id, version, revision] = useCases.revise.execute.mock.calls[0] ?? [];
-      expect([id, version]).toEqual(['project-movah', 3]);
-      expect(revision?.title.en).toBe('Movah');
-      expect(revision?.cover).toEqual({ media: COVER.id, alt: { fr: 'Accueil de Movah' } });
+      expect([id, version]).toEqual(['project-library-trails', 3]);
+      expect(revision?.title.en).toBe('Library Trails');
+      expect(revision?.cover).toEqual({
+        media: COVER.id,
+        alt: { fr: 'Accueil de Library Trails' },
+      });
       expect(revision?.article.en?.mediaIds()).toEqual([FIGURE.id]);
     });
 
@@ -497,25 +508,25 @@ describe('ContentController, AdminContentController and AdminMediaController', (
         },
       );
       const seo: ProjectRevisionRequest['seo'] = {
-        title: { fr: '  Movah, en bref  ', en: 'Movah in short' },
+        title: { fr: '  Library Trails, en bref  ', en: 'Library Trails in short' },
         description: { fr: '   ' },
         keywords: { fr: [' Flutter ', 'suivi de séries'], en: [] },
       };
       const response: request.Response = await admin(
         server()
-          .put('/content/admin/projects/project-movah')
+          .put('/content/admin/projects/project-library-trails')
           .set('if-match', '"3"')
           .send({ ...FIXTURE, seo }),
       );
       expect(response.status).toBe(200);
       expect(AdminProjectDtoSchema.parse(response.body).seo).toEqual({
-        title: { fr: 'Movah, en bref', en: 'Movah in short' },
+        title: { fr: 'Library Trails, en bref', en: 'Library Trails in short' },
         description: {},
         keywords: { fr: ['Flutter', 'suivi de séries'] },
       });
       const [, , revision] = useCases.revise.execute.mock.calls[0] ?? [];
       expect(revision?.seo.in('en')).toEqual({
-        title: 'Movah in short',
+        title: 'Library Trails in short',
         description: null,
         keywords: [],
       });
@@ -525,7 +536,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
     it('rejects duplicate or too short keywords (400) with their field', async (): Promise<void> => {
       const response: request.Response = await admin(
         server()
-          .put('/content/admin/projects/project-movah')
+          .put('/content/admin/projects/project-library-trails')
           .set('if-match', '"3"')
           .send({
             ...FIXTURE,
@@ -547,7 +558,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
     it('rejects a search title above the limit (400) with its field', async (): Promise<void> => {
       const response: request.Response = await admin(
         server()
-          .put('/content/admin/projects/project-movah')
+          .put('/content/admin/projects/project-library-trails')
           .set('if-match', '"3"')
           .send({
             ...FIXTURE,
@@ -570,7 +581,10 @@ describe('ContentController, AdminContentController and AdminMediaController', (
     it('answers a revision referencing unknown media with 422 and their ids', async (): Promise<void> => {
       useCases.revise.execute.mockRejectedValue(new MediaNotFoundError([COVER.id]));
       const response: request.Response = await admin(
-        server().put('/content/admin/projects/project-movah').set('if-match', '"3"').send(FIXTURE),
+        server()
+          .put('/content/admin/projects/project-library-trails')
+          .set('if-match', '"3"')
+          .send(FIXTURE),
       );
       expect(response.status).toBe(422);
       expect(response.headers['content-type']).toContain('application/problem+json');
@@ -579,7 +593,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
 
     it('requires If-Match before any change (428)', async (): Promise<void> => {
       const response: request.Response = await admin(
-        server().post('/content/admin/projects/project-movah/publish'),
+        server().post('/content/admin/projects/project-library-trails/publish'),
       );
       expect(response.status).toBe(428);
       expect(response.body.code).toBe('request.precondition-required');
@@ -589,7 +603,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
     it('rejects a malformed revision (400) before reaching the use case', async (): Promise<void> => {
       const response: request.Response = await admin(
         server()
-          .put('/content/admin/projects/project-movah')
+          .put('/content/admin/projects/project-library-trails')
           .set('if-match', '"3"')
           .send({ ...FIXTURE, techs: ['Vue.js'] }),
       );
@@ -609,12 +623,14 @@ describe('ContentController, AdminContentController and AdminMediaController', (
         media: [],
       });
       const response: request.Response = await admin(
-        server().post(`/content/admin/projects/project-movah/${path}`).set('if-match', 'W/"7"'),
+        server()
+          .post(`/content/admin/projects/project-library-trails/${path}`)
+          .set('if-match', 'W/"7"'),
       );
       expect(response.status).toBe(200);
       expect(response.headers['etag']).toBe('"8"');
       expect(response.body.media).toEqual([]);
-      expect(useCases[useCase].execute).toHaveBeenCalledWith('project-movah', 7);
+      expect(useCases[useCase].execute).toHaveBeenCalledWith('project-library-trails', 7);
     });
 
     it.each([
@@ -628,7 +644,9 @@ describe('ContentController, AdminContentController and AdminMediaController', (
     ])('maps %s to problem+json', async (error, status, code): Promise<void> => {
       useCases.publish.execute.mockRejectedValue(error);
       const response: request.Response = await admin(
-        server().post('/content/admin/projects/project-movah/publish').set('if-match', '"1"'),
+        server()
+          .post('/content/admin/projects/project-library-trails/publish')
+          .set('if-match', '"1"'),
       );
       expect(response.status).toBe(status);
       expect(response.headers['content-type']).toContain('application/problem+json');
@@ -724,7 +742,7 @@ describe('toAdminProjectDto, toProjectRevision and contentProblemMapper', (): vo
   it('lists the fields missing before publication', (): void => {
     const draft: Project = Project.rehydrate({
       ...projectFromFixture().snapshot(),
-      title: t('Movah'),
+      title: t('Library Trails'),
       status: 'draft',
     });
     expect(toAdminProjectDto(draft, []).missing).toEqual(['title.en', 'cover.alt.en']);
@@ -735,12 +753,12 @@ describe('toAdminProjectDto, toProjectRevision and contentProblemMapper', (): vo
     const revision: ProjectRevision = toProjectRevision(
       ProjectRevisionRequestSchema.parse({
         ...FIXTURE,
-        title: { fr: 'Movah' },
+        title: { fr: 'Library Trails' },
         article: { fr: FIXTURE.article.fr },
         cover: { media: COVER.id, alt: { fr: 'Accueil', en: 'Home' } },
       }),
     );
-    expect(revision.title.toProps()).toEqual({ fr: 'Movah' });
+    expect(revision.title.toProps()).toEqual({ fr: 'Library Trails' });
     expect(revision.article.en).toBeUndefined();
     expect(revision.cover?.alt).toEqual({ fr: 'Accueil', en: 'Home' });
     const withoutCover: Project = Project.rehydrate({

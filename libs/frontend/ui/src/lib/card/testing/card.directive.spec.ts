@@ -13,9 +13,9 @@ import { CARD_IMPORTS } from '@internal/ui/lib/card/constants/card.imports';
   imports: [CARD_IMPORTS],
   template: `<article uiCard variant="outline" aria-labelledby="card-title">
     <header uiCardHeader>
-      <h3 uiCardTitle id="card-title">Movah</h3>
+      <h3 uiCardTitle id="card-title">Library Trails</h3>
       <p uiCardDescription>Plateforme de mobilité</p>
-      <a uiCardAction href="/projets/movah">Voir</a>
+      <a uiCardAction href="/projets/library-trails">Voir</a>
     </header>
     <div uiCardContent>Contenu</div>
     <footer uiCardFooter class="justify-end">Pied</footer>

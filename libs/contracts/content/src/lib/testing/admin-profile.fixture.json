@@ -1,47 +1,47 @@
 {
   "heroIntro": {
-    "fr": "Développeur web fullstack à Blois.",
-    "en": "Full-stack web developer in Blois."
+    "fr": "Morgan Exemple, designer d’interfaces fictif.",
+    "en": "Morgan Exemple, a fictional interface designer."
   },
   "aboutStatement": {
-    "fr": "J'aime concevoir des applications qui répondent à des besoins concrets.",
-    "en": "I like building applications that meet real needs."
+    "fr": "Ce profil de démonstration explore des interfaces pour la lecture et la culture.",
+    "en": "This demonstration profile explores interfaces for reading and culture."
   },
   "aboutLead": {
-    "fr": "Après un BTS SIO et un bachelor.",
-    "en": "After a BTS SIO and a bachelor's degree."
+    "fr": "Un parcours inventé en création visuelle, puis en design d’interaction.",
+    "en": "An invented background in visual design followed by interaction design."
   },
   "facts": [
     {
       "label": {
-        "fr": "Basé à",
-        "en": "Based in"
+        "fr": "Lieu fictif",
+        "en": "Fictional location"
       },
       "value": {
-        "fr": "Blois, Loir-et-Cher",
-        "en": "Blois, France"
+        "fr": "Ville-Exemple",
+        "en": "Example Town"
       }
     }
   ],
   "links": [
     {
       "kind": "email",
-      "url": "mailto:contact@valentin-fortin.pro",
+      "url": "mailto:morgan@example.com",
       "label": null
     },
     {
       "kind": "github",
-      "url": "https://github.com/DevSkyLex",
+      "url": "https://example.com/demo/code",
       "label": null
     },
     {
       "kind": "linkedin",
-      "url": "https://www.linkedin.com/in/valentin-fortin",
+      "url": "https://example.com/demo/profile",
       "label": null
     },
     {
       "kind": "website",
-      "url": "https://blog.example.fr",
+      "url": "https://example.com/demo/journal",
       "label": "Blog"
     }
   ],

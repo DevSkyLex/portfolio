@@ -12,8 +12,8 @@ import { PageSeoService } from '@internal/content-web-data-access/lib/services/p
  * Builds a case study with optional overrides.
  */
 const article = (overrides: Partial<ProjectArticle> = {}): ProjectArticle => ({
-  slug: 'movah',
-  title: 'Movah',
+  slug: 'library-trails',
+  title: 'Library Trails',
   summary: 'Une application mobile pour suivre ses séries.',
   periodLabel: '2026',
   techs: ['flutter'],
@@ -23,7 +23,7 @@ const article = (overrides: Partial<ProjectArticle> = {}): ProjectArticle => ({
     small: null,
     width: 2400,
     height: 1350,
-    alt: 'Accueil de Movah',
+    alt: 'Accueil de Library Trails',
   },
   lead: 'Flutter et Supabase.',
   client: 'Projet personnel',
@@ -68,12 +68,12 @@ describe('PageSeoService', (): void => {
     const { seo, head } = setup();
     seo.project(article());
 
-    expect(TestBed.inject<Title>(Title).getTitle()).toBe('Movah — Valentin Fortin');
+    expect(TestBed.inject<Title>(Title).getTitle()).toBe('Library Trails — Valentin Fortin');
     expect(content(head, 'name="description"')).toBe(
       'Une application mobile pour suivre ses séries.',
     );
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://example.test/fr/projects/movah',
+      'https://example.test/fr/projects/library-trails',
     );
     expect(
       [...head.querySelectorAll('link[rel="alternate"]')].map((link: Element): string[] => [
@@ -81,9 +81,9 @@ describe('PageSeoService', (): void => {
         link.getAttribute('href') ?? '',
       ]),
     ).toEqual([
-      ['fr', 'https://example.test/fr/projects/movah'],
-      ['en', 'https://example.test/en/projects/movah'],
-      ['x-default', 'https://example.test/fr/projects/movah'],
+      ['fr', 'https://example.test/fr/projects/library-trails'],
+      ['en', 'https://example.test/en/projects/library-trails'],
+      ['x-default', 'https://example.test/fr/projects/library-trails'],
     ]);
     expect(content(head, 'name="keywords"')).toBe('flutter');
     expect(content(head, 'property="og:type"')).toBe('article');
@@ -95,7 +95,7 @@ describe('PageSeoService', (): void => {
     );
     expect(content(head, 'property="og:image:width"')).toBe('2400');
     expect(content(head, 'property="og:image:height"')).toBe('1350');
-    expect(content(head, 'property="og:image:alt"')).toBe('Accueil de Movah');
+    expect(content(head, 'property="og:image:alt"')).toBe('Accueil de Library Trails');
     expect(content(head, 'name="twitter:card"')).toBe('summary_large_image');
 
     const scripts: NodeListOf<Element> = head.querySelectorAll(
@@ -104,7 +104,7 @@ describe('PageSeoService', (): void => {
     expect(scripts).toHaveLength(1);
     expect(JSON.parse(scripts[0]?.textContent ?? '')).toMatchObject({
       '@type': 'CreativeWork',
-      headline: 'Movah',
+      headline: 'Library Trails',
       inLanguage: 'fr',
     });
   });
@@ -114,12 +114,12 @@ describe('PageSeoService', (): void => {
     seo.project(article());
     seo.project(
       article({
-        slug: 'rdi-manager',
-        title: 'RDI Manager',
+        slug: 'workshop-calendar',
+        title: 'Workshop Calendar',
         techs: [],
         cover: null,
         seo: {
-          title: 'RDI Manager for research',
+          title: 'Workshop Calendar for research',
           description: 'Custom description.',
           keywords: [],
         },
@@ -130,8 +130,10 @@ describe('PageSeoService', (): void => {
     expect(head.querySelectorAll('link[rel="alternate"]')).toHaveLength(3);
     expect(head.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(1);
     expect(head.querySelectorAll('meta[property="og:title"]')).toHaveLength(1);
-    expect(TestBed.inject<Title>(Title).getTitle()).toBe('RDI Manager for research');
-    expect(content(head, 'property="og:url"')).toBe('https://example.test/en/projects/rdi-manager');
+    expect(TestBed.inject<Title>(Title).getTitle()).toBe('Workshop Calendar for research');
+    expect(content(head, 'property="og:url"')).toBe(
+      'https://example.test/en/projects/workshop-calendar',
+    );
     expect(content(head, 'property="og:locale"')).toBe('en_GB');
     expect(content(head, 'property="og:image"')).toBeNull();
     expect(content(head, 'name="twitter:image"')).toBeNull();
@@ -155,7 +157,7 @@ describe('PageSeoService', (): void => {
       [...head.querySelectorAll('link[rel="canonical"]')].map((link: Element): string | null =>
         link.getAttribute('href'),
       ),
-    ).toEqual(['https://example.test/fr/projects/movah']);
+    ).toEqual(['https://example.test/fr/projects/library-trails']);
   });
 
   it('writes a website page without an image or JSON-LD', (): void => {

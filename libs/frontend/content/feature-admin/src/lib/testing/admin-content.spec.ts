@@ -921,13 +921,15 @@ describe('ProjectFormComponent', (): void => {
   });
 
   it('counts the search text characters and previews the Google result as the user types', async (): Promise<void> => {
-    const { backend, root, type, showLanguage, submit } = await edit(project('movah', 'draft'));
+    const { backend, root, type, showLanguage, submit } = await edit(
+      project('library-trails', 'draft'),
+    );
     const preview: (slot: string) => string = (slot: string): string =>
       root.querySelector(`[data-slot="seo-preview-${slot}"]`)?.textContent?.trim() ?? '';
     const counter: (id: string) => HTMLElement | null = (id: string): HTMLElement | null =>
       root.querySelector<HTMLElement>(`#${id}-count`);
     expect(root.querySelector<HTMLInputElement>('#edit-seo-title-fr')?.placeholder).toBe(
-      'Titre movah',
+      'Titre library-trails',
     );
     await showLanguage('Description de recherche', 'en');
     expect(root.querySelector<HTMLTextAreaElement>('#edit-seo-description-en')?.placeholder).toBe(
@@ -935,12 +937,12 @@ describe('ProjectFormComponent', (): void => {
     );
     // The previews follow their own toggle, French first.
     expect(shownLanguage(root, 'Aperçus')).toBe('Français');
-    expect(preview('title')).toBe('Titre movah — Valentin Fortin');
+    expect(preview('title')).toBe('Titre library-trails — Valentin Fortin');
     expect(preview('description')).toBe('Résumé');
-    expect(preview('url')).toBe('valentin-fortin.pro › fr › projects › movah');
+    expect(preview('url')).toBe('valentin-fortin.pro › fr › projects › library-trails');
     await showLanguage('Aperçus', 'en');
-    expect(preview('url')).toBe('valentin-fortin.pro › en › projects › movah');
-    expect(preview('title')).toBe('Title movah — Valentin Fortin');
+    expect(preview('url')).toBe('valentin-fortin.pro › en › projects › library-trails');
+    expect(preview('title')).toBe('Title library-trails — Valentin Fortin');
     expect(root.querySelector('[data-slot="seo-preview-title"]')?.getAttribute('lang')).toBe('en');
     await showLanguage('Aperçus', 'fr');
     expect(counter('edit-seo-title-fr')?.textContent?.trim()).toBe('0/70');
@@ -948,8 +950,8 @@ describe('ProjectFormComponent', (): void => {
       'edit-seo-title-fr-count',
     );
 
-    await type('edit-seo-title-fr', '  Movah, app de covoiturage  ');
-    expect(preview('title')).toBe('Movah, app de covoiturage');
+    await type('edit-seo-title-fr', '  Library Trails, catalogue  ');
+    expect(preview('title')).toBe('Library Trails, catalogue');
     expect(counter('edit-seo-title-fr')?.textContent?.trim()).toBe('25/70');
     expect(counter('edit-seo-title-fr')?.className).toContain('text-fg-faint');
     await type('edit-seo-title-fr', 'x'.repeat(61));
@@ -963,7 +965,7 @@ describe('ProjectFormComponent', (): void => {
     // Shown in English, the field in error comes back to French on the refused submission.
     await showLanguage('Titre de recherche', 'en');
     await submit();
-    backend.expectNone('/api/content/admin/projects/movah');
+    backend.expectNone('/api/content/admin/projects/library-trails');
     expect(shownLanguage(root, 'Titre de recherche')).toBe('Français');
     expect(root.querySelector('#edit-seo-title-fr-error')?.textContent).toContain(
       '70 caractères maximum.',
@@ -973,12 +975,14 @@ describe('ProjectFormComponent', (): void => {
     );
     expect(languageStates(root, 'Titre de recherche')).toEqual(['Français, à corriger', 'English']);
 
-    await type('edit-seo-title-fr', ' Movah ');
+    await type('edit-seo-title-fr', ' Library Trails ');
     await type('edit-seo-description-fr', '');
     await type('edit-seo-description-en', 'Local carpooling app.');
     await submit();
-    expect(backend.expectOne('/api/content/admin/projects/movah').request.body.seo).toEqual({
-      title: { fr: 'Movah' },
+    expect(
+      backend.expectOne('/api/content/admin/projects/library-trails').request.body.seo,
+    ).toEqual({
+      title: { fr: 'Library Trails' },
       description: { en: 'Local carpooling app.' },
       keywords: { fr: [] },
     });
@@ -986,7 +990,7 @@ describe('ProjectFormComponent', (): void => {
 
   it('edits the keywords per language, prefills them from the technologies and lists the generated tags', async (): Promise<void> => {
     const { backend, root, showLanguage, submit, settle } = await edit({
-      ...project('movah', 'draft'),
+      ...project('library-trails', 'draft'),
       techs: ['flutter', 'supabase'],
       cover: { media: MEDIA.id, alt: t('Accueil', 'Home') },
       media: [MEDIA],
@@ -1048,10 +1052,12 @@ describe('ProjectFormComponent', (): void => {
 
     // Generated tags: the public page's own functions, keywords written verbatim.
     const french: Record<string, string> = await generated('fr');
-    expect(french['title']).toBe('Titre movah — Valentin Fortin');
+    expect(french['title']).toBe('Titre library-trails — Valentin Fortin');
     expect(french['keywords']).toBe('covoiturage');
-    expect(french['canonical']).toBe('https://valentin-fortin.pro/fr/projects/movah');
-    expect(french['hreflang x-default']).toBe('https://valentin-fortin.pro/fr/projects/movah');
+    expect(french['canonical']).toBe('https://valentin-fortin.pro/fr/projects/library-trails');
+    expect(french['hreflang x-default']).toBe(
+      'https://valentin-fortin.pro/fr/projects/library-trails',
+    );
     expect(french['og:image']).toBe(`https://valentin-fortin.pro${MEDIA.src}`);
     expect(french['og:image:alt']).toBe('Accueil');
     expect(french['twitter:card']).toBe('summary_large_image');
@@ -1074,7 +1080,7 @@ describe('ProjectFormComponent', (): void => {
       'valentin-fortin.pro',
     );
     expect(card?.querySelector('[data-slot="social-preview-title"]')?.textContent?.trim()).toBe(
-      'Titre movah — Valentin Fortin',
+      'Titre library-trails — Valentin Fortin',
     );
     expect(card?.querySelector('img')?.getAttribute('src')).toBe(MEDIA.src);
     // Without English keywords the English page falls back on the technologies.
@@ -1091,7 +1097,9 @@ describe('ProjectFormComponent', (): void => {
     expect(tags('en')).toEqual(['flutter', 'supabase']);
 
     await submit();
-    expect(backend.expectOne('/api/content/admin/projects/movah').request.body.seo).toEqual({
+    expect(
+      backend.expectOne('/api/content/admin/projects/library-trails').request.body.seo,
+    ).toEqual({
       title: {},
       description: {},
       keywords: { fr: ['covoiturage', 'flutter', 'supabase'], en: ['flutter', 'supabase'] },
@@ -1100,11 +1108,11 @@ describe('ProjectFormComponent', (): void => {
 
   it('refuses a keyword shorter than two characters', async (): Promise<void> => {
     const { backend, root, submit } = await edit({
-      ...project('movah', 'draft'),
+      ...project('library-trails', 'draft'),
       seo: { title: {}, description: {}, keywords: { fr: ['x'], en: [] } },
     });
     await submit();
-    backend.expectNone('/api/content/admin/projects/movah');
+    backend.expectNone('/api/content/admin/projects/library-trails');
     expect(root.querySelector('#edit-seo-keywords-fr-error')?.textContent).toContain(
       'Chaque mot clé compte de 2 à 40 caractères.',
     );

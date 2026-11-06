@@ -47,7 +47,7 @@ const MIGRATIONS: string = fileURLToPath(
  */
 const DRAFT: TimelineEntryDraft = {
   title: { fr: 'Stage', en: 'Internship' },
-  place: { fr: 'Blois', en: 'Blois' },
+  place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
   description: { fr: 'Outils internes.', en: 'Internal tools.' },
   start: { year: 2025, month: 1 },
   end: null,
@@ -97,8 +97,16 @@ describe('Timeline administration (Postgres via PGlite)', (): void => {
   });
 
   it('lists the seeded entries of each kind by position, the seed bumping both list versions', async (): Promise<void> => {
-    expect(await order(handle, 'education')).toEqual(['bts-sio', 'bachelor-cefii', 'mastere-ynov']);
-    expect(await order(handle, 'experience')).toEqual(['utopia', 'kodoka', 'object-as-a-service']);
+    expect(await order(handle, 'education')).toEqual([
+      'visual-design-diploma',
+      'interaction-design-course',
+      'inclusive-design-workshop',
+    ]);
+    expect(await order(handle, 'experience')).toEqual([
+      'paper-lantern-studio',
+      'open-reading-collective',
+      'independent-interface-practice',
+    ]);
     const lists: DrizzleTimelineListRepository = new DrizzleTimelineListRepository(handle.db);
     // The seed bumps the rows the migration created.
     expect(await lists.version('education')).toBe(2);
@@ -128,13 +136,13 @@ describe('Timeline administration (Postgres via PGlite)', (): void => {
 
   it('saves content only with the read version and never moves the entry', async (): Promise<void> => {
     const entries: DrizzleTimelineEntryRepository = new DrizzleTimelineEntryRepository(handle.db);
-    const entry: TimelineEntry | null = await entries.get('kodoka');
+    const entry: TimelineEntry | null = await entries.get('open-reading-collective');
     if (entry === null) throw new Error('entry missing');
     entry.revise(TimelineEntry.revisionOf({ ...DRAFT, end: { year: 2025, month: 6 } }));
     entry.moveTo(0);
     await expect(entries.save(entry, 1)).resolves.toBe(2);
     await expect(entries.save(entry, 1)).rejects.toBeInstanceOf(VersionMismatchError);
-    const saved: TimelineEntry | null = await entries.get('kodoka');
+    const saved: TimelineEntry | null = await entries.get('open-reading-collective');
     expect(saved?.position).toBe(1);
     expect(saved?.period.end).toEqual({ year: 2025, month: 6 });
     expect(saved?.techs).toEqual(['vue']);
@@ -142,29 +150,43 @@ describe('Timeline administration (Postgres via PGlite)', (): void => {
 
   it('reorders with the list version and leaves the entry versions', async (): Promise<void> => {
     const reorder: ReorderTimeline = new ReorderTimeline(unitOfWork, clock);
-    await reorder.execute('experience', 2, ['object-as-a-service', 'utopia', 'kodoka']);
-    expect(await order(handle, 'experience')).toEqual(['object-as-a-service', 'utopia', 'kodoka']);
-    expect((await new DrizzleTimelineEntryRepository(handle.db).get('kodoka'))?.version).toBe(1);
+    await reorder.execute('experience', 2, [
+      'independent-interface-practice',
+      'paper-lantern-studio',
+      'open-reading-collective',
+    ]);
+    expect(await order(handle, 'experience')).toEqual([
+      'independent-interface-practice',
+      'paper-lantern-studio',
+      'open-reading-collective',
+    ]);
+    expect(
+      (await new DrizzleTimelineEntryRepository(handle.db).get('open-reading-collective'))?.version,
+    ).toBe(1);
     await expect(
-      reorder.execute('experience', 2, ['utopia', 'kodoka', 'object-as-a-service']),
+      reorder.execute('experience', 2, [
+        'paper-lantern-studio',
+        'open-reading-collective',
+        'independent-interface-practice',
+      ]),
     ).rejects.toBeInstanceOf(VersionMismatchError);
     expect(await new DrizzleTimelineListRepository(handle.db).version('experience')).toBe(3);
   });
 
   it('rolls back the version bump of an invalid order', async (): Promise<void> => {
     await expect(
-      new ReorderTimeline(unitOfWork, clock).execute('education', 2, ['bts-sio']),
+      new ReorderTimeline(unitOfWork, clock).execute('education', 2, ['visual-design-diploma']),
     ).rejects.toMatchObject({ code: 'content.timeline-order-invalid' });
     expect(await new DrizzleTimelineListRepository(handle.db).version('education')).toBe(2);
   });
 
   it('deletes with the read version and renumbers the kind', async (): Promise<void> => {
     const remove: DeleteTimelineEntry = new DeleteTimelineEntry(unitOfWork, clock);
-    await expect(remove.execute('education', 'bts-sio', 5)).rejects.toBeInstanceOf(
+    await expect(remove.execute('education', 'visual-design-diploma', 5)).rejects.toBeInstanceOf(
       VersionMismatchError,
     );
     expect(await order(handle, 'education')).toHaveLength(3);
-    await expect(remove.execute('education', 'bts-sio', 1)).resolves.toMatchObject({
+    await expect(remove.execute('education', 'visual-design-diploma', 1)).resolves.toMatchObject({
       version: 3,
       revision: 2,
     });
@@ -174,8 +196,8 @@ describe('Timeline administration (Postgres via PGlite)', (): void => {
       .where(sql`${timelineEntries.kind} = 'education'`)
       .orderBy(timelineEntries.position);
     expect(rows).toEqual([
-      { id: 'bachelor-cefii', position: 0 },
-      { id: 'mastere-ynov', position: 1 },
+      { id: 'interaction-design-course', position: 0 },
+      { id: 'inclusive-design-workshop', position: 1 },
     ]);
   });
 

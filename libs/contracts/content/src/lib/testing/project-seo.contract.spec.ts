@@ -24,12 +24,12 @@ describe('ProjectSeoDtoSchema', (): void => {
     );
     expect(
       ProjectSeoDtoSchema.parse({
-        title: { fr: '  Movah  ' },
+        title: { fr: '  Library Trails  ' },
         description: { en: 'App.' },
         keywords: { fr: [' Flutter '], en: ['series tracker'] },
       }),
     ).toEqual({
-      title: { fr: 'Movah' },
+      title: { fr: 'Library Trails' },
       description: { en: 'App.' },
       keywords: { fr: ['Flutter'], en: ['series tracker'] },
     });

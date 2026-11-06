@@ -46,7 +46,7 @@ const ISSUER: string = 'https://exemple.fr/api/auth';
  */
 const BODY: TimelineEntryRequest = {
   title: { fr: 'Développeur', en: 'Developer' },
-  place: { fr: 'Tours', en: 'Tours' },
+  place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
   description: { fr: 'Interfaces.', en: 'Interfaces.' },
   start: { year: 2023, month: 9 },
   end: null,
@@ -162,7 +162,7 @@ describe('AdminTimelineController', (): void => {
     useCases.list.execute.mockResolvedValue({
       kind: 'experience',
       version: 4,
-      entries: [entry('oaas', 0, 2), entry('kodoka', 1)],
+      entries: [entry('oaas', 0, 2), entry('open-reading-collective', 1)],
     });
     const response: request.Response = await admin(
       server().get('/content/admin/timeline/experience/entries'),
@@ -174,7 +174,10 @@ describe('AdminTimelineController', (): void => {
       kind: 'experience',
       version: 4,
       totalItems: 2,
-      member: [{ id: 'oaas', position: 0, version: 2, end: null }, { id: 'kodoka' }],
+      member: [
+        { id: 'oaas', position: 0, version: 2, end: null },
+        { id: 'open-reading-collective' },
+      ],
     });
     expect(useCases.list.execute).toHaveBeenCalledWith('experience');
   });
@@ -299,22 +302,25 @@ describe('AdminTimelineController', (): void => {
     useCases.reorder.execute.mockResolvedValue({
       kind: 'experience',
       version: 5,
-      entries: [entry('kodoka', 0), entry('oaas', 1)],
+      entries: [entry('open-reading-collective', 0), entry('oaas', 1)],
       revision: 9,
     });
     const response: request.Response = await admin(
       server()
         .put('/content/admin/timeline/experience/order')
         .set('if-match', '"4"')
-        .send({ ids: ['kodoka', 'oaas'] }),
+        .send({ ids: ['open-reading-collective', 'oaas'] }),
     );
     expect(response.status).toBe(200);
     expect(response.headers['etag']).toBe('"5"');
     expect(response.body.member.map((e: { id: string }): string => e.id)).toEqual([
-      'kodoka',
+      'open-reading-collective',
       'oaas',
     ]);
-    expect(useCases.reorder.execute).toHaveBeenCalledWith('experience', 4, ['kodoka', 'oaas']);
+    expect(useCases.reorder.execute).toHaveBeenCalledWith('experience', 4, [
+      'open-reading-collective',
+      'oaas',
+    ]);
   });
 
   it('refuses a repeated id (400) and an incomplete order (422)', async (): Promise<void> => {

@@ -66,9 +66,9 @@ const DOCUMENTS: Readonly<Record<LegalDocumentKind, LegalDocument>> = {
                   content: [
                     {
                       kind: 'link',
-                      href: 'mailto:contact@valentin-fortin.pro',
+                      href: 'mailto:morgan@example.com',
                       external: false,
-                      content: [{ kind: 'text', text: 'contact@valentin-fortin.pro' }],
+                      content: [{ kind: 'text', text: 'morgan@example.com' }],
                     },
                   ],
                 },
@@ -150,7 +150,7 @@ describe('legal pages', (): void => {
     expect(root.textContent).toContain('Préambule.');
     expect(root.textContent).toContain('trois ans après leur réception');
     const mail: HTMLAnchorElement | null = root.querySelector(
-      'a[href="mailto:contact@valentin-fortin.pro"]',
+      'a[href="mailto:morgan@example.com"]',
     );
     expect(mail?.getAttribute('rel')).toBeNull();
     expect(root.querySelector('ul[role="list"] li')).not.toBeNull();

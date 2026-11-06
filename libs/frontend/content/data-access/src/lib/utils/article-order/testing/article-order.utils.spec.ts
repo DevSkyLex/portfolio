@@ -8,10 +8,10 @@ describe('articleOrder', (): void => {
 
   it('reads the featured projects, then the home row from its last card', (): void => {
     expect(
-      articleOrder([item('movah', true), item('rdi'), item('crm'), item('iot')]).map(
+      articleOrder([item('library-trails', true), item('rdi'), item('crm'), item('iot')]).map(
         (p: { slug: string; featured: boolean }): string => p.slug,
       ),
-    ).toEqual(['movah', 'iot', 'rdi', 'crm']);
+    ).toEqual(['library-trails', 'iot', 'rdi', 'crm']);
   });
 
   it('starts from the last regular card when nothing is featured', (): void => {

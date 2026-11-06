@@ -2,56 +2,56 @@
   "locale": "fr",
   "revision": 1,
   "profile": {
-    "heroIntro": "Développeur web fullstack à Blois. Je conçois des applications web soignées, de l'interface jusqu'au serveur.",
-    "aboutStatement": "J'aime concevoir des applications qui répondent à des besoins concrets, avec autant d'attention pour le code que pour les personnes qui les utilisent.",
-    "aboutLead": "Après un BTS SIO et un bachelor, j'ai suivi le mastère de YNOV tout en travaillant trois ans chez Object as a Service, sur des interfaces IoT et des outils internes.",
+    "heroIntro": "Morgan Exemple, personnage fictif de démonstration. Je conçois des interfaces accessibles pour des projets culturels imaginaires.",
+    "aboutStatement": "Ce profil inventé illustre une démarche de conception attentive aux différents usages.",
+    "aboutLead": "Dans ce scénario fictif, un parcours en création visuelle conduit Morgan vers le design d’interaction, puis vers des prototypes pour la lecture et les ateliers créatifs.",
     "facts": [
       {
-        "label": "Basé à",
-        "value": "Blois, Loir-et-Cher"
+        "label": "Personnage",
+        "value": "Morgan Exemple — fictif"
       },
       {
-        "label": "Formation",
-        "value": "Mastère Expert en développement logiciel, YNOV"
+        "label": "Lieu fictif",
+        "value": "Ville-Exemple"
       },
       {
-        "label": "En dehors du code",
-        "value": "Hardware, jeux vidéo, impression et modélisation 3D"
+        "label": "Activités inventées",
+        "value": "Reliure, gravure et carnets de voyage imaginaires"
       }
     ],
     "links": [
       {
         "kind": "email",
-        "url": "mailto:contact@valentin-fortin.pro",
-        "label": null
+        "url": "mailto:morgan@example.com",
+        "label": "Demo contact"
       },
       {
         "kind": "github",
-        "url": "https://github.com/DevSkyLex",
-        "label": null
+        "url": "https://example.com/demo/code",
+        "label": "Demo code profile"
       },
       {
         "kind": "linkedin",
-        "url": "https://www.linkedin.com/in/valentin-fortin",
-        "label": null
+        "url": "https://example.com/demo/profile",
+        "label": "Demo professional profile"
       }
     ]
   },
   "projects": [
     {
-      "slug": "movah",
-      "title": "Movah",
-      "summary": "Une application mobile pour suivre ses séries, films et anime, et ne plus perdre le fil. Flutter sur Android et iOS, avec Supabase.",
-      "lead": "Une application mobile pour suivre ses séries, films et anime, et ne plus perdre le fil. Flutter sur Android et iOS, avec Supabase.",
-      "periodLabel": "Depuis juillet 2026",
-      "client": "Projet personnel",
-      "role": "Conception et développement",
-      "place": "Android et iOS",
-      "siteUrl": null,
+      "slug": "library-trails",
+      "title": "Parcours de lecture",
+      "summary": "Une bibliothèque fictive propose des parcours de lecture accessibles, classés par envie et durée.",
+      "lead": "Une bibliothèque fictive propose des parcours de lecture accessibles, classés par envie et durée.",
+      "periodLabel": "Février — octobre 2025",
+      "client": "Collectif Lecture ouverte",
+      "role": "Design d’interface et prototypage",
+      "place": "Ville-Exemple — lieu fictif",
+      "siteUrl": "https://example.com/demos/library-trails",
       "techs": [
-        "flutter",
-        "dart",
-        "supabase"
+        "vue",
+        "typescript",
+        "css"
       ],
       "featured": true,
       "article": {
@@ -65,7 +65,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Contexte"
+                "text": "Scénario fictif"
               }
             ]
           },
@@ -74,16 +74,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Entre les plateformes de streaming, on oublie vite où l'on en est d'une série ou la date de sortie du prochain épisode. Movah réunit au même endroit ce que l'on regarde, ce que l'on veut voir et ce qui arrive bientôt."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "C'est un projet personnel, mené de la maquette à l'application, pour aller au bout d'un produit mobile complet : comptes, données, synchronisation et publication sur deux plateformes."
+                "text": "Le catalogue de démonstration relie des ouvrages inventés à des parcours courts. Aucun emprunt réel ni compte de lecteur ne sont utilisés."
               }
             ]
           },
@@ -95,7 +86,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Ce que j’ai fait"
+                "text": "Démarche"
               }
             ]
           },
@@ -104,7 +95,28 @@
             "content": [
               {
                 "type": "text",
-                "text": "J'ai conçu la maquette haute fidélité, puis développé l'application Flutter et son backend Supabase."
+                "text": "Des ateliers avec des personnages fictifs ont servi à organiser la navigation et les filtres."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Résultat de démonstration"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Les états vides, le clavier et les contrastes ont été vérifiés sur un prototype autonome."
               }
             ]
           },
@@ -119,7 +131,7 @@
                     "content": [
                       {
                         "type": "text",
-                        "text": "Le suivi des séries, films et anime, épisode par épisode."
+                        "text": "Données entièrement fictives"
                       }
                     ]
                   }
@@ -133,129 +145,11 @@
                     "content": [
                       {
                         "type": "text",
-                        "text": "Le catalogue et la recherche, alimentés par l'API de TMDB."
+                        "text": "Navigation au clavier"
                       }
                     ]
                   }
                 ]
-              },
-              {
-                "type": "listItem",
-                "content": [
-                  {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "Le calendrier des sorties à venir, les listes et les statistiques."
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "type": "listItem",
-                "content": [
-                  {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "La connexion par e-mail, Google ou Apple, en français et en anglais."
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Choix techniques"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "L'application n'appelle jamais TMDB directement : des Edge Functions Supabase servent d'intermédiaire, avec un cache dans Postgres. La clé d'API reste sur le serveur, et les écrans continuent d'afficher les dernières données connues si TMDB ne répond pas."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Le code est organisé par fonctionnalité, en couches données, domaine et présentation. Les entités du domaine ne dépendent ni de Flutter ni de Supabase, ce qui les rend simples à tester ; l'état de l'application passe par Riverpod."
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Résultat"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "L'application tourne sur Android et iOS, avec des thèmes clair et sombre fidèles à la maquette."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Chaque changement passe par une intégration continue GitHub Actions : formatage, analyse du code, tests, puis construction de l'application."
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Ce que je retiens"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Partir d'une maquette complète avant d'écrire la première ligne a évité beaucoup d'allers-retours : chaque écran avait déjà ses états, ses couleurs et ses textes."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Passer d'Angular à Flutter m'a montré que les mêmes idées se retrouvent d'un framework à l'autre : des composants petits et des données qui circulent dans un seul sens."
               }
             ]
           }
@@ -269,19 +163,19 @@
       }
     },
     {
-      "slug": "rdi-manager",
-      "title": "RDI Manager",
-      "summary": "Suivi d'activité de la R&D chez Object as a Service : temps, planning, indicateurs. J'ai repris le suivi et modernisé l'application Symfony et Vue.js.",
-      "lead": "Suivi d'activité de la R&D chez Object as a Service : temps, planning, indicateurs. Back-end Symfony, interface Vue.js.",
-      "periodLabel": "2023 — 2026",
-      "client": "Object as a Service",
-      "role": "Développeur web fullstack",
-      "place": "À distance",
-      "siteUrl": null,
+      "slug": "workshop-calendar",
+      "title": "Agenda des ateliers",
+      "summary": "Un agenda de démonstration pour organiser les ateliers créatifs d’une maison de quartier imaginaire.",
+      "lead": "Un agenda de démonstration pour organiser les ateliers créatifs d’une maison de quartier imaginaire.",
+      "periodLabel": "Février — octobre 2024",
+      "client": "Maison des idées — démonstration",
+      "role": "Design d’interface et prototypage",
+      "place": "Ville-Exemple — lieu fictif",
+      "siteUrl": "https://example.com/demos/workshop-calendar",
       "techs": [
-        "symfony",
-        "php",
-        "vue"
+        "react",
+        "typescript",
+        "nodejs"
       ],
       "featured": false,
       "article": {
@@ -295,7 +189,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Contexte"
+                "text": "Scénario fictif"
               }
             ]
           },
@@ -304,16 +198,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "RDI Manager est l'outil interne qui suit l'activité de la R&D d'Object as a Service : le temps passé sur chaque projet, le planning de l'équipe et les indicateurs qui servent au suivi des projets de recherche."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "L'application associe un back-end Symfony et une interface en Vue.js. Elle tournait depuis plusieurs années sur une version ancienne de Symfony. Chaque évolution devenait plus longue, et personne n'osait toucher au calcul des indicateurs."
+                "text": "Le scénario présente des ateliers de gravure, de reliure et de dessin dans un lieu entièrement inventé."
               }
             ]
           },
@@ -325,7 +210,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Ce que j’ai fait"
+                "text": "Démarche"
               }
             ]
           },
@@ -334,7 +219,28 @@
             "content": [
               {
                 "type": "text",
-                "text": "J'ai repris la maintenance de l'outil, puis sa modernisation, sans interrompre son utilisation par l'équipe."
+                "text": "Le prototype sépare la consultation du programme et la réservation de places fictives."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Résultat de démonstration"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Les messages de confirmation expliquent les étapes suivantes sans envoyer de notification à une personne réelle."
               }
             ]
           },
@@ -349,7 +255,7 @@
                     "content": [
                       {
                         "type": "text",
-                        "text": "La mise à jour de PHP, de Symfony et des dépendances, par étapes."
+                        "text": "Données entièrement fictives"
                       }
                     ]
                   }
@@ -363,129 +269,11 @@
                     "content": [
                       {
                         "type": "text",
-                        "text": "Des tests sur le calcul des indicateurs avant toute modification."
+                        "text": "Navigation au clavier"
                       }
                     ]
                   }
                 ]
-              },
-              {
-                "type": "listItem",
-                "content": [
-                  {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "La réécriture des parties les plus fragiles : saisie des temps et calculs."
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "type": "listItem",
-                "content": [
-                  {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "Les corrections et évolutions demandées par l'équipe R&D, côté Symfony comme côté Vue.js."
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Choix techniques"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Une réécriture complète aurait gelé l'outil pendant des mois. J'ai préféré une migration progressive : chaque étape laissait l'application utilisable, et les tests vérifiaient que les indicateurs restaient identiques avant et après."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "En contrepartie, quelques parties anciennes cohabitent encore avec le code modernisé. Elles sont isolées derrière des interfaces claires et documentées, pour pouvoir être remplacées plus tard."
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Résultat"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "L'outil tourne sur une version maintenue de Symfony, et les évolutions se font sans craindre de casser le calcul des indicateurs."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "L'équipe R&D a continué à saisir ses temps et à suivre ses projets pendant toute la modernisation."
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Ce que je retiens"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Commencer par les tests a été le meilleur investissement du projet : sans eux, chaque mise à jour aurait été un pari."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Reprendre le code de quelqu'un d'autre m'a appris à lire avant de juger. Plusieurs bizarreries avaient une raison métier qu'il fallait comprendre avant de les corriger."
               }
             ]
           }
@@ -499,18 +287,19 @@
       }
     },
     {
-      "slug": "crm-kodoka",
-      "title": "CRM Kodoka",
-      "summary": "Un CRM sur mesure pour Kodoka : interfaces, règles métier et gestion des données.",
-      "lead": "Un CRM sur mesure pour Kodoka : interfaces, règles métier et gestion des données.",
-      "periodLabel": "Mars — avril 2023",
-      "client": "Kodoka",
-      "role": "Développeur web fullstack",
-      "place": "Joué-lès-Tours",
-      "siteUrl": null,
+      "slug": "neighborhood-atlas",
+      "title": "Atlas du quartier",
+      "summary": "Une carte éditoriale de lieux imaginaires, conçue pour explorer des informations sans dépendre de la carte.",
+      "lead": "Une carte éditoriale de lieux imaginaires, conçue pour explorer des informations sans dépendre de la carte.",
+      "periodLabel": "Février — octobre 2022",
+      "client": "Atelier Lanterne de papier",
+      "role": "Design d’interface et prototypage",
+      "place": "Ville-Exemple — lieu fictif",
+      "siteUrl": "https://example.com/demos/neighborhood-atlas",
       "techs": [
-        "codeigniter",
-        "php"
+        "svelte",
+        "typescript",
+        "css"
       ],
       "featured": false,
       "article": {
@@ -524,7 +313,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Contexte"
+                "text": "Scénario fictif"
               }
             ]
           },
@@ -533,16 +322,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Kodoka suivait ses clients et ses échanges commerciaux dans des fichiers séparés. Les informations étaient dispersées et difficiles à partager dans l'équipe."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "L'entreprise voulait un CRM simple, adapté à sa façon de travailler, plutôt qu'un outil généraliste à configurer pendant des semaines."
+                "text": "Les lieux, les adresses et les itinéraires du scénario sont fictifs. Le projet illustre une alternative textuelle à une carte visuelle."
               }
             ]
           },
@@ -554,7 +334,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Ce que j’ai fait"
+                "text": "Démarche"
               }
             ]
           },
@@ -563,7 +343,28 @@
             "content": [
               {
                 "type": "text",
-                "text": "En deux mois, j'ai conçu et développé le CRM avec CodeIgniter 4, de la base de données aux écrans."
+                "text": "Les cartes de lieux utilisent des libellés explicites et une progression cohérente au clavier."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Résultat de démonstration"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "La vue liste conserve les mêmes informations et filtres que la carte."
               }
             ]
           },
@@ -578,7 +379,7 @@
                     "content": [
                       {
                         "type": "text",
-                        "text": "Les fiches clients et contacts, avec l'historique des échanges."
+                        "text": "Données entièrement fictives"
                       }
                     ]
                   }
@@ -592,129 +393,11 @@
                     "content": [
                       {
                         "type": "text",
-                        "text": "Le suivi des opportunités commerciales, étape par étape."
+                        "text": "Navigation au clavier"
                       }
                     ]
                   }
                 ]
-              },
-              {
-                "type": "listItem",
-                "content": [
-                  {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "Les règles métier : statuts, relances et droits selon le rôle."
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "type": "listItem",
-                "content": [
-                  {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "L'import des données existantes depuis les anciens fichiers."
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Choix techniques"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "CodeIgniter 4 était léger et déjà connu de l'équipe qui allait reprendre l'outil après moi. Pour un projet de deux mois, c'était plus important qu'un framework plus complet."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "J'ai gardé une interface sobre, rendue côté serveur, pour livrer dans les délais. Seuls les écrans les plus utilisés ont reçu un peu de JavaScript, pour éviter les rechargements."
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Résultat"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "L'équipe retrouve les clients, leurs contacts et l'historique des échanges au même endroit, au lieu de fichiers séparés."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Le code a été remis avec une documentation d'installation et de prise en main, pour que l'équipe puisse le faire évoluer."
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Ce que je retiens"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "J'aurais passé plus de temps avec les utilisateurs avant de modéliser les données : deux champs ajoutés en fin de projet auraient été évidents après une matinée d'observation."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Livrer un projet entier en deux mois m'a appris à découper le travail en versions utilisables, plutôt qu'à tout finir en même temps."
               }
             ]
           }
@@ -728,19 +411,19 @@
       }
     },
     {
-      "slug": "iotplatform",
-      "title": "IOTPlatform",
-      "summary": "Supervision et pilotage de capteurs LoRaWAN pour Object as a Service. Front-end Angular et NgRx, évolutions du back-end Django.",
-      "lead": "Supervision et pilotage de capteurs et d'actionneurs LoRaWAN, édités par Object as a Service. J'ai développé le front-end Angular et fait évoluer le back-end Django.",
-      "periodLabel": "2023 — 2026",
-      "client": "Object as a Service",
-      "role": "Développeur web fullstack",
-      "place": "À distance",
-      "siteUrl": "https://iotplatform.fr/fr/",
+      "slug": "accessibility-notebook",
+      "title": "Carnet d’accessibilité",
+      "summary": "Un carnet pédagogique de démonstration pour documenter les observations d’accessibilité sur des interfaces inventées.",
+      "lead": "Un carnet pédagogique de démonstration pour documenter les observations d’accessibilité sur des interfaces inventées.",
+      "periodLabel": "Février — octobre 2023",
+      "client": "Projet pédagogique fictif",
+      "role": "Design d’interface et prototypage",
+      "place": "Ville-Exemple — lieu fictif",
+      "siteUrl": "https://example.com/demos/accessibility-notebook",
       "techs": [
-        "angular",
-        "ngrx",
-        "django"
+        "html",
+        "css",
+        "javascript"
       ],
       "featured": false,
       "article": {
@@ -754,7 +437,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Contexte"
+                "text": "Scénario fictif"
               }
             ]
           },
@@ -763,16 +446,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "IOTPlatform permet à des opérateurs industriels, des gestionnaires de réseaux et des collectivités de superviser et de piloter leurs équipements à distance : capteurs de niveau, de débit ou de température, et actionneurs, sur les réseaux Orange LoRa et The Things Network."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "La plateforme collecte et décode les trames envoyées par les équipements, déclenche des alertes par e-mail ou SMS, et permet d'envoyer des commandes aux actionneurs."
+                "text": "Le carnet rassemble des observations synthétiques sur des formulaires et des menus inventés. Il ne contient aucun audit de client réel."
               }
             ]
           },
@@ -784,7 +458,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Ce que j’ai fait"
+                "text": "Démarche"
               }
             ]
           },
@@ -793,7 +467,19 @@
             "content": [
               {
                 "type": "text",
-                "text": "J'ai pris en charge toute la partie front-end en Angular : la conception des pages et des composants, les appels aux API et la gestion d'état avec NgRx."
+                "text": "Chaque exemple associe une difficulté observable, une proposition et une méthode de vérification."
+              }
+            ]
+          },
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Résultat de démonstration"
               }
             ]
           },
@@ -802,7 +488,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Côté back-end, en Django, j'ai amélioré le code existant et ajouté plusieurs fonctionnalités."
+                "text": "Les fiches sont imprimables et utilisables sans animation ni dépendance réseau."
               }
             ]
           },
@@ -817,7 +503,7 @@
                     "content": [
                       {
                         "type": "text",
-                        "text": "Les tableaux de bord de supervision, sur plusieurs sites."
+                        "text": "Données entièrement fictives"
                       }
                     ]
                   }
@@ -831,120 +517,11 @@
                     "content": [
                       {
                         "type": "text",
-                        "text": "L'envoi de commandes aux actionneurs et leur historique."
+                        "text": "Navigation au clavier"
                       }
                     ]
                   }
                 ]
-              },
-              {
-                "type": "listItem",
-                "content": [
-                  {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "Le paramétrage des alertes par e-mail ou SMS."
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "type": "listItem",
-                "content": [
-                  {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "Les graphiques dans le temps et l'export des données en CSV."
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Choix techniques"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Les données arrivent de nombreux équipements et changent souvent. J'ai centralisé l'état de l'application avec NgRx : les écrans lisent le même store, les appels aux API passent par des effets, et une donnée mise à jour l'est partout à la fois."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "J'ai découpé l'interface en composants réutilisables (tableaux, graphiques, formulaires), partagés entre les écrans. L'interface reste cohérente à mesure que les fonctionnalités s'ajoutent."
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Résultat"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Le front-end Angular est le point d'entrée des clients pour la supervision, les commandes et les alertes."
-              }
-            ]
-          },
-          {
-            "type": "heading",
-            "attrs": {
-              "level": 2
-            },
-            "content": [
-              {
-                "type": "text",
-                "text": "Ce que je retiens"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Travailler sur un produit en production m'a appris à faire évoluer l'existant sans casser ce que les clients utilisent chaque jour."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "NgRx demande plus de code au départ, mais il rend le comportement de l'application prévisible quand les écrans se multiplient."
               }
             ]
           }
@@ -960,125 +537,113 @@
   ],
   "timeline": [
     {
-      "id": "bts-sio",
+      "id": "visual-design-diploma",
       "kind": "education",
-      "title": "BTS SIO, option SLAM",
-      "place": "Chambray-lès-Tours",
-      "description": "Solutions logicielles et applications métiers.",
+      "title": "Diplôme de création visuelle, École des formes — fictive",
+      "place": "Ville-Exemple — lieu fictif",
+      "description": "Pratique de la typographie, de la composition et de l’édition.",
       "start": {
-        "year": 2021,
-        "month": 9
+        "year": 2015,
+        "month": 1
       },
       "end": {
-        "year": 2023,
-        "month": 6
+        "year": 2017,
+        "month": 12
       },
       "techs": []
     },
     {
-      "id": "bachelor-cefii",
+      "id": "interaction-design-course",
       "kind": "education",
-      "title": "Bachelor Développement d'application, CEFii",
-      "place": "Avrillé",
-      "description": "Bac+3, applications web et mobiles.",
+      "title": "Parcours design d’interaction, Institut des usages — fictif",
+      "place": "Ville-Exemple — lieu fictif",
+      "description": "Prototypes, entretiens et architecture de l’information.",
       "start": {
-        "year": 2023,
-        "month": 9
+        "year": 2018,
+        "month": 1
       },
       "end": {
-        "year": 2024,
-        "month": 6
+        "year": 2019,
+        "month": 12
       },
       "techs": []
     },
     {
-      "id": "mastere-ynov",
+      "id": "inclusive-design-workshop",
       "kind": "education",
-      "title": "Mastère Expert en développement logiciel, YNOV",
-      "place": "Paris",
-      "description": "Bac+5 : architecture logicielle, sécurité, tests et CI/CD.",
+      "title": "Atelier de conception inclusive, Campus Démo",
+      "place": "Ville-Exemple — lieu fictif",
+      "description": "Navigation au clavier, langage clair et tests de parcours.",
       "start": {
-        "year": 2024,
-        "month": 9
+        "year": 2020,
+        "month": 1
       },
       "end": {
-        "year": 2026,
-        "month": 6
+        "year": 2020,
+        "month": 12
       },
       "techs": []
     },
     {
-      "id": "utopia",
+      "id": "paper-lantern-studio",
       "kind": "experience",
-      "title": "Développeur web front-end, Utopia",
-      "place": "Tours",
-      "description": "Sites vitrines WordPress et thème d'administration.",
+      "title": "Designer junior, Atelier Lanterne de papier — fictif",
+      "place": "Ville-Exemple — lieu fictif",
+      "description": "Maquettes éditoriales et prototypes de sites culturels imaginaires.",
       "start": {
+        "year": 2017,
+        "month": 1
+      },
+      "end": {
+        "year": 2019,
+        "month": 12
+      },
+      "techs": []
+    },
+    {
+      "id": "open-reading-collective",
+      "kind": "experience",
+      "title": "Designer d’interfaces, Collectif Lecture ouverte — fictif",
+      "place": "Ville-Exemple — lieu fictif",
+      "description": "Exploration de catalogues et d’agendas avec des données synthétiques.",
+      "start": {
+        "year": 2020,
+        "month": 1
+      },
+      "end": {
         "year": 2022,
-        "month": 5
+        "month": 12
       },
-      "end": {
-        "year": 2022,
-        "month": 6
-      },
-      "techs": [
-        "wordpress",
-        "php"
-      ]
+      "techs": []
     },
     {
-      "id": "kodoka",
+      "id": "independent-interface-practice",
       "kind": "experience",
-      "title": "Développeur web fullstack, Kodoka",
-      "place": "Joué-lès-Tours",
-      "description": "Un CRM sur mesure avec CodeIgniter 4.",
+      "title": "Conception indépendante — activité fictive",
+      "place": "Ville-Exemple — lieu fictif",
+      "description": "Prototypes accessibles pour des associations et services culturels inventés.",
       "start": {
         "year": 2023,
-        "month": 3
+        "month": 1
       },
       "end": {
-        "year": 2023,
-        "month": 4
+        "year": 2025,
+        "month": 12
       },
-      "techs": [
-        "codeigniter",
-        "php"
-      ]
-    },
-    {
-      "id": "object-as-a-service",
-      "kind": "experience",
-      "title": "Développeur web fullstack, Object as a Service",
-      "place": "Clerlande, à distance",
-      "description": "Front-end Angular et back-end Django d’IOTPlatform, modernisation de RDI Manager (Symfony, Vue.js).",
-      "start": {
-        "year": 2023,
-        "month": 9
-      },
-      "end": {
-        "year": 2026,
-        "month": 6
-      },
-      "techs": [
-        "angular",
-        "django",
-        "symfony",
-        "vue",
-        "php"
-      ]
+      "techs": []
     }
   ],
   "skills": [
     {
       "id": "front-end",
-      "domain": "Front-end",
+      "domain": "Interfaces",
       "techs": [
         {
-          "key": "angular",
+          "key": "vue",
           "language": null
         },
         {
-          "key": "react",
+          "key": "svelte",
           "language": null
         },
         {
@@ -1086,60 +651,85 @@
           "language": null
         }
       ],
-      "usage": "Interfaces de supervision d'objets connectés, outils internes."
+      "usage": "Prototypes de catalogues et de cartes éditoriales fictifs."
     },
     {
       "id": "back-end",
-      "domain": "Back-end",
+      "domain": "Données de démonstration",
       "techs": [
         {
-          "key": "django",
-          "language": "Python"
+          "key": "nodejs",
+          "language": null
         },
         {
-          "key": "symfony",
-          "language": "PHP"
-        }
-      ],
-      "usage": "API des interfaces IoT, suivi d'activité de la R&D, CRM sur mesure."
-    },
-    {
-      "id": "cms",
-      "domain": "CMS",
-      "techs": [
-        {
-          "key": "wordpress",
+          "key": "sqlite",
           "language": null
         }
       ],
-      "usage": "Sites vitrines et thème d'administration sur mesure."
+      "usage": "Petites API locales et jeux de données synthétiques."
+    },
+    {
+      "id": "cms",
+      "domain": "Publication",
+      "techs": [
+        {
+          "key": "html",
+          "language": null
+        },
+        {
+          "key": "css",
+          "language": null
+        }
+      ],
+      "usage": "Documents structurés et parcours de lecture accessibles."
     },
     {
       "id": "outils",
       "domain": "Outils",
       "techs": [
         {
+          "key": "figma",
+          "language": null
+        },
+        {
           "key": "git",
           "language": null
         },
         {
-          "key": "github",
-          "language": null
-        },
-        {
-          "key": "ci-cd",
+          "key": "playwright",
           "language": null
         }
       ],
-      "usage": "Versionnement, revues de code, déploiements automatisés."
+      "usage": "Maquettes, versions et vérifications de navigation."
     }
   ],
   "legal": {
     "notice": {
-      "updatedOn": "2026-11-02",
+      "updatedOn": "2025-01-15",
       "document": {
         "type": "doc",
         "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Exemple de démonstration"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Ces mentions illustrent un portfolio fictif. Elles ne décrivent aucune personne ni entreprise réelle et doivent être remplacées avant une publication réelle."
+              }
+            ]
+          },
           {
             "type": "heading",
             "attrs": {
@@ -1157,7 +747,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Le site valentin-fortin.pro est édité par Valentin Fortin, particulier."
+                "text": "Morgan Exemple, personnage inventé pour le site de démonstration example.com."
               }
             ]
           },
@@ -1166,28 +756,19 @@
             "content": [
               {
                 "type": "text",
-                "text": "Contact : "
+                "text": "Contact fictif : "
               },
               {
                 "type": "text",
-                "text": "contact@valentin-fortin.pro",
+                "text": "morgan@example.com",
                 "marks": [
                   {
                     "type": "link",
                     "attrs": {
-                      "href": "mailto:contact@valentin-fortin.pro"
+                      "href": "mailto:morgan@example.com"
                     }
                   }
                 ]
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Conformément à l'article 6, III, 2 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, l'éditeur, personne physique agissant à titre non professionnel, ne publie pas son adresse postale. Ses coordonnées complètes ont été communiquées à l'hébergeur."
               }
             ]
           },
@@ -1208,7 +789,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Valentin Fortin."
+                "text": "Morgan Exemple — identité fictive."
               }
             ]
           },
@@ -1238,7 +819,7 @@
               },
               {
                 "type": "text",
-                "text": " : OVH SAS, SAS au capital de 50 000 000 €, RCS Lille Métropole 424 761 419 00045"
+                "text": " : Hébergement Démo, organisation imaginaire."
               }
             ]
           },
@@ -1256,25 +837,7 @@
               },
               {
                 "type": "text",
-                "text": " : 2 rue Kellermann, 59100 Roubaix, France"
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Téléphone",
-                "marks": [
-                  {
-                    "type": "bold"
-                  }
-                ]
-              },
-              {
-                "type": "text",
-                "text": " : 1007 (depuis la France)"
+                "text": " : lieu fictif, sans adresse postale utilisable."
               }
             ]
           },
@@ -1296,12 +859,12 @@
               },
               {
                 "type": "text",
-                "text": "ovhcloud.com",
+                "text": "example.com",
                 "marks": [
                   {
                     "type": "link",
                     "attrs": {
-                      "href": "https://www.ovhcloud.com"
+                      "href": "https://example.com"
                     }
                   }
                 ]
@@ -1325,16 +888,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Les textes, les visuels et le code de ce site appartiennent à Valentin Fortin, sauf mention contraire. Leur reproduction sans autorisation écrite est interdite."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Les logos des technologies et les noms des entreprises cités appartiennent à leurs détenteurs respectifs. Ils servent uniquement à présenter les projets réalisés."
+                "text": "Les contenus de ce scénario sont fictifs. Les conditions applicables au logiciel sont définies par la licence du dépôt ; les composants tiers conservent leurs propres licences."
               }
             ]
           },
@@ -1355,7 +909,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Le site renvoie vers des sites tiers, comme GitHub et LinkedIn. L'éditeur n'a aucun contrôle sur leur contenu et n'en est pas responsable."
+                "text": "Les liens de ce jeu de démonstration utilisent des domaines réservés aux exemples et ne désignent aucun compte social réel."
               }
             ]
           },
@@ -1376,7 +930,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Le traitement des données envoyées par le formulaire de contact est décrit dans la "
+                "text": "Consultez l’exemple de "
               },
               {
                 "type": "text",
@@ -1385,7 +939,7 @@
                   {
                     "type": "link",
                     "attrs": {
-                      "href": "https://valentin-fortin.pro/privacy"
+                      "href": "https://example.com/privacy"
                     }
                   }
                 ]
@@ -1400,10 +954,31 @@
       }
     },
     "privacy": {
-      "updatedOn": "2026-11-02",
+      "updatedOn": "2025-01-15",
       "document": {
         "type": "doc",
         "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Exemple de démonstration"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Cette politique décrit un scénario fictif et ne constitue pas la politique d’un service réel. Utilisez uniquement des données synthétiques dans la démonstration."
+              }
+            ]
+          },
           {
             "type": "heading",
             "attrs": {
@@ -1421,16 +996,16 @@
             "content": [
               {
                 "type": "text",
-                "text": "Valentin Fortin, joignable à "
+                "text": "Morgan Exemple, identité fictive, joignable pour cet exemple à "
               },
               {
                 "type": "text",
-                "text": "contact@valentin-fortin.pro",
+                "text": "morgan@example.com",
                 "marks": [
                   {
                     "type": "link",
                     "attrs": {
-                      "href": "mailto:contact@valentin-fortin.pro"
+                      "href": "mailto:morgan@example.com"
                     }
                   }
                 ]
@@ -1458,7 +1033,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Le site ne collecte des données que lorsque vous utilisez le formulaire de contact : votre nom, votre adresse e-mail, l'objet et le contenu de votre message, et le nom de votre entreprise si vous l'indiquez. Pour limiter les abus, une empreinte de votre adresse IP (jamais l'adresse elle-même) est conservée une heure au plus."
+                "text": "Le formulaire de démonstration illustre un nom, une adresse e-mail, un objet et un message. Ne saisissez aucune donnée personnelle réelle. Les exemples de messages et de parcours sont inventés."
               }
             ]
           },
@@ -1479,7 +1054,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Ces données servent uniquement à répondre à votre message. Le traitement repose sur l'intérêt légitime de l'éditeur à répondre aux demandes qui lui sont adressées (article 6.1.f du RGPD)."
+                "text": "Dans ce scénario, les données servent à illustrer une réponse à un message. Un exploitant réel doit préciser ses finalités et la base légale de chaque traitement."
               }
             ]
           },
@@ -1500,7 +1075,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Seul l'éditeur lit vos messages. Ils transitent par l'hébergeur, OVH SAS, en France, qui assure aussi l'envoi de l'e-mail de notification. Vos données ne sont ni vendues ni cédées."
+                "text": "La démonstration locale utilise une boîte de réception de test. Aucun hébergeur, prestataire de messagerie ni destinataire réel n’est désigné par ce texte."
               }
             ]
           },
@@ -1521,7 +1096,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Les messages sont supprimés automatiquement trois ans après leur réception, ou plus tôt sur simple demande."
+                "text": "Les environnements de test sont jetables. Avant une utilisation réelle, l’exploitant doit documenter ses durées de conservation, ses sauvegardes et ses procédures d’effacement."
               }
             ]
           },
@@ -1533,7 +1108,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Cookies"
+                "text": "Cookies et mesure d’audience"
               }
             ]
           },
@@ -1542,16 +1117,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Le site ne dépose aucun cookie chez ses visiteurs et n'utilise aucun outil de mesure d'audience. Seul l'espace d'administration, réservé à l'éditeur, utilise un cookie de session indispensable à la connexion."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Votre choix de thème est enregistré dans le stockage local de votre navigateur ; il n'en sort pas."
+                "text": "Les préférences de thème et de consentement illustrent le stockage local du navigateur. Les sessions de test utilisent des cookies de connexion. Une mesure d’audience réelle et ses destinataires doivent être documentés selon la configuration choisie par l’exploitant."
               }
             ]
           },
@@ -1572,48 +1138,23 @@
             "content": [
               {
                 "type": "text",
-                "text": "Vous pouvez accéder à vos données, les faire rectifier ou effacer, en limiter le traitement, vous y opposer et en demander la portabilité en écrivant à "
+                "text": "Le contact réservé à cet exemple est "
               },
               {
                 "type": "text",
-                "text": "contact@valentin-fortin.pro",
+                "text": "morgan@example.com",
                 "marks": [
                   {
                     "type": "link",
                     "attrs": {
-                      "href": "mailto:contact@valentin-fortin.pro"
+                      "href": "mailto:morgan@example.com"
                     }
                   }
                 ]
               },
               {
                 "type": "text",
-                "text": "."
-              }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "content": [
-              {
-                "type": "text",
-                "text": "Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL sur "
-              },
-              {
-                "type": "text",
-                "text": "cnil.fr",
-                "marks": [
-                  {
-                    "type": "link",
-                    "attrs": {
-                      "href": "https://www.cnil.fr"
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "text",
-                "text": "."
+                "text": ". Un service réel doit indiquer un contact opérationnel pour les demandes relatives aux données personnelles."
               }
             ]
           }

@@ -6,7 +6,11 @@ describe('SeoGeneratedTagsComponent', (): void => {
     const fixture: ComponentFixture<SeoGeneratedTagsComponent> =
       TestBed.createComponent(SeoGeneratedTagsComponent);
     fixture.componentRef.setInput('tags', [
-      { name: 'title', value: 'Movah — Valentin Fortin', full: 'Movah — Valentin Fortin' },
+      {
+        name: 'title',
+        value: 'Library Trails — Valentin Fortin',
+        full: 'Library Trails — Valentin Fortin',
+      },
       { name: 'JSON-LD', value: 'CreativeWork : headline', full: '{ "@type": "CreativeWork" }' },
     ]);
     fixture.componentRef.setInput('language', 'en');

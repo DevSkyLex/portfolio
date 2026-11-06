@@ -108,7 +108,7 @@ describe('ProfileRevisionRequestSchema', (): void => {
     ],
     [
       'an e-mail without mailto:',
-      { links: [{ kind: 'email', url: 'contact@valentin-fortin.pro', label: null }] },
+      { links: [{ kind: 'email', url: 'morgan@example.com', label: null }] },
       'links.0.url',
     ],
     [

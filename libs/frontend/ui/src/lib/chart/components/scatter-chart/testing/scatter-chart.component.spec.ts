@@ -11,7 +11,7 @@ import type { ScatterPoint } from '@internal/ui/lib/chart/models/chart/scatter-p
  */
 const POINTS: readonly ScatterPoint[] = [
   { key: 'b', label: 'portfolio', x: 8, y: 0.01, xDisplay: '8,0', yDisplay: '1 %' },
-  { key: 'a', label: 'valentin fortin', x: 1, y: 0.3, xDisplay: '1,0', yDisplay: '30 %' },
+  { key: 'a', label: 'morgan exemple', x: 1, y: 0.3, xDisplay: '1,0', yDisplay: '30 %' },
   { key: 'c', label: 'angular', x: 4, y: 0.1, xDisplay: '4,0', yDisplay: '10 %' },
 ];
 
@@ -84,7 +84,7 @@ describe('ScatterChartComponent', (): void => {
       ),
     ).toEqual([
       ['portfolio', '8,0', '1 %'],
-      ['valentin fortin', '1,0', '30 %'],
+      ['morgan exemple', '1,0', '30 %'],
       ['angular', '4,0', '10 %'],
     ]);
   });
@@ -119,14 +119,14 @@ describe('ScatterChartComponent', (): void => {
     };
     plot.dispatchEvent(new FocusEvent('focus'));
     await fixture.whenStable();
-    expect(live()).toBe('valentin fortin, Position 1,0, CTR 30 %');
+    expect(live()).toBe('morgan exemple, Position 1,0, CTR 30 %');
     expect((await key('ArrowRight')).defaultPrevented).toBe(true);
     expect(live()).toBe('angular, Position 4,0, CTR 10 %');
     await key('End');
     expect(live()).toBe('portfolio, Position 8,0, CTR 1 %');
     await key('Home');
     await key('ArrowLeft');
-    expect(live()).toBe('valentin fortin, Position 1,0, CTR 30 %');
+    expect(live()).toBe('morgan exemple, Position 1,0, CTR 30 %');
     expect((await key('q')).defaultPrevented).toBe(false);
     await key('Escape');
     expect(live()).toBe('');

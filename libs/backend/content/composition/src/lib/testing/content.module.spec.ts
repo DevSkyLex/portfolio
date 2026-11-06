@@ -229,15 +229,15 @@ describe('ContentModule', (): void => {
     // Contract conformity is checked by the presenter (adapters-in) before sending.
     expect(response.body.locale).toBe('fr');
     expect(response.body.projects.map((p: { slug: string }): string => p.slug)).toEqual([
-      'movah',
-      'rdi-manager',
-      'crm-kodoka',
-      'iotplatform',
+      'library-trails',
+      'workshop-calendar',
+      'neighborhood-atlas',
+      'accessibility-notebook',
     ]);
     expect(response.body.projects[0].article.content[0]).toEqual({
       type: 'heading',
       attrs: { level: 2 },
-      content: [{ type: 'text', text: 'Contexte' }],
+      content: [{ type: 'text', text: 'Scénario fictif' }],
     });
     expect(response.body.projects[0].cover).toBeNull();
   });
@@ -248,8 +248,8 @@ describe('ContentModule', (): void => {
     );
     expect(response.status).toBe(200);
     expect(response.body.locale).toBe('en');
-    expect(response.body.skills[0].domain).toBe('Front end');
-    expect(response.body.projects[0].article.content[0].content[0].text).toBe('Context');
+    expect(response.body.skills[0].domain).toBe('Interfaces');
+    expect(response.body.projects[0].article.content[0].content[0].text).toBe('Fictional scenario');
   });
 
   it('rejects an unknown locale as problem+json', async (): Promise<void> => {
@@ -291,18 +291,18 @@ describe('ContentModule', (): void => {
           cover: null,
         });
       }
-      expect(response.body.member[0].slug).toBe('movah');
+      expect(response.body.member[0].slug).toBe('library-trails');
     });
 
     it('requires If-Match, then rejects a stale version', async (): Promise<void> => {
-      const path: string = '/api/content/admin/projects/project-movah/unpublish';
+      const path: string = '/api/content/admin/projects/project-library-trails/unpublish';
       expect((await admin().post(path).set(auth)).status).toBe(428);
       expect((await admin().post(path).set(auth).set('if-match', '"9"')).status).toBe(412);
     });
 
     it('unpublishes and exposes the change in the next public snapshot', async (): Promise<void> => {
       const response: request.Response = await admin()
-        .post('/api/content/admin/projects/project-movah/unpublish')
+        .post('/api/content/admin/projects/project-library-trails/unpublish')
         .set(auth)
         .set('if-match', '"1"');
       expect(response.status).toBe(200);
@@ -313,15 +313,15 @@ describe('ContentModule', (): void => {
       );
       expect(
         snapshot.body.projects.map((project: { id: string }): string => project.id),
-      ).not.toContain('project-movah');
+      ).not.toContain('project-library-trails');
     });
 
     it('refuses to empty the English text of a published project', async (): Promise<void> => {
       const current: AdminProject = (
-        await admin().get('/api/content/admin/projects/project-rdi-manager').set(auth)
+        await admin().get('/api/content/admin/projects/project-workshop-calendar').set(auth)
       ).body;
       const response: request.Response = await admin()
-        .put('/api/content/admin/projects/project-rdi-manager')
+        .put('/api/content/admin/projects/project-workshop-calendar')
         .set(auth)
         .set('if-match', `"${current.version}"`)
         .send({ ...current, title: { fr: current.title.fr } });
@@ -331,10 +331,10 @@ describe('ContentModule', (): void => {
 
     it('answers 413 http.413 for a JSON body above 1 MB, as problem+json', async (): Promise<void> => {
       const current: AdminProject = (
-        await admin().get('/api/content/admin/projects/project-crm-kodoka').set(auth)
+        await admin().get('/api/content/admin/projects/project-neighborhood-atlas').set(auth)
       ).body;
       const response: request.Response = await admin()
-        .put('/api/content/admin/projects/project-crm-kodoka')
+        .put('/api/content/admin/projects/project-neighborhood-atlas')
         .set(auth)
         .set('if-match', `"${current.version}"`)
         .send({ ...current, padding: 'x'.repeat(1024 * 1024) });
@@ -345,35 +345,35 @@ describe('ContentModule', (): void => {
 
     it('saves the search texts and publishes them per locale, without fallback', async (): Promise<void> => {
       const current: AdminProject = (
-        await admin().get('/api/content/admin/projects/project-crm-kodoka').set(auth)
+        await admin().get('/api/content/admin/projects/project-neighborhood-atlas').set(auth)
       ).body;
       expect(current.seo).toEqual({ title: {}, description: {}, keywords: { fr: [] } });
       const seo: AdminProject['seo'] = {
-        title: { fr: 'CRM Kodoka, un outil sur mesure' },
-        description: { en: 'A custom CRM built for Kodoka.' },
+        title: { fr: 'Neighborhood Atlas, un outil sur mesure' },
+        description: { en: 'A custom CRM built for Open Reading Collective.' },
         keywords: { fr: ['CRM', 'outil métier'], en: ['custom CRM'] },
       };
       const saved: request.Response = await admin()
-        .put('/api/content/admin/projects/project-crm-kodoka')
+        .put('/api/content/admin/projects/project-neighborhood-atlas')
         .set(auth)
         .set('if-match', `"${current.version}"`)
         .send({ ...current, seo });
       expect(saved.status).toBe(200);
       expect(saved.body.seo).toEqual(seo);
-      const kodoka = async (locale: string): Promise<unknown> =>
+      const openReadingCollective = async (locale: string): Promise<unknown> =>
         (
           (await admin().get(`/api/content/snapshot?locale=${locale}`)).body as {
             projects: { slug: string; seo: unknown }[];
           }
-        ).projects.find((p): boolean => p.slug === 'crm-kodoka')?.seo;
-      await expect(kodoka('fr')).resolves.toEqual({
-        title: 'CRM Kodoka, un outil sur mesure',
+        ).projects.find((p): boolean => p.slug === 'neighborhood-atlas')?.seo;
+      await expect(openReadingCollective('fr')).resolves.toEqual({
+        title: 'Neighborhood Atlas, un outil sur mesure',
         description: null,
         keywords: ['CRM', 'outil métier'],
       });
-      await expect(kodoka('en')).resolves.toEqual({
+      await expect(openReadingCollective('en')).resolves.toEqual({
         title: null,
-        description: 'A custom CRM built for Kodoka.',
+        description: 'A custom CRM built for Open Reading Collective.',
         keywords: ['custom CRM'],
       });
     });
@@ -441,10 +441,10 @@ describe('ContentModule', (): void => {
 
       it('saves a cover, lists the media, then refuses an unknown one (422)', async (): Promise<void> => {
         const current: AdminProject = (
-          await admin().get('/api/content/admin/projects/project-iotplatform').set(auth)
+          await admin().get('/api/content/admin/projects/project-accessibility-notebook').set(auth)
         ).body;
         const saved: request.Response = await admin()
-          .put('/api/content/admin/projects/project-iotplatform')
+          .put('/api/content/admin/projects/project-accessibility-notebook')
           .set(auth)
           .set('if-match', `"${current.version}"`)
           .send({ ...current, cover: { media: uploaded.id, alt: { fr: 'Tableau', en: 'Board' } } });
@@ -453,7 +453,9 @@ describe('ContentModule', (): void => {
         const snapshot: { projects: { slug: string; cover: unknown }[] } = (
           await admin().get('/api/content/snapshot?locale=en')
         ).body;
-        expect(snapshot.projects.find((p): boolean => p.slug === 'iotplatform')?.cover).toEqual({
+        expect(
+          snapshot.projects.find((p): boolean => p.slug === 'accessibility-notebook')?.cover,
+        ).toEqual({
           src: uploaded.src,
           small: `/media/${uploaded.id}-960.webp`,
           width: 1600,
@@ -463,7 +465,7 @@ describe('ContentModule', (): void => {
 
         const unknown: string = '0b1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e';
         const refused: request.Response = await admin()
-          .put('/api/content/admin/projects/project-iotplatform')
+          .put('/api/content/admin/projects/project-accessibility-notebook')
           .set(auth)
           .set('if-match', `"${saved.body.version}"`)
           .send({
@@ -476,10 +478,10 @@ describe('ContentModule', (): void => {
 
       it('purges a media seven days after its last reference was removed', async (): Promise<void> => {
         const current: AdminProject = (
-          await admin().get('/api/content/admin/projects/project-iotplatform').set(auth)
+          await admin().get('/api/content/admin/projects/project-accessibility-notebook').set(auth)
         ).body;
         const cleared: request.Response = await admin()
-          .put('/api/content/admin/projects/project-iotplatform')
+          .put('/api/content/admin/projects/project-accessibility-notebook')
           .set(auth)
           .set('if-match', `"${current.version}"`)
           .send({ ...current, cover: null });
@@ -512,16 +514,16 @@ describe('ContentModule', (): void => {
         await admin().get('/api/content/admin/projects').set(auth)
       ).body;
       const source: AdminProject | undefined = list.member.find(
-        (project: AdminProject): boolean => project.slug === 'movah',
+        (project: AdminProject): boolean => project.slug === 'library-trails',
       );
-      if (!source) throw new Error('movah missing');
+      if (!source) throw new Error('library-trails missing');
       const created: request.Response = await admin()
         .post('/api/content/admin/projects')
         .set(auth)
-        .send({ ...source, title: { fr: 'Movah', en: 'Movah' } });
+        .send({ ...source, title: { fr: 'Library Trails', en: 'Library Trails' } });
       expect(created.status).toBe(201);
       expect(created.headers['etag']).toBe('"1"');
-      expect(created.body).toMatchObject({ slug: 'movah-2', status: 'draft', version: 1 });
+      expect(created.body).toMatchObject({ slug: 'library-trails-2', status: 'draft', version: 1 });
       expect(created.body.position).toBeGreaterThan(
         Math.max(...list.member.map((project: AdminProject): number => project.position)),
       );
@@ -529,7 +531,7 @@ describe('ContentModule', (): void => {
         .get(`/api/content/admin/projects/${created.body.id}`)
         .set(auth);
       expect(read.status).toBe(200);
-      expect(read.body.title).toEqual({ fr: 'Movah', en: 'Movah' });
+      expect(read.body.title).toEqual({ fr: 'Library Trails', en: 'Library Trails' });
       expect((await admin().post('/api/content/admin/projects').send(source)).status).toBe(401);
     });
 
@@ -537,7 +539,7 @@ describe('ContentModule', (): void => {
       const base: string = '/api/content/admin/timeline';
       const body: Record<string, unknown> = {
         title: { fr: 'Stage, Atelier', en: 'Internship, Atelier' },
-        place: { fr: 'Blois', en: 'Blois' },
+        place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
         description: { fr: 'Outils internes.', en: 'Internal tools.' },
         start: { year: 2025, month: 2 },
         end: null,
@@ -555,9 +557,9 @@ describe('ContentModule', (): void => {
         const list: request.Response = await admin().get(`${base}/experience/entries`).set(auth);
         expect(list.status).toBe(200);
         expect(list.body.member.map((e: { id: string }): string => e.id)).toEqual([
-          'utopia',
-          'kodoka',
-          'object-as-a-service',
+          'paper-lantern-studio',
+          'open-reading-collective',
+          'independent-interface-practice',
         ]);
         const listVersion: string = list.headers['etag'] as string;
 
@@ -575,7 +577,14 @@ describe('ContentModule', (): void => {
           .put(`${base}/experience/order`)
           .set(auth)
           .set('if-match', listVersion)
-          .send({ ids: [id, 'utopia', 'kodoka', 'object-as-a-service'] });
+          .send({
+            ids: [
+              id,
+              'paper-lantern-studio',
+              'open-reading-collective',
+              'independent-interface-practice',
+            ],
+          });
         expect(stale.status).toBe(412);
 
         const revised: request.Response = await admin()
@@ -591,7 +600,14 @@ describe('ContentModule', (): void => {
           .put(`${base}/experience/order`)
           .set(auth)
           .set('if-match', current.headers['etag'] as string)
-          .send({ ids: [id, 'utopia', 'kodoka', 'object-as-a-service'] });
+          .send({
+            ids: [
+              id,
+              'paper-lantern-studio',
+              'open-reading-collective',
+              'independent-interface-practice',
+            ],
+          });
         expect(moved.status).toBe(200);
         expect(moved.body.member[0]).toMatchObject({ id, position: 0, version: 2 });
 
@@ -602,9 +618,9 @@ describe('ContentModule', (): void => {
             .filter((e: { kind: string }): boolean => e.kind === 'experience')
             .map((e: { title: string }): string => e.title),
         ).toEqual([
-          'Front-end web developer, Utopia',
-          'Full-stack web developer, Kodoka',
-          'Full-stack web developer, Object as a Service',
+          'Junior Designer, Paper Lantern Studio — fictional',
+          'Interface Designer, Open Reading Collective — fictional',
+          'Independent Design — fictional practice',
           'Internship, Atelier',
         ]);
 
@@ -636,7 +652,9 @@ describe('ContentModule', (): void => {
         expect(incomplete.body.errors).toEqual([
           { field: 'title.en', message: expect.any(String) },
         ]);
-        expect((await admin().get(`${base}/education/entries/kodoka`).set(auth)).status).toBe(404);
+        expect(
+          (await admin().get(`${base}/education/entries/open-reading-collective`).set(auth)).status,
+        ).toBe(404);
       });
 
       it('accepts every seeded entry back unchanged through the request contract', async (): Promise<void> => {
@@ -680,7 +698,7 @@ describe('ContentModule', (): void => {
             ...profile,
             links: [
               ...profile.links,
-              { kind: 'malt', url: 'https://www.malt.fr/profile/valentin', label: null },
+              { kind: 'malt', url: 'https://example.com/demo/freelance', label: null },
             ],
           });
         expect(saved.status).toBe(200);
@@ -716,7 +734,7 @@ describe('ContentModule', (): void => {
         expect(snapshot.body.legal.notice.document.content[0]).toEqual({
           type: 'heading',
           attrs: { level: 2 },
-          content: [{ type: 'text', text: 'Publisher' }],
+          content: [{ type: 'text', text: 'Demonstration example' }],
         });
       });
 

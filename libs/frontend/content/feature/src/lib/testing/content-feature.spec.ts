@@ -35,7 +35,7 @@ const heading = (text: string): ArticleNodeFixture => ({
  *
  * @description
  * Published documents of the fixture projects: `crm` has an introduction, four sections, a list and a
- * figure; `movah` other sections; `solo` an introduction only.
+ * figure; `library-trails` other sections; `solo` an introduction only.
  */
 const ARTICLES: Readonly<Record<string, readonly ArticleNodeFixture[]>> = {
   crm: [
@@ -64,7 +64,12 @@ const ARTICLES: Readonly<Record<string, readonly ArticleNodeFixture[]>> = {
     heading('Ce que je retiens'),
     paragraph('Leçon.'),
   ],
-  movah: [heading('Genèse'), paragraph('Idée.'), heading('Architecture'), paragraph('Supabase.')],
+  'library-trails': [
+    heading('Genèse'),
+    paragraph('Idée.'),
+    heading('Architecture'),
+    paragraph('Supabase.'),
+  ],
   solo: [paragraph('Seulement une introduction.')],
 };
 
@@ -72,7 +77,7 @@ const ARTICLES: Readonly<Record<string, readonly ArticleNodeFixture[]>> = {
  * Constant COVER
  *
  * @description
- * Cover of the `movah` fixture, with a 960 px rendition.
+ * Cover of the `library-trails` fixture, with a 960 px rendition.
  */
 const COVER: {
   src: string;
@@ -85,14 +90,14 @@ const COVER: {
   small: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp',
   width: 2400,
   height: 1350,
-  alt: 'Accueil de Movah',
+  alt: 'Accueil de Library Trails',
 };
 
 /**
  * Function project
  *
  * @description
- * Creates a localized project fixture with its article document; only `movah` has a cover.
+ * Creates a localized project fixture with its article document; only `library-trails` has a cover.
  *
  * @param {string} slug - Identifier and visible title source for the fixture.
  * @param {boolean} featured - Whether the project belongs to the featured group.
@@ -112,7 +117,7 @@ const project = (slug: string, featured: boolean): ProjectSnapshotFixture => ({
   techs: ['angular'],
   featured,
   article: { type: 'doc', content: ARTICLES[slug] ?? [] },
-  cover: slug === 'movah' ? COVER : null,
+  cover: slug === 'library-trails' ? COVER : null,
   seo: {
     title: slug === 'solo' ? 'Solo, projet seul' : null,
     description: null,
@@ -134,10 +139,10 @@ const snapshot = {
   profile: {
     heroIntro: 'Intro.',
     aboutStatement: 'Phrase.',
-    aboutLead: 'Après un BTS.',
-    facts: [{ label: 'Basé à', value: 'Blois' }],
+    aboutLead: 'Après une formation fictive en design.',
+    facts: [{ label: 'Basé à', value: 'Ville-Exemple' }],
   },
-  projects: [project('movah', true), project('crm', false), project('solo', false)],
+  projects: [project('library-trails', true), project('crm', false), project('solo', false)],
   timeline: [],
   skills: [
     {
@@ -216,7 +221,7 @@ describe('ContentSectionsComponent', (): void => {
       [...root.querySelectorAll('content-project-card h3')].map((h: Element): string =>
         h.textContent?.trim(),
       ),
-    ).toEqual(['MOVAH', 'CRM', 'SOLO']);
+    ).toEqual(['LIBRARY-TRAILS', 'CRM', 'SOLO']);
     expect(
       [...root.querySelectorAll(':scope > * > section')].map((s: Element): string => s.id),
     ).toEqual(['projects', 'journey', 'skills', 'about']);
@@ -250,16 +255,16 @@ describe('ProjectPageComponent', (): void => {
     expect(root.querySelector('#resultat img')?.getAttribute('alt')).toBe(
       'Écran du tableau de bord',
     );
-    expect(root.querySelector('nav a[href="/projects/movah"]')).not.toBeNull();
+    expect(root.querySelector('nav a[href="/projects/library-trails"]')).not.toBeNull();
     expect(TestBed.inject<Title>(Title).getTitle()).toBe('CRM — Valentin Fortin');
   });
 
   it('writes the search metadata of the article and replaces them on the next one', async (): Promise<void> => {
-    const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('movah');
+    const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('library-trails');
     const head: HTMLHeadElement = document.head;
     expect(head.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('Résumé.');
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://valentin-fortin.pro/fr/projects/movah',
+      'https://valentin-fortin.pro/fr/projects/library-trails',
     );
     expect(head.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
       `https://valentin-fortin.pro${COVER.src}`,
@@ -333,12 +338,12 @@ describe('ProjectPageComponent', (): void => {
         provideSiteOrigin(),
       ],
     });
-    const root: HTMLElement = (await renderPage('movah')).nativeElement;
+    const root: HTMLElement = (await renderPage('library-trails')).nativeElement;
     const cover: HTMLImageElement | null = root.querySelector('[uiScrollProgress] img');
     expect(cover?.getAttribute('src')).toBe(COVER.src);
     expect(cover?.getAttribute('srcset')).toBe(`${COVER.small} 960w, ${COVER.src} 2400w`);
     expect(cover?.getAttribute('sizes')).toBe('(min-width: 1280px) 1200px, 100vw');
-    expect(cover?.getAttribute('alt')).toBe('Accueil de Movah');
+    expect(cover?.getAttribute('alt')).toBe('Accueil de Library Trails');
     expect(cover?.getAttribute('fetchpriority')).toBe('high');
     expect(cover?.hasAttribute('loading')).toBe(false);
     expect(cover?.getAttribute('width')).toBe('2400');
@@ -431,7 +436,7 @@ describe('ProjectPageComponent', (): void => {
       const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
       await deliver(fixture, [{ isIntersecting: true, target: section('resultat') }]);
       observed = [];
-      fixture.componentRef.setInput('slug', 'movah');
+      fixture.componentRef.setInput('slug', 'library-trails');
       await fixture.whenStable();
       expect(stopped.map((elements: Element[]): string[] => elements.map((e) => e.id))).toEqual([
         ['contexte', 'ce-que-j-ai-fait', 'resultat', 'ce-que-je-retiens'],

@@ -43,9 +43,9 @@ function entry(
  * Rows with case and accent variants of a place, an entry without place and shared technologies.
  */
 const ENTRIES: readonly AdminTimelineEntry[] = [
-  entry('oaas', 'Tours', ['angular', 'php'], true),
-  entry('kodoka', ' Joué-lès-Tours ', ['vue', 'php']),
-  entry('stage', 'joue-les-tours', ['angular']),
+  entry('oaas', 'Ville-Exemple', ['angular', 'php'], true),
+  entry('open-reading-collective', ' Cité-des-Exemples ', ['vue', 'php']),
+  entry('stage', 'cite-des-exemples', ['angular']),
   entry('bts', 'Paris', ['symfony2', 'symfony10']),
   entry('sans-lieu', '  ', []),
 ];
@@ -91,9 +91,9 @@ describe('timelineTableFacets', (): void => {
 
   it('builds the places from the rows, once per folded spelling, in collation order', (): void => {
     expect(timelinePlaceOptions(ENTRIES, 'fr')).toEqual([
-      { value: 'joue-les-tours', label: 'Joué-lès-Tours' },
+      { value: 'cite-des-exemples', label: 'Cité-des-Exemples' },
       { value: 'paris', label: 'Paris' },
-      { value: 'tours', label: 'Tours' },
+      { value: 'ville-exemple', label: 'Ville-Exemple' },
     ]);
     expect(timelinePlaceOptions([], 'fr')).toEqual([]);
   });
@@ -115,18 +115,23 @@ describe('timelineTableFacets', (): void => {
 
   it('filters by state, by any spelling of a place and by any checked technology', (): void => {
     expect(kept({ etat: ['en-cours'] })).toEqual(['oaas']);
-    expect(kept({ etat: ['terminee'] })).toEqual(['kodoka', 'stage', 'bts', 'sans-lieu']);
-    expect(kept({ lieu: ['joue-les-tours'] })).toEqual(['kodoka', 'stage']);
-    expect(kept({ technos: ['vue', 'symfony2'] })).toEqual(['kodoka', 'bts']);
+    expect(kept({ etat: ['terminee'] })).toEqual([
+      'open-reading-collective',
+      'stage',
+      'bts',
+      'sans-lieu',
+    ]);
+    expect(kept({ lieu: ['cite-des-exemples'] })).toEqual(['open-reading-collective', 'stage']);
+    expect(kept({ technos: ['vue', 'symfony2'] })).toEqual(['open-reading-collective', 'bts']);
     // Across facets every one must match.
-    expect(kept({ lieu: ['joue-les-tours', 'tours'], technos: ['angular'] })).toEqual([
+    expect(kept({ lieu: ['cite-des-exemples', 'ville-exemple'], technos: ['angular'] })).toEqual([
       'oaas',
       'stage',
     ]);
   });
 
   it('combines the facets with the search', (): void => {
-    expect(kept({ technos: ['php'] }, 'joue')).toEqual(['kodoka']);
+    expect(kept({ technos: ['php'] }, 'cite')).toEqual(['open-reading-collective']);
     expect(kept({ etat: ['terminee'] }, 'angular')).toEqual(['stage']);
     expect(kept({ lieu: ['paris'] }, 'angular')).toEqual([]);
   });

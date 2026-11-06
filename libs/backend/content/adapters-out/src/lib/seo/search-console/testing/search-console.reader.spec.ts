@@ -46,7 +46,7 @@ function rowsFor(request: RecordedRequest): FakeReply {
       return {
         json: {
           rows: [
-            { keys: ['valentin fortin'], clicks: 9, impressions: 20, ctr: 0.45, position: 1.2 },
+            { keys: ['morgan exemple'], clicks: 9, impressions: 20, ctr: 0.45, position: 1.2 },
           ],
         },
       };
@@ -128,7 +128,7 @@ describe('GoogleSearchConsoleReader', (): void => {
       position: 8,
     });
     expect(report.queries).toEqual([
-      { key: 'valentin fortin', clicks: 9, impressions: 20, ctr: 0.45, position: 1.2 },
+      { key: 'morgan exemple', clicks: 9, impressions: 20, ctr: 0.45, position: 1.2 },
     ]);
     expect(report.devices[0]?.key).toBe('MOBILE');
   });

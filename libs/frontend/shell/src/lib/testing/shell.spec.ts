@@ -109,7 +109,7 @@ const snapshot: {
   locale: 'fr',
   revision: 1,
   profile: { heroIntro: 'Intro.', aboutStatement: 'Phrase.', aboutLead: 'Lead.', facts: [] },
-  projects: [project('movah', true), project('crm-kodoka', false)],
+  projects: [project('library-trails', true), project('neighborhood-atlas', false)],
   timeline: [],
   skills: [],
   legal: {
@@ -172,12 +172,18 @@ describe('shell', () => {
   });
 
   it('opens a project case study', async () => {
-    const harness: RouterTestingHarness = await RouterTestingHarness.create('/projects/crm-kodoka');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe('crm-kodoka');
+    const harness: RouterTestingHarness = await RouterTestingHarness.create(
+      '/projects/neighborhood-atlas',
+    );
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe(
+      'neighborhood-atlas',
+    );
   });
 
   it('redirects an unknown project to the not-found experience before activating an empty article', async () => {
-    const harness: RouterTestingHarness = await RouterTestingHarness.create('/projects/crm-kodoka');
+    const harness: RouterTestingHarness = await RouterTestingHarness.create(
+      '/projects/neighborhood-atlas',
+    );
     await harness.navigateByUrl('/projects/unknown');
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
       'Page introuvable',

@@ -51,19 +51,19 @@ describe('Content administration (Postgres via PGlite)', (): void => {
 
   it('saves a change and increments the version, only once per version read', async (): Promise<void> => {
     const repository: DrizzleProjectRepository = new DrizzleProjectRepository(handle.db);
-    const project: Project | null = await repository.get('project-movah');
+    const project: Project | null = await repository.get('project-library-trails');
     if (!project) throw new Error('project missing');
     project.unpublish();
     await expect(repository.save(project, 1)).resolves.toBe(2);
     await expect(repository.save(project, 1)).rejects.toBeInstanceOf(VersionMismatchError);
-    expect((await repository.get('project-movah'))?.status).toBe('draft');
+    expect((await repository.get('project-library-trails'))?.status).toBe('draft');
     await expect(repository.get('absent')).resolves.toBeNull();
-    expect((await repository.list()).map((p): string => p.id)).toContain('project-movah');
+    expect((await repository.list()).map((p): string => p.id)).toContain('project-library-trails');
   });
 
   it('inserts a new project at version 1 and refuses a slug already used', async (): Promise<void> => {
     const repository: DrizzleProjectRepository = new DrizzleProjectRepository(handle.db);
-    const source: Project | null = await repository.get('project-movah');
+    const source: Project | null = await repository.get('project-library-trails');
     if (!source) throw new Error('project missing');
     const created: Project = Project.create(
       { id: 'project-new', slug: Slug.of('nouveau'), position: 99 },
@@ -86,14 +86,14 @@ describe('Content administration (Postgres via PGlite)', (): void => {
 
   it('stores the search texts as trimmed jsonb, seeded rows starting from the empty default', async (): Promise<void> => {
     const repository: DrizzleProjectRepository = new DrizzleProjectRepository(handle.db);
-    const project: Project | null = await repository.get('project-movah');
+    const project: Project | null = await repository.get('project-library-trails');
     if (!project) throw new Error('project missing');
     expect(project.snapshot().seo.toProps()).toEqual({ title: {}, description: {}, keywords: {} });
     project.revise(
       {
         ...project.snapshot(),
         seo: ProjectSeo.of({
-          title: { fr: ' Movah, suivi de séries en Flutter ', en: '' },
+          title: { fr: ' Library Trails, suivi de séries en Flutter ', en: '' },
           description: { en: 'A Flutter app to track series.' },
           keywords: { fr: [' Flutter ', 'suivi de séries'], en: [] },
         }),
@@ -104,13 +104,13 @@ describe('Content administration (Postgres via PGlite)', (): void => {
     const [row] = await handle.db
       .select({ seo: projectRows.seo, seoKeywords: projectRows.seoKeywords })
       .from(projectRows)
-      .where(eq(projectRows.id, 'project-movah'));
+      .where(eq(projectRows.id, 'project-library-trails'));
     expect(row?.seo).toEqual({
-      title: { fr: 'Movah, suivi de séries en Flutter' },
+      title: { fr: 'Library Trails, suivi de séries en Flutter' },
       description: { en: 'A Flutter app to track series.' },
     });
     expect(row?.seoKeywords).toEqual({ fr: ['Flutter', 'suivi de séries'] });
-    const reread: Project | null = await repository.get('project-movah');
+    const reread: Project | null = await repository.get('project-library-trails');
     expect(reread?.snapshot().seo.in('en')).toEqual({
       title: null,
       description: 'A Flutter app to track series.',
@@ -123,7 +123,7 @@ describe('Content administration (Postgres via PGlite)', (): void => {
     const uow: DrizzleContentUnitOfWork = new DrizzleContentUnitOfWork(handle.db);
     await expect(
       uow.run(async ({ projects }) => {
-        const project: Project | null = await projects.get('project-movah');
+        const project: Project | null = await projects.get('project-library-trails');
         if (!project) throw new Error('project missing');
         project.revise({ ...project.snapshot() }, PUBLISHED_LOCALES);
         project.unpublish();
@@ -132,7 +132,7 @@ describe('Content administration (Postgres via PGlite)', (): void => {
       }),
     ).rejects.toThrow('failure after write');
     const reread: Project | null = await new DrizzleProjectRepository(handle.db).get(
-      'project-movah',
+      'project-library-trails',
     );
     expect(reread?.snapshot()).toMatchObject({ status: 'published', version: 1 });
   });

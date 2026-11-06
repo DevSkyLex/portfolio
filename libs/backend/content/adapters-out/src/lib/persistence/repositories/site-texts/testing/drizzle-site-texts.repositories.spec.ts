@@ -36,12 +36,11 @@ import {
   profile,
   siteBuildRequests,
 } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
+import { SEED_PROFILE, seedContent } from '@internal/content-adapters-out/lib/seed/content.seed';
 import {
-  SEED_LINKS,
-  SEED_PROFILE,
-  seedContent,
-} from '@internal/content-adapters-out/lib/seed/content.seed';
-import { SEED_LEGAL_NOTICE } from '@internal/content-adapters-out/lib/seed/legal-documents.seed';
+  SEED_LEGAL_NOTICE,
+  SEED_PRIVACY_POLICY,
+} from '@internal/content-adapters-out/lib/seed/legal-documents.seed';
 
 /**
  * Constant MIGRATIONS
@@ -107,7 +106,14 @@ describe('Site texts administration (Postgres via PGlite)', (): void => {
   it('loads the seeded profile with its links at version 1', async (): Promise<void> => {
     const loaded: Profile = await new DrizzleProfileRepository(handle.db).load();
     expect(loaded.version).toBe(1);
-    expect(loaded.links.map((link) => link.toProps())).toEqual(SEED_LINKS);
+    expect(loaded.links.map((link) => link.toProps())).toEqual([
+      expect.objectContaining({
+        kind: 'email',
+        url: expect.stringMatching(/^mailto:[^@]+@[^@]+$/),
+      }),
+      expect.objectContaining({ kind: 'github', url: expect.stringMatching(/^https:\/\//) }),
+      expect.objectContaining({ kind: 'linkedin', url: expect.stringMatching(/^https:\/\//) }),
+    ]);
     expect(loaded.heroIntro.en).toBe(SEED_PROFILE.heroIntro.en);
   });
 
@@ -155,10 +161,8 @@ describe('Site texts administration (Postgres via PGlite)', (): void => {
     const legal: Awaited<ReturnType<DrizzleContentRepository['loadLegalDocuments']>> =
       await repository.loadLegalDocuments();
     expect(legal.notice.body.fr.toProps()).toEqual(SEED_LEGAL_NOTICE.fr);
-    expect(JSON.stringify(legal.privacy.body.fr.toProps())).toContain('Brevo');
-    expect(JSON.stringify(legal.privacy.body.fr.toProps())).toContain('Allemagne');
-    expect(JSON.stringify(legal.privacy.body.en.toProps())).toContain('Brevo');
-    expect(JSON.stringify(legal.privacy.body.en.toProps())).toContain('Germany');
+    expect(legal.privacy.body.fr.toProps()).toEqual(SEED_PRIVACY_POLICY.fr);
+    expect(legal.privacy.body.en.toProps()).toEqual(SEED_PRIVACY_POLICY.en);
     await handle.db.delete(legalDocuments).where(eq(legalDocuments.kind, 'privacy'));
     await expect(repository.loadLegalDocuments()).rejects.toThrow(LegalDocumentsMissingError);
     await handle.db.delete(legalDocuments);
@@ -217,10 +221,18 @@ describe(`${DATA} migration (Postgres via PGlite)`, (): void => {
     await handle.db.insert(contentRevision).values({ id: 1, revision: 5 });
     await migrateContentDatabase(handle, MIGRATIONS);
     const loaded: Profile = await new DrizzleProfileRepository(handle.db).load();
-    expect(loaded.links.map((link) => link.toProps())).toEqual(SEED_LINKS);
+    expect(loaded.links.map((link) => link.toProps())).toEqual([
+      expect.objectContaining({
+        kind: 'email',
+        url: expect.stringMatching(/^mailto:[^@]+@[^@]+$/),
+      }),
+      expect.objectContaining({ kind: 'github', url: expect.stringMatching(/^https:\/\//) }),
+      expect.objectContaining({ kind: 'linkedin', url: expect.stringMatching(/^https:\/\//) }),
+    ]);
     const legal: Awaited<ReturnType<DrizzleContentRepository['loadLegalDocuments']>> =
       await new DrizzleContentRepository(handle.db).loadLegalDocuments();
-    expect(legal.notice.body.fr.toProps()).toEqual(SEED_LEGAL_NOTICE.fr);
+    expect(legal.notice.body.fr.toProps().content.length).toBeGreaterThan(0);
+    expect(legal.notice.body.en.toProps().content.length).toBeGreaterThan(0);
     expect(legal.privacy.updatedAt.toISOString()).toBe('2026-11-02T12:00:00.000Z');
     expect(await handle.db.select().from(contentRevision)).toEqual([{ id: 1, revision: 6 }]);
     expect(

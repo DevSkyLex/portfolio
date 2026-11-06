@@ -46,7 +46,7 @@ const dto = (id: string, position: number, version: number = 1): AdminTimelineEn
   position,
   version,
   title: { fr: `Poste ${id}`, en: `Job ${id}` },
-  place: { fr: 'Tours', en: 'Tours' },
+  place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
   description: { fr: 'Texte.', en: 'Text.' },
   start: { year: 2023, month: 9 },
   end: null,
@@ -158,7 +158,7 @@ describe('AdminTimelineStore', (): void => {
     const draft: TimelineEntryDraft = {
       ...emptyTimelineEntryDraft(),
       title: { fr: 'Stage', en: 'Internship' },
-      place: { fr: 'Blois', en: 'Blois' },
+      place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
       description: { fr: 'Outils.', en: 'Tools.' },
       startMonth: 2,
       startYear: 2025,

@@ -56,13 +56,13 @@ describe('NodemailerMailSender', (): void => {
     const sender: NodemailerMailSender = new NodemailerMailSender({
       url: 'smtp://localhost:1025',
       from: 'Portfolio <noreply@valentin-fortin.pro>',
-      to: 'contact@valentin-fortin.pro',
+      to: 'morgan@example.com',
     });
     await sender.send(mail);
     await sender.send(mail);
     expect(sendMail).toHaveBeenCalledTimes(2);
     expect(sendMail.mock.calls[0]?.[0]).toMatchObject({
-      to: 'contact@valentin-fortin.pro',
+      to: 'morgan@example.com',
       replyTo: { name: 'Camille Martin', address: 'camille@exemple.fr' },
       messageId: '<m-1@valentin-fortin.pro>',
     });

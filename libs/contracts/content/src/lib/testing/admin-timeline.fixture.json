@@ -4,40 +4,55 @@
   "totalItems": 2,
   "member": [
     {
-      "id": "object-as-a-service",
+      "id": "independent-interface-practice",
       "kind": "experience",
       "position": 0,
       "version": 2,
       "title": {
-        "fr": "Développeur web fullstack, Object as a Service",
-        "en": "Full-stack web developer, Object as a Service"
+        "fr": "Conception indépendante — activité fictive",
+        "en": "Independent Design — fictional practice"
       },
-      "place": { "fr": "Clerlande, à distance", "en": "Clerlande, remote" },
+      "place": {
+        "fr": "Ville-Exemple",
+        "en": "Example Town"
+      },
       "description": {
-        "fr": "Front-end Angular et back-end Django d’IOTPlatform.",
-        "en": "The Angular front end and Django back end of IOTPlatform."
+        "fr": "Prototypes accessibles pour des services culturels inventés.",
+        "en": "Accessible prototypes for invented cultural services."
       },
-      "start": { "year": 2023, "month": 9 },
+      "start": {
+        "year": 2023,
+        "month": 1
+      },
       "end": null,
-      "techs": ["angular", "django"]
+      "techs": ["vue", "typescript"]
     },
     {
-      "id": "kodoka",
+      "id": "open-reading-collective",
       "kind": "experience",
       "position": 1,
       "version": 1,
       "title": {
-        "fr": "Développeur web fullstack, Kodoka",
-        "en": "Full-stack web developer, Kodoka"
+        "fr": "Designer d’interfaces, Collectif Lecture ouverte — fictif",
+        "en": "Interface Designer, Open Reading Collective — fictional"
       },
-      "place": { "fr": "Joué-lès-Tours", "en": "Joué-lès-Tours" },
+      "place": {
+        "fr": "Ville-Exemple",
+        "en": "Example Town"
+      },
       "description": {
-        "fr": "Un CRM sur mesure avec CodeIgniter 4.",
-        "en": "A custom CRM built with CodeIgniter 4."
+        "fr": "Catalogues et agendas de démonstration.",
+        "en": "Demonstration catalogues and calendars."
       },
-      "start": { "year": 2023, "month": 3 },
-      "end": { "year": 2023, "month": 4 },
-      "techs": ["codeigniter", "php"]
+      "start": {
+        "year": 2020,
+        "month": 1
+      },
+      "end": {
+        "year": 2022,
+        "month": 12
+      },
+      "techs": ["svelte", "css"]
     }
   ]
 }

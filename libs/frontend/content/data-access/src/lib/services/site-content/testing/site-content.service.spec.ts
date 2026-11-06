@@ -26,7 +26,7 @@ const base: Omit<ContentSnapshot, 'locale' | 'projects'> = {
     aboutStatement: 'Phrase',
     aboutLead: 'Lead',
     facts: [],
-    links: [{ kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null }],
+    links: [{ kind: 'email', url: 'mailto:morgan@example.com', label: null }],
   },
   legal: {
     notice: {
@@ -54,7 +54,7 @@ const base: Omit<ContentSnapshot, 'locale' | 'projects'> = {
       id: 'job',
       kind: 'experience',
       title: 'Poste',
-      place: 'Blois',
+      place: 'Ville-Exemple',
       description: 'd',
       start: { year: 2023, month: 9 },
       end: null,
@@ -63,8 +63,8 @@ const base: Omit<ContentSnapshot, 'locale' | 'projects'> = {
     {
       id: 'bts',
       kind: 'education',
-      title: 'BTS',
-      place: 'Tours',
+      title: 'Diplôme de création visuelle fictif',
+      place: 'Ville-Exemple',
       description: 'd',
       start: { year: 2021, month: 9 },
       end: { year: 2023, month: 6 },
@@ -94,7 +94,7 @@ const project = (slug: string, featured: boolean): ProjectDto => ({
   client: 'c',
   role: 'r',
   place: 'p',
-  siteUrl: slug === 'iotplatform' ? 'https://www.iotplatform.fr/fr/' : null,
+  siteUrl: slug === 'accessibility-notebook' ? 'https://example.com/fr/' : null,
   techs: ['angular'],
   featured,
   article: {
@@ -106,13 +106,13 @@ const project = (slug: string, featured: boolean): ProjectDto => ({
     ],
   },
   cover:
-    slug === 'movah'
+    slug === 'library-trails'
       ? {
           src: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
           small: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp',
           width: 2400,
           height: 1350,
-          alt: 'Accueil de Movah',
+          alt: 'Accueil de Library Trails',
         }
       : null,
   seo: { title: null, description: null, keywords: [] },
@@ -127,9 +127,9 @@ const project = (slug: string, featured: boolean): ProjectDto => ({
  * @type {import('@vfortin/content-contracts').ProjectDto[]}
  */
 const HOME: ProjectDto[] = [
-  project('movah', true),
-  project('rdi-manager', false),
-  project('iotplatform', false),
+  project('library-trails', true),
+  project('workshop-calendar', false),
+  project('accessibility-notebook', false),
 ];
 
 /**
@@ -176,27 +176,27 @@ describe('SiteContentService', (): void => {
     expect(service.legal('privacy').updatedOn).toBe('2026-11-03');
     expect(links.email()).toEqual({
       kind: 'email',
-      href: 'mailto:contact@valentin-fortin.pro',
-      label: 'contact@valentin-fortin.pro',
+      href: 'mailto:morgan@example.com',
+      label: 'morgan@example.com',
     });
     expect(links.profiles()).toEqual([]);
   });
 
   it('separates the featured project from the others', (): void => {
     const service: SiteContentService = setup('fr');
-    expect(service.featuredProject()?.slug).toBe('movah');
+    expect(service.featuredProject()?.slug).toBe('library-trails');
     expect(service.otherProjects().map((p): string => p.slug)).toEqual([
-      'rdi-manager',
-      'iotplatform',
+      'workshop-calendar',
+      'accessibility-notebook',
     ]);
   });
 
   it('links the case studies in reading order, wrapping around (mockup Article order)', (): void => {
     const service: SiteContentService = setup('fr', undefined, [
-      project('movah', true),
-      project('rdi-manager', false),
-      project('crm-kodoka', false),
-      project('iotplatform', false),
+      project('library-trails', true),
+      project('workshop-calendar', false),
+      project('neighborhood-atlas', false),
+      project('accessibility-notebook', false),
     ]);
     const around: (slug: string) => (string | undefined)[] = (
       slug: string,
@@ -204,15 +204,17 @@ describe('SiteContentService', (): void => {
       const neighbours: ReturnType<SiteContentService['neighbours']> = service.neighbours(slug);
       return [neighbours?.previous.slug, neighbours?.next.slug];
     };
-    expect(around('movah')).toEqual(['crm-kodoka', 'iotplatform']);
-    expect(around('iotplatform')).toEqual(['movah', 'rdi-manager']);
-    expect(around('rdi-manager')).toEqual(['iotplatform', 'crm-kodoka']);
-    expect(around('crm-kodoka')).toEqual(['rdi-manager', 'movah']);
+    expect(around('library-trails')).toEqual(['neighborhood-atlas', 'accessibility-notebook']);
+    expect(around('accessibility-notebook')).toEqual(['library-trails', 'workshop-calendar']);
+    expect(around('workshop-calendar')).toEqual(['accessibility-notebook', 'neighborhood-atlas']);
+    expect(around('neighborhood-atlas')).toEqual(['workshop-calendar', 'library-trails']);
     expect(service.neighbours('unknown')).toBeNull();
   });
 
   it('has no neighbours with a single project', (): void => {
-    expect(setup('fr', undefined, [project('movah', true)]).neighbours('movah')).toBeNull();
+    expect(
+      setup('fr', undefined, [project('library-trails', true)]).neighbours('library-trails'),
+    ).toBeNull();
   });
 
   it('derives the date labels and the site name', (): void => {
@@ -221,31 +223,32 @@ describe('SiteContentService', (): void => {
       'Depuis 2023',
       '2021 — 2023',
     ]);
-    expect(service.project('iotplatform')?.site).toEqual({
-      url: 'https://www.iotplatform.fr/fr/',
-      label: 'iotplatform.fr',
+    expect(service.project('accessibility-notebook')?.site).toEqual({
+      url: 'https://example.com/fr/',
+      label: 'example.com',
     });
   });
 
   it('splits the article at its level-2 headings and keeps the cover', (): void => {
     const service: SiteContentService = setup('fr');
-    const movah: ReturnType<SiteContentService['project']> = service.project('movah');
-    expect(movah?.intro).toEqual([
+    const libraryTrails: ReturnType<SiteContentService['project']> =
+      service.project('library-trails');
+    expect(libraryTrails?.intro).toEqual([
       { kind: 'paragraph', content: [{ kind: 'text', text: 'Intro.' }] },
     ]);
-    expect(movah?.sections).toEqual([
+    expect(libraryTrails?.sections).toEqual([
       {
         id: 'contexte',
         label: 'Contexte',
         blocks: [{ kind: 'paragraph', content: [{ kind: 'text', text: 'Contexte.' }] }],
       },
     ]);
-    expect(movah?.cover).toEqual({
+    expect(libraryTrails?.cover).toEqual({
       src: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
       small: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp',
       width: 2400,
       height: 1350,
-      alt: 'Accueil de Movah',
+      alt: 'Accueil de Library Trails',
     });
     expect(service.otherProjects()[0]?.cover).toBeNull();
   });
@@ -311,7 +314,7 @@ describe('provideContentSnapshotLoader', (): void => {
     transfer.set(contentSnapshotStateKey('fr'), { ...base, locale: 'fr', projects: HOME });
     transfer.set(contentSnapshotStateKey('en'), { ...base, locale: 'en', projects: [] });
     const service: SiteContentService = await TestBed.runInInjectionContext(loadSiteContent);
-    expect(service.project('movah')?.title).toBe('movah');
+    expect(service.project('library-trails')?.title).toBe('library-trails');
     expect(load).not.toHaveBeenCalled();
     expect(transfer.hasKey(contentSnapshotStateKey('fr'))).toBe(false);
     expect(transfer.hasKey(contentSnapshotStateKey('en'))).toBe(true);

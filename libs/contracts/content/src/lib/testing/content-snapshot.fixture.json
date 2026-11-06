@@ -2,40 +2,40 @@
   "locale": "fr",
   "revision": 1,
   "profile": {
-    "heroIntro": "Développeur web fullstack à Blois.",
-    "aboutStatement": "J'aime concevoir des applications qui répondent à des besoins concrets.",
-    "aboutLead": "Après un BTS SIO et un bachelor, j'ai suivi le mastère de YNOV.",
+    "heroIntro": "Morgan Exemple, designer d’interfaces fictif.",
+    "aboutStatement": "Ce profil de démonstration explore des interfaces pour la lecture et la culture.",
+    "aboutLead": "Un parcours inventé en création visuelle, puis en design d’interaction.",
     "facts": [
       {
-        "label": "Basé à",
-        "value": "Blois, Loir-et-Cher"
+        "label": "Lieu fictif",
+        "value": "Ville-Exemple"
       }
     ],
     "links": [
       {
         "kind": "email",
-        "url": "mailto:contact@valentin-fortin.pro",
+        "url": "mailto:morgan@example.com",
         "label": null
       },
       {
         "kind": "github",
-        "url": "https://github.com/DevSkyLex",
+        "url": "https://example.com/demo/code",
         "label": null
       }
     ]
   },
   "projects": [
     {
-      "slug": "movah",
-      "title": "Movah",
-      "summary": "Une application mobile pour suivre ses séries.",
-      "lead": "Flutter sur Android et iOS, avec Supabase.",
-      "periodLabel": "Depuis juillet 2026",
-      "client": "Projet personnel",
-      "role": "Conception et développement",
-      "place": "Android et iOS",
+      "slug": "library-trails",
+      "title": "Library Trails",
+      "summary": "Une bibliothèque fictive propose des parcours de lecture accessibles.",
+      "lead": "Une interface de démonstration pour explorer des ouvrages inventés.",
+      "periodLabel": "Février à octobre 2025",
+      "client": "Collectif Lecture ouverte — fictif",
+      "role": "Design d’interface et prototypage",
+      "place": "Ville-Exemple",
       "siteUrl": null,
-      "techs": ["flutter", "dart", "supabase"],
+      "techs": ["vue", "typescript", "css"],
       "featured": true,
       "article": {
         "type": "doc",
@@ -150,29 +150,29 @@
         "small": "/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp",
         "width": 2400,
         "height": 1350,
-        "alt": "Accueil de Movah"
+        "alt": "Accueil de Library Trails"
       },
       "seo": {
-        "title": "Movah, suivi de séries en Flutter",
+        "title": "Library Trails, parcours de lecture accessibles",
         "description": null,
-        "keywords": ["Flutter", "suivi de séries"]
+        "keywords": ["Vue", "lecture accessible"]
       }
     }
   ],
   "timeline": [
     {
-      "id": "bts-sio",
+      "id": "visual-design-diploma",
       "kind": "education",
-      "title": "BTS SIO, option SLAM",
-      "place": "Chambray-lès-Tours",
-      "description": "Lycée Sainte-Marguerite.",
+      "title": "Diplôme de création visuelle — formation fictive",
+      "place": "Ville-Exemple",
+      "description": "École des formes, établissement de démonstration.",
       "start": {
-        "year": 2021,
-        "month": 9
+        "year": 2015,
+        "month": 1
       },
       "end": {
-        "year": 2023,
-        "month": 6
+        "year": 2017,
+        "month": 12
       },
       "techs": []
     }
@@ -192,7 +192,7 @@
   ],
   "legal": {
     "notice": {
-      "updatedOn": "2026-11-02",
+      "updatedOn": "2025-01-15",
       "document": {
         "type": "doc",
         "content": [
@@ -204,7 +204,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Éditeur du site"
+                "text": "Éditeur fictif du site"
               }
             ]
           },
@@ -217,12 +217,12 @@
               },
               {
                 "type": "text",
-                "text": "contact@valentin-fortin.pro",
+                "text": "morgan@example.com",
                 "marks": [
                   {
                     "type": "link",
                     "attrs": {
-                      "href": "mailto:contact@valentin-fortin.pro"
+                      "href": "mailto:morgan@example.com"
                     }
                   }
                 ]
@@ -233,7 +233,7 @@
       }
     },
     "privacy": {
-      "updatedOn": "2026-11-02",
+      "updatedOn": "2025-01-15",
       "document": {
         "type": "doc",
         "content": [
@@ -245,7 +245,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Durée de conservation"
+                "text": "Durée de conservation illustrative"
               }
             ]
           },
@@ -254,7 +254,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "Les messages sont supprimés trois ans après leur réception."
+                "text": "Données synthétiques de démonstration, sans message personnel réel."
               }
             ]
           }

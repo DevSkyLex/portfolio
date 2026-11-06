@@ -1,39 +1,45 @@
 {
-  "id": "project-movah",
-  "slug": "movah",
+  "id": "project-library-trails",
+  "slug": "library-trails",
   "status": "published",
   "version": 3,
   "position": 0,
   "title": {
-    "fr": "Movah",
-    "en": "Movah"
+    "fr": "Library Trails",
+    "en": "Library Trails"
   },
   "summary": {
-    "fr": "Une application mobile.",
-    "en": "A mobile app."
+    "fr": "Une bibliothèque de démonstration.",
+    "en": "A demonstration library."
   },
   "lead": {
-    "fr": "Flutter sur Android et iOS.",
-    "en": "Flutter on Android and iOS."
+    "fr": "Une interface Vue pour explorer des lectures fictives.",
+    "en": "A Vue interface for exploring fictional reading trails."
   },
   "period": {
-    "start": { "year": 2026, "month": 7 },
-    "end": null
+    "start": {
+      "year": 2025,
+      "month": 2
+    },
+    "end": {
+      "year": 2025,
+      "month": 10
+    }
   },
   "client": {
-    "fr": "Projet personnel",
-    "en": "Personal project"
+    "fr": "Collectif Lecture ouverte — fictif",
+    "en": "Open Reading Collective — fictional"
   },
   "role": {
-    "fr": "Conception et développement",
-    "en": "Design and development"
+    "fr": "Design d’interface",
+    "en": "Interface design"
   },
   "place": {
-    "fr": "Android et iOS",
-    "en": "Android and iOS"
+    "fr": "Ville-Exemple",
+    "en": "Example Town"
   },
-  "siteUrl": "https://movah.app",
-  "techs": ["flutter", "dart", "supabase"],
+  "siteUrl": "https://example.com/demos/library-trails",
+  "techs": ["vue", "typescript", "css"],
   "featured": true,
   "article": {
     "fr": {
@@ -61,7 +67,7 @@
             },
             {
               "type": "text",
-              "text": "mobile",
+              "text": "accessible",
               "marks": [
                 {
                   "type": "bold"
@@ -70,16 +76,16 @@
             },
             {
               "type": "text",
-              "text": " publiée sur "
+              "text": " présentée dans "
             },
             {
               "type": "text",
-              "text": "le store",
+              "text": "la démo",
               "marks": [
                 {
                   "type": "link",
                   "attrs": {
-                    "href": "https://movah.app",
+                    "href": "https://example.com/demos/library-trails",
                     "target": "_blank",
                     "rel": "noopener noreferrer nofollow",
                     "class": null
@@ -104,7 +110,7 @@
                   "content": [
                     {
                       "type": "text",
-                      "text": "Suivi des séries."
+                      "text": "Exploration de lectures fictives."
                     }
                   ]
                 }
@@ -116,8 +122,8 @@
           "type": "figure",
           "attrs": {
             "media": "3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90",
-            "alt": "Écran du calendrier",
-            "caption": "Le calendrier des sorties."
+            "alt": "Écran des parcours de lecture",
+            "caption": "Le catalogue de démonstration."
           }
         },
         {
@@ -157,7 +163,7 @@
           "content": [
             {
               "type": "text",
-              "text": "A mobile app."
+              "text": "A demonstration reading catalogue."
             }
           ]
         },
@@ -165,8 +171,8 @@
           "type": "figure",
           "attrs": {
             "media": "3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90",
-            "alt": "Release calendar screen",
-            "caption": "The release calendar."
+            "alt": "Reading trails screen",
+            "caption": "The demonstration catalogue."
           }
         }
       ]
@@ -176,7 +182,7 @@
   "cover": {
     "media": "8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f",
     "alt": {
-      "fr": "Accueil de Movah"
+      "fr": "Accueil de Library Trails"
     }
   },
   "media": [
@@ -195,14 +201,14 @@
   ],
   "seo": {
     "title": {
-      "fr": "Movah, suivi de séries en Flutter"
+      "fr": "Library Trails, parcours de lecture en Vue"
     },
     "description": {
-      "fr": "Application mobile Flutter et Supabase pour suivre ses séries, films et anime.",
-      "en": "A Flutter and Supabase mobile app to keep track of series, films and anime."
+      "fr": "Interface Vue de démonstration pour explorer des parcours de lecture fictifs.",
+      "en": "A demonstration Vue interface for exploring fictional reading trails."
     },
     "keywords": {
-      "fr": ["Flutter", "suivi de séries"]
+      "fr": ["Vue", "lecture accessible"]
     }
   }
 }

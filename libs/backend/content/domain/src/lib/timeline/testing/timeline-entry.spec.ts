@@ -14,7 +14,7 @@ import {
  */
 const DRAFT: TimelineEntryDraft = {
   title: { fr: '  Développeur  ', en: 'Developer' },
-  place: { fr: 'Tours', en: 'Tours' },
+  place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
   description: { fr: 'Interfaces Angular.', en: 'Angular interfaces.' },
   start: { year: 2023, month: 9 },
   end: null,

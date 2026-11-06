@@ -2,11 +2,11 @@ import { localizedUrl } from '@internal/content-web-data-access/lib/utils/locali
 
 describe('localizedUrl', (): void => {
   it('serves each locale under its prefix', (): void => {
-    expect(localizedUrl('https://valentin-fortin.pro', 'fr', '/projects/movah')).toBe(
-      'https://valentin-fortin.pro/fr/projects/movah',
+    expect(localizedUrl('https://valentin-fortin.pro', 'fr', '/projects/library-trails')).toBe(
+      'https://valentin-fortin.pro/fr/projects/library-trails',
     );
-    expect(localizedUrl('https://valentin-fortin.pro', 'en', '/projects/movah')).toBe(
-      'https://valentin-fortin.pro/en/projects/movah',
+    expect(localizedUrl('https://valentin-fortin.pro', 'en', '/projects/library-trails')).toBe(
+      'https://valentin-fortin.pro/en/projects/library-trails',
     );
   });
 
