@@ -20,7 +20,7 @@ jobs:
     outputs:
       sha: ${{ steps.target.outputs.sha }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
       - id: target
@@ -34,7 +34,7 @@ jobs:
       NX_DAEMON: 'false'
       NX_ISOLATE_PLUGINS: 'false'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.resolve.outputs.sha }}
       - uses: ./.github/actions/prepare-node-workspace
@@ -45,7 +45,7 @@ jobs:
       - name: Build request-time SSR application
         run: npx nx build web
       # The shared root is dist/apps, so each image keeps its own directory in the artifact.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: service-contexts-${{ needs.resolve.outputs.sha }}
           path: |
@@ -72,22 +72,22 @@ jobs:
       matrix:
         service: [identity-service, content-service, contact-service, web]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.resolve.outputs.sha }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: service-contexts-${{ needs.resolve.outputs.sha }}
           path: dist/apps
       - name: Registry (GHCR requires a lowercase owner)
         run: echo "REGISTRY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: dist/apps/${{ matrix.service }}
           file: ${{ matrix.service == 'web' && 'docker/web.Dockerfile' || 'docker/service.Dockerfile' }}
@@ -133,7 +133,7 @@ jobs:
       IDENTITY_SIGNING_KID: ${{ vars.IDENTITY_SIGNING_KID || 'k1' }}
       GHCR_USERNAME: ${{ vars.GHCR_USERNAME || github.actor }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.resolve.outputs.sha }}
       - name: Ansible
