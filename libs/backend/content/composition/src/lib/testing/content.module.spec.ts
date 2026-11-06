@@ -435,7 +435,7 @@ describe('ContentModule', (): void => {
         ]) {
           const missing: request.Response = await admin().get(path);
           expect(missing.status).toBe(404);
-          expect(missing.headers['content-type']).toContain('application/problem+json');
+          expect(missing.headers['content-type'], path).toContain('application/problem+json');
         }
       });
 

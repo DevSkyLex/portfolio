@@ -45,9 +45,17 @@ former rebuild and manual-group mechanisms.
 
 An Nx project is only generated when it receives its first code. Ports exist for I/O and non-determinism (`Clock`, `IdGenerator`), not to wrap every class.
 
-## D9 — NestJS 11 rather than 12
+## D9 — NestJS 12 on Node.js 24
 
-Nx 24 (`@nx/nest`) targets NestJS 11, and NestJS 12 is published as ESM only, which is incompatible with the services' CommonJS webpack build. Move to 12 once `@nx/nest` supports it.
+The services use NestJS 12 on the required Node.js 24 runtime. Their webpack output remains CommonJS:
+Node.js 24 can synchronously load Nest's ESM entry points through `require()`. Service builds and their
+pruned production installations verify this boundary. Nx 24 generators still default to NestJS 11, so
+keep the workspace dependencies and every service's authored production manifest aligned when adding
+or updating a service; generator defaults are not the runtime version contract.
+
+NestJS 12 scopes the automatic not-found handler to the global API prefix and explicitly excluded
+routes. The optional root-mounted media middleware forwards its own missing and invalid paths as
+`NotFoundException` errors, preserving the shared `application/problem+json` response contract.
 
 ## D10 — Contracts in `zod/mini`, validated on the server
 
