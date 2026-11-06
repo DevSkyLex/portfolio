@@ -51,6 +51,13 @@
                   width="36"
                   height="36"
                 />
+              } @else if (brandLogo(application); as brand) {
+                <span
+                  class="grid size-9 shrink-0 place-items-center rounded-md border border-border bg-surface-raised text-fg @max-[640px]:hidden"
+                  aria-hidden="true"
+                >
+                  <ng-icon [svg]="brand" size="20" />
+                </span>
               } @else {
                 <span
                   class="grid size-9 shrink-0 place-items-center rounded-md border border-border bg-surface-raised text-fg-muted @max-[640px]:hidden"

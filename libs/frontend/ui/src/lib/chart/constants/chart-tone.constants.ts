@@ -67,3 +67,13 @@ export const CHART_HEAT_STEPS: readonly string[] = [
  */
 export const CHART_TOOLTIP_CLASSES: string =
   'pointer-events-none absolute bottom-full z-10 mb-2 flex flex-col gap-1 rounded-sm border border-border bg-surface-float px-2 py-1.5 text-[12px]/4 whitespace-nowrap text-fg shadow-float';
+
+/**
+ * Constant CHART_EMPTY_CLASSES
+ *
+ * @description
+ * Empty state of a chart without data: its note on the empty surface (CHART_EMPTY_FILL), centred in
+ * the room the chart takes, so that a section keeps its height and reads as empty, not missing.
+ */
+export const CHART_EMPTY_CLASSES: string =
+  'flex items-center justify-center rounded-xs bg-surface-raised px-4 text-[12px]/4 text-fg-faint';

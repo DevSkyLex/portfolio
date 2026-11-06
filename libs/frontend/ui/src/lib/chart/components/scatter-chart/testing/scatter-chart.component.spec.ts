@@ -157,4 +157,22 @@ describe('ScatterChartComponent', (): void => {
     expect(dots(host)).toEqual([]);
     expect(host.querySelector('.shadow-float')).toBeNull();
   });
+
+  it('keeps its room with a note on the empty surface when there is nothing to draw', async (): Promise<void> => {
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'fr' }] });
+    const fixture: ComponentFixture<ScatterChartComponent> =
+      TestBed.createComponent(ScatterChartComponent);
+    fixture.componentRef.setInput('points', []);
+    fixture.componentRef.setInput('label', 'CTR');
+    fixture.componentRef.setInput('xHeader', 'Position');
+    fixture.componentRef.setInput('yHeader', 'CTR');
+    await fixture.whenStable();
+    const note: HTMLElement | null = (fixture.nativeElement as HTMLElement).querySelector('p');
+    expect(note?.textContent?.trim()).toBe('Aucune donnée à afficher.');
+    expect(note?.className).toContain('bg-surface-raised');
+    expect(note?.className).toContain('h-56');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('table, ul, [role="group"]'),
+    ).toBeNull();
+  });
 });

@@ -12,6 +12,8 @@ import {
 } from '@angular/core';
 import type { AnalyticsData } from '@vfortin/content-web-data-access/admin';
 import {
+  EMPTY_IMPORTS,
+  DataTableEmptyDirective,
   BarListComponent,
   DataTableComponent,
   HeatmapComponent,
@@ -21,7 +23,8 @@ import {
   type ChartSeries,
   type DataTableColumn,
 } from '@vfortin/ui';
-import type { SeoDelta } from '@internal/content-web-feature-admin/lib/models/seo-delta/seo-delta.interface';
+import { lucideFileText } from '@ng-icons/lucide';
+import { NgIcon } from '@ng-icons/core';
 import type { SeoFormatter } from '@internal/content-web-feature-admin/lib/models/seo-formatter/seo-formatter.interface';
 import { SeoKpiTileComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-kpi-tile/seo-kpi-tile.component';
 import { SeoSectionHeaderComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-section-header/seo-section-header.component';
@@ -29,7 +32,11 @@ import {
   type SeoCalendar,
   seoCalendar,
 } from '@internal/content-web-feature-admin/lib/utils/seo-calendar/seo-calendar.utils';
-import { relativeDelta } from '@internal/content-web-feature-admin/lib/utils/seo-delta/seo-delta.utils';
+import type { SeoFigure } from '@internal/content-web-feature-admin/lib/models/seo-figure/seo-figure.interface';
+import {
+  analyticsFigures,
+  seoComparison,
+} from '@internal/content-web-feature-admin/lib/utils/seo-figures/seo-figures.utils';
 import { seoFormatter } from '@internal/content-web-feature-admin/lib/utils/seo-format/seo-format.utils';
 
 /**
@@ -57,19 +64,6 @@ type AudiencePage = AnalyticsData['pages'][number];
 type AudienceShare = AnalyticsData['channels'][number];
 
 /**
- * Interface Kpi
- *
- * @description
- * One stat tile of the section.
- */
-interface Kpi {
-  readonly id: string;
-  readonly label: string;
-  readonly value: string;
-  readonly delta: SeoDelta | null;
-}
-
-/**
  * Component SeoAnalyticsPanelComponent
  * @class SeoAnalyticsPanelComponent
  *
@@ -86,8 +80,11 @@ interface Kpi {
   imports: [
     BarListComponent,
     DataTableComponent,
+    DataTableEmptyDirective,
+    EMPTY_IMPORTS,
     HeatmapComponent,
     LineChartComponent,
+    NgIcon,
     SeoKpiTileComponent,
     SeoSectionHeaderComponent,
   ],
@@ -97,6 +94,15 @@ interface Kpi {
 })
 export class SeoAnalyticsPanelComponent {
   // #region Properties
+  /**
+   * Property icons
+   * @readonly
+   *
+   * @description
+   * Lucide icons of the empty tables.
+   */
+  protected readonly icons: { readonly page: string } = { page: lucideFileText } as const;
+
   /**
    * Property data
    * @readonly
@@ -145,6 +151,21 @@ export class SeoAnalyticsPanelComponent {
   protected readonly format: SeoFormatter = seoFormatter(this.locale);
 
   /**
+   * Property strip
+   * @readonly
+   *
+   * @description
+   * Whether the strip of key figures shows above the charts: off while the dashboard's side panel
+   * lists them (D51).
+   *
+   * @type {InputSignalWithTransform<boolean, unknown>}
+   */
+  public readonly strip: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
+    true,
+    { transform: booleanAttribute },
+  );
+
+  /**
    * Property comparison
    * @readonly
    *
@@ -153,61 +174,22 @@ export class SeoAnalyticsPanelComponent {
    *
    * @type {Signal<string>}
    */
-  protected readonly comparison: Signal<string> = computed<string>((): string => {
-    const previous: { start: string; end: string } = this.data().window.previous;
-    const span: string = this.format.span(previous.start, previous.end);
-    return $localize`:@@admin.dashboard.kpi.comparison:vs ${span}:span:`;
-  });
+  protected readonly comparison: Signal<string> = computed<string>((): string =>
+    seoComparison(this.data().window.previous, this.format),
+  );
 
   /**
    * Property kpis
    * @readonly
    *
    * @description
-   * Stat tiles of the window.
+   * Key figures of the window.
    *
-   * @type {Signal<readonly Kpi[]>}
+   * @type {Signal<readonly SeoFigure[]>}
    */
-  protected readonly kpis: Signal<readonly Kpi[]> = computed<readonly Kpi[]>((): readonly Kpi[] => {
-    const { totals, previous } = this.data();
-    const format: SeoFormatter = this.format;
-    return [
-      {
-        id: 'users',
-        label: $localize`:@@admin.dashboard.analytics.activeUsers:Utilisateurs actifs`,
-        value: format.count(totals.activeUsers),
-        delta: relativeDelta(totals.activeUsers, previous.activeUsers, format),
-      },
-      {
-        id: 'sessions',
-        label: $localize`:@@admin.dashboard.analytics.sessions:Sessions`,
-        value: format.count(totals.sessions),
-        delta: relativeDelta(totals.sessions, previous.sessions, format),
-      },
-      {
-        id: 'views',
-        label: $localize`:@@admin.dashboard.analytics.views:Vues`,
-        value: format.count(totals.views),
-        delta: relativeDelta(totals.views, previous.views, format),
-      },
-      {
-        id: 'engagement',
-        label: $localize`:@@admin.dashboard.analytics.engagementRate:Taux d’engagement`,
-        value: format.percent(totals.engagementRate),
-        delta: relativeDelta(totals.engagementRate, previous.engagementRate, format),
-      },
-      {
-        id: 'duration',
-        label: $localize`:@@admin.dashboard.analytics.averageEngagement:Durée d’engagement moyenne`,
-        value: format.duration(totals.averageEngagementSeconds),
-        delta: relativeDelta(
-          totals.averageEngagementSeconds,
-          previous.averageEngagementSeconds,
-          format,
-        ),
-      },
-    ];
-  });
+  protected readonly kpis: Signal<readonly SeoFigure[]> = computed<readonly SeoFigure[]>(
+    (): readonly SeoFigure[] => analyticsFigures(this.data(), this.format),
+  );
 
   /**
    * Property daily

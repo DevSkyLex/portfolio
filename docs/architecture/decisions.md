@@ -708,7 +708,12 @@ identical on these points). WebMCP comes later.
   must equal its URL; it needs `client_name` and one to ten redirect URIs and may hold no secret. The
   copy is reused per its `Cache-Control`, within one minute and one day (an hour without header). The
   logo is fetched once per validated copy, kept only when its magic bytes say PNG, JPEG, GIF or WebP
-  (64 kB at most), and stored as a `data:` URL, which the admin CSP already allows. Dynamic
+  (64 kB at most), and stored as a `data:` URL, which the admin CSP already allows. Claude and
+  Claude Code publish no `logo_uri` (`claude.ai/oauth/mcp-oauth-client-metadata`,
+  `claude.ai/oauth/claude-code-client-metadata`, checked 2026-11-06): without a fetched logo, the
+  consent screen and « Applications connectées » draw the brand logo from `@ng-icons/simple-icons`
+  for a metadata-document client of a known host (`knownClientLogo`, `claude.ai` only), never for a
+  dynamic registration, which may claim any name. Dynamic
   registration (RFC 7591, deprecated by MCP, kept for older clients) is unauthenticated: the same
   metadata rules, 60 registrations per hour for all addresses plus an Nginx budget per address,
   and registrations never consented to are deleted after a day; the consent screen and the list flag
@@ -1003,6 +1008,15 @@ order and following the entity (a device keeps its tone); status colours only wh
 verdict, always with a legend. The heat ramp is four steps of `chart-1` over the surface (50, 65, 80,
 100 %), the faintest still 2:1 against it. Every chart keeps a visually hidden table view and a
 keyboard or printed reading of each value.
+
+Revision (side panel): on a wide window the reports stop at 1200 px, centred between hairlines past
+it, beside a resizable side panel like the project editor's (320 px by default, 280 to 440 px,
+remembered per viewer under `portfolio.admin.layout.dashboard`). The panel holds the window toggle,
+« Actualiser », the active tab's key figures as a list (the change of each, the period compared named
+once) and the collection state of every source with its time; the figure strip leaves the tabs, which
+shortens them. Below 1180 px the panel becomes a « Détails » sheet opened from the page header, the
+window controls return to the header and each tab shows its strip again. The section descriptions
+already carry the method, so the panel adds no method notes.
 
 ## D52 — Demonstration SEO data in development
 

@@ -13,7 +13,10 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
-import { CHART_TONE_FILLS } from '@internal/ui/lib/chart/constants/chart-tone.constants';
+import {
+  CHART_TONE_FILLS,
+  CHART_EMPTY_CLASSES,
+} from '@internal/ui/lib/chart/constants/chart-tone.constants';
 import type { ChartLegendEntry } from '@internal/ui/lib/chart/models/chart/chart-legend-entry.interface';
 import type {
   StackedBarRow,
@@ -67,100 +70,107 @@ const PRINT_MIN: number = 14;
     'data-slot': 'stacked-bars',
   },
   template: `
-    @if (legend().length > 1) {
-      <ul
-        class="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px]/4 text-fg-muted"
-        data-slot="chart-legend"
+    @if (empty()) {
+      <p [class]="emptyClasses">{{ emptyLabel() }}</p>
+    } @else {
+      @if (legend().length > 1) {
+        <ul
+          class="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px]/4 text-fg-muted"
+          data-slot="chart-legend"
+        >
+          @for (entry of swatches(); track entry.key) {
+            <li class="flex items-center gap-1.5">
+              <span [class]="entry.classes" aria-hidden="true"></span>
+              {{ entry.label }}
+            </li>
+          }
+        </ul>
+      }
+      <div
+        class="flex flex-col gap-3 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
+        tabindex="0"
+        role="group"
+        [attr.aria-label]="label()"
+        [attr.aria-describedby]="hintId"
+        (pointerleave)="pointerLeft()"
+        (focus)="focusEntered()"
+        (blur)="focusLeft()"
+        (keydown)="keyPressed($event)"
       >
-        @for (entry of swatches(); track entry.key) {
-          <li class="flex items-center gap-1.5">
-            <span [class]="entry.classes" aria-hidden="true"></span>
-            {{ entry.label }}
-          </li>
-        }
-      </ul>
-    }
-    <div
-      class="flex flex-col gap-3 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
-      tabindex="0"
-      role="group"
-      [attr.aria-label]="label()"
-      [attr.aria-describedby]="hintId"
-      (pointerleave)="pointerLeft()"
-      (focus)="focusEntered()"
-      (blur)="focusLeft()"
-      (keydown)="keyPressed($event)"
-    >
-      @for (bar of bars(); track bar.row.key) {
-        <div class="flex flex-col gap-1.5">
-          @if (bars().length > 1 || size() === 'thin') {
-            <div class="flex items-baseline justify-between gap-4 text-[13px]/5" aria-hidden="true">
-              <span class="min-w-0 truncate text-fg" [title]="bar.row.label">{{
-                bar.row.label
-              }}</span>
-              <span class="shrink-0 text-fg-muted tabular-nums">{{ bar.row.display }}</span>
-            </div>
-          }
-          <span [class]="trackClasses()" aria-hidden="true">
-            @for (part of bar.parts; track part.entry.key) {
-              @if (part.width > 0) {
-                <span
-                  [class]="part.classes"
-                  [style.width.%]="part.width"
-                  (pointerenter)="pointerEntered(part.flat)"
-                >
-                  @if (part.printed) {
-                    {{ part.share }}
-                  }
-                </span>
-              }
+        @for (bar of bars(); track bar.row.key) {
+          <div class="flex flex-col gap-1.5">
+            @if (bars().length > 1 || size() === 'thin') {
+              <div
+                class="flex items-baseline justify-between gap-4 text-[13px]/5"
+                aria-hidden="true"
+              >
+                <span class="min-w-0 truncate text-fg" [title]="bar.row.label">{{
+                  bar.row.label
+                }}</span>
+                <span class="shrink-0 text-fg-muted tabular-nums">{{ bar.row.display }}</span>
+              </div>
             }
-          </span>
-        </div>
-      }
-    </div>
-    <p class="mt-3 min-h-4 text-[12px]/4 text-fg-muted" aria-live="polite">
-      @if (activePart(); as current) {
-        <span class="font-medium text-fg tabular-nums">{{ current.segment.display }}</span>
-        {{ current.entry.label }} · {{ current.share }}
-        @if (bars().length > 1) {
-          · {{ current.row }}
-        }
-      }
-    </p>
-
-    <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
-
-    <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
-    <div class="sr-only">
-      <table>
-        <caption>
-          {{
-            label()
-          }}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">{{ nameHeader() }}</th>
-            @for (entry of legend(); track entry.key) {
-              <th scope="col">{{ entry.label }}</th>
-            }
-            <th scope="col">{{ totalHeader() }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (bar of bars(); track bar.row.key) {
-            <tr>
-              <th scope="row">{{ bar.row.label }}</th>
+            <span [class]="trackClasses()" aria-hidden="true">
               @for (part of bar.parts; track part.entry.key) {
-                <td>{{ part.segment.display }}</td>
+                @if (part.width > 0) {
+                  <span
+                    [class]="part.classes"
+                    [style.width.%]="part.width"
+                    (pointerenter)="pointerEntered(part.flat)"
+                  >
+                    @if (part.printed) {
+                      {{ part.share }}
+                    }
+                  </span>
+                }
               }
-              <td>{{ bar.row.display }}</td>
-            </tr>
+            </span>
+          </div>
+        }
+      </div>
+      <p class="mt-3 min-h-4 text-[12px]/4 text-fg-muted" aria-live="polite">
+        @if (activePart(); as current) {
+          <span class="font-medium text-fg tabular-nums">{{ current.segment.display }}</span>
+          {{ current.entry.label }} · {{ current.share }}
+          @if (bars().length > 1) {
+            · {{ current.row }}
           }
-        </tbody>
-      </table>
-    </div>
+        }
+      </p>
+
+      <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
+
+      <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
+      <div class="sr-only">
+        <table>
+          <caption>
+            {{
+              label()
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">{{ nameHeader() }}</th>
+              @for (entry of legend(); track entry.key) {
+                <th scope="col">{{ entry.label }}</th>
+              }
+              <th scope="col">{{ totalHeader() }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bar of bars(); track bar.row.key) {
+              <tr>
+                <th scope="row">{{ bar.row.label }}</th>
+                @for (part of bar.parts; track part.entry.key) {
+                  <td>{{ part.segment.display }}</td>
+                }
+                <td>{{ bar.row.display }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   `,
 })
 export class StackedBarsComponent {
@@ -202,6 +212,19 @@ export class StackedBarsComponent {
     false,
     { transform: booleanAttribute },
   );
+
+  /** Note shown in place of the chart when it has nothing to draw. */
+  public readonly emptyLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.chart.empty:Aucune donnée à afficher.`,
+  );
+
+  /** Whether there is nothing to draw: the empty note keeps the chart's room instead. */
+  protected readonly empty: Signal<boolean> = computed<boolean>(
+    // No whole, or only wholes of zero: nothing to split.
+    (): boolean => this.rows().every((row: StackedBarRow): boolean => this.total(row) <= 0),
+  );
+
+  protected readonly emptyClasses: string = cn(CHART_EMPTY_CLASSES, 'h-20');
 
   /** Extra host classes. */
   public readonly class: InputSignal<string> = input<string>('');

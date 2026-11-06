@@ -375,6 +375,26 @@ describe('DataTableComponent', (): void => {
     expect(element.querySelector<HTMLElement>('.custom-empty')?.dataset['layout']).toBe('fill');
   });
 
+  it('closes the empty state of a flush table with a bottom hairline', async (): Promise<void> => {
+    const fixture: ComponentFixture<DataTableComponent<Person>> =
+      TestBed.createComponent<DataTableComponent<Person>>(DataTableComponent);
+    fixture.componentRef.setInput('framed', false);
+    fixture.componentRef.setInput('data', []);
+    fixture.componentRef.setInput('columns', [
+      { id: 'name', header: 'Nom', cell: (p: Person): string => p.name },
+    ]);
+    fixture.componentRef.setInput('rowKey', (p: Person): number => p.id);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const box: HTMLElement | null = element.querySelector('[data-slot="data-table-empty"]');
+    expect(box?.className).toContain('border-b');
+    expect(box?.textContent?.trim()).toBe('Aucune donnée.');
+    // A framed table keeps its own border: the state's box adds none.
+    fixture.componentRef.setInput('framed', true);
+    await fixture.whenStable();
+    expect(element.querySelector('[data-slot="data-table-empty"]')?.className).toBe('contents');
+  });
+
   it('renders skeleton rows matching the visible columns while loading', async (): Promise<void> => {
     const { element, host, stable } = await setup();
     host.data.set([]);

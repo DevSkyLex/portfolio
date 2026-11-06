@@ -22,6 +22,7 @@ import {
   ToastService,
 } from '@vfortin/ui';
 import { OAUTH_SCOPE_TEXTS } from '@internal/identity-web-feature/lib/constants/oauth-scopes.constants';
+import { knownClientLogo } from '@internal/identity-web-feature/lib/utils/known-client-logo/known-client-logo.utils';
 
 /**
  * Component ConnectedApplicationsSectionComponent
@@ -131,6 +132,20 @@ export class ConnectedApplicationsSectionComponent {
    *
    * @returns {string} Name.
    */
+  /**
+   * Method brandLogo
+   * @method brandLogo
+   *
+   * @description
+   * Brand logo of a known client that publishes none (Claude), shown when no logo was fetched.
+   *
+   * @param {ConnectedApplication} application - Listed client.
+   * @returns {string | null} SVG markup, or `null`.
+   */
+  protected brandLogo(application: ConnectedApplication): string | null {
+    return knownClientLogo(application.clientId, application.registration);
+  }
+
   protected nameOf(application: ConnectedApplication): string {
     return application.name ?? application.host;
   }

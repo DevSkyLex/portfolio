@@ -7,13 +7,15 @@
     description="Catégories des mesures terrain et scores de laboratoire des pages clés, sur mobile et sur ordinateur."
     i18n-description="@@admin.dashboard.vitals.summaryHint"
   />
-  <div class="overflow-hidden border-b border-border">
-    <div class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-4">
-      @for (figure of figures(); track figure.id) {
-        <content-seo-kpi-tile [label]="figure.label" [value]="figure.value" [compared]="false" />
-      }
+  @if (strip()) {
+    <div class="overflow-hidden border-b border-border">
+      <div class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-4">
+        @for (figure of figures(); track figure.id) {
+          <content-seo-kpi-tile [label]="figure.label" [value]="figure.value" [compared]="false" />
+        }
+      </div>
     </div>
-  </div>
+  }
 
   <div class="overflow-hidden border-b border-border">
     <div class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2">
@@ -22,12 +24,10 @@
         aria-labelledby="cwv-distribution"
       >
         <div class="flex flex-col gap-1">
-          <h3
-            id="cwv-distribution"
-            class="text-[13px]/5 font-medium text-fg"
-            i18n="@@admin.dashboard.vitals.distribution"
-          >
-            Répartition des mesures
+          <h3 id="cwv-distribution" class="text-[13px]/5 font-medium text-fg">
+            <ng-container i18n="@@admin.dashboard.vitals.distribution"
+              >Répartition des mesures</ng-container
+            >
           </h3>
           <p class="text-[12px]/4 text-fg-faint" i18n="@@admin.dashboard.vitals.distributionHint">
             Part des pages et appareils mesurés dans chaque catégorie.
@@ -47,12 +47,10 @@
         aria-labelledby="cwv-scores"
       >
         <div class="flex flex-col gap-1">
-          <h3
-            id="cwv-scores"
-            class="text-[13px]/5 font-medium text-fg"
-            i18n="@@admin.dashboard.vitals.scores"
-          >
-            Score labo, mobile et ordinateur
+          <h3 id="cwv-scores" class="text-[13px]/5 font-medium text-fg">
+            <ng-container i18n="@@admin.dashboard.vitals.scores"
+              >Score labo, mobile et ordinateur</ng-container
+            >
           </h3>
           <p class="text-[12px]/4 text-fg-faint" i18n="@@admin.dashboard.vitals.scoresHint">
             Performance Lighthouse sur 100, d’une mesure simulée par page.
@@ -110,6 +108,19 @@
     [columnMenu]="false"
     [paginated]="false"
   >
+    <ng-template uiDataTableEmpty let-layout>
+      <div uiEmpty [layout]="layout">
+        <div uiEmptyHeader>
+          <div uiEmptyMedia variant="icon">
+            <ng-icon [svg]="icons.vitals" size="16" />
+          </div>
+          <p uiEmptyTitle i18n="@@admin.dashboard.vitals.empty.title">Aucune mesure</p>
+          <p uiEmptyDescription i18n="@@admin.dashboard.vitals.empty.description">
+            PageSpeed Insights mesure les pages clés à chaque collecte ; aucune ne l’a encore été.
+          </p>
+        </div>
+      </div>
+    </ng-template>
     <ng-template uiDataTableCell="page" [uiDataTableCellRows]="rows()" let-row>
       <div class="flex w-0 min-w-full flex-col">
         <a

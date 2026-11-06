@@ -43,6 +43,7 @@ import {
   clientRedirectHost,
   toAuthorizationQuery,
 } from '@internal/identity-web-feature/lib/utils/authorization-query/authorization-query.utils';
+import { knownClientLogo } from '@internal/identity-web-feature/lib/utils/known-client-logo/known-client-logo.utils';
 
 /**
  * Interface ScopeRow
@@ -199,6 +200,22 @@ export class OAuthConsentPageComponent {
   protected readonly clientName: Signal<string> = computed<string>(
     () => this.consent()?.client.name ?? $localize`:@@admin.oauth.clientFallback:Cette application`,
   );
+
+  /**
+   * Property brand
+   * @readonly
+   *
+   * @description
+   * Brand logo of a known client that publishes none (Claude), shown when no logo was fetched.
+   *
+   * @type {Signal<string | null>}
+   */
+  protected readonly brand: Signal<string | null> = computed<string | null>((): string | null => {
+    const request: AuthorizationConsent | null = this.consent();
+    return request === null
+      ? null
+      : knownClientLogo(request.client.clientId, request.client.registration);
+  });
 
   /**
    * Property clientHost

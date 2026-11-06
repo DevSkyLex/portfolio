@@ -1,4 +1,6 @@
 import {
+  type InputSignalWithTransform,
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   LOCALE_ID,
@@ -36,6 +38,8 @@ import { SeoSectionHeaderComponent } from '@internal/content-web-feature-admin/l
 import { SEO_SEVERITY_ICONS } from '@internal/content-web-feature-admin/lib/constants/seo-status-icons.constants';
 import type { SeoStatusIcon } from '@internal/content-web-feature-admin/lib/models/seo-status-icon/seo-status-icon.interface';
 import { seoAuditMessage } from '@internal/content-web-feature-admin/lib/utils/seo-audit-message/seo-audit-message.utils';
+import type { SeoFigure } from '@internal/content-web-feature-admin/lib/models/seo-figure/seo-figure.interface';
+import { auditFigures } from '@internal/content-web-feature-admin/lib/utils/seo-figures/seo-figures.utils';
 import { seoFormatter } from '@internal/content-web-feature-admin/lib/utils/seo-format/seo-format.utils';
 
 /**
@@ -61,18 +65,6 @@ interface IssueRow {
   readonly status: SeoStatusIcon;
   readonly locale: string;
   readonly message: string;
-}
-
-/**
- * Interface Total
- *
- * @description
- * One count tile.
- */
-interface Total {
-  readonly id: string;
-  readonly label: string;
-  readonly value: string;
 }
 
 /**
@@ -154,51 +146,31 @@ export class SeoAuditPanelComponent {
   } as const;
 
   /**
+   * Property strip
+   * @readonly
+   *
+   * @description
+   * Whether the strip of key figures shows above the charts: off while the dashboard's side panel
+   * lists them (D51).
+   *
+   * @type {InputSignalWithTransform<boolean, unknown>}
+   */
+  public readonly strip: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
+    true,
+    { transform: booleanAttribute },
+  );
+
+  /**
    * Property totals
    * @readonly
    *
    * @description
-   * Count tiles.
+   * Key figures of the audit.
    *
-   * @type {Signal<readonly Total[]>}
+   * @type {Signal<readonly SeoFigure[]>}
    */
-  protected readonly totals: Signal<readonly Total[]> = computed<readonly Total[]>(
-    (): readonly Total[] => {
-      const { totals, sitemap } = this.audit();
-      const count: (value: number) => string = this.format.count;
-      return [
-        {
-          id: 'error',
-          label: $localize`:@@admin.dashboard.audit.totals.errors:Erreurs`,
-          value: count(totals.issues.error),
-        },
-        {
-          id: 'warning',
-          label: $localize`:@@admin.dashboard.audit.totals.warnings:Avertissements`,
-          value: count(totals.issues.warning),
-        },
-        {
-          id: 'info',
-          label: $localize`:@@admin.dashboard.audit.totals.infos:Infos`,
-          value: count(totals.issues.info),
-        },
-        {
-          id: 'published',
-          label: $localize`:@@admin.dashboard.audit.totals.published:Projets publiés`,
-          value: count(totals.published),
-        },
-        {
-          id: 'drafts',
-          label: $localize`:@@admin.dashboard.audit.totals.drafts:Brouillons`,
-          value: count(totals.drafts),
-        },
-        {
-          id: 'sitemap',
-          label: $localize`:@@admin.dashboard.audit.totals.sitemap:URL du sitemap`,
-          value: count(sitemap.urls),
-        },
-      ];
-    },
+  protected readonly totals: Signal<readonly SeoFigure[]> = computed<readonly SeoFigure[]>(
+    (): readonly SeoFigure[] => auditFigures(this.audit(), this.format),
   );
 
   /**

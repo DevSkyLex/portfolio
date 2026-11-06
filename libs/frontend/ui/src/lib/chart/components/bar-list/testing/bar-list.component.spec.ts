@@ -1,3 +1,4 @@
+import { LOCALE_ID } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { BarListComponent } from '@internal/ui/lib/chart/components/bar-list/bar-list.component';
 
@@ -42,5 +43,20 @@ describe('BarListComponent', (): void => {
     fixture.componentRef.setInput('stale', true);
     await fixture.whenStable();
     expect((fixture.nativeElement as HTMLElement).hasAttribute('data-stale')).toBe(true);
+  });
+
+  it('keeps its room with a note on the empty surface when there is nothing to draw', async (): Promise<void> => {
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'fr' }] });
+    const fixture: ComponentFixture<BarListComponent> = TestBed.createComponent(BarListComponent);
+    fixture.componentRef.setInput('items', []);
+    fixture.componentRef.setInput('label', 'Canaux');
+    await fixture.whenStable();
+    const note: HTMLElement | null = (fixture.nativeElement as HTMLElement).querySelector('p');
+    expect(note?.textContent?.trim()).toBe('Aucune donnée à afficher.');
+    expect(note?.className).toContain('bg-surface-raised');
+    expect(note?.className).toContain('h-24');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('table, ul, [role="group"]'),
+    ).toBeNull();
   });
 });

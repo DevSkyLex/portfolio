@@ -16,6 +16,7 @@ import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import {
   CHART_TONE_FILLS,
   CHART_TOOLTIP_CLASSES,
+  CHART_EMPTY_CLASSES,
 } from '@internal/ui/lib/chart/constants/chart-tone.constants';
 import type { ChartTone } from '@internal/ui/lib/chart/models/chart/chart-tone.type';
 import type { ScatterPoint } from '@internal/ui/lib/chart/models/chart/scatter-point.interface';
@@ -57,103 +58,107 @@ interface Dot {
     'data-slot': 'scatter-chart',
   },
   template: `
-    <p class="ms-10 mb-1 text-[11px]/4 text-fg-faint" aria-hidden="true">{{ yHeader() }}</p>
-    <div class="ms-10">
-      <div
-        class="relative h-48 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
-        tabindex="0"
-        role="group"
-        [attr.aria-label]="label()"
-        [attr.aria-describedby]="hintId"
-        (pointermove)="pointerMoved($event)"
-        (pointerleave)="pointerLeft()"
-        (focus)="focusEntered()"
-        (blur)="focusLeft()"
-        (keydown)="keyPressed($event)"
-      >
-        @for (tick of yTicks(); track tick.value) {
-          <div
-            class="pointer-events-none absolute inset-x-0 border-t border-border"
-            aria-hidden="true"
-            [style.bottom.%]="tick.offset"
-          >
+    @if (empty()) {
+      <p [class]="emptyClasses">{{ emptyLabel() }}</p>
+    } @else {
+      <p class="ms-10 mb-1 text-[11px]/4 text-fg-faint" aria-hidden="true">{{ yHeader() }}</p>
+      <div class="ms-10">
+        <div
+          class="relative h-48 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
+          tabindex="0"
+          role="group"
+          [attr.aria-label]="label()"
+          [attr.aria-describedby]="hintId"
+          (pointermove)="pointerMoved($event)"
+          (pointerleave)="pointerLeft()"
+          (focus)="focusEntered()"
+          (blur)="focusLeft()"
+          (keydown)="keyPressed($event)"
+        >
+          @for (tick of yTicks(); track tick.value) {
+            <div
+              class="pointer-events-none absolute inset-x-0 border-t border-border"
+              aria-hidden="true"
+              [style.bottom.%]="tick.offset"
+            >
+              <span
+                class="absolute end-full top-0 me-2 -translate-y-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
+                >{{ tick.label }}</span
+              >
+            </div>
+          }
+          @for (tick of xTicks(); track tick.value) {
+            <div
+              class="pointer-events-none absolute inset-y-0 border-s border-border"
+              aria-hidden="true"
+              [style.left.%]="tick.offset"
+            ></div>
+          }
+          @for (dot of dots(); track dot.point.key) {
             <span
-              class="absolute end-full top-0 me-2 -translate-y-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
+              [class]="dot.classes"
+              aria-hidden="true"
+              [style.left.%]="dot.left"
+              [style.bottom.%]="dot.bottom"
+            ></span>
+          }
+          @if (mark(); as current) {
+            <div
+              [class]="current.tooltipClasses"
+              aria-hidden="true"
+              [style.left.%]="current.left"
+              [style.bottom.%]="current.bottom"
+            >
+              <span class="max-w-60 truncate font-medium">{{ current.point.label }}</span>
+              <span class="text-fg-muted tabular-nums"
+                >{{ xHeader() }} {{ current.point.xDisplay }} · {{ yHeader() }}
+                {{ current.point.yDisplay }}</span
+              >
+            </div>
+          }
+        </div>
+        <div class="relative mt-2 h-4" aria-hidden="true">
+          @for (tick of xTicks(); track tick.value) {
+            <span
+              class="absolute top-0 -translate-x-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
+              [style.left.%]="tick.offset"
               >{{ tick.label }}</span
             >
-          </div>
-        }
-        @for (tick of xTicks(); track tick.value) {
-          <div
-            class="pointer-events-none absolute inset-y-0 border-s border-border"
-            aria-hidden="true"
-            [style.left.%]="tick.offset"
-          ></div>
-        }
-        @for (dot of dots(); track dot.point.key) {
-          <span
-            [class]="dot.classes"
-            aria-hidden="true"
-            [style.left.%]="dot.left"
-            [style.bottom.%]="dot.bottom"
-          ></span>
-        }
-        @if (mark(); as current) {
-          <div
-            [class]="current.tooltipClasses"
-            aria-hidden="true"
-            [style.left.%]="current.left"
-            [style.bottom.%]="current.bottom"
-          >
-            <span class="max-w-60 truncate font-medium">{{ current.point.label }}</span>
-            <span class="text-fg-muted tabular-nums"
-              >{{ xHeader() }} {{ current.point.xDisplay }} · {{ yHeader() }}
-              {{ current.point.yDisplay }}</span
-            >
-          </div>
-        }
-      </div>
-      <div class="relative mt-2 h-4" aria-hidden="true">
-        @for (tick of xTicks(); track tick.value) {
-          <span
-            class="absolute top-0 -translate-x-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
-            [style.left.%]="tick.offset"
-            >{{ tick.label }}</span
-          >
-        }
-      </div>
-      <p class="mt-1 text-end text-[11px]/4 text-fg-faint" aria-hidden="true">{{ xHeader() }}</p>
-    </div>
-
-    <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
-    <span class="sr-only" aria-live="polite">{{ announcement() }}</span>
-
-    <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
-    <div class="sr-only">
-      <table>
-        <caption>
-          {{
-            label()
-          }}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">{{ nameHeader() }}</th>
-            <th scope="col">{{ xHeader() }}</th>
-            <th scope="col">{{ yHeader() }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (point of points(); track point.key) {
-            <tr>
-              <th scope="row">{{ point.label }}</th>
-              <td>{{ point.xDisplay }}</td>
-              <td>{{ point.yDisplay }}</td>
-            </tr>
           }
-        </tbody>
-      </table>
-    </div>
+        </div>
+        <p class="mt-1 text-end text-[11px]/4 text-fg-faint" aria-hidden="true">{{ xHeader() }}</p>
+      </div>
+
+      <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
+      <span class="sr-only" aria-live="polite">{{ announcement() }}</span>
+
+      <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
+      <div class="sr-only">
+        <table>
+          <caption>
+            {{
+              label()
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">{{ nameHeader() }}</th>
+              <th scope="col">{{ xHeader() }}</th>
+              <th scope="col">{{ yHeader() }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (point of points(); track point.key) {
+              <tr>
+                <th scope="row">{{ point.label }}</th>
+                <td>{{ point.xDisplay }}</td>
+                <td>{{ point.yDisplay }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   `,
 })
 export class ScatterChartComponent {
@@ -199,6 +204,18 @@ export class ScatterChartComponent {
     false,
     { transform: booleanAttribute },
   );
+
+  /** Note shown in place of the chart when it has nothing to draw. */
+  public readonly emptyLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.chart.empty:Aucune donnée à afficher.`,
+  );
+
+  /** Whether there is nothing to draw: the empty note keeps the chart's room instead. */
+  protected readonly empty: Signal<boolean> = computed<boolean>(
+    (): boolean => this.points().length === 0,
+  );
+
+  protected readonly emptyClasses: string = cn(CHART_EMPTY_CLASSES, 'h-56');
 
   /** Extra host classes. */
   public readonly class: InputSignal<string> = input<string>('');

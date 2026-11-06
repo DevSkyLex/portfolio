@@ -8114,11 +8114,11 @@
         <target>Page</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.clicksPerDay" datatype="html">
-        <source> Clics par jour </source>
+        <source>Clics par jour</source>
         <target>Clicks per day</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.impressionsPerDay" datatype="html">
-        <source> Impressions par jour </source>
+        <source>Impressions par jour</source>
         <target>Impressions per day</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.topQueries" datatype="html">
@@ -8130,7 +8130,7 @@
         <target>Top pages</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.devices" datatype="html">
-        <source> Clics par appareil </source>
+        <source>Clics par appareil</source>
         <target>Clicks by device</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.activeUsers" datatype="html">
@@ -8158,11 +8158,11 @@
         <target>Most viewed pages</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.channels" datatype="html">
-        <source> Sessions par canal </source>
+        <source>Sessions par canal</source>
         <target>Sessions by channel</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.countries" datatype="html">
-        <source> Sessions par pays </source>
+        <source>Sessions par pays</source>
         <target>Sessions by country</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.device.desktop" datatype="html">
@@ -8575,8 +8575,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.daily" datatype="html">
-        <source> Utilisateurs, sessions et vues par jour </source>
-        <target> Users, sessions and views per day </target>
+        <source>Utilisateurs, sessions et vues par jour</source>
+        <target>Users, sessions and views per day</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
           <context context-type="linenumber">30,33</context>
@@ -8587,8 +8587,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.weekdays" datatype="html">
-        <source> Sessions par jour de la semaine </source>
-        <target> Sessions per weekday </target>
+        <source>Sessions par jour de la semaine</source>
+        <target>Sessions per weekday</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
           <context context-type="linenumber">49,52</context>
@@ -8615,8 +8615,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.byProject" datatype="html">
-        <source> Problèmes par projet </source>
-        <target> Findings per project </target>
+        <source>Problèmes par projet</source>
+        <target>Findings per project</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
           <context context-type="linenumber">24,26</context>
@@ -8627,8 +8627,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.byKind" datatype="html">
-        <source> Problèmes par type </source>
-        <target> Findings per kind </target>
+        <source>Problèmes par type</source>
+        <target>Findings per kind</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
           <context context-type="linenumber">45,47</context>
@@ -8639,8 +8639,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.ctrPerDay" datatype="html">
-        <source> CTR par jour </source>
-        <target> CTR per day </target>
+        <source>CTR par jour</source>
+        <target>CTR per day</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
           <context context-type="linenumber">68,71</context>
@@ -8651,8 +8651,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.positionPerDay" datatype="html">
-        <source> Position moyenne par jour </source>
-        <target> Average position per day </target>
+        <source>Position moyenne par jour</source>
+        <target>Average position per day</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
           <context context-type="linenumber">88,90</context>
@@ -8671,8 +8671,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.ctrByPosition" datatype="html">
-        <source> CTR selon la position, par requête </source>
-        <target> CTR by position, per query </target>
+        <source>CTR selon la position, par requête</source>
+        <target>CTR by position, per query</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
           <context context-type="linenumber">113,116</context>
@@ -8691,8 +8691,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.vitals.distribution" datatype="html">
-        <source> Répartition des mesures </source>
-        <target> Measure distribution </target>
+        <source>Répartition des mesures</source>
+        <target>Measure distribution</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
           <context context-type="linenumber">22,24</context>
@@ -8719,8 +8719,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.vitals.scores" datatype="html">
-        <source> Score labo, mobile et ordinateur </source>
-        <target> Lab score, mobile and desktop </target>
+        <source>Score labo, mobile et ordinateur</source>
+        <target>Lab score, mobile and desktop</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
           <context context-type="linenumber">47,49</context>
@@ -8996,6 +8996,202 @@
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
           <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.pages.empty.title" datatype="html">
+        <source> Aucune page vue sur la période </source>
+        <target>No page view in the period</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">152,154</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.pages.empty.description" datatype="html">
+        <source> Google Analytics n’a enregistré aucune visite consentie pendant ces jours. </source>
+        <target> Google Analytics recorded no consented visit during these days. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">155,159</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.queries.empty.title" datatype="html">
+        <source> Aucune requête sur la période </source>
+        <target>No query in the period</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">217,219</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.queries.empty.description" datatype="html">
+        <source> Search Console n’a relevé aucune recherche menant au site pendant ces jours. </source>
+        <target> Search Console recorded no search leading to the site during these days. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">220,224</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.pages.empty.title" datatype="html">
+        <source> Aucune page sur la période </source>
+        <target>No page in the period</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">259,261</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.pages.empty.description" datatype="html">
+        <source> Aucune page du site n’est apparue dans les résultats de Google pendant ces jours. </source>
+        <target> No page of the site appeared in Google results during these days. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">262,266</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.empty.title" datatype="html">
+        <source>Aucune mesure</source>
+        <target>No measure</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">119,120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.empty.description" datatype="html">
+        <source> PageSpeed Insights mesure les pages clés à chaque collecte ; aucune ne l’a encore été. </source>
+        <target> PageSpeed Insights measures the key pages at each collection; none has been measured yet. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">121,125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.empty" datatype="html">
+        <source>Aucune donnée à afficher.</source>
+        <target>Nothing to show.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/area-chart/area-chart.component.ts</context>
+          <context context-type="linenumber">207</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/bar-list/bar-list.component.ts</context>
+          <context context-type="linenumber">117</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/column-chart/column-chart.component.ts</context>
+          <context context-type="linenumber">193</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/dumbbell-chart/dumbbell-chart.component.ts</context>
+          <context context-type="linenumber">168</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/heatmap/heatmap.component.ts</context>
+          <context context-type="linenumber">174</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/line-chart/line-chart.component.ts</context>
+          <context context-type="linenumber">247</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/scatter-chart/scatter-chart.component.ts</context>
+          <context context-type="linenumber">210</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/stacked-bars/stacked-bars.component.ts</context>
+          <context context-type="linenumber">218</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.details" datatype="html">
+        <source>Détails</source>
+        <target>Details</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">40,42</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">207</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">346,349</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.resizeDetails" datatype="html">
+        <source>Redimensionner le panneau Détails</source>
+        <target>Resize the Details panel</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">196,197</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.figures" datatype="html">
+        <source> Chiffres clés </source>
+        <target> Key figures </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">302,304</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.figures.none" datatype="html">
+        <source> Les chiffres de cette source apparaîtront après sa première collecte. </source>
+        <target> This source’s figures will appear after its first collection. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">312,315</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.sources" datatype="html">
+        <source> Sources </source>
+        <target> Sources </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">328,330</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.sources.fetched" datatype="html">
+        <source>Collecté le <x id="time" equiv-text="at"/></source>
+        <target>Collected on <x id="time" equiv-text="at"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/seo-source-statuses/seo-source-statuses.utils.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.sources.failedKept" datatype="html">
+        <source>Échec le <x id="time" equiv-text="at"/>, dernier rapport conservé</source>
+        <target>Failed on <x id="time" equiv-text="at"/>, last report kept</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/seo-source-statuses/seo-source-statuses.utils.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.sources.failed" datatype="html">
+        <source>Échec le <x id="time" equiv-text="at"/></source>
+        <target>Failed on <x id="time" equiv-text="at"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/seo-source-statuses/seo-source-statuses.utils.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.sources.pending" datatype="html">
+        <source>En attente de la première collecte</source>
+        <target>Waiting for the first collection</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/seo-source-statuses/seo-source-statuses.utils.ts</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.sources.notConfigured" datatype="html">
+        <source>Non configuré</source>
+        <target>Not configured</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/seo-source-statuses/seo-source-statuses.utils.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.sources.audited" datatype="html">
+        <source>Calculé le <x id="time" equiv-text="audited"/></source>
+        <target>Computed on <x id="time" equiv-text="audited"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/seo-source-statuses/seo-source-statuses.utils.ts</context>
+          <context context-type="linenumber">114</context>
         </context-group>
       </trans-unit>
     </body>

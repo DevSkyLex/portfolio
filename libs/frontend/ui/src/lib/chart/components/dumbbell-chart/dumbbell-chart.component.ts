@@ -11,7 +11,10 @@ import {
   type Signal,
 } from '@angular/core';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
-import { CHART_TONE_FILLS } from '@internal/ui/lib/chart/constants/chart-tone.constants';
+import {
+  CHART_TONE_FILLS,
+  CHART_EMPTY_CLASSES,
+} from '@internal/ui/lib/chart/constants/chart-tone.constants';
 import type { ChartTone } from '@internal/ui/lib/chart/models/chart/chart-tone.type';
 import type {
   DumbbellRow,
@@ -54,71 +57,75 @@ interface Tick {
     'data-slot': 'dumbbell-chart',
   },
   template: `
-    <ul
-      class="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px]/4 text-fg-muted"
-      data-slot="chart-legend"
-    >
-      <li class="flex items-center gap-1.5">
-        <span [class]="startDot()" aria-hidden="true"></span>
-        {{ startLabel() }}
-      </li>
-      <li class="flex items-center gap-1.5">
-        <span [class]="endDot()" aria-hidden="true"></span>
-        {{ endLabel() }}
-      </li>
-    </ul>
-    <ul class="flex flex-col" [attr.aria-label]="label()">
-      @for (line of lines(); track line.row.key) {
-        <li
-          class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] items-center gap-x-4 py-1.5 text-[13px]/5"
-        >
-          <span class="min-w-0 truncate text-fg" [title]="line.row.label">{{
-            line.row.label
-          }}</span>
-          <span class="relative h-4" aria-hidden="true">
-            @for (tick of ticks(); track tick.value) {
-              <span
-                class="absolute inset-y-0 border-s border-border"
-                [style.left.%]="tick.left"
-              ></span>
-            }
-            @if (line.start !== null && line.end !== null) {
-              <span
-                class="absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-border-strong"
-                [style.left.%]="line.from"
-                [style.width.%]="line.to - line.from"
-              ></span>
-            }
-            @if (line.start !== null) {
-              <span [class]="startMark()" [style.left.%]="line.start"></span>
-            }
-            @if (line.end !== null) {
-              <span [class]="endMark()" [style.left.%]="line.end"></span>
-            }
-          </span>
-          <span class="flex justify-end gap-2 text-[12px]/4 text-fg-muted tabular-nums">
-            <span class="sr-only">{{ startLabel() }}</span>
-            <span>{{ line.row.start?.display ?? '—' }}</span>
-            <span class="text-fg-faint" aria-hidden="true">·</span>
-            <span class="sr-only">{{ endLabel() }}</span>
-            <span>{{ line.row.end?.display ?? '—' }}</span>
-          </span>
+    @if (empty()) {
+      <p [class]="emptyClasses">{{ emptyLabel() }}</p>
+    } @else {
+      <ul
+        class="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px]/4 text-fg-muted"
+        data-slot="chart-legend"
+      >
+        <li class="flex items-center gap-1.5">
+          <span [class]="startDot()" aria-hidden="true"></span>
+          {{ startLabel() }}
         </li>
-      }
-    </ul>
-    <div class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] gap-x-4" aria-hidden="true">
-      <span></span>
-      <span class="relative mt-1 h-4">
-        @for (tick of ticks(); track tick.value) {
-          <span
-            class="absolute top-0 -translate-x-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
-            [style.left.%]="tick.left"
-            >{{ tick.label }}</span
+        <li class="flex items-center gap-1.5">
+          <span [class]="endDot()" aria-hidden="true"></span>
+          {{ endLabel() }}
+        </li>
+      </ul>
+      <ul class="flex flex-col" [attr.aria-label]="label()">
+        @for (line of lines(); track line.row.key) {
+          <li
+            class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] items-center gap-x-4 py-1.5 text-[13px]/5"
           >
+            <span class="min-w-0 truncate text-fg" [title]="line.row.label">{{
+              line.row.label
+            }}</span>
+            <span class="relative h-4" aria-hidden="true">
+              @for (tick of ticks(); track tick.value) {
+                <span
+                  class="absolute inset-y-0 border-s border-border"
+                  [style.left.%]="tick.left"
+                ></span>
+              }
+              @if (line.start !== null && line.end !== null) {
+                <span
+                  class="absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-border-strong"
+                  [style.left.%]="line.from"
+                  [style.width.%]="line.to - line.from"
+                ></span>
+              }
+              @if (line.start !== null) {
+                <span [class]="startMark()" [style.left.%]="line.start"></span>
+              }
+              @if (line.end !== null) {
+                <span [class]="endMark()" [style.left.%]="line.end"></span>
+              }
+            </span>
+            <span class="flex justify-end gap-2 text-[12px]/4 text-fg-muted tabular-nums">
+              <span class="sr-only">{{ startLabel() }}</span>
+              <span>{{ line.row.start?.display ?? '—' }}</span>
+              <span class="text-fg-faint" aria-hidden="true">·</span>
+              <span class="sr-only">{{ endLabel() }}</span>
+              <span>{{ line.row.end?.display ?? '—' }}</span>
+            </span>
+          </li>
         }
-      </span>
-      <span class="invisible text-[12px]/4 tabular-nums">00 · 00</span>
-    </div>
+      </ul>
+      <div class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] gap-x-4" aria-hidden="true">
+        <span></span>
+        <span class="relative mt-1 h-4">
+          @for (tick of ticks(); track tick.value) {
+            <span
+              class="absolute top-0 -translate-x-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
+              [style.left.%]="tick.left"
+              >{{ tick.label }}</span
+            >
+          }
+        </span>
+        <span class="invisible text-[12px]/4 tabular-nums">00 · 00</span>
+      </div>
+    }
   `,
 })
 export class DumbbellChartComponent {
@@ -155,6 +162,18 @@ export class DumbbellChartComponent {
     false,
     { transform: booleanAttribute },
   );
+
+  /** Note shown in place of the chart when it has nothing to draw. */
+  public readonly emptyLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.chart.empty:Aucune donnée à afficher.`,
+  );
+
+  /** Whether there is nothing to draw: the empty note keeps the chart's room instead. */
+  protected readonly empty: Signal<boolean> = computed<boolean>(
+    (): boolean => this.rows().length === 0,
+  );
+
+  protected readonly emptyClasses: string = cn(CHART_EMPTY_CLASSES, 'h-24');
 
   /** Extra host classes. */
   public readonly class: InputSignal<string> = input<string>('');

@@ -7,20 +7,22 @@
     description="Visiteurs, sessions et pages vues de la période, comparés à la période précédente."
     i18n-description="@@admin.dashboard.analytics.trafficHint"
   />
-  <div class="overflow-hidden border-b border-border">
-    <div
-      class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-5"
-    >
-      @for (kpi of kpis(); track kpi.id) {
-        <content-seo-kpi-tile
-          [label]="kpi.label"
-          [value]="kpi.value"
-          [delta]="kpi.delta"
-          [comparison]="comparison()"
-        />
-      }
+  @if (strip()) {
+    <div class="overflow-hidden border-b border-border">
+      <div
+        class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-5"
+      >
+        @for (kpi of kpis(); track kpi.id) {
+          <content-seo-kpi-tile
+            [label]="kpi.label"
+            [value]="kpi.value"
+            [delta]="kpi.delta"
+            [comparison]="comparison()"
+          />
+        }
+      </div>
     </div>
-  </div>
+  }
 
   <div class="overflow-hidden border-b border-border">
     <div class="-me-px -mb-px grid">
@@ -28,12 +30,10 @@
         class="col-span-full flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
         aria-labelledby="ga-daily"
       >
-        <h3
-          id="ga-daily"
-          class="text-[13px]/5 font-medium text-fg"
-          i18n="@@admin.dashboard.analytics.daily"
-        >
-          Utilisateurs, sessions et vues par jour
+        <h3 id="ga-daily" class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.dashboard.analytics.daily"
+            >Utilisateurs, sessions et vues par jour</ng-container
+          >
         </h3>
         <ui-line-chart
           label="Utilisateurs, sessions et vues par jour"
@@ -63,12 +63,10 @@
         class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
         aria-labelledby="ga-weekdays"
       >
-        <h3
-          id="ga-weekdays"
-          class="text-[13px]/5 font-medium text-fg"
-          i18n="@@admin.dashboard.analytics.weekdays"
-        >
-          Sessions par jour de la semaine
+        <h3 id="ga-weekdays" class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.dashboard.analytics.weekdays"
+            >Sessions par jour de la semaine</ng-container
+          >
         </h3>
         <ui-heatmap
           label="Sessions par jour de la semaine"
@@ -82,12 +80,10 @@
         class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
         aria-labelledby="ga-channels"
       >
-        <h3
-          id="ga-channels"
-          class="text-[13px]/5 font-medium text-fg"
-          i18n="@@admin.dashboard.analytics.channels"
-        >
-          Sessions par canal
+        <h3 id="ga-channels" class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.dashboard.analytics.channels"
+            >Sessions par canal</ng-container
+          >
         </h3>
         <ui-bar-list
           label="Sessions par canal"
@@ -100,12 +96,10 @@
         class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
         aria-labelledby="ga-countries"
       >
-        <h3
-          id="ga-countries"
-          class="text-[13px]/5 font-medium text-fg"
-          i18n="@@admin.dashboard.analytics.countries"
-        >
-          Sessions par pays
+        <h3 id="ga-countries" class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.dashboard.analytics.countries"
+            >Sessions par pays</ng-container
+          >
         </h3>
         <ui-bar-list
           label="Sessions par pays"
@@ -141,5 +135,21 @@
     [searchable]="false"
     [columnMenu]="false"
     [paginated]="false"
-  />
+  >
+    <ng-template uiDataTableEmpty let-layout>
+      <div uiEmpty [layout]="layout">
+        <div uiEmptyHeader>
+          <div uiEmptyMedia variant="icon">
+            <ng-icon [svg]="icons.page" size="16" />
+          </div>
+          <p uiEmptyTitle i18n="@@admin.dashboard.analytics.pages.empty.title">
+            Aucune page vue sur la période
+          </p>
+          <p uiEmptyDescription i18n="@@admin.dashboard.analytics.pages.empty.description">
+            Google Analytics n’a enregistré aucune visite consentie pendant ces jours.
+          </p>
+        </div>
+      </div>
+    </ng-template>
+  </ui-data-table>
 </section>

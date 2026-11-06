@@ -161,13 +161,22 @@ describe('ColumnChartComponent', (): void => {
     expect(host.querySelector('[aria-hidden="true"] > span.tabular-nums')?.textContent).toBe('0 u');
   });
 
-  it('draws nothing to point at without values', async (): Promise<void> => {
-    const { fixture, host, plot } = await setup([]);
-    plot.dispatchEvent(new PointerEvent('pointermove', { clientX: 10 }));
-    plot.dispatchEvent(new FocusEvent('focus'));
-    plot.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+  it('keeps its room with a note on the empty surface when there is nothing to draw', async (): Promise<void> => {
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'fr' }] });
+    const fixture: ComponentFixture<ColumnChartComponent> =
+      TestBed.createComponent(ColumnChartComponent);
+    fixture.componentRef.setInput('points', []);
+    fixture.componentRef.setInput('label', 'Clics par jour');
     await fixture.whenStable();
-    expect(columns(host)).toEqual([]);
-    expect(host.querySelector('.shadow-float')).toBeNull();
+    const host: HTMLElement = fixture.nativeElement;
+    expect(host.querySelector('[role="group"]')).toBeNull();
+    expect(host.querySelector('table')).toBeNull();
+    const note: HTMLElement | null = host.querySelector('p');
+    expect(note?.textContent?.trim()).toBe('Aucune donnée à afficher.');
+    expect(note?.className).toContain('bg-surface-raised');
+    expect(note?.className).toContain('h-40');
+    fixture.componentRef.setInput('emptyLabel', 'Aucun clic sur la période.');
+    await fixture.whenStable();
+    expect(host.querySelector('p')?.textContent?.trim()).toBe('Aucun clic sur la période.');
   });
 });

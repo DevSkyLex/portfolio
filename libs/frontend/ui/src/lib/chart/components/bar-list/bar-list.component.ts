@@ -9,6 +9,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
+import { CHART_EMPTY_CLASSES } from '@internal/ui/lib/chart/constants/chart-tone.constants';
 import type { BarListItem } from '@internal/ui/lib/chart/models/chart/bar-list-item.interface';
 
 /**
@@ -42,27 +43,34 @@ interface BarListRow {
     'data-slot': 'bar-list',
   },
   template: `
-    <ul class="flex flex-col gap-3" [attr.aria-label]="label()">
-      @for (row of rows(); track row.item.key) {
-        <li class="flex flex-col gap-1.5">
-          <div class="flex items-baseline justify-between gap-4 text-[13px]/5">
-            <span class="min-w-0 truncate text-fg" [title]="row.item.label">{{
-              row.item.label
-            }}</span>
-            <span class="shrink-0 text-fg-muted tabular-nums">{{ row.item.display }}</span>
-          </div>
-          <!-- The track shows the full scale; the fill keeps rounded ends at any length. -->
-          <span class="flex h-1.5 overflow-hidden rounded-xs bg-surface-raised" aria-hidden="true">
-            @if (row.width > 0) {
-              <span
-                class="h-full min-w-1.5 rounded-xs bg-chart-1"
-                [style.width.%]="row.width"
-              ></span>
-            }
-          </span>
-        </li>
-      }
-    </ul>
+    @if (empty()) {
+      <p [class]="emptyClasses">{{ emptyLabel() }}</p>
+    } @else {
+      <ul class="flex flex-col gap-3" [attr.aria-label]="label()">
+        @for (row of rows(); track row.item.key) {
+          <li class="flex flex-col gap-1.5">
+            <div class="flex items-baseline justify-between gap-4 text-[13px]/5">
+              <span class="min-w-0 truncate text-fg" [title]="row.item.label">{{
+                row.item.label
+              }}</span>
+              <span class="shrink-0 text-fg-muted tabular-nums">{{ row.item.display }}</span>
+            </div>
+            <!-- The track shows the full scale; the fill keeps rounded ends at any length. -->
+            <span
+              class="flex h-1.5 overflow-hidden rounded-xs bg-surface-raised"
+              aria-hidden="true"
+            >
+              @if (row.width > 0) {
+                <span
+                  class="h-full min-w-1.5 rounded-xs bg-chart-1"
+                  [style.width.%]="row.width"
+                ></span>
+              }
+            </span>
+          </li>
+        }
+      </ul>
+    }
   `,
 })
 export class BarListComponent {
@@ -103,6 +111,18 @@ export class BarListComponent {
     false,
     { transform: booleanAttribute },
   );
+
+  /** Note shown in place of the chart when it has nothing to draw. */
+  public readonly emptyLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.chart.empty:Aucune donnée à afficher.`,
+  );
+
+  /** Whether there is nothing to draw: the empty note keeps the chart's room instead. */
+  protected readonly empty: Signal<boolean> = computed<boolean>(
+    (): boolean => this.items().length === 0,
+  );
+
+  protected readonly emptyClasses: string = cn(CHART_EMPTY_CLASSES, 'h-24');
 
   /**
    * Property class
