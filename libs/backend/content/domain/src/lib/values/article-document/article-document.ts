@@ -62,9 +62,10 @@ type ArticleListShape<TItem> =
  * @description
  * Third-level list, whose items hold paragraphs only (the contract bounds nesting to three levels).
  */
+// One paragraph, then nested lists only: the editor's list item (admin contract).
 export type ArticleDeepList = ArticleListShape<{
   readonly type: 'listItem';
-  readonly content: ArticleParagraph[];
+  readonly content: [ArticleParagraph];
 }>;
 
 /**
@@ -76,7 +77,7 @@ export type ArticleDeepList = ArticleListShape<{
  */
 export type ArticleNestedList = ArticleListShape<{
   readonly type: 'listItem';
-  readonly content: (ArticleParagraph | ArticleDeepList)[];
+  readonly content: [ArticleParagraph, ...ArticleDeepList[]];
 }>;
 
 /**
@@ -88,7 +89,7 @@ export type ArticleNestedList = ArticleListShape<{
  */
 export type ArticleList = ArticleListShape<{
   readonly type: 'listItem';
-  readonly content: (ArticleParagraph | ArticleNestedList)[];
+  readonly content: [ArticleParagraph, ...ArticleNestedList[]];
 }>;
 
 /**

@@ -14,6 +14,7 @@
     "highlight.js": "11.11.2",
     "jose": "6.2.15",
     "lowlight": "3.3.0",
+    "markdown-it": "15.0.3",
     "nestjs-pino": "^5.3.1",
     "pg": "^8.23.1",
     "pino": "^10.4.0",

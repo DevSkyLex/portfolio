@@ -18,6 +18,7 @@ export { DrizzleContentSnapshotReader } from '@internal/content-adapters-out/lib
 export { DrizzleMediaRepository } from '@internal/content-adapters-out/lib/persistence/repositories/media/drizzle-media.repository';
 export { DiskMediaStorage } from '@internal/content-adapters-out/lib/media/disk-media/disk-media.storage';
 export { SharpImageProcessor } from '@internal/content-adapters-out/lib/media/sharp-image/sharp-image.processor';
+export { HttpsRemoteImageSource } from '@internal/content-adapters-out/lib/media/remote-image/https-remote-image.source';
 export { seedContent } from '@internal/content-adapters-out/lib/seed/content.seed';
 export {
   RandomIdGenerator,

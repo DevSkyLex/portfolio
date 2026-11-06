@@ -5,6 +5,7 @@ import {
   ManualPublicationDisabledError,
   MediaNotFoundError,
   MediaTooLargeError,
+  MediaUnreachableError,
   NotFoundError,
   SeoRefreshTooSoonError,
   UnsupportedMediaError,
@@ -67,6 +68,13 @@ export const contentProblemMapper: ProblemMapper = (
   }
   if (exception instanceof MediaTooLargeError) {
     return { status: HttpStatus.PAYLOAD_TOO_LARGE, code: exception.code, title: exception.message };
+  }
+  if (exception instanceof MediaUnreachableError) {
+    return {
+      status: HttpStatus.UNPROCESSABLE_ENTITY,
+      code: exception.code,
+      title: exception.message,
+    };
   }
   if (exception instanceof UnsupportedMediaError) {
     return {

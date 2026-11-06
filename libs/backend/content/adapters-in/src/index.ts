@@ -13,3 +13,6 @@ export { ContentMcpController } from '@internal/content-adapters-in/lib/http/con
 export { ContentMcpTools } from '@internal/content-adapters-in/lib/mcp/content-mcp-tools/content-mcp-tools';
 
 export { AdminPublicationController } from '@internal/content-adapters-in/lib/http/controllers/admin-publication/admin-publication.controller';
+
+/** Largest accepted image, for the downloader the composition wires (D54). */
+export { MEDIA_MAX_BYTES } from '@internal/content-adapters-in/lib/http/interceptors/media-upload/media-upload.interceptor';

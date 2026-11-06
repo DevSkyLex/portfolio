@@ -1,4 +1,4 @@
-import { isPublicAddress } from '@internal/identity-adapters-out/lib/oauth/address-policy/address-policy';
+import { isPublicAddress } from '@internal/backend-http/lib/address-policy/address-policy';
 
 describe('isPublicAddress', (): void => {
   it.each([

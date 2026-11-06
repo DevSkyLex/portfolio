@@ -4,7 +4,7 @@ import { BlockList, isIP } from 'node:net';
  * Constant BLOCKED_IPV4
  *
  * @description
- * IPv4 ranges an outbound client-metadata fetch must never reach (RFC 6890 special-purpose
+ * IPv4 ranges an outbound fetch of a client-supplied URL must never reach (RFC 6890 special-purpose
  * registry): this host, private networks, shared address space, loopback, link-local (cloud metadata
  * services), documentation, benchmarking, 6to4 relay, multicast and reserved.
  *

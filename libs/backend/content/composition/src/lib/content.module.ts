@@ -16,6 +16,7 @@ import {
   ContentController,
   ContentMcpController,
   ContentMcpTools,
+  MEDIA_MAX_BYTES,
   MediaPurgeJobs,
   SeoDashboardJobs,
   contentProblemMapper,
@@ -44,6 +45,7 @@ import {
   GoogleServiceAccountTokens,
   PageSpeedWebVitalsReader,
   RandomIdGenerator,
+  HttpsRemoteImageSource,
   SharpImageProcessor,
   SystemClock,
   openContentDatabase,
@@ -60,6 +62,7 @@ import {
   ManagePublication,
   GetSeoDashboard,
   type ImageProcessor,
+  type RemoteImageSource,
   ListAdminProjects,
   ListAdminTimeline,
   type MediaStorage,
@@ -78,6 +81,7 @@ import {
   type SeoSources,
   type WebVitalsReader,
   UnpublishProject,
+  ImportRemoteMedia,
   UploadMedia,
 } from '@vfortin/content-application';
 
@@ -317,6 +321,15 @@ export interface ContentModuleOptions {
    * Optional image processor override for tests; sharp otherwise.
    */
   readonly imageProcessor?: ImageProcessor;
+
+  /**
+   * Property remoteImageSource
+   * @readonly
+   *
+   * @description
+   * Optional image downloader override for tests; the guarded HTTPS downloader otherwise (D54).
+   */
+  readonly remoteImageSource?: RemoteImageSource;
 
   /**
    * Property prepare
@@ -563,6 +576,15 @@ export class ContentModule implements OnApplicationShutdown {
               storage,
               new RandomIdGenerator(),
               clock,
+            ),
+        },
+        {
+          provide: ImportRemoteMedia,
+          inject: [UploadMedia],
+          useFactory: (upload: UploadMedia): ImportRemoteMedia =>
+            new ImportRemoteMedia(
+              options.remoteImageSource ?? new HttpsRemoteImageSource(MEDIA_MAX_BYTES),
+              upload,
             ),
         },
         {

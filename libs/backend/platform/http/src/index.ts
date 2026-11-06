@@ -33,3 +33,24 @@ export {
   parseIfMatch,
   versionEtag,
 } from '@internal/backend-http/lib/if-match/if-match';
+
+/**
+ * Constant address policy export
+ *
+ * @description
+ * Outbound address policy shared by the services that fetch URLs given by a client (D45, D54).
+ */
+export { isPublicAddress } from '@internal/backend-http/lib/address-policy/address-policy';
+
+/**
+ * Constant HTTPS fetcher exports
+ *
+ * @description
+ * Bounded GET of a client-supplied URL that cannot reach the server's own network (D45, D54).
+ */
+export {
+  HttpsFetcher,
+  type HttpsFetchedBody,
+  type HttpsFetcherOptions,
+  type HttpsFetchRequest,
+} from '@internal/backend-http/lib/https-fetcher/https-fetcher';

@@ -995,6 +995,31 @@ export interface MediaFiles {
 }
 
 /**
+ * Interface RemoteImageSource
+ * @interface RemoteImageSource
+ *
+ * @description
+ * Downloads an image a client designates by URL (MCP `upload_media`, D54), without letting the URL
+ * reach the server's own network.
+ */
+export interface RemoteImageSource {
+  // #region Methods
+  /**
+   * Method fetch
+   * @method fetch
+   *
+   * @description
+   * Downloads the bytes behind the URL.
+   *
+   * @param {string} url - Absolute `https` URL.
+   * @returns {Promise<Uint8Array>} The body; rejects with a short reason on a refused URL or address,
+   * a status other than 200, too many redirects, an oversized body or the deadline.
+   */
+  fetch(url: string): Promise<Uint8Array>;
+  // #endregion
+}
+
+/**
  * Interface MediaStorage
  * @interface MediaStorage
  *

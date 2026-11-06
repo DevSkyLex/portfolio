@@ -206,6 +206,7 @@ describe('ContentModule', (): void => {
       'revise_project',
       'revise_timeline_entry',
       'unpublish_project',
+      'upload_media',
     ]);
     expect(
       tools.find((tool): boolean => tool.name === 'revise_project')?.inputSchema.required,
@@ -257,7 +258,7 @@ describe('ContentModule', (): void => {
     );
     try {
       await client.connect(transport);
-      expect((await client.listTools()).tools).toHaveLength(17);
+      expect((await client.listTools()).tools).toHaveLength(18);
       const result: Awaited<ReturnType<Client['callTool']>> = await client.callTool({
         name: 'get_project',
         arguments: { id: 'project-crm-kodoka' },

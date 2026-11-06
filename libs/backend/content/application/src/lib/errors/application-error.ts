@@ -166,6 +166,35 @@ export class UnsupportedMediaError extends ApplicationError {
 }
 
 /**
+ * Class MediaUnreachableError
+ * @class MediaUnreachableError
+ *
+ * @description
+ * Signals an image URL that could not be downloaded (D54): not `https` on port 443, a private
+ * address, a status other than 200, more than three redirects, too large or too slow.
+ */
+export class MediaUnreachableError extends ApplicationError {
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Creates the download failure, with the transport's reason.
+   *
+   * @param {string} reason - Why the download failed, safe to show (no internal address).
+   */
+  public constructor(reason: string) {
+    super(
+      'content.media-unreachable',
+      `The image could not be downloaded: ${reason} Use a public https URL of the image file itself.`,
+    );
+    this.name = 'MediaUnreachableError';
+  }
+  // #endregion
+}
+
+/**
  * Class MediaNotFoundError
  * @class MediaNotFoundError
  *
