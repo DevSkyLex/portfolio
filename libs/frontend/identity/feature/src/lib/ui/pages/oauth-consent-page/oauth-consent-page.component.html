@@ -58,6 +58,13 @@
             width="48"
             height="48"
           />
+        } @else if (brand(); as brand) {
+          <span
+            class="grid size-12 shrink-0 place-items-center rounded-lg border border-border bg-surface-raised text-fg"
+            aria-hidden="true"
+          >
+            <ng-icon [svg]="brand" size="26" />
+          </span>
         } @else {
           <span
             class="grid size-12 shrink-0 place-items-center rounded-lg border border-border bg-surface-raised text-fg-muted"

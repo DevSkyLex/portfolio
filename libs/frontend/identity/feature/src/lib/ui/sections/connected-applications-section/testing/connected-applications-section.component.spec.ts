@@ -159,6 +159,25 @@ describe('ConnectedApplicationsSectionComponent', () => {
     expect(rows[1]?.querySelector('button')?.getAttribute('aria-label')).toBe('Révoquer 127.0.0.1');
   });
 
+  it('draws the Claude logo when Claude publishes none, never for an unverified client', async () => {
+    const { fixture, backend }: Awaited<ReturnType<typeof setup>> = await setup();
+    backend.expectOne('/api/auth/admin/oauth/applications').flush({
+      items: [
+        { ...CLAUDE, logo: null },
+        { ...TOOL, host: 'claude.ai' },
+      ],
+    });
+    await settle(fixture);
+    const rows: HTMLElement[] = [...(fixture.nativeElement as HTMLElement).querySelectorAll('li')];
+    expect(rows[0]?.querySelector('img')).toBeNull();
+    expect(rows[0]?.querySelector('ng-icon svg path')).not.toBeNull();
+    expect(rows[0]?.querySelector('svg title')).toBeNull();
+    // The dynamic registration keeps the generic icon (Lucide strokes, no brand path fill).
+    expect(rows[1]?.querySelector('ng-icon')?.innerHTML).not.toBe(
+      rows[0]?.querySelector('ng-icon')?.innerHTML,
+    );
+  });
+
   it('revokes after the confirmation and removes the row', async () => {
     const { fixture, backend, confirm }: Awaited<ReturnType<typeof setup>> = await setup();
     backend.expectOne('/api/auth/admin/oauth/applications').flush({ items: [CLAUDE] });

@@ -708,7 +708,12 @@ identical on these points). WebMCP comes later.
   must equal its URL; it needs `client_name` and one to ten redirect URIs and may hold no secret. The
   copy is reused per its `Cache-Control`, within one minute and one day (an hour without header). The
   logo is fetched once per validated copy, kept only when its magic bytes say PNG, JPEG, GIF or WebP
-  (64 kB at most), and stored as a `data:` URL, which the admin CSP already allows. Dynamic
+  (64 kB at most), and stored as a `data:` URL, which the admin CSP already allows. Claude and
+  Claude Code publish no `logo_uri` (`claude.ai/oauth/mcp-oauth-client-metadata`,
+  `claude.ai/oauth/claude-code-client-metadata`, checked 2026-11-06): without a fetched logo, the
+  consent screen and « Applications connectées » draw the brand logo from `@ng-icons/simple-icons`
+  for a metadata-document client of a known host (`knownClientLogo`, `claude.ai` only), never for a
+  dynamic registration, which may claim any name. Dynamic
   registration (RFC 7591, deprecated by MCP, kept for older clients) is unauthenticated: the same
   metadata rules, 60 registrations per hour for all addresses plus an Nginx budget per address,
   and registrations never consented to are deleted after a day; the consent screen and the list flag
