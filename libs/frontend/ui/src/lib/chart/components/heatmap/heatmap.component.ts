@@ -15,6 +15,7 @@ import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import {
   CHART_EMPTY_FILL,
   CHART_HEAT_STEPS,
+  CHART_EMPTY_CLASSES,
 } from '@internal/ui/lib/chart/constants/chart-tone.constants';
 import type {
   HeatmapCell,
@@ -56,83 +57,87 @@ interface Line {
     'data-slot': 'heatmap',
   },
   template: `
-    <div
-      class="grid gap-0.5 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
-      tabindex="0"
-      role="group"
-      [attr.aria-label]="label()"
-      [attr.aria-describedby]="hintId"
-      [style.grid-template-columns]="template()"
-      (pointerleave)="pointerLeft()"
-      (focus)="focusEntered()"
-      (blur)="focusLeft()"
-      (keydown)="keyPressed($event)"
-    >
-      @for (line of lines(); track line.row.key) {
-        <span
-          class="flex items-center pe-2 text-[11px]/4 whitespace-nowrap text-fg-faint"
-          aria-hidden="true"
-          >{{ line.row.label }}</span
-        >
-        @for (slot of line.slots; track slot.column) {
+    @if (empty()) {
+      <p [class]="emptyClasses">{{ emptyLabel() }}</p>
+    } @else {
+      <div
+        class="grid gap-0.5 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
+        tabindex="0"
+        role="group"
+        [attr.aria-label]="label()"
+        [attr.aria-describedby]="hintId"
+        [style.grid-template-columns]="template()"
+        (pointerleave)="pointerLeft()"
+        (focus)="focusEntered()"
+        (blur)="focusLeft()"
+        (keydown)="keyPressed($event)"
+      >
+        @for (line of lines(); track line.row.key) {
           <span
-            data-slot="heatmap-cell"
-            [class]="slot.classes"
+            class="flex items-center pe-2 text-[11px]/4 whitespace-nowrap text-fg-faint"
             aria-hidden="true"
-            (pointerenter)="pointerEntered(line.index, slot.column)"
-          ></span>
+            >{{ line.row.label }}</span
+          >
+          @for (slot of line.slots; track slot.column) {
+            <span
+              data-slot="heatmap-cell"
+              [class]="slot.classes"
+              aria-hidden="true"
+              (pointerenter)="pointerEntered(line.index, slot.column)"
+            ></span>
+          }
         }
-      }
-      <span aria-hidden="true"></span>
-      @for (column of columns(); track $index) {
-        <span
-          class="min-w-0 overflow-visible pt-1 text-[11px]/4 whitespace-nowrap text-fg-faint"
-          aria-hidden="true"
-          >{{ column }}</span
-        >
-      }
-    </div>
-
-    <div class="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-      <p class="min-h-4 text-[12px]/4 text-fg-muted" aria-live="polite">
-        @if (activeCell(); as cell) {
-          <span class="font-medium text-fg tabular-nums">{{ cell.display }}</span>
-          {{ cell.label }}
+        <span aria-hidden="true"></span>
+        @for (column of columns(); track $index) {
+          <span
+            class="min-w-0 overflow-visible pt-1 text-[11px]/4 whitespace-nowrap text-fg-faint"
+            aria-hidden="true"
+            >{{ column }}</span
+          >
         }
-      </p>
-      <span class="flex items-center gap-1.5 text-[11px]/4 text-fg-faint" aria-hidden="true">
-        {{ lessLabel() }}
-        @for (step of steps; track step) {
-          <span [class]="step"></span>
-        }
-        {{ moreLabel() }}
-      </span>
-    </div>
+      </div>
 
-    <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
+      <div class="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <p class="min-h-4 text-[12px]/4 text-fg-muted" aria-live="polite">
+          @if (activeCell(); as cell) {
+            <span class="font-medium text-fg tabular-nums">{{ cell.display }}</span>
+            {{ cell.label }}
+          }
+        </p>
+        <span class="flex items-center gap-1.5 text-[11px]/4 text-fg-faint" aria-hidden="true">
+          {{ lessLabel() }}
+          @for (step of steps; track step) {
+            <span [class]="step"></span>
+          }
+          {{ moreLabel() }}
+        </span>
+      </div>
 
-    <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
-    <div class="sr-only">
-      <table>
-        <caption>
-          {{
-            label()
-          }}
-        </caption>
-        <tbody>
-          @for (row of rows(); track row.key) {
-            @for (cell of row.cells; track $index) {
-              @if (cell) {
-                <tr>
-                  <th scope="row">{{ cell.label }}</th>
-                  <td>{{ cell.display }}</td>
-                </tr>
+      <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
+
+      <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
+      <div class="sr-only">
+        <table>
+          <caption>
+            {{
+              label()
+            }}
+          </caption>
+          <tbody>
+            @for (row of rows(); track row.key) {
+              @for (cell of row.cells; track $index) {
+                @if (cell) {
+                  <tr>
+                    <th scope="row">{{ cell.label }}</th>
+                    <td>{{ cell.display }}</td>
+                  </tr>
+                }
               }
             }
-          }
-        </tbody>
-      </table>
-    </div>
+          </tbody>
+        </table>
+      </div>
+    }
   `,
 })
 export class HeatmapComponent {
@@ -163,6 +168,21 @@ export class HeatmapComponent {
     false,
     { transform: booleanAttribute },
   );
+
+  /** Note shown in place of the chart when it has nothing to draw. */
+  public readonly emptyLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.chart.empty:Aucune donnée à afficher.`,
+  );
+
+  /** Whether there is nothing to draw: the empty note keeps the chart's room instead. */
+  protected readonly empty: Signal<boolean> = computed<boolean>(
+    (): boolean =>
+      !this.rows().some((row: HeatmapRow): boolean =>
+        row.cells.some((cell: HeatmapCell | null): boolean => cell !== null),
+      ),
+  );
+
+  protected readonly emptyClasses: string = cn(CHART_EMPTY_CLASSES, 'h-52');
 
   /** Extra host classes. */
   public readonly class: InputSignal<string> = input<string>('');

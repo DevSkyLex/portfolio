@@ -336,6 +336,8 @@ async function show(opened: Opened, name: string): Promise<HTMLElement | null> {
 describe('ADMIN_DASHBOARD_ROUTES', (): void => {
   afterEach((): void => {
     TestBed.inject<HttpTestingController>(HttpTestingController).verify();
+    vi.unstubAllGlobals();
+    localStorage.clear();
   });
 
   it('names the sources to configure, the first collection to come and the audit findings, one tab each', async (): Promise<void> => {
@@ -361,6 +363,17 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     ]);
     expect(trigger(root(), 'Search Console')?.getAttribute('aria-selected')).toBe('true');
     expect(root().querySelectorAll('[role="tabpanel"]')).toHaveLength(4);
+    // Without a report the side panel has no figure yet, and says why for every source.
+    const aside: HTMLElement | null = root().querySelector<HTMLElement>('aside');
+    expect(text(aside?.querySelector('section[aria-labelledby="dashboard-figures"] p'))).toBe(
+      'Les chiffres de cette source apparaîtront après sa première collecte.',
+    );
+    expect([...(aside?.querySelectorAll('content-seo-source-list li') ?? [])].map(text)).toEqual([
+      'Search ConsoleNon configuré',
+      'Google AnalyticsNon configuré',
+      'PageSpeed InsightsEn attente de la première collecte',
+      expect.stringMatching(/^Audit SEOCalculé le 4 nov\. 2026/),
+    ]);
 
     const search: HTMLElement | null = panel(root());
     expect(text(search?.querySelector('[data-slot="empty-title"]'))).toBe(
@@ -383,8 +396,9 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     expect([...(audit?.querySelectorAll('content-seo-section-header h2') ?? [])].map(text)).toEqual(
       ['Synthèse de l’audit', 'Problèmes relevés'],
     );
-    expect(text(audit)).toContain('Erreurs1Avertissements1Infos0');
-    expect(text(audit)).toContain('Projets publiés1Brouillons2URL du sitemap10');
+    // The audit's totals are the side panel's key figures, without a period compared.
+    const totals: string = text(opened.root().querySelector('aside content-seo-figure-list'));
+    expect(totals).toBe('Erreurs1Avertissements1Infos0Projets publiés1Brouillons2URL du sitemap10');
     // Findings by project, split by severity, and by kind.
     const projects: Element | null | undefined = audit?.querySelector('ui-stacked-bars');
     expect(
@@ -459,11 +473,37 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
         (col: HTMLElement): string => col.style.width,
       ),
     ).toEqual(['280px', '96px', '120px', '96px', '104px']);
-    const tiles: string[] = [...(search?.querySelectorAll('content-seo-kpi-tile') ?? [])].map(text);
-    expect(tiles[0]).toBe('Clics120 +20 % vs 7 sept. – 4 oct. 2026(favorable)');
-    expect(tiles[1]).toBe('Impressions4 000 -20 % vs 7 sept. – 4 oct. 2026(défavorable)');
+    // Wide window: the key figures and the sources sit in the side panel, not in a strip.
+    expect(search?.querySelector('content-seo-kpi-tile')).toBeNull();
+    const aside = (): HTMLElement | null => root().querySelector<HTMLElement>('aside');
+    const figures: string[] = [
+      ...(aside()?.querySelectorAll('content-seo-figure-list dl > div') ?? []),
+    ].map(text);
+    expect(figures[0]).toBe('Clics120 +20 % (favorable)');
+    expect(figures[1]).toBe('Impressions4 000 -20 % (défavorable)');
     // A lower average position is better.
-    expect(tiles[3]).toBe('Position moyenne8,4 -1,2 vs 7 sept. – 4 oct. 2026(favorable)');
+    expect(figures[3]).toBe('Position moyenne8,4 -1,2 (favorable)');
+    expect(text(aside()?.querySelector('content-seo-figure-list > p'))).toBe(
+      'vs 7 sept. – 4 oct. 2026',
+    );
+    expect([...(aside()?.querySelectorAll('content-seo-source-list li') ?? [])].map(text)).toEqual([
+      expect.stringMatching(/^Search ConsoleCollecté le 4 nov\. 2026/),
+      expect.stringMatching(/^Google AnalyticsÉchec le 4 nov\. 2026.*, dernier rapport conservé$/),
+      expect.stringMatching(/^PageSpeed InsightsCollecté le 4 nov\. 2026/),
+      expect.stringMatching(/^Audit SEOCalculé le 4 nov\. 2026/),
+    ]);
+    const states: string[] = [
+      ...(aside()?.querySelectorAll('content-seo-source-list li > span') ?? []),
+    ].map((icon: Element): string => icon.className);
+    expect(states).toEqual([
+      expect.stringContaining('text-success-ink'),
+      expect.stringContaining('text-warning-ink'),
+      expect.stringContaining('text-success-ink'),
+      expect.stringContaining('text-success-ink'),
+    ]);
+    // The window controls sit in the panel; the header keeps the title and the tabs.
+    expect(aside()?.querySelector('[aria-label="Période"]')).not.toBeNull();
+    expect(root().querySelector('[data-slot="page-header"] [aria-label="Période"]')).toBeNull();
     expect(search?.querySelector('[data-slot="card"]')).toBeNull();
     // No window or collection strip above the figures: the page header dates the last collection.
     expect(text(search)).not.toContain('Collecté le');
@@ -525,7 +565,7 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     );
     expect(text(alert)).toContain('Tentative du 4 nov. 2026');
     expect(text(alert)).toContain('Données affichées du 3 nov. 2026');
-    expect(text(audience)).toContain('Durée d’engagement moyenne1 min 23 s');
+    expect(text(aside())).toContain('Durée d’engagement moyenne1 min 23 s');
     // Three counts of one unit on one chart, a legend naming them.
     const daily: Element | null | undefined = audience?.querySelector('ui-line-chart');
     expect([...(daily?.querySelectorAll('[data-slot="chart-legend"] li') ?? [])].map(text)).toEqual(
@@ -555,8 +595,10 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     expect(text(vitals?.querySelector('section[aria-labelledby="cwv-pages"] p'))).toContain(
       '75e centile des visites réelles de Chrome',
     );
-    expect(text(vitals)).toContain('Mesures1Mesures impossibles0');
-    expect(text(vitals)).toContain('Score labo médian, mobile42Score labo médian, ordinateur—');
+    expect(text(aside())).toContain('Mesures1Mesures impossibles0');
+    expect(text(aside())).toContain('Score labo médian, mobile42Score labo médian, ordinateur—');
+    // Counts of the current state: no period compared.
+    expect(aside()?.querySelector('content-seo-figure-list > p')).toBeNull();
     expect(
       [...(vitals?.querySelectorAll('ui-stacked-bars tbody tr') ?? [])].map((row: Element) =>
         [...row.children].map(text),
@@ -586,6 +628,34 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
       expect.stringContaining('text-warning-ink'),
       expect.stringContaining('text-danger-ink'),
     ]);
+  });
+
+  it('keeps the room of every chart and closes every table with an empty state when a window has no data', async (): Promise<void> => {
+    const opened: Opened = await open();
+    const report: SeoDashboard = reported();
+    const search: SeoDashboard['searchConsole'] = report.searchConsole;
+    if (search.status !== 'ok') throw new Error('Search Console fixture expected.');
+    opened.backend.expectOne(`${URL}?range=28d`).flush({
+      ...report,
+      searchConsole: {
+        ...search,
+        data: { ...search.data, daily: [], queries: [], pages: [], devices: [] },
+      },
+    });
+    await opened.settle();
+    const tab: HTMLElement | null = panel(opened.root());
+    // Six charts, each a note on the empty surface instead of a missing block.
+    const notes: Element[] = [...(tab?.querySelectorAll('p.bg-surface-raised') ?? [])];
+    expect(notes).toHaveLength(6);
+    expect(new Set(notes.map(text))).toEqual(new Set(['Aucune donnée à afficher.']));
+    const empties: HTMLElement[] = [
+      ...(tab?.querySelectorAll<HTMLElement>('[data-slot="data-table-empty"]') ?? []),
+    ];
+    expect(
+      empties.map((empty: HTMLElement) => text(empty.querySelector('[data-slot="empty-title"]'))),
+    ).toEqual(['Aucune requête sur la période', 'Aucune page sur la période']);
+    // Closed under the heading row like a last row.
+    expect(empties[0]?.className).toContain('border-b');
   });
 
   it('opens the tab named in ?onglet= and falls back to the first one on an unknown name', async (): Promise<void> => {
@@ -636,7 +706,7 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     backend.expectOne(`${URL}?range=28d`).flush(unconfigured());
     await settle();
     const button = (): HTMLButtonElement | undefined =>
-      [...root().querySelectorAll<HTMLButtonElement>('[data-slot="page-header"] button')].find(
+      [...root().querySelectorAll<HTMLButtonElement>('aside button')].find(
         (candidate: HTMLButtonElement): boolean => text(candidate).startsWith('Actualis'),
       );
     button()?.click();
@@ -666,7 +736,7 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     const { backend, root, settle } = await open();
     backend.expectOne(`${URL}?range=28d`).flush(unconfigured());
     await settle();
-    [...root().querySelectorAll<HTMLButtonElement>('[data-slot="page-header"] button')]
+    [...root().querySelectorAll<HTMLButtonElement>('aside button')]
       .find((candidate: HTMLButtonElement): boolean => text(candidate) === 'Actualiser')
       ?.click();
     backend.expectOne(`${URL}/refresh`).flush(
@@ -683,6 +753,56 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     expect(toast?.type).toBe('warning');
     expect(toast?.message).toBe('Actualisation trop rapprochée de la précédente.');
     expect(toast?.description).toMatch(/^Prochaine actualisation possible à \d{2}:\d{2}\.$/);
+  });
+
+  it('moves the side panel into a « Détails » sheet and the window controls into the header below 1180 px', async (): Promise<void> => {
+    let listener: ((event: { matches: boolean }) => void) | null = null;
+    vi.stubGlobal('matchMedia', (media: string) => ({
+      media,
+      matches: media === '(max-width: 1179.98px)',
+      addEventListener: (_: string, callback: (event: { matches: boolean }) => void): void => {
+        listener = callback;
+      },
+      removeEventListener: (): void => {
+        listener = null;
+      },
+    }));
+    const { backend, harness, root, settle } = await open();
+    backend.expectOne(`${URL}?range=28d`).flush(reported());
+    await settle();
+    const header: Element | null = root().querySelector('[data-slot="page-header"]');
+    expect(root().querySelector('ui-resizable-handle')).toBeNull();
+    expect(root().querySelector('aside')?.children).toHaveLength(0);
+    expect(header?.querySelector('[aria-label="Période"]')).not.toBeNull();
+    // The strip comes back above the charts.
+    expect(text(panel(root())?.querySelector('content-seo-kpi-tile'))).toBe(
+      'Clics120 +20 % vs 7 sept. – 4 oct. 2026(favorable)',
+    );
+    const details: HTMLButtonElement | undefined = [
+      ...(header?.querySelectorAll<HTMLButtonElement>('button') ?? []),
+    ].find((candidate: HTMLButtonElement): boolean => text(candidate) === 'Détails');
+    expect(details?.getAttribute('aria-haspopup')).toBe('dialog');
+    details?.click();
+    await settle();
+    const sheet: HTMLElement | null = document.querySelector<HTMLElement>(
+      '[data-slot="sheet-content"]',
+    );
+    expect(text(sheet?.querySelector('[data-slot="sheet-title"]'))).toBe('Détails');
+    expect(document.activeElement).toBe(sheet?.querySelector('[data-slot="sheet-title"]'));
+    expect(text(sheet?.querySelector('content-seo-figure-list dl > div'))).toBe(
+      'Clics120 +20 % (favorable)',
+    );
+    expect(sheet?.querySelectorAll('content-seo-source-list li')).toHaveLength(4);
+    expect(details?.getAttribute('aria-expanded')).toBe('true');
+    // Back above 1180 px: the sheet closes and the panel lists the details again.
+    (listener as ((event: { matches: boolean }) => void) | null)?.({ matches: false });
+    await settle();
+    expect(document.querySelector('[data-slot="sheet-content"]')).toBeNull();
+    expect(root().querySelector('aside content-seo-figure-list')).not.toBeNull();
+    expect(root().querySelector('ui-resizable-handle')).not.toBeNull();
+    expect(panel(root())?.querySelector('content-seo-kpi-tile')).toBeNull();
+    harness.fixture.destroy();
+    expect(listener).toBeNull();
   });
 
   it('offers to retry a failed read', async (): Promise<void> => {

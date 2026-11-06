@@ -1,4 +1,6 @@
 import {
+  type InputSignalWithTransform,
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   LOCALE_ID,
@@ -12,6 +14,8 @@ import { NgTemplateOutlet } from '@angular/common';
 import { NgIcon } from '@ng-icons/core';
 import type { WebVitalsData } from '@vfortin/content-web-data-access/admin';
 import {
+  EMPTY_IMPORTS,
+  DataTableEmptyDirective,
   DataTableCellDirective,
   DataTableComponent,
   DataTableEmptyCellComponent,
@@ -23,6 +27,7 @@ import {
   type DumbbellRow,
   type StackedBarRow,
 } from '@vfortin/ui';
+import { lucideGauge } from '@ng-icons/lucide';
 import {
   SEO_SOURCE_ERROR_LABELS,
   SEO_STRATEGY_LABELS,
@@ -33,6 +38,8 @@ import { SeoKpiTileComponent } from '@internal/content-web-feature-admin/lib/ui/
 import { SeoSectionHeaderComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-section-header/seo-section-header.component';
 import { SEO_VITAL_ICONS } from '@internal/content-web-feature-admin/lib/constants/seo-status-icons.constants';
 import type { SeoStatusIcon } from '@internal/content-web-feature-admin/lib/models/seo-status-icon/seo-status-icon.interface';
+import type { SeoFigure } from '@internal/content-web-feature-admin/lib/models/seo-figure/seo-figure.interface';
+import { webVitalsFigures } from '@internal/content-web-feature-admin/lib/utils/seo-figures/seo-figures.utils';
 import { seoFormatter } from '@internal/content-web-feature-admin/lib/utils/seo-format/seo-format.utils';
 
 /**
@@ -137,7 +144,9 @@ function pathOf(url: string): string {
     DataTableCellDirective,
     DataTableComponent,
     DataTableEmptyCellComponent,
+    DataTableEmptyDirective,
     DumbbellChartComponent,
+    EMPTY_IMPORTS,
     NgIcon,
     NgTemplateOutlet,
     SeoKpiTileComponent,
@@ -151,6 +160,15 @@ function pathOf(url: string): string {
 })
 export class SeoWebVitalsPanelComponent {
   // #region Properties
+  /**
+   * Property icons
+   * @readonly
+   *
+   * @description
+   * Lucide icons of the empty tables.
+   */
+  protected readonly icons: { readonly vitals: string } = { vitals: lucideGauge } as const;
+
   /**
    * Property data
    * @readonly
@@ -228,57 +246,32 @@ export class SeoWebVitalsPanelComponent {
   ];
 
   /**
+   * Property strip
+   * @readonly
+   *
+   * @description
+   * Whether the strip of key figures shows above the charts: off while the dashboard's side panel
+   * lists them (D51).
+   *
+   * @type {InputSignalWithTransform<boolean, unknown>}
+   */
+  public readonly strip: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
+    true,
+    { transform: booleanAttribute },
+  );
+
+  /**
    * Property figures
    * @readonly
    *
    * @description
-   * Figure cells: the measures, those that failed and the median lab score of each strategy.
+   * Key figures: the measures, those that failed and the median lab score of each strategy.
    *
-   * @type {Signal<readonly { id: string; label: string; value: string }[]>}
+   * @type {Signal<readonly SeoFigure[]>}
    */
-  protected readonly figures: Signal<
-    readonly { readonly id: string; readonly label: string; readonly value: string }[]
-  > = computed((): { id: string; label: string; value: string }[] => {
-    const rows: readonly VitalsRow[] = this.rows();
-    const median = (strategy: 'mobile' | 'desktop'): string => {
-      const scores: number[] = this.data()
-        .rows.filter((row: VitalsSource): boolean => row.strategy === strategy)
-        .map((row: VitalsSource): number | null => row.measure?.lab.performanceScore ?? null)
-        .filter((score: number | null): score is number => score !== null)
-        .sort((a: number, b: number): number => a - b);
-      if (scores.length === 0) return '—';
-      const middle: number = Math.floor(scores.length / 2);
-      const value: number =
-        scores.length % 2
-          ? (scores[middle] ?? 0)
-          : ((scores[middle - 1] ?? 0) + (scores[middle] ?? 0)) / 2;
-      return this.format.count(value);
-    };
-    return [
-      {
-        id: 'measures',
-        label: $localize`:@@admin.dashboard.vitals.figures.measures:Mesures`,
-        value: this.format.count(rows.length),
-      },
-      {
-        id: 'failed',
-        label: $localize`:@@admin.dashboard.vitals.figures.failed:Mesures impossibles`,
-        value: this.format.count(
-          rows.filter((row: VitalsRow): boolean => row.error !== null).length,
-        ),
-      },
-      {
-        id: 'mobile',
-        label: $localize`:@@admin.dashboard.vitals.figures.mobile:Score labo médian, mobile`,
-        value: median('mobile'),
-      },
-      {
-        id: 'desktop',
-        label: $localize`:@@admin.dashboard.vitals.figures.desktop:Score labo médian, ordinateur`,
-        value: median('desktop'),
-      },
-    ];
-  });
+  protected readonly figures: Signal<readonly SeoFigure[]> = computed<readonly SeoFigure[]>(
+    (): readonly SeoFigure[] => webVitalsFigures(this.data(), this.format),
+  );
 
   /**
    * Property distribution

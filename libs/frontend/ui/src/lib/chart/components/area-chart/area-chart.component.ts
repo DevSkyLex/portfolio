@@ -13,6 +13,7 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
+import { CHART_EMPTY_CLASSES } from '@internal/ui/lib/chart/constants/chart-tone.constants';
 import type { ChartPoint } from '@internal/ui/lib/chart/models/chart/chart-point.interface';
 import { chartTicks } from '@internal/ui/lib/chart/utils/chart-ticks/chart-ticks.utils';
 import { RenderIdService } from '@internal/ui/lib/render-id/render-id.service';
@@ -200,6 +201,18 @@ export class AreaChartComponent {
     false,
     { transform: booleanAttribute },
   );
+
+  /** Note shown in place of the chart when it has nothing to draw. */
+  public readonly emptyLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.chart.empty:Aucune donnée à afficher.`,
+  );
+
+  /** Whether there is nothing to draw: the empty note keeps the chart's room instead. */
+  protected readonly empty: Signal<boolean> = computed<boolean>(
+    (): boolean => this.points().length === 0,
+  );
+
+  protected readonly emptyClasses: string = cn(CHART_EMPTY_CLASSES, 'h-40');
 
   /**
    * Property class

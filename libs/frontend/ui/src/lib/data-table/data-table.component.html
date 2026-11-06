@@ -269,12 +269,14 @@
   @if (emptyShown()) {
     @if (data().length === 0) {
       @if (emptyTemplate(); as empty) {
-        <ng-container
-          [ngTemplateOutlet]="empty.template"
-          [ngTemplateOutletContext]="emptyContext()"
-        />
+        <div [class]="emptyFrameClasses()" data-slot="data-table-empty">
+          <ng-container
+            [ngTemplateOutlet]="empty.template"
+            [ngTemplateOutletContext]="emptyContext()"
+          />
+        </div>
       } @else {
-        <div class="contents" data-slot="data-table-empty">
+        <div [class]="emptyFrameClasses()" data-slot="data-table-empty">
           <div uiEmpty [layout]="emptyLayout()" [class]="emptyClasses()">
             <div uiEmptyHeader>
               <p uiEmptyTitle>{{ text().empty }}</p>
@@ -283,7 +285,7 @@
         </div>
       }
     } @else {
-      <div class="contents" data-slot="data-table-no-results">
+      <div [class]="emptyFrameClasses()" data-slot="data-table-no-results">
         <div uiEmpty [layout]="emptyLayout()" [class]="emptyClasses()">
           <div uiEmptyHeader>
             <div uiEmptyMedia variant="icon">

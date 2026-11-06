@@ -23,62 +23,23 @@
         >
       }
     </p>
-    <div uiPageHeaderActions class="flex flex-wrap items-center gap-2">
-      <div
-        uiToggleGroup
-        required
-        variant="outline"
-        class="gap-0.5 rounded-md border border-border-field p-0.5"
-        i18n-aria-label="@@admin.dashboard.range.label"
-        aria-label="Période"
-        [value]="store.range()"
-        (valueChange)="selectRange($event)"
-      >
-        <!-- Three static items: the group reads every item's value while the first one renders,
-          which an item still being created by a repeater does not have yet. -->
+    <!-- Below 1180 px the side panel is a sheet: the window controls come back to the header. -->
+    <div uiPageHeaderActions class="flex flex-wrap items-center gap-2 empty:hidden">
+      @if (narrow()) {
+        <ng-container [ngTemplateOutlet]="controls" />
         <button
-          uiToggleGroupItem
+          uiBtn
+          variant="ghost"
+          size="xs"
           type="button"
-          class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
-          value="7d"
+          aria-haspopup="dialog"
+          [attr.aria-expanded]="detailsOpen()"
+          (click)="openDetails()"
         >
-          {{ rangeLabels['7d'] }}
+          <ng-icon [svg]="icons.details" size="14" aria-hidden="true" />
+          <ng-container i18n="@@admin.dashboard.details">Détails</ng-container>
         </button>
-        <button
-          uiToggleGroupItem
-          type="button"
-          class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
-          value="28d"
-        >
-          {{ rangeLabels['28d'] }}
-        </button>
-        <button
-          uiToggleGroupItem
-          type="button"
-          class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
-          value="90d"
-        >
-          {{ rangeLabels['90d'] }}
-        </button>
-      </div>
-      <button
-        uiBtn
-        variant="secondary"
-        size="xs"
-        type="button"
-        [disabled]="store.refreshing()"
-        [attr.aria-busy]="store.refreshing() ? 'true' : null"
-        [uiTooltip]="refreshTooltip()"
-        (click)="refresh()"
-      >
-        @if (store.refreshing()) {
-          <ui-spinner size="sm" label="" />
-          <ng-container i18n="@@admin.dashboard.refresh.running">Actualisation…</ng-container>
-        } @else {
-          <ng-icon [svg]="icons.refresh" size="14" aria-hidden="true" />
-          <ng-container i18n="@@admin.dashboard.refresh">Actualiser</ng-container>
-        }
-      </button>
+      }
     </div>
     <div uiPageHeaderTabs>
       <div uiTabsList class="gap-5" i18n-aria-label="@@admin.dashboard.tabs" aria-label="Rapports">
@@ -98,110 +59,293 @@
     </div>
   </ui-page-header>
 
-  @if (store.loadCallState().error; as failure) {
-    <div uiAlert variant="danger" class="mx-6 mt-6 w-auto @max-[640px]:mx-4">
-      <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
-      <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.loadError">
-        Impossible de charger le tableau de bord
-      </p>
-      <div uiAlertDescription class="gap-2 text-[13px]/5">
-        <p>{{ failure.message }}</p>
-        <button
-          uiBtn
-          variant="secondary"
-          size="xs"
-          type="button"
-          (click)="reload()"
-          i18n="@@admin.dashboard.retry"
-        >
-          Réessayer
-        </button>
-      </div>
-    </div>
-  }
-
-  @if (store.pollCallState().error; as failure) {
-    <div uiAlert variant="warning" class="mx-6 mt-6 w-auto @max-[640px]:mx-4">
-      <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
-      <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.pollError">
-        Le suivi de l’actualisation a été interrompu
-      </p>
-      <div uiAlertDescription class="gap-2 text-[13px]/5">
-        <p>{{ failure.message }}</p>
-        <button
-          uiBtn
-          variant="secondary"
-          size="xs"
-          type="button"
-          (click)="reload()"
-          i18n="@@admin.dashboard.reload"
-        >
-          Recharger
-        </button>
-      </div>
-    </div>
-  }
-
-  <div class="@container/dashboard flex min-w-0 flex-1 flex-col">
-    @if (dashboard(); as current) {
-      <div uiTabsContent="search-console" class="flex flex-col">
-        @if (tab() === 'search-console' && searchConsole(); as view) {
-          <ng-container
-            [ngTemplateOutlet]="sourceState"
-            [ngTemplateOutletContext]="{ $implicit: view, source: 'Search Console' }"
-          />
-          @if (view.data; as data) {
-            <content-seo-search-console-panel [data]="data" [stale]="stale()" />
-          }
-        }
-      </div>
-      <div uiTabsContent="audience" class="flex flex-col">
-        @if (tab() === 'audience' && analytics(); as view) {
-          <ng-container
-            [ngTemplateOutlet]="sourceState"
-            [ngTemplateOutletContext]="{ $implicit: view, source: 'Google Analytics' }"
-          />
-          @if (view.data; as data) {
-            <content-seo-analytics-panel [data]="data" [stale]="stale()" />
-          }
-        }
-      </div>
-      <div uiTabsContent="vitals" class="flex flex-col">
-        @if (tab() === 'vitals' && webVitals(); as view) {
-          <ng-container
-            [ngTemplateOutlet]="sourceState"
-            [ngTemplateOutletContext]="{ $implicit: view, source: 'PageSpeed Insights' }"
-          />
-          @if (view.data; as data) {
-            <content-seo-web-vitals-panel [data]="data" />
-          }
-        }
-      </div>
-      <div uiTabsContent="audit" class="flex flex-col">
-        @if (tab() === 'audit') {
-          <content-seo-audit-panel [audit]="current.audit" />
-        }
-      </div>
-    } @else if (!store.loadCallState().error) {
-      <span class="sr-only" role="status" i18n="@@admin.dashboard.loading"
-        >Chargement du tableau de bord…</span
+  <!--
+    The reports panel stays overflow-visible: the page scrolls with the document, so the bar and the
+    side panel keep sticking. Past 1200 px the reports centre between hairlines instead of stretching.
+  -->
+  <div
+    uiResizablePanelGroup
+    #split="uiResizablePanelGroup"
+    class="h-auto flex-1"
+    (layoutChange)="saveSplit(split.pixelSizes()[1])"
+  >
+    <div
+      uiResizablePanel
+      class="@container/main overflow-visible"
+      [minSize]="splitLayout.limits[0].min"
+      [maxSize]="splitLayout.limits[0].max"
+    >
+      <div
+        class="mx-auto flex w-full max-w-[1200px] min-w-0 flex-1 flex-col self-stretch @min-[1201px]/main:border-x @min-[1201px]/main:border-border"
       >
-      <div class="flex flex-col" aria-hidden="true">
-        <div class="grid grid-cols-2 border-b border-border @min-[48rem]/dashboard:grid-cols-4">
-          @for (cell of skeletonCells; track cell) {
-            <div class="flex flex-col gap-2 border-e border-border px-6 py-4">
-              <span uiSkeleton class="h-4 w-24"></span>
-              <span uiSkeleton class="h-7 w-16"></span>
+        @if (store.loadCallState().error; as failure) {
+          <div uiAlert variant="danger" class="mx-6 mt-6 w-auto @max-[640px]:mx-4">
+            <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+            <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.loadError">
+              Impossible de charger le tableau de bord
+            </p>
+            <div uiAlertDescription class="gap-2 text-[13px]/5">
+              <p>{{ failure.message }}</p>
+              <button
+                uiBtn
+                variant="secondary"
+                size="xs"
+                type="button"
+                (click)="reload()"
+                i18n="@@admin.dashboard.retry"
+              >
+                Réessayer
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (store.pollCallState().error; as failure) {
+          <div uiAlert variant="warning" class="mx-6 mt-6 w-auto @max-[640px]:mx-4">
+            <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+            <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.pollError">
+              Le suivi de l’actualisation a été interrompu
+            </p>
+            <div uiAlertDescription class="gap-2 text-[13px]/5">
+              <p>{{ failure.message }}</p>
+              <button
+                uiBtn
+                variant="secondary"
+                size="xs"
+                type="button"
+                (click)="reload()"
+                i18n="@@admin.dashboard.reload"
+              >
+                Recharger
+              </button>
+            </div>
+          </div>
+        }
+
+        <div class="@container/dashboard flex min-w-0 flex-1 flex-col">
+          @if (dashboard(); as current) {
+            <div uiTabsContent="search-console" class="flex flex-col">
+              @if (tab() === 'search-console' && searchConsole(); as view) {
+                <ng-container
+                  [ngTemplateOutlet]="sourceState"
+                  [ngTemplateOutletContext]="{ $implicit: view, source: 'Search Console' }"
+                />
+                @if (view.data; as data) {
+                  <content-seo-search-console-panel
+                    [data]="data"
+                    [stale]="stale()"
+                    [strip]="narrow()"
+                  />
+                }
+              }
+            </div>
+            <div uiTabsContent="audience" class="flex flex-col">
+              @if (tab() === 'audience' && analytics(); as view) {
+                <ng-container
+                  [ngTemplateOutlet]="sourceState"
+                  [ngTemplateOutletContext]="{ $implicit: view, source: 'Google Analytics' }"
+                />
+                @if (view.data; as data) {
+                  <content-seo-analytics-panel [data]="data" [stale]="stale()" [strip]="narrow()" />
+                }
+              }
+            </div>
+            <div uiTabsContent="vitals" class="flex flex-col">
+              @if (tab() === 'vitals' && webVitals(); as view) {
+                <ng-container
+                  [ngTemplateOutlet]="sourceState"
+                  [ngTemplateOutletContext]="{ $implicit: view, source: 'PageSpeed Insights' }"
+                />
+                @if (view.data; as data) {
+                  <content-seo-web-vitals-panel [data]="data" [strip]="narrow()" />
+                }
+              }
+            </div>
+            <div uiTabsContent="audit" class="flex flex-col">
+              @if (tab() === 'audit') {
+                <content-seo-audit-panel [audit]="current.audit" [strip]="narrow()" />
+              }
+            </div>
+          } @else if (!store.loadCallState().error) {
+            <span class="sr-only" role="status" i18n="@@admin.dashboard.loading"
+              >Chargement du tableau de bord…</span
+            >
+            <div class="flex flex-col" aria-hidden="true">
+              <div
+                class="grid grid-cols-2 border-b border-border @min-[48rem]/dashboard:grid-cols-4"
+              >
+                @for (cell of skeletonCells; track cell) {
+                  <div class="flex flex-col gap-2 border-e border-border px-6 py-4">
+                    <span uiSkeleton class="h-4 w-24"></span>
+                    <span uiSkeleton class="h-7 w-16"></span>
+                  </div>
+                }
+              </div>
+              <div class="px-6 py-5">
+                <span uiSkeleton class="h-48 w-full"></span>
+              </div>
             </div>
           }
         </div>
-        <div class="px-6 py-5">
-          <span uiSkeleton class="h-48 w-full"></span>
-        </div>
       </div>
+    </div>
+
+    @if (!narrow()) {
+      <ui-resizable-handle
+        #splitHandle
+        label="Redimensionner le panneau Détails"
+        i18n-label="@@admin.dashboard.resizeDetails"
+        class="outline-2 hover:bg-border-hover focus-visible:bg-fg focus-visible:outline-accent/55 data-dragging:bg-fg @max-[1180px]:hidden"
+        step="16px"
+        (dblclick)="resetSplit(split, splitHandle)"
+      />
     }
+    <aside
+      uiResizablePanel
+      class="sticky top-12 h-[calc(100dvh-3rem)] overflow-auto @max-[1180px]:hidden"
+      aria-label="Détails"
+      i18n-aria-label="@@admin.dashboard.details"
+      [defaultSize]="panelDefault()"
+      [minSize]="splitLayout.limits[1].min"
+      [maxSize]="splitLayout.limits[1].max"
+    >
+      <!-- The padding sits inside: on the panel itself it would add to its width. -->
+      <!-- Below 1180 px the header and the sheet hold this content: it renders once. -->
+      @if (!narrow()) {
+        <div class="flex flex-col gap-8 px-5 py-6">
+          <section class="flex flex-col gap-3" aria-labelledby="dashboard-window">
+            <h2 id="dashboard-window" class="text-[14px]/5 font-semibold text-fg">
+              <ng-container i18n="@@admin.dashboard.range.label">Période</ng-container>
+            </h2>
+            <div class="flex flex-wrap items-center gap-2">
+              <ng-container [ngTemplateOutlet]="controls" />
+            </div>
+          </section>
+          <ng-container [ngTemplateOutlet]="details" />
+        </div>
+      }
+    </aside>
   </div>
 </div>
+
+<!-- Window toggle and « Actualiser »: in the side panel, or in the header below 1180 px. -->
+<ng-template #controls>
+  <div
+    uiToggleGroup
+    required
+    variant="outline"
+    class="gap-0.5 rounded-md border border-border-field p-0.5"
+    i18n-aria-label="@@admin.dashboard.range.label"
+    aria-label="Période"
+    [value]="store.range()"
+    (valueChange)="selectRange($event)"
+  >
+    <!-- Three static items: the group reads every item's value while the first one renders,
+      which an item still being created by a repeater does not have yet. -->
+    <button
+      uiToggleGroupItem
+      type="button"
+      class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
+      value="7d"
+    >
+      {{ rangeLabels['7d'] }}
+    </button>
+    <button
+      uiToggleGroupItem
+      type="button"
+      class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
+      value="28d"
+    >
+      {{ rangeLabels['28d'] }}
+    </button>
+    <button
+      uiToggleGroupItem
+      type="button"
+      class="h-6 min-w-0 rounded-sm border-0 px-2 text-[12px]"
+      value="90d"
+    >
+      {{ rangeLabels['90d'] }}
+    </button>
+  </div>
+  <button
+    uiBtn
+    variant="secondary"
+    size="xs"
+    type="button"
+    [disabled]="store.refreshing()"
+    [attr.aria-busy]="store.refreshing() ? 'true' : null"
+    [uiTooltip]="refreshTooltip()"
+    (click)="refresh()"
+  >
+    @if (store.refreshing()) {
+      <ui-spinner size="sm" label="" />
+      <ng-container i18n="@@admin.dashboard.refresh.running">Actualisation…</ng-container>
+    } @else {
+      <ng-icon [svg]="icons.refresh" size="14" aria-hidden="true" />
+      <ng-container i18n="@@admin.dashboard.refresh">Actualiser</ng-container>
+    }
+  </button>
+</ng-template>
+
+<!-- Key figures of the tab shown and state of every source: the side panel's body and the sheet's. -->
+<ng-template #details>
+  <section class="flex flex-col gap-3" aria-labelledby="dashboard-figures">
+    <h2
+      id="dashboard-figures"
+      class="text-[14px]/5 font-semibold text-fg"
+      i18n="@@admin.dashboard.figures"
+    >
+      Chiffres clés
+    </h2>
+    @if (figures(); as current) {
+      <content-seo-figure-list
+        [figures]="current.items"
+        [comparison]="current.comparison"
+        [compared]="current.compared"
+      />
+    } @else if (dashboard()) {
+      <p class="text-[12px]/4 text-fg-muted" i18n="@@admin.dashboard.figures.none">
+        Les chiffres de cette source apparaîtront après sa première collecte.
+      </p>
+    } @else {
+      <div class="flex flex-col gap-2.5" aria-hidden="true">
+        @for (cell of skeletonCells; track cell) {
+          <span uiSkeleton class="h-5 w-full"></span>
+        }
+      </div>
+    }
+  </section>
+  <section class="flex flex-col gap-3" aria-labelledby="dashboard-sources">
+    <h2
+      id="dashboard-sources"
+      class="text-[14px]/5 font-semibold text-fg"
+      i18n="@@admin.dashboard.sources"
+    >
+      Sources
+    </h2>
+    @if (sources(); as list) {
+      <content-seo-source-list [sources]="list" />
+    } @else {
+      <div class="flex flex-col gap-2.5" aria-hidden="true">
+        @for (cell of skeletonCells; track cell) {
+          <span uiSkeleton class="h-9 w-full"></span>
+        }
+      </div>
+    }
+  </section>
+</ng-template>
+
+<!-- « Détails » sheet below 1180 px: the same figures and sources as the side panel. -->
+<ng-template #detailsSheet>
+  <div uiSheetHeader>
+    <h2 uiSheetTitle class="font-sans text-[14px]/5 font-semibold">
+      <ng-container i18n="@@admin.dashboard.details">Détails</ng-container>
+    </h2>
+  </div>
+  <div class="flex flex-col gap-8">
+    <ng-container [ngTemplateOutlet]="details" />
+  </div>
+</ng-template>
 
 <!-- Setup, first collection or failure of a source, padded like the page's content. -->
 <ng-template #sourceState let-view let-source="source">

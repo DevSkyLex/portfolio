@@ -1,3 +1,4 @@
+import { LOCALE_ID } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { HeatmapComponent } from '@internal/ui/lib/chart/components/heatmap/heatmap.component';
 import type { HeatmapRow } from '@internal/ui/lib/chart/models/chart/heatmap-row.interface';
@@ -162,5 +163,21 @@ describe('HeatmapComponent', (): void => {
     grid.dispatchEvent(new FocusEvent('focus'));
     await fixture.whenStable();
     expect(host.querySelector('.ring-2')).toBeNull();
+  });
+
+  it('keeps its room with a note on the empty surface when there is nothing to draw', async (): Promise<void> => {
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'fr' }] });
+    const fixture: ComponentFixture<HeatmapComponent> = TestBed.createComponent(HeatmapComponent);
+    fixture.componentRef.setInput('rows', [{ key: 'mon', label: 'lun.', cells: [null, null] }]);
+    fixture.componentRef.setInput('columns', ['', '']);
+    fixture.componentRef.setInput('label', 'Sessions');
+    await fixture.whenStable();
+    const note: HTMLElement | null = (fixture.nativeElement as HTMLElement).querySelector('p');
+    expect(note?.textContent?.trim()).toBe('Aucune donnée à afficher.');
+    expect(note?.className).toContain('bg-surface-raised');
+    expect(note?.className).toContain('h-52');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('table, ul, [role="group"]'),
+    ).toBeNull();
   });
 });

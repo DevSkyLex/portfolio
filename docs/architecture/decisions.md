@@ -1009,6 +1009,15 @@ verdict, always with a legend. The heat ramp is four steps of `chart-1` over the
 100 %), the faintest still 2:1 against it. Every chart keeps a visually hidden table view and a
 keyboard or printed reading of each value.
 
+Revision (side panel): on a wide window the reports stop at 1200 px, centred between hairlines past
+it, beside a resizable side panel like the project editor's (320 px by default, 280 to 440 px,
+remembered per viewer under `portfolio.admin.layout.dashboard`). The panel holds the window toggle,
+« Actualiser », the active tab's key figures as a list (the change of each, the period compared named
+once) and the collection state of every source with its time; the figure strip leaves the tabs, which
+shortens them. Below 1180 px the panel becomes a « Détails » sheet opened from the page header, the
+window controls return to the header and each tab shows its strip again. The section descriptions
+already carry the method, so the panel adds no method notes.
+
 ## D52 — Demonstration SEO data in development
 
 Without a Google account, the local dashboard would only show « non configuré ». With

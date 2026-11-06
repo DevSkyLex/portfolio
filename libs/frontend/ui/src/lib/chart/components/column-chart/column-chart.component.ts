@@ -16,6 +16,7 @@ import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import {
   CHART_TONE_FILLS,
   CHART_TOOLTIP_CLASSES,
+  CHART_EMPTY_CLASSES,
 } from '@internal/ui/lib/chart/constants/chart-tone.constants';
 import type { ChartPoint } from '@internal/ui/lib/chart/models/chart/chart-point.interface';
 import type { ChartTone } from '@internal/ui/lib/chart/models/chart/chart-tone.type';
@@ -65,86 +66,90 @@ interface AxisLabel {
     'data-slot': 'column-chart',
   },
   template: `
-    <!-- The y labels sit in the 40 px left gutter, outside the plot box that the pointer maps to x. -->
-    <div
-      class="relative ms-10 h-36 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
-      tabindex="0"
-      role="group"
-      [attr.aria-label]="label()"
-      [attr.aria-describedby]="hintId"
-      (pointermove)="pointerMoved($event)"
-      (pointerleave)="pointerLeft()"
-      (focus)="focusEntered()"
-      (blur)="focusLeft()"
-      (keydown)="keyPressed($event)"
-    >
-      @for (tick of tickRows(); track tick.value) {
-        <div
-          class="pointer-events-none absolute inset-x-0 border-t border-border"
-          aria-hidden="true"
-          [style.bottom.%]="tick.bottom"
-        >
-          <span
-            class="absolute end-full top-0 me-2 -translate-y-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
-            >{{ tick.label }}</span
+    @if (empty()) {
+      <p [class]="emptyClasses">{{ emptyLabel() }}</p>
+    } @else {
+      <!-- The y labels sit in the 40 px left gutter, outside the plot box that the pointer maps to x. -->
+      <div
+        class="relative ms-10 h-36 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
+        tabindex="0"
+        role="group"
+        [attr.aria-label]="label()"
+        [attr.aria-describedby]="hintId"
+        (pointermove)="pointerMoved($event)"
+        (pointerleave)="pointerLeft()"
+        (focus)="focusEntered()"
+        (blur)="focusLeft()"
+        (keydown)="keyPressed($event)"
+      >
+        @for (tick of tickRows(); track tick.value) {
+          <div
+            class="pointer-events-none absolute inset-x-0 border-t border-border"
+            aria-hidden="true"
+            [style.bottom.%]="tick.bottom"
           >
+            <span
+              class="absolute end-full top-0 me-2 -translate-y-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
+              >{{ tick.label }}</span
+            >
+          </div>
+        }
+        <div [class]="trackClasses()" aria-hidden="true">
+          @for (column of columns(); track column.index) {
+            <span class="flex h-full min-w-0 flex-1 items-end">
+              @if (column.height > 0) {
+                <span [class]="column.classes" [style.height.%]="column.height"></span>
+              }
+            </span>
+          }
         </div>
-      }
-      <div [class]="trackClasses()" aria-hidden="true">
-        @for (column of columns(); track column.index) {
-          <span class="flex h-full min-w-0 flex-1 items-end">
-            @if (column.height > 0) {
-              <span [class]="column.classes" [style.height.%]="column.height"></span>
-            }
-          </span>
+        @if (mark(); as current) {
+          <div
+            [class]="tooltipClasses"
+            aria-hidden="true"
+            [style.left.%]="current.left"
+            [style.bottom.%]="current.bottom"
+          >
+            <span class="font-medium tabular-nums">{{ current.point.display }}</span>
+            <span class="text-fg-muted">{{ current.point.label }}</span>
+          </div>
         }
       </div>
-      @if (mark(); as current) {
-        <div
-          [class]="tooltipClasses"
-          aria-hidden="true"
-          [style.left.%]="current.left"
-          [style.bottom.%]="current.bottom"
-        >
-          <span class="font-medium tabular-nums">{{ current.point.display }}</span>
-          <span class="text-fg-muted">{{ current.point.label }}</span>
-        </div>
-      }
-    </div>
 
-    <div class="relative ms-10 mt-2 h-4" aria-hidden="true">
-      @for (axis of axisLabels(); track axis.index) {
-        <span [class]="axis.classes" [style.left.%]="axis.left">{{ axis.label }}</span>
-      }
-    </div>
+      <div class="relative ms-10 mt-2 h-4" aria-hidden="true">
+        @for (axis of axisLabels(); track axis.index) {
+          <span [class]="axis.classes" [style.left.%]="axis.left">{{ axis.label }}</span>
+        }
+      </div>
 
-    <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
-    <span class="sr-only" aria-live="polite">{{ announcement() }}</span>
+      <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
+      <span class="sr-only" aria-live="polite">{{ announcement() }}</span>
 
-    <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
-    <div class="sr-only">
-      <table>
-        <caption>
-          {{
-            label()
-          }}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">{{ xHeader() }}</th>
-            <th scope="col">{{ valueHeader() }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (point of points(); track $index) {
+      <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
+      <div class="sr-only">
+        <table>
+          <caption>
+            {{
+              label()
+            }}
+          </caption>
+          <thead>
             <tr>
-              <th scope="row">{{ point.label }}</th>
-              <td>{{ point.display }}</td>
+              <th scope="col">{{ xHeader() }}</th>
+              <th scope="col">{{ valueHeader() }}</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (point of points(); track $index) {
+              <tr>
+                <th scope="row">{{ point.label }}</th>
+                <td>{{ point.display }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   `,
 })
 export class ColumnChartComponent {
@@ -182,6 +187,18 @@ export class ColumnChartComponent {
     false,
     { transform: booleanAttribute },
   );
+
+  /** Note shown in place of the chart when it has nothing to draw. */
+  public readonly emptyLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.chart.empty:Aucune donnée à afficher.`,
+  );
+
+  /** Whether there is nothing to draw: the empty note keeps the chart's room instead. */
+  protected readonly empty: Signal<boolean> = computed<boolean>(
+    (): boolean => this.points().length === 0,
+  );
+
+  protected readonly emptyClasses: string = cn(CHART_EMPTY_CLASSES, 'h-40');
 
   /** Extra host classes. */
   public readonly class: InputSignal<string> = input<string>('');

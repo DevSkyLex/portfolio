@@ -191,4 +191,20 @@ describe('LineChartComponent', (): void => {
     await fixture.whenStable();
     expect(host.querySelector('.shadow-float')).toBeNull();
   });
+
+  it('keeps its room with a note on the empty surface when there is nothing to draw', async (): Promise<void> => {
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'fr' }] });
+    const fixture: ComponentFixture<LineChartComponent> =
+      TestBed.createComponent(LineChartComponent);
+    fixture.componentRef.setInput('series', []);
+    fixture.componentRef.setInput('label', 'Audience');
+    await fixture.whenStable();
+    const note: HTMLElement | null = (fixture.nativeElement as HTMLElement).querySelector('p');
+    expect(note?.textContent?.trim()).toBe('Aucune donnée à afficher.');
+    expect(note?.className).toContain('bg-surface-raised');
+    expect(note?.className).toContain('h-40');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('table, ul, [role="group"]'),
+    ).toBeNull();
+  });
 });

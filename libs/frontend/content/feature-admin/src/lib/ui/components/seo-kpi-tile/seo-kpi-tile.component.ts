@@ -9,22 +9,11 @@ import {
   type Signal,
 } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
-import { lucideArrowDownRight, lucideArrowUpRight, lucideMinus } from '@ng-icons/lucide';
+import {
+  SEO_DELTA_ICONS,
+  SEO_DELTA_TONE_CLASSES,
+} from '@internal/content-web-feature-admin/lib/constants/seo-delta-tones.constants';
 import type { SeoDelta } from '@internal/content-web-feature-admin/lib/models/seo-delta/seo-delta.interface';
-
-/**
- * Constant TONE_CLASSES
- *
- * @description
- * Ink of a change by its meaning for the site (D37: success and danger inks for text).
- *
- * @type {Readonly<Record<SeoDelta['tone'], string>>}
- */
-const TONE_CLASSES: Readonly<Record<SeoDelta['tone'], string>> = {
-  good: 'flex items-center gap-0.5 font-medium text-success-ink tabular-nums',
-  bad: 'flex items-center gap-0.5 font-medium text-danger-ink tabular-nums',
-  flat: 'flex items-center gap-0.5 font-medium text-fg-muted tabular-nums',
-};
 
 /**
  * Component SeoKpiTileComponent
@@ -137,14 +126,9 @@ export class SeoKpiTileComponent {
    *
    * @type {Signal<string>}
    */
-  protected readonly icon: Signal<string> = computed<string>((): string => {
-    const direction: SeoDelta['direction'] = this.delta()?.direction ?? 'flat';
-    return direction === 'up'
-      ? lucideArrowUpRight
-      : direction === 'down'
-        ? lucideArrowDownRight
-        : lucideMinus;
-  });
+  protected readonly icon: Signal<string> = computed<string>(
+    (): string => SEO_DELTA_ICONS[this.delta()?.direction ?? 'flat'],
+  );
 
   /**
    * Property toneClasses
@@ -156,7 +140,7 @@ export class SeoKpiTileComponent {
    * @type {Signal<string>}
    */
   protected readonly toneClasses: Signal<string> = computed<string>(
-    (): string => TONE_CLASSES[this.delta()?.tone ?? 'flat'],
+    (): string => SEO_DELTA_TONE_CLASSES[this.delta()?.tone ?? 'flat'],
   );
   // #endregion
 }

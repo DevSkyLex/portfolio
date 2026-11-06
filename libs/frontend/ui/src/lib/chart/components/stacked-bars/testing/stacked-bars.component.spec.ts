@@ -169,19 +169,42 @@ describe('StackedBarsComponent', (): void => {
     expect(live()).toBe('');
   });
 
-  it('draws an empty whole without parts and keeps one entry without a legend', async (): Promise<void> => {
+  it('draws an empty whole without parts beside a measured one and keeps one entry without a legend', async (): Promise<void> => {
     const { fixture, host, group } = await setup([
       { key: 'a', label: 'Vide', display: '0', segments: [] },
+      { key: 'b', label: 'CRM', display: '2', segments: [{ key: 'info', value: 2, display: '2' }] },
     ]);
-    expect(parts(host)).toEqual([]);
+    expect(parts(host)).toHaveLength(1);
     group.dispatchEvent(new FocusEvent('focus'));
     group.dispatchEvent(new KeyboardEvent('keydown', { key: 'End' }));
     await fixture.whenStable();
-    expect(host.querySelector('[aria-live="polite"]')?.textContent?.trim()).toBe('');
+    expect(
+      host.querySelector('[aria-live="polite"]')?.textContent?.replace(/\s+/g, ' ').trim(),
+    ).toBe('2 Info · 100 % · CRM');
     fixture.componentRef.setInput('legend', [LEGEND[0]]);
     fixture.componentRef.setInput('stale', true);
     await fixture.whenStable();
     expect(host.querySelector('[data-slot="chart-legend"]')).toBeNull();
     expect(host.hasAttribute('data-stale')).toBe(true);
+  });
+
+  it('keeps its room with a note on the empty surface when there is nothing to draw', async (): Promise<void> => {
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'fr' }] });
+    const fixture: ComponentFixture<StackedBarsComponent> =
+      TestBed.createComponent(StackedBarsComponent);
+    // Wholes of zero have nothing to split either.
+    fixture.componentRef.setInput('rows', [
+      { key: 'a', label: 'Clics', display: '0', segments: [] },
+    ]);
+    fixture.componentRef.setInput('legend', []);
+    fixture.componentRef.setInput('label', 'Appareils');
+    await fixture.whenStable();
+    const note: HTMLElement | null = (fixture.nativeElement as HTMLElement).querySelector('p');
+    expect(note?.textContent?.trim()).toBe('Aucune donnée à afficher.');
+    expect(note?.className).toContain('bg-surface-raised');
+    expect(note?.className).toContain('h-20');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('table, ul, [role="group"]'),
+    ).toBeNull();
   });
 });

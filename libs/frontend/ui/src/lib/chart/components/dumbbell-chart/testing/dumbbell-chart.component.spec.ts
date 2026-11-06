@@ -88,4 +88,22 @@ describe('DumbbellChartComponent', (): void => {
     await fixture.whenStable();
     expect(host.querySelectorAll('li .ring-surface')).toHaveLength(0);
   });
+
+  it('keeps its room with a note on the empty surface when there is nothing to draw', async (): Promise<void> => {
+    TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: 'fr' }] });
+    const fixture: ComponentFixture<DumbbellChartComponent> =
+      TestBed.createComponent(DumbbellChartComponent);
+    fixture.componentRef.setInput('rows', []);
+    fixture.componentRef.setInput('label', 'Scores');
+    fixture.componentRef.setInput('startLabel', 'Mobile');
+    fixture.componentRef.setInput('endLabel', 'Ordinateur');
+    await fixture.whenStable();
+    const note: HTMLElement | null = (fixture.nativeElement as HTMLElement).querySelector('p');
+    expect(note?.textContent?.trim()).toBe('Aucune donnée à afficher.');
+    expect(note?.className).toContain('bg-surface-raised');
+    expect(note?.className).toContain('h-24');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('table, ul, [role="group"]'),
+    ).toBeNull();
+  });
 });

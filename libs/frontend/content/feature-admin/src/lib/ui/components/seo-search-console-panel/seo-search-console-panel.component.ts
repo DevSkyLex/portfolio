@@ -12,6 +12,8 @@ import {
 } from '@angular/core';
 import type { SearchConsoleData } from '@vfortin/content-web-data-access/admin';
 import {
+  EMPTY_IMPORTS,
+  DataTableEmptyDirective,
   AreaChartComponent,
   ColumnChartComponent,
   DataTableComponent,
@@ -26,18 +28,20 @@ import {
   type StackedBarRow,
   type StackedBarSegment,
 } from '@vfortin/ui';
+import { lucideFileText, lucideSearch } from '@ng-icons/lucide';
+import { NgIcon } from '@ng-icons/core';
 import {
   SEO_DEVICE_LABELS,
   SEO_DEVICE_ORDER,
 } from '@internal/content-web-feature-admin/lib/constants/seo-dashboard-labels.constants';
-import type { SeoDelta } from '@internal/content-web-feature-admin/lib/models/seo-delta/seo-delta.interface';
 import type { SeoFormatter } from '@internal/content-web-feature-admin/lib/models/seo-formatter/seo-formatter.interface';
 import { SeoKpiTileComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-kpi-tile/seo-kpi-tile.component';
 import { SeoSectionHeaderComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-section-header/seo-section-header.component';
+import type { SeoFigure } from '@internal/content-web-feature-admin/lib/models/seo-figure/seo-figure.interface';
 import {
-  positionDelta,
-  relativeDelta,
-} from '@internal/content-web-feature-admin/lib/utils/seo-delta/seo-delta.utils';
+  searchConsoleFigures,
+  seoComparison,
+} from '@internal/content-web-feature-admin/lib/utils/seo-figures/seo-figures.utils';
 import { seoFormatter } from '@internal/content-web-feature-admin/lib/utils/seo-format/seo-format.utils';
 
 /**
@@ -47,19 +51,6 @@ import { seoFormatter } from '@internal/content-web-feature-admin/lib/utils/seo-
  * One query, page or device of the report.
  */
 type SearchRow = SearchConsoleData['queries'][number];
-
-/**
- * Interface Kpi
- *
- * @description
- * One stat tile of the section.
- */
-interface Kpi {
-  readonly id: string;
-  readonly label: string;
-  readonly value: string;
-  readonly delta: SeoDelta | null;
-}
 
 /**
  * Function pagePath
@@ -99,7 +90,10 @@ function pagePath(url: string): string {
     AreaChartComponent,
     ColumnChartComponent,
     DataTableComponent,
+    DataTableEmptyDirective,
+    EMPTY_IMPORTS,
     LineChartComponent,
+    NgIcon,
     ScatterChartComponent,
     SeoKpiTileComponent,
     SeoSectionHeaderComponent,
@@ -111,6 +105,18 @@ function pagePath(url: string): string {
 })
 export class SeoSearchConsolePanelComponent {
   // #region Properties
+  /**
+   * Property icons
+   * @readonly
+   *
+   * @description
+   * Lucide icons of the empty tables.
+   */
+  protected readonly icons: { readonly query: string; readonly page: string } = {
+    query: lucideSearch,
+    page: lucideFileText,
+  } as const;
+
   /**
    * Property data
    * @readonly
@@ -148,6 +154,21 @@ export class SeoSearchConsolePanelComponent {
   protected readonly format: SeoFormatter = seoFormatter(inject<string>(LOCALE_ID));
 
   /**
+   * Property strip
+   * @readonly
+   *
+   * @description
+   * Whether the strip of key figures shows above the charts: off while the dashboard's side panel
+   * lists them (D51).
+   *
+   * @type {InputSignalWithTransform<boolean, unknown>}
+   */
+  public readonly strip: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
+    true,
+    { transform: booleanAttribute },
+  );
+
+  /**
    * Property comparison
    * @readonly
    *
@@ -156,51 +177,22 @@ export class SeoSearchConsolePanelComponent {
    *
    * @type {Signal<string>}
    */
-  protected readonly comparison: Signal<string> = computed<string>((): string => {
-    const previous: { start: string; end: string } = this.data().window.previous;
-    const span: string = this.format.span(previous.start, previous.end);
-    return $localize`:@@admin.dashboard.kpi.comparison:vs ${span}:span:`;
-  });
+  protected readonly comparison: Signal<string> = computed<string>((): string =>
+    seoComparison(this.data().window.previous, this.format),
+  );
 
   /**
    * Property kpis
    * @readonly
    *
    * @description
-   * Stat tiles of the window.
+   * Key figures of the window.
    *
-   * @type {Signal<readonly Kpi[]>}
+   * @type {Signal<readonly SeoFigure[]>}
    */
-  protected readonly kpis: Signal<readonly Kpi[]> = computed<readonly Kpi[]>((): readonly Kpi[] => {
-    const { totals, previous } = this.data();
-    const format: SeoFormatter = this.format;
-    return [
-      {
-        id: 'clicks',
-        label: $localize`:@@admin.dashboard.searchConsole.clicks:Clics`,
-        value: format.count(totals.clicks),
-        delta: relativeDelta(totals.clicks, previous.clicks, format),
-      },
-      {
-        id: 'impressions',
-        label: $localize`:@@admin.dashboard.searchConsole.impressions:Impressions`,
-        value: format.count(totals.impressions),
-        delta: relativeDelta(totals.impressions, previous.impressions, format),
-      },
-      {
-        id: 'ctr',
-        label: $localize`:@@admin.dashboard.searchConsole.ctr:CTR`,
-        value: format.percent(totals.ctr),
-        delta: relativeDelta(totals.ctr, previous.ctr, format),
-      },
-      {
-        id: 'position',
-        label: $localize`:@@admin.dashboard.searchConsole.position:Position moyenne`,
-        value: totals.position > 0 ? format.decimal(totals.position) : '—',
-        delta: positionDelta(totals.position, previous.position, format),
-      },
-    ];
-  });
+  protected readonly kpis: Signal<readonly SeoFigure[]> = computed<readonly SeoFigure[]>(
+    (): readonly SeoFigure[] => searchConsoleFigures(this.data(), this.format),
+  );
 
   /**
    * Property clicks

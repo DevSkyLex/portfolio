@@ -17,6 +17,7 @@ import {
   CHART_TONE_FILLS,
   CHART_TONE_STROKES,
   CHART_TOOLTIP_CLASSES,
+  CHART_EMPTY_CLASSES,
 } from '@internal/ui/lib/chart/constants/chart-tone.constants';
 import type { ChartPoint } from '@internal/ui/lib/chart/models/chart/chart-point.interface';
 import type { ChartSeries } from '@internal/ui/lib/chart/models/chart/chart-series.interface';
@@ -79,128 +80,132 @@ interface AxisLabel {
     'data-slot': 'line-chart',
   },
   template: `
-    @if (series().length > 1) {
-      <ul
-        class="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px]/4 text-fg-muted"
-        data-slot="chart-legend"
-      >
-        @for (line of lines(); track line.series.key) {
-          <li class="flex items-center gap-1.5">
-            <span [class]="line.swatch" aria-hidden="true"></span>
-            {{ line.series.label }}
-          </li>
-        }
-      </ul>
-    }
-    <div
-      class="relative ms-10 h-36 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
-      tabindex="0"
-      role="group"
-      [attr.aria-label]="label()"
-      [attr.aria-describedby]="hintId"
-      (pointermove)="pointerMoved($event)"
-      (pointerleave)="pointerLeft()"
-      (focus)="focusEntered()"
-      (blur)="focusLeft()"
-      (keydown)="keyPressed($event)"
-    >
-      @for (tick of tickRows(); track tick.value) {
-        <div
-          class="pointer-events-none absolute inset-x-0 border-t border-border"
-          aria-hidden="true"
-          [style.bottom.%]="tick.bottom"
+    @if (empty()) {
+      <p [class]="emptyClasses">{{ emptyLabel() }}</p>
+    } @else {
+      @if (series().length > 1) {
+        <ul
+          class="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px]/4 text-fg-muted"
+          data-slot="chart-legend"
         >
-          <span
-            class="absolute end-full top-0 me-2 -translate-y-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
-            >{{ tick.label }}</span
-          >
-        </div>
+          @for (line of lines(); track line.series.key) {
+            <li class="flex items-center gap-1.5">
+              <span [class]="line.swatch" aria-hidden="true"></span>
+              {{ line.series.label }}
+            </li>
+          }
+        </ul>
       }
-      <svg
-        class="pointer-events-none absolute inset-0 size-full overflow-visible"
-        viewBox="0 0 1000 100"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-        focusable="false"
+      <div
+        class="relative ms-10 h-36 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
+        tabindex="0"
+        role="group"
+        [attr.aria-label]="label()"
+        [attr.aria-describedby]="hintId"
+        (pointermove)="pointerMoved($event)"
+        (pointerleave)="pointerLeft()"
+        (focus)="focusEntered()"
+        (blur)="focusLeft()"
+        (keydown)="keyPressed($event)"
       >
-        @for (line of lines(); track line.series.key) {
-          <path
-            [attr.class]="line.stroke"
-            fill="none"
-            stroke-width="2"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            vector-effect="non-scaling-stroke"
-            [attr.d]="line.path"
-          />
+        @for (tick of tickRows(); track tick.value) {
+          <div
+            class="pointer-events-none absolute inset-x-0 border-t border-border"
+            aria-hidden="true"
+            [style.bottom.%]="tick.bottom"
+          >
+            <span
+              class="absolute end-full top-0 me-2 -translate-y-1/2 text-[11px]/4 whitespace-nowrap text-fg-faint tabular-nums"
+              >{{ tick.label }}</span
+            >
+          </div>
         }
-      </svg>
-      @if (mark(); as current) {
-        <div
-          class="pointer-events-none absolute inset-y-0 w-px -translate-x-1/2 bg-border-strong"
+        <svg
+          class="pointer-events-none absolute inset-0 size-full overflow-visible"
+          viewBox="0 0 1000 100"
+          preserveAspectRatio="none"
           aria-hidden="true"
-          [style.left.%]="current.left"
-        ></div>
-        @for (value of current.values; track value.key) {
-          <span
-            [class]="value.dot"
+          focusable="false"
+        >
+          @for (line of lines(); track line.series.key) {
+            <path
+              [attr.class]="line.stroke"
+              fill="none"
+              stroke-width="2"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              vector-effect="non-scaling-stroke"
+              [attr.d]="line.path"
+            />
+          }
+        </svg>
+        @if (mark(); as current) {
+          <div
+            class="pointer-events-none absolute inset-y-0 w-px -translate-x-1/2 bg-border-strong"
             aria-hidden="true"
             [style.left.%]="current.left"
-            [style.bottom.%]="value.bottom"
-          ></span>
-        }
-        <div [class]="current.tooltipClasses" aria-hidden="true" [style.left.%]="current.left">
-          <span class="text-fg-muted">{{ current.label }}</span>
+          ></div>
           @for (value of current.values; track value.key) {
-            <span class="flex items-center gap-2">
-              <span [class]="value.swatch"></span>
-              <span class="font-medium tabular-nums">{{ value.display }}</span>
-              @if (series().length > 1) {
-                <span class="text-fg-muted">{{ value.label }}</span>
-              }
-            </span>
+            <span
+              [class]="value.dot"
+              aria-hidden="true"
+              [style.left.%]="current.left"
+              [style.bottom.%]="value.bottom"
+            ></span>
           }
-        </div>
-      }
-    </div>
-
-    <div class="relative ms-10 mt-2 h-4" aria-hidden="true">
-      @for (axis of axisLabels(); track axis.index) {
-        <span [class]="axis.classes" [style.left.%]="axis.left">{{ axis.label }}</span>
-      }
-    </div>
-
-    <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
-    <span class="sr-only" aria-live="polite">{{ announcement() }}</span>
-
-    <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
-    <div class="sr-only">
-      <table>
-        <caption>
-          {{
-            label()
-          }}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">{{ xHeader() }}</th>
-            @for (line of series(); track line.key) {
-              <th scope="col">{{ line.label }}</th>
+          <div [class]="current.tooltipClasses" aria-hidden="true" [style.left.%]="current.left">
+            <span class="text-fg-muted">{{ current.label }}</span>
+            @for (value of current.values; track value.key) {
+              <span class="flex items-center gap-2">
+                <span [class]="value.swatch"></span>
+                <span class="font-medium tabular-nums">{{ value.display }}</span>
+                @if (series().length > 1) {
+                  <span class="text-fg-muted">{{ value.label }}</span>
+                }
+              </span>
             }
-          </tr>
-        </thead>
-        <tbody>
-          @for (x of xLabels(); track $index; let index = $index) {
+          </div>
+        }
+      </div>
+
+      <div class="relative ms-10 mt-2 h-4" aria-hidden="true">
+        @for (axis of axisLabels(); track axis.index) {
+          <span [class]="axis.classes" [style.left.%]="axis.left">{{ axis.label }}</span>
+        }
+      </div>
+
+      <span class="sr-only" [id]="hintId">{{ keyboardHint() }}</span>
+      <span class="sr-only" aria-live="polite">{{ announcement() }}</span>
+
+      <!-- A table grows past the 1 px of sr-only: the wrapper is the hidden box. -->
+      <div class="sr-only">
+        <table>
+          <caption>
+            {{
+              label()
+            }}
+          </caption>
+          <thead>
             <tr>
-              <th scope="row">{{ x }}</th>
+              <th scope="col">{{ xHeader() }}</th>
               @for (line of series(); track line.key) {
-                <td>{{ line.points[index]?.display ?? '' }}</td>
+                <th scope="col">{{ line.label }}</th>
               }
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (x of xLabels(); track $index; let index = $index) {
+              <tr>
+                <th scope="row">{{ x }}</th>
+                @for (line of series(); track line.key) {
+                  <td>{{ line.points[index]?.display ?? '' }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   `,
 })
 export class LineChartComponent {
@@ -236,6 +241,18 @@ export class LineChartComponent {
     false,
     { transform: booleanAttribute },
   );
+
+  /** Note shown in place of the chart when it has nothing to draw. */
+  public readonly emptyLabel: InputSignal<string> = input<string>(
+    $localize`:@@ui.chart.empty:Aucune donnée à afficher.`,
+  );
+
+  /** Whether there is nothing to draw: the empty note keeps the chart's room instead. */
+  protected readonly empty: Signal<boolean> = computed<boolean>(
+    (): boolean => this.xLabels().length === 0,
+  );
+
+  protected readonly emptyClasses: string = cn(CHART_EMPTY_CLASSES, 'h-40');
 
   /** Extra host classes. */
   public readonly class: InputSignal<string> = input<string>('');

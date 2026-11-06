@@ -7,18 +7,20 @@
     description="Clics, impressions, taux de clic et position moyenne de la période, comparés à la période précédente."
     i18n-description="@@admin.dashboard.searchConsole.performanceHint"
   />
-  <div class="overflow-hidden border-b border-border">
-    <div class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-4">
-      @for (kpi of kpis(); track kpi.id) {
-        <content-seo-kpi-tile
-          [label]="kpi.label"
-          [value]="kpi.value"
-          [delta]="kpi.delta"
-          [comparison]="comparison()"
-        />
-      }
+  @if (strip()) {
+    <div class="overflow-hidden border-b border-border">
+      <div class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-4">
+        @for (kpi of kpis(); track kpi.id) {
+          <content-seo-kpi-tile
+            [label]="kpi.label"
+            [value]="kpi.value"
+            [delta]="kpi.delta"
+            [comparison]="comparison()"
+          />
+        }
+      </div>
     </div>
-  </div>
+  }
 
   <div class="overflow-hidden border-b border-border">
     <div class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2">
@@ -26,12 +28,10 @@
         class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
         aria-labelledby="sc-clicks"
       >
-        <h3
-          id="sc-clicks"
-          class="text-[13px]/5 font-medium text-fg"
-          i18n="@@admin.dashboard.searchConsole.clicksPerDay"
-        >
-          Clics par jour
+        <h3 id="sc-clicks" class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.dashboard.searchConsole.clicksPerDay"
+            >Clics par jour</ng-container
+          >
         </h3>
         <ui-column-chart
           label="Clics par jour"
@@ -47,12 +47,10 @@
         class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
         aria-labelledby="sc-impressions"
       >
-        <h3
-          id="sc-impressions"
-          class="text-[13px]/5 font-medium text-fg"
-          i18n="@@admin.dashboard.searchConsole.impressionsPerDay"
-        >
-          Impressions par jour
+        <h3 id="sc-impressions" class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.dashboard.searchConsole.impressionsPerDay"
+            >Impressions par jour</ng-container
+          >
         </h3>
         <ui-area-chart
           label="Impressions par jour"
@@ -68,12 +66,8 @@
         class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
         aria-labelledby="sc-ctr"
       >
-        <h3
-          id="sc-ctr"
-          class="text-[13px]/5 font-medium text-fg"
-          i18n="@@admin.dashboard.searchConsole.ctrPerDay"
-        >
-          CTR par jour
+        <h3 id="sc-ctr" class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.dashboard.searchConsole.ctrPerDay">CTR par jour</ng-container>
         </h3>
         <ui-line-chart
           label="CTR par jour"
@@ -88,12 +82,10 @@
         aria-labelledby="sc-position"
       >
         <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h3
-            id="sc-position"
-            class="text-[13px]/5 font-medium text-fg"
-            i18n="@@admin.dashboard.searchConsole.positionPerDay"
-          >
-            Position moyenne par jour
+          <h3 id="sc-position" class="text-[13px]/5 font-medium text-fg">
+            <ng-container i18n="@@admin.dashboard.searchConsole.positionPerDay"
+              >Position moyenne par jour</ng-container
+            >
           </h3>
           <p
             class="text-[12px]/4 text-fg-faint"
@@ -130,12 +122,10 @@
         aria-labelledby="sc-opportunities"
       >
         <div class="flex flex-col gap-1">
-          <h3
-            id="sc-opportunities"
-            class="text-[13px]/5 font-medium text-fg"
-            i18n="@@admin.dashboard.searchConsole.ctrByPosition"
-          >
-            CTR selon la position, par requête
+          <h3 id="sc-opportunities" class="text-[13px]/5 font-medium text-fg">
+            <ng-container i18n="@@admin.dashboard.searchConsole.ctrByPosition"
+              >CTR selon la position, par requête</ng-container
+            >
           </h3>
           <p
             class="text-[12px]/4 text-fg-faint"
@@ -163,12 +153,10 @@
         class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
         aria-labelledby="sc-devices"
       >
-        <h3
-          id="sc-devices"
-          class="text-[13px]/5 font-medium text-fg"
-          i18n="@@admin.dashboard.searchConsole.devices"
-        >
-          Clics par appareil
+        <h3 id="sc-devices" class="text-[13px]/5 font-medium text-fg">
+          <ng-container i18n="@@admin.dashboard.searchConsole.devices"
+            >Clics par appareil</ng-container
+          >
         </h3>
         <ui-stacked-bars
           label="Clics par appareil"
@@ -206,7 +194,23 @@
     [searchable]="false"
     [columnMenu]="false"
     [paginated]="false"
-  />
+  >
+    <ng-template uiDataTableEmpty let-layout>
+      <div uiEmpty [layout]="layout">
+        <div uiEmptyHeader>
+          <div uiEmptyMedia variant="icon">
+            <ng-icon [svg]="icons.query" size="16" />
+          </div>
+          <p uiEmptyTitle i18n="@@admin.dashboard.searchConsole.queries.empty.title">
+            Aucune requête sur la période
+          </p>
+          <p uiEmptyDescription i18n="@@admin.dashboard.searchConsole.queries.empty.description">
+            Search Console n’a relevé aucune recherche menant au site pendant ces jours.
+          </p>
+        </div>
+      </div>
+    </ng-template>
+  </ui-data-table>
 </section>
 
 <section aria-labelledby="sc-pages">
@@ -232,5 +236,21 @@
     [searchable]="false"
     [columnMenu]="false"
     [paginated]="false"
-  />
+  >
+    <ng-template uiDataTableEmpty let-layout>
+      <div uiEmpty [layout]="layout">
+        <div uiEmptyHeader>
+          <div uiEmptyMedia variant="icon">
+            <ng-icon [svg]="icons.page" size="16" />
+          </div>
+          <p uiEmptyTitle i18n="@@admin.dashboard.searchConsole.pages.empty.title">
+            Aucune page sur la période
+          </p>
+          <p uiEmptyDescription i18n="@@admin.dashboard.searchConsole.pages.empty.description">
+            Aucune page du site n’est apparue dans les résultats de Google pendant ces jours.
+          </p>
+        </div>
+      </div>
+    </ng-template>
+  </ui-data-table>
 </section>

@@ -933,6 +933,26 @@ export class DataTableComponent<T> {
    *
    * @type {Signal<string>}
    */
+  /**
+   * Property emptyFrameClasses
+   * @readonly
+   *
+   * @description
+   * Box of the empty and no-result states under the heading row: transparent in a framed table, whose
+   * border closes it; in a flush table a bottom hairline, like the rows', closes the table where a row
+   * would end. A `fill` layout lets it grow into the rest of the column.
+   *
+   * @type {Signal<string>}
+   */
+  protected readonly emptyFrameClasses: Signal<string> = computed<string>((): string =>
+    this.framed()
+      ? 'contents'
+      : cn(
+          'sticky start-0 block border-b border-border',
+          this.fillsEmpty() && 'flex flex-1 flex-col',
+        ),
+  );
+
   protected readonly emptyClasses: Signal<string> = computed<string>((): string => {
     if (this.framed()) return 'sticky start-0 px-3';
     return this.emptyLayout() === 'inline'
