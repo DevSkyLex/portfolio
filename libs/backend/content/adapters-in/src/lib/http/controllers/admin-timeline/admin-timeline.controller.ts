@@ -50,7 +50,7 @@ import {
  * Administration of the education and experience entries under
  * `/api/content/admin/timeline/:kind`. Entry writes take the entry version in `If-Match`; a reorder
  * takes the list version, the `ETag` of the list and of the reorder and delete answers. Every write
- * queues a site rebuild, since entries are always public. `@AdminOnly` runs before the body pipes,
+ * advances the public content revision. `@AdminOnly` runs before the body pipes,
  * so an anonymous call is answered 401 whatever it sends.
  */
 @Controller('content/admin/timeline/:kind')

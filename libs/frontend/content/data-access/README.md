@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`content-web-data-access` owns the frontend content boundary. It adapts the active locale's build
+`content-web-data-access` owns the frontend content boundary. It adapts the active locale's request
 snapshot into public display models and encapsulates administration HTTP, optimistic concurrency and
 request state. Server validation and administration capabilities have narrow entries.
 
@@ -18,7 +18,7 @@ request state. Server validation and administration capabilities have narrow ent
 The root exposes public snapshot loading/provision, `loadSiteContent()`, `SiteContentService` (with the
 legal documents, D44) and `SiteLinksService` (the public links for the site layout, filled once the
 snapshot is read). `/server` supplies the
-prerender contract validator. `/admin` exposes administration view models, editor adapters, the
+SSR contract validator, bounded public upstream reader and runtime sitemap generator. `/admin` exposes administration view models, editor adapters, the
 article-document helpers (D40), the project and media API services and `AdminProjectsStore`, and the
 timeline administration (`AdminTimelineEntry`, `TimelineEntryDraft` conversion, `AdminTimelineApiService`,
 `AdminTimelineStore`, which keeps the entries most recent first), and the « Informations » and « Légal »
@@ -28,18 +28,18 @@ model and provider for shell composition; the shell does not import administrati
 ## Provider scope
 
 `SiteContentService` is application-scoped; public routes await `loadSiteContent()` before its consumers
-activate. Readiness is lazy and shared per locale, and prerender parameter discovery awaits it explicitly.
+activate. Readiness is lazy and shared only inside the current application. Each server request gets
+its own mutable snapshot state even when provider definitions are reused by Angular's engine.
 Administration pages provide their own stores. The protected administration route binds the navigation
 capability. HTTP services own transport, not view state.
 
-`/admin` also exports `AdminPublicationApiService`, `AdminPublicationStatus` and the section-scoped
-`AdminPublicationStore`. Publication commands quote the observed status version. Obsolete reads cannot
-replace accepted writes, and a conflict requires a deliberate refresh rather than an automatic retry.
-
 ## Invariants
 
-- Public snapshots are read-only for a build and adapted to `content-web-model` for the active locale.
-- Missing public content must not prevent administration startup or defeat prerendered readability.
+- Public snapshots are read-only for a request and adapted to `content-web-model` for the active locale.
+- SSR fetches the configured content origin with a timeout, schema validation and no user credentials;
+  failures propagate rather than falling back to committed content.
+- Missing public content must not prevent administration startup. Hydration consumes TransferState
+  without a duplicate public API request.
 - Runtime schema validation stays behind `/server` and outside browser entries (D10).
 - Replaceable reads discard obsolete responses; writes retain observed `If-Match` versions.
 - A 412 remains a visible conflict, never an automatic overwrite.

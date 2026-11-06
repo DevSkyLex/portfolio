@@ -5,7 +5,7 @@ import { ManagePublication } from '@vfortin/content-application';
 import type { PublicationStatusDto } from '@vfortin/content-contracts';
 import type { Response } from 'express';
 
-/** Authenticated administration of explicit grouped publication. */
+/** Legacy authenticated publication endpoints; starting a manual batch is no longer supported. */
 @Controller('content/admin/publication')
 @AdminOnly()
 export class AdminPublicationController {

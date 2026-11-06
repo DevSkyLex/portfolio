@@ -27,7 +27,7 @@ export class ReviseProject {
    * @constructor
    *
    * @description
-   * Wires the unit of work and timestamp source for project, media and rebuild request writes.
+   * Wires the unit of work and timestamp source for project, media and revision writes.
    *
    * @param {ContentUnitOfWork} unitOfWork - Atomic content write boundary.
    * @param {Clock} clock - Request and unlink timestamp source.

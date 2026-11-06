@@ -1036,9 +1036,11 @@ export interface SeoReportStore {
  *
  * @description
  * A configured source with its reader, or the settings still to provide (environment variable
- * names, shown to the owner as `not-configured`).
+ * names, shown to the owner as `not-configured`). `demo` marks a stand-in reader of demonstration
+ * figures (D52), which the dashboard announces.
  */
-export type SeoSourceSetup<R> = { readonly reader: R } | { readonly missing: readonly string[] };
+export type SeoSourceSetup<R> =
+  { readonly reader: R; readonly demo?: boolean } | { readonly missing: readonly string[] };
 
 /**
  * Interface SeoSources

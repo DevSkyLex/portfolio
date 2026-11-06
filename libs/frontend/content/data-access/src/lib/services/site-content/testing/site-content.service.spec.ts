@@ -344,7 +344,7 @@ describe('provideContentSnapshotLoader', (): void => {
     expect(transfer.hasKey(contentSnapshotStateKey('en'))).toBe(false);
   });
 
-  it('serializes a cached chunk into every prerender application rather than only the first page', async (): Promise<void> => {
+  it('loads fresh content for each server application even when providers are reused', async (): Promise<void> => {
     const load: Mock<ContentSnapshotLoader> = vi.fn(async () => ({
       ...base,
       locale: 'fr',
@@ -367,7 +367,7 @@ describe('provideContentSnapshotLoader', (): void => {
     TestBed.resetTestingModule();
     configureServer();
     await TestBed.runInInjectionContext(loadSiteContent);
-    expect(load).toHaveBeenCalledOnce();
+    expect(load).toHaveBeenCalledTimes(2);
     expect(TestBed.inject<TransferState>(TransferState).hasKey(contentSnapshotStateKey('fr'))).toBe(
       true,
     );

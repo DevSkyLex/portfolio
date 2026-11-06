@@ -666,7 +666,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">869</context>
+          <context context-type="linenumber">867</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.routeTitle" datatype="html">
@@ -839,7 +839,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">86,88</context>
+          <context context-type="linenumber">84,86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.action.unpublish" datatype="html">
@@ -858,15 +858,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">84,86</context>
+          <context context-type="linenumber">82,84</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">777</context>
+          <context context-type="linenumber">775</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">309</context>
+          <context context-type="linenumber">307</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.action.feature" datatype="html">
@@ -1282,132 +1282,136 @@
         <source>La clé du compte de service est introuvable.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.credentialsInvalid" datatype="html">
         <source>La clé du compte de service est illisible.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">14</context>
+          <context context-type="linenumber">19</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.credentialsRejected" datatype="html">
         <source>Google a refusé la clé du compte de service.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">15</context>
+          <context context-type="linenumber">20</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.permissionDenied" datatype="html">
         <source>Le compte de service n’a pas accès à la propriété.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">16</context>
+          <context context-type="linenumber">21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.notFound" datatype="html">
         <source>La propriété est introuvable.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">17</context>
+          <context context-type="linenumber">22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.badRequest" datatype="html">
         <source>Google a refusé la requête.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">18</context>
+          <context context-type="linenumber">23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.quotaExceeded" datatype="html">
         <source>Le quota de l’API Google est atteint.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">19</context>
+          <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.timeout" datatype="html">
         <source>Google n’a pas répondu à temps.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">20</context>
+          <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.network" datatype="html">
         <source>Google est injoignable depuis le serveur.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">21</context>
+          <context context-type="linenumber">26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.upstream" datatype="html">
         <source>Google a répondu par une erreur.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.invalidResponse" datatype="html">
         <source>La réponse de Google est inattendue.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">23</context>
+          <context context-type="linenumber">28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.sourceError.unexpected" datatype="html">
         <source>Erreur inattendue pendant la collecte.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.range.7d" datatype="html">
         <source>7 jours</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">36</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.range.28d" datatype="html">
         <source>28 jours</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">37</context>
+          <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.range.90d" datatype="html">
         <source>90 jours</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.device.desktop" datatype="html">
         <source>Ordinateur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">51</context>
+          <context context-type="linenumber">56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.device.mobile" datatype="html">
         <source>Mobile</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.device.tablet" datatype="html">
         <source>Tablette</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">53</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.strategy.mobile" datatype="html">
         <source>Mobile</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
           <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
@@ -1415,53 +1419,134 @@
         <source>Ordinateur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">66,67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.vitals.category.good" datatype="html">
         <source>Bon</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">80</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.vitals.category.needsImprovement" datatype="html">
         <source>À améliorer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">101</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.vitals.category.poor" datatype="html">
         <source>Mauvais</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">82</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.severity.error" datatype="html">
         <source>Erreur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">94</context>
+          <context context-type="linenumber">114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.severity.warning" datatype="html">
         <source>Avertissement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">115</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.severity.info" datatype="html">
         <source>Info</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.searchTitleMissing" datatype="html">
+        <source>Titre de recherche absent</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">128</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.searchTitleTooShort" datatype="html">
+        <source>Titre de recherche trop court</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">129</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.searchTitleTooLong" datatype="html">
+        <source>Titre de recherche trop long</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.searchDescriptionMissing" datatype="html">
+        <source>Description de recherche absente</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">131</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.searchDescriptionTooShort" datatype="html">
+        <source>Description de recherche trop courte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.searchDescriptionTooLong" datatype="html">
+        <source>Description de recherche trop longue</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">133</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.keywordsMissing" datatype="html">
+        <source>Mots-clés absents</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.coverMissing" datatype="html">
+        <source>Couverture absente</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">135</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.coverAltMissing" datatype="html">
+        <source>Couverture sans texte alternatif</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">136</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.imageAltMissing" datatype="html">
+        <source>Images sans texte alternatif</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">137</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.code.translationMissing" datatype="html">
+        <source>Traduction manquante</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.content.rebuildNotice" datatype="html">
-        <source>Les modifications seront visibles après publication et reconstruction du site.</source>
+        <source>Le site sera mis à jour automatiquement après les modifications.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/site-rebuild-notice.constants.ts</context>
           <context context-type="linenumber">10</context>
@@ -2225,7 +2310,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.html</context>
-          <context context-type="linenumber">7,8</context>
+          <context context-type="linenumber">5,6</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.properties.status" datatype="html">
@@ -2267,67 +2352,109 @@
           <context context-type="linenumber">80,81</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.topPages" datatype="html">
-        <source> Pages les plus vues </source>
+      <trans-unit id="admin.dashboard.analytics.traffic" datatype="html">
+        <source>Fréquentation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
-          <context context-type="linenumber">32,35</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.trafficHint" datatype="html">
+        <source>Visiteurs, sessions et pages vues de la période, comparés à la période précédente.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.daily" datatype="html">
+        <source> Utilisateurs, sessions et vues par jour </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">36,38</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
-          <context context-type="linenumber">36,37</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.origin" datatype="html">
+        <source>Provenance des visites</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">53,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.originHint" datatype="html">
+        <source>Jours de visite, canaux d’acquisition et pays des sessions.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.weekdays" datatype="html">
+        <source> Sessions par jour de la semaine </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">71,74</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">74,75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.channels" datatype="html">
         <source> Sessions par canal </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
-          <context context-type="linenumber">50,53</context>
+          <context context-type="linenumber">90,93</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
-          <context context-type="linenumber">53,54</context>
+          <context context-type="linenumber">93,94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.countries" datatype="html">
         <source> Sessions par pays </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
-          <context context-type="linenumber">61,64</context>
+          <context context-type="linenumber">108,111</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
-          <context context-type="linenumber">64,65</context>
+          <context context-type="linenumber">111,112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.topPages" datatype="html">
+        <source>Pages les plus vues</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">124,125</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">134,135</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.topPagesHint" datatype="html">
+        <source>Les pages du site les plus consultées de la période et leurs visiteurs.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">126,127</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.kpi.comparison" datatype="html">
         <source>vs <x id="span" equiv-text="span"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">153</context>
+          <context context-type="linenumber">159</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">147</context>
+          <context context-type="linenumber">162</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.activeUsers" datatype="html">
         <source>Utilisateurs actifs</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">171</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">228</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">301</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.sessions" datatype="html">
-        <source>Sessions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
           <context context-type="linenumber">177</context>
@@ -2336,9 +2463,13 @@
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
           <context context-type="linenumber">234</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
+          <context context-type="linenumber">333</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.views" datatype="html">
-        <source>Vues</source>
+      <trans-unit id="admin.dashboard.analytics.sessions" datatype="html">
+        <source>Sessions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
           <context context-type="linenumber">183</context>
@@ -2347,168 +2478,223 @@
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
           <context context-type="linenumber">240</context>
         </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.views" datatype="html">
+        <source>Vues</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">292</context>
+          <context context-type="linenumber">189</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
+          <context context-type="linenumber">246</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
+          <context context-type="linenumber">323</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.engagementRate" datatype="html">
         <source>Taux d’engagement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">189</context>
+          <context context-type="linenumber">195</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.averageEngagement" datatype="html">
         <source>Durée d’engagement moyenne</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">195</context>
+          <context context-type="linenumber">201</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.usersPerDay" datatype="html">
-        <source>Utilisateurs actifs par jour</source>
+      <trans-unit id="admin.dashboard.analytics.sessionCount.one" datatype="html">
+        <source><x id="count" equiv-text="this.format.count(value)"/> session</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">227</context>
+          <context context-type="linenumber">269</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.sessionsPerDay" datatype="html">
-        <source>Sessions par jour</source>
+      <trans-unit id="admin.dashboard.analytics.sessionCount.other" datatype="html">
+        <source><x id="count" equiv-text="this.format.count(value)"/> sessions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">233</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.viewsPerDay" datatype="html">
-        <source>Vues par jour</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">239</context>
+          <context context-type="linenumber">270</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.page" datatype="html">
         <source>Page</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
-          <context context-type="linenumber">285</context>
+          <context context-type="linenumber">313</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">280</context>
+          <context context-type="linenumber">407</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
-          <context context-type="linenumber">220</context>
+          <context context-type="linenumber">384</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.summary" datatype="html">
+        <source>Synthèse de l’audit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.summaryHint" datatype="html">
+        <source>Problèmes relevés sur les textes de recherche, les images et les traductions des projets publiés.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.byProject" datatype="html">
+        <source> Problèmes par projet </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">32,34</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.project" datatype="html">
+        <source>Projet</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
+          <context context-type="linenumber">342</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.byKind" datatype="html">
+        <source> Problèmes par type </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">53,55</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">56,57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.caption" datatype="html">
         <source>Problèmes relevés</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
-          <context context-type="linenumber">11,12</context>
+          <context context-type="linenumber">69,70</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">79,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.issuesHint" datatype="html">
+        <source>Un problème par ligne, le plus grave d’abord ; filtrez par gravité ou cherchez un projet.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">71,72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.empty.title" datatype="html">
         <source>Aucun problème relevé</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
-          <context context-type="linenumber">44,45</context>
+          <context context-type="linenumber">113,114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.empty.description" datatype="html">
         <source> Les textes de recherche, les images et les traductions des projets publiés sont complets. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
-          <context context-type="linenumber">46,49</context>
+          <context context-type="linenumber">115,118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.none.title" datatype="html">
         <source>Aucun projet publié</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
-          <context context-type="linenumber">50,51</context>
+          <context context-type="linenumber">119,120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.none.description" datatype="html">
         <source> L’audit porte sur les projets publiés : publiez-en un pour l’analyser. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
-          <context context-type="linenumber">52,56</context>
+          <context context-type="linenumber">121,124</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.totals.errors" datatype="html">
         <source>Erreurs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">171</context>
+          <context context-type="linenumber">185</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.totals.warnings" datatype="html">
         <source>Avertissements</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">176</context>
+          <context context-type="linenumber">190</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.totals.infos" datatype="html">
         <source>Infos</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">181</context>
+          <context context-type="linenumber">195</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.totals.published" datatype="html">
         <source>Projets publiés</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">186</context>
+          <context context-type="linenumber">200</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.totals.drafts" datatype="html">
         <source>Brouillons</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">191</context>
+          <context context-type="linenumber">205</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.totals.sitemap" datatype="html">
         <source>URL du sitemap</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">196</context>
+          <context context-type="linenumber">210</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.severity" datatype="html">
         <source>Gravité</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">245</context>
+          <context context-type="linenumber">334</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">282</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.audit.project" datatype="html">
-        <source>Projet</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">252</context>
+          <context context-type="linenumber">374</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.locale" datatype="html">
         <source>Langue</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">258</context>
+          <context context-type="linenumber">349</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.message" datatype="html">
         <source>Problème</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.ts</context>
-          <context context-type="linenumber">264</context>
+          <context context-type="linenumber">355</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.seo.generatedTags" datatype="html">
@@ -2541,121 +2727,234 @@
           <context context-type="linenumber">64,69</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.performance" datatype="html">
+        <source>Performance dans Google</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.performanceHint" datatype="html">
+        <source>Clics, impressions, taux de clic et position moyenne de la période, comparés à la période précédente.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.clicksPerDay" datatype="html">
         <source> Clics par jour </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">18,21</context>
+          <context context-type="linenumber">34,37</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">21,22</context>
+          <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.clicks" datatype="html">
         <source>Clics</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">40</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">165</context>
+          <context context-type="linenumber">180</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">319</context>
+          <context context-type="linenumber">371</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
+          <context context-type="linenumber">455</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.impressionsPerDay" datatype="html">
         <source> Impressions par jour </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">35,38</context>
+          <context context-type="linenumber">55,58</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">38,39</context>
+          <context context-type="linenumber">58,59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.impressions" datatype="html">
         <source>Impressions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">40,41</context>
+          <context context-type="linenumber">60,61</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">171</context>
+          <context context-type="linenumber">186</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">328</context>
+          <context context-type="linenumber">465</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.searchConsole.topQueries" datatype="html">
-        <source> Requêtes principales </source>
+      <trans-unit id="admin.dashboard.searchConsole.ctrPerDay" datatype="html">
+        <source> CTR par jour </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">52,55</context>
+          <context context-type="linenumber">76,79</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">56,57</context>
+          <context context-type="linenumber">79,80</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.searchConsole.topPages" datatype="html">
-        <source> Pages principales </source>
+      <trans-unit id="admin.dashboard.searchConsole.positionPerDay" datatype="html">
+        <source> Position moyenne par jour </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">69,72</context>
+          <context context-type="linenumber">96,99</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">73,74</context>
+          <context context-type="linenumber">106,107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.positionHint" datatype="html">
+        <source> Plus haut est meilleur </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">102,105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.reach" datatype="html">
+        <source>Requêtes et appareils</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">121,122</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.reachHint" datatype="html">
+        <source>Position et taux de clic de chaque requête, et appareils des clics.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">123,124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.ctrByPosition" datatype="html">
+        <source> CTR selon la position, par requête </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">138,141</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">149,150</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.ctrByPositionHint" datatype="html">
+        <source> Une requête bien placée mais peu cliquée appelle un meilleur titre ou une meilleure description. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">144,148</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.query" datatype="html">
+        <source>Requête</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">152</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
+          <context context-type="linenumber">393</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.positionShort" datatype="html">
+        <source>Position</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">153,154</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
+          <context context-type="linenumber">485</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.ctr" datatype="html">
+        <source>CTR</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">156</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
+          <context context-type="linenumber">192</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
+          <context context-type="linenumber">254</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
+          <context context-type="linenumber">475</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.devices" datatype="html">
         <source> Clics par appareil </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">88,91</context>
+          <context context-type="linenumber">171,174</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
-          <context context-type="linenumber">91,92</context>
+          <context context-type="linenumber">174,175</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.searchConsole.ctr" datatype="html">
-        <source>CTR</source>
+      <trans-unit id="admin.dashboard.searchConsole.topQueries" datatype="html">
+        <source>Requêtes principales</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">177</context>
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">189,190</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">337</context>
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">199,200</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.topQueriesHint" datatype="html">
+        <source>Les requêtes les plus cliquées de la période, avec leurs impressions, leur taux de clic et leur position.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">191,192</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.topPages" datatype="html">
+        <source>Pages principales</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">215,216</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">225,226</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.topPagesHint" datatype="html">
+        <source>Les pages du site qui reçoivent le plus de clics depuis Google.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">217,218</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.searchConsole.position" datatype="html">
         <source>Position moyenne</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">183</context>
+          <context context-type="linenumber">198</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.searchConsole.query" datatype="html">
-        <source>Requête</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">266</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.searchConsole.positionShort" datatype="html">
-        <source>Position</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.ts</context>
-          <context context-type="linenumber">346</context>
+          <context context-type="linenumber">279</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.state.notConfigured.title" datatype="html">
@@ -2714,40 +3013,149 @@
           <context context-type="linenumber">109,110</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.vitals.note" datatype="html">
-        <source> LCP, INP et CLS : 75e centile des visites réelles de Chrome (CrUX) sur 28 jours, ceux de l’origine quand l’adresse n’a pas assez de visites. Score labo : performance Lighthouse d’une mesure simulée.
-</source>
+      <trans-unit id="admin.dashboard.vitals.summary" datatype="html">
+        <source>Synthèse des performances</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
-          <context context-type="linenumber">2,8</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.summaryHint" datatype="html">
+        <source>Catégories des mesures terrain et scores de laboratoire des pages clés, sur mobile et sur ordinateur.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.distribution" datatype="html">
+        <source> Répartition des mesures </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">30,32</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.distributionHint" datatype="html">
+        <source> Part des pages et appareils mesurés dans chaque catégorie. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">33,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.metric" datatype="html">
+        <source>Mesure</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.scores" datatype="html">
+        <source> Score labo, mobile et ordinateur </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">55,57</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">62,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.scoresHint" datatype="html">
+        <source> Performance Lighthouse sur 100, d’une mesure simulée par page. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">58,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.pages" datatype="html">
+        <source>Mesures par page</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">79,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.note" datatype="html">
+        <source>LCP, INP et CLS : 75e centile des visites réelles de Chrome (CrUX) sur 28 jours, ceux de l’origine quand l’adresse n’a pas assez de visites. Score labo : performance Lighthouse d’une mesure simulée.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">81,82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.vitals.rowError" datatype="html">
         <source>Mesure impossible : <x id="INTERPOLATION" equiv-text="{{ row.error }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
-          <context context-type="linenumber">42,44</context>
+          <context context-type="linenumber">124,125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.vitals.origin" datatype="html">
         <source>Données terrain de l’origine</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
-          <context context-type="linenumber">46,50</context>
+          <context context-type="linenumber">128,132</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.dashboard.vitals.strategy" datatype="html">
-        <source>Appareil</source>
+      <trans-unit id="admin.dashboard.vitals.figures.measures" datatype="html">
+        <source>Mesures</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
-          <context context-type="linenumber">227</context>
+          <context context-type="linenumber">271</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.figures.failed" datatype="html">
+        <source>Mesures impossibles</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">276</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.figures.mobile" datatype="html">
+        <source>Score labo médian, mobile</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">283</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.figures.desktop" datatype="html">
+        <source>Score labo médian, ordinateur</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">288</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.vitals.score" datatype="html">
         <source>Score labo</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
-          <context context-type="linenumber">251</context>
+          <context context-type="linenumber">311</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">421</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.strategy" datatype="html">
+        <source>Appareil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">393</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.measureCount.one" datatype="html">
+        <source><x id="count" equiv-text="this.format.count(count)"/> mesure</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">452</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.measureCount.other" datatype="html">
+        <source><x id="count" equiv-text="this.format.count(count)"/> mesures</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">453</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.seo.socialPreview" datatype="html">
@@ -2895,19 +3303,19 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">47,49</context>
+          <context context-type="linenumber">45,47</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">541</context>
+          <context context-type="linenumber">539</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">319</context>
+          <context context-type="linenumber">317</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">362</context>
+          <context context-type="linenumber">360</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.selection.label" datatype="html">
@@ -3034,7 +3442,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.ts</context>
-          <context context-type="linenumber">292</context>
+          <context context-type="linenumber">290</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.form.editorLabel.fr" datatype="html">
@@ -3824,7 +4232,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">620</context>
+          <context context-type="linenumber">618</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.unsaved.keepEditing" datatype="html">
@@ -3835,7 +4243,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">622</context>
+          <context context-type="linenumber">620</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.form.copyFrench.confirmTitle" datatype="html">
@@ -4098,7 +4506,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">425</context>
+          <context context-type="linenumber">423</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.confirm.discard.confirm" datatype="html">
@@ -4116,7 +4524,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">427</context>
+          <context context-type="linenumber">425</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.form.inFrench" datatype="html">
@@ -4141,922 +4549,929 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">13,15</context>
+          <context context-type="linenumber">14,16</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.meta.fetched" datatype="html">
         <source>Dernière collecte Google le <x id="INTERPOLATION" equiv-text="{{ fetched }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">16,17</context>
+          <context context-type="linenumber">17,18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.meta.never" datatype="html">
         <source>Aucune collecte Google pour l’instant</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">18,20</context>
+          <context context-type="linenumber">19,21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.meta" datatype="html">
         <source>Search Console, audience, Core Web Vitals et audit SEO</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">21,25</context>
+          <context context-type="linenumber">22,26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.range.label" datatype="html">
         <source>Période</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">33,34</context>
+          <context context-type="linenumber">34,35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.running" datatype="html">
         <source>Actualisation…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">75,77</context>
+          <context context-type="linenumber">76,78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh" datatype="html">
         <source>Actualiser</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">78,80</context>
+          <context context-type="linenumber">79,81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.tabs" datatype="html">
+        <source>Rapports</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">84,85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.tabs.failed" datatype="html">
+        <source>(dernière collecte en échec)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">92,95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.loadError" datatype="html">
         <source> Impossible de charger le tableau de bord </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">91,93</context>
+          <context context-type="linenumber">105,107</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.retry" datatype="html">
         <source> Réessayer </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">103,105</context>
+          <context context-type="linenumber">117,119</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.pollError" datatype="html">
         <source> Le suivi de l’actualisation a été interrompu </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">113,115</context>
+          <context context-type="linenumber">127,129</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.reload" datatype="html">
         <source> Recharger </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">125,127</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.section.fetched" datatype="html">
-        <source>Collecté le <x id="INTERPOLATION" equiv-text="{{ fetchedLabel(fetchedAt) }}"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">147,148</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">179,180</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">206,207</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.title" datatype="html">
-        <source> Audience </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">171,173</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.audit.title" datatype="html">
-        <source> Audit SEO </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">224,227</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.audit.generated" datatype="html">
-        <source> Calculé le <x id="INTERPOLATION" equiv-text="{{ fetchedLabel(current.audit.generatedAt) }}"/> </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">230,232</context>
+          <context context-type="linenumber">139,141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.loading" datatype="html">
         <source>Chargement du tableau de bord…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
-          <context context-type="linenumber">237,239</context>
+          <context context-type="linenumber">187,189</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.title" datatype="html">
+        <source>Audience</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
+          <context context-type="linenumber">306</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.title" datatype="html">
+        <source>Audit SEO</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
+          <context context-type="linenumber">308</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.runningTooltip" datatype="html">
         <source>Collecte en cours auprès de Google…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
-          <context context-type="linenumber">311</context>
+          <context context-type="linenumber">369</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.tooSoonTooltip" datatype="html">
         <source>Prochaine actualisation possible à <x id="time" equiv-text="until"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
-          <context context-type="linenumber">314</context>
+          <context context-type="linenumber">372</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.tooltip" datatype="html">
         <source>Collecter Search Console, Analytics et PageSpeed maintenant</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
-          <context context-type="linenumber">315</context>
+          <context context-type="linenumber">373</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.done" datatype="html">
         <source>Tableau de bord actualisé.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
-          <context context-type="linenumber">378</context>
+          <context context-type="linenumber">437</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.tooSoon" datatype="html">
         <source>Actualisation trop rapprochée de la précédente.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
-          <context context-type="linenumber">421</context>
+          <context context-type="linenumber">503</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.tooSoonDescription" datatype="html">
         <source>Prochaine actualisation possible à <x id="time" equiv-text="this.format.time(outcome.retryAt)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
-          <context context-type="linenumber">424</context>
+          <context context-type="linenumber">506</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.tooSoonLater" datatype="html">
         <source>Réessayez dans quelques minutes.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
-          <context context-type="linenumber">425</context>
+          <context context-type="linenumber">507</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.refresh.failed" datatype="html">
         <source>L’actualisation n’a pas pu démarrer.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.ts</context>
-          <context context-type="linenumber">431</context>
+          <context context-type="linenumber">513</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.title" datatype="html">
         <source>Informations</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">9,13</context>
+          <context context-type="linenumber">7,11</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">15,16</context>
+          <context context-type="linenumber">13,14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.meta" datatype="html">
         <source>Textes de l’accueil et du À propos, liens publics</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">19,21</context>
+          <context context-type="linenumber">17,19</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">27,29</context>
+          <context context-type="linenumber">25,28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.version" datatype="html">
         <source>Version <x id="INTERPOLATION" equiv-text="{{ profile.version }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">22,23</context>
+          <context context-type="linenumber">20,21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.conflict.title" datatype="html">
         <source> Les informations ont été modifiées ailleurs depuis leur ouverture. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">41,43</context>
+          <context context-type="linenumber">39,41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.conflict.description" datatype="html">
         <source> Recharger remplace vos modifications. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">45,48</context>
+          <context context-type="linenumber">43,46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.conflict.reload" datatype="html">
         <source> Recharger </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">55,57</context>
+          <context context-type="linenumber">53,56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.loadError" datatype="html">
         <source> Impossible de charger les informations </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">74,76</context>
+          <context context-type="linenumber">72,74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.retry" datatype="html">
         <source> Réessayer </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">86,88</context>
+          <context context-type="linenumber">84,86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.loading" datatype="html">
         <source>Chargement des informations…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.html</context>
-          <context context-type="linenumber">92,94</context>
+          <context context-type="linenumber">90,92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.leave.title" datatype="html">
         <source>Quitter sans enregistrer ?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.ts</context>
-          <context context-type="linenumber">190</context>
+          <context context-type="linenumber">188</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.leave.description" datatype="html">
         <source>Les modifications des informations seront perdues.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.ts</context>
-          <context context-type="linenumber">191</context>
+          <context context-type="linenumber">189</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.leave.confirm" datatype="html">
         <source>Quitter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.ts</context>
-          <context context-type="linenumber">192</context>
+          <context context-type="linenumber">190</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.leave.cancel" datatype="html">
         <source>Continuer la modification</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.ts</context>
-          <context context-type="linenumber">193</context>
+          <context context-type="linenumber">191</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.toast.saved" datatype="html">
         <source>Informations enregistrées.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.ts</context>
-          <context context-type="linenumber">258</context>
+          <context context-type="linenumber">256</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.toast.incomplete" datatype="html">
         <source>Complétez les deux langues.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.ts</context>
-          <context context-type="linenumber">269</context>
+          <context context-type="linenumber">267</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.information.toast.incompleteDescription" datatype="html">
         <source>Le profil est publié dès son enregistrement, en français et en anglais.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-information-page/admin-information-page.component.ts</context>
-          <context context-type="linenumber">271</context>
+          <context context-type="linenumber">269</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.title" datatype="html">
         <source>Légal</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">8,11</context>
+          <context context-type="linenumber">6,9</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">14,15</context>
+          <context context-type="linenumber">12,13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.updated" datatype="html">
         <source>Dernière mise à jour le <x id="INTERPOLATION" equiv-text="{{ updated(document) }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">17,18</context>
+          <context context-type="linenumber">15,16</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.version" datatype="html">
         <source>Version <x id="INTERPOLATION" equiv-text="{{ document.version }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">19,20</context>
+          <context context-type="linenumber">17,18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.meta" datatype="html">
         <source> Mentions légales et politique de confidentialité du site </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">23,26</context>
+          <context context-type="linenumber">21,24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.tabs" datatype="html">
         <source>Document</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">27,28</context>
+          <context context-type="linenumber">25,26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.conflict.title" datatype="html">
         <source> « <x id="INTERPOLATION" equiv-text="{{ texts[kind].tab }}"/> » a été modifié ailleurs depuis son ouverture. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">49,50</context>
+          <context context-type="linenumber">47,48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.conflict.description" datatype="html">
         <source> Recharger remplace vos modifications de ce document. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">53,55</context>
+          <context context-type="linenumber">51,53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.conflict.reload" datatype="html">
         <source> Recharger </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">63,64</context>
+          <context context-type="linenumber">61,62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.loadError" datatype="html">
         <source> Impossible de charger les documents légaux </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">84,86</context>
+          <context context-type="linenumber">82,84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.retry" datatype="html">
         <source> Réessayer </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">96,97</context>
+          <context context-type="linenumber">94,96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.loading" datatype="html">
         <source>Chargement des documents légaux…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.html</context>
-          <context context-type="linenumber">102,104</context>
+          <context context-type="linenumber">100,102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.leave.title" datatype="html">
         <source>Quitter sans enregistrer ?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.ts</context>
-          <context context-type="linenumber">289</context>
+          <context context-type="linenumber">287</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.leave.description" datatype="html">
         <source>Les modifications des documents légaux seront perdues.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.ts</context>
-          <context context-type="linenumber">290</context>
+          <context context-type="linenumber">288</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.leave.confirm" datatype="html">
         <source>Quitter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.ts</context>
-          <context context-type="linenumber">291</context>
+          <context context-type="linenumber">289</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.toast.saved" datatype="html">
         <source>« <x id="document" equiv-text="name"/> » : modifications enregistrées.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.ts</context>
-          <context context-type="linenumber">391</context>
+          <context context-type="linenumber">389</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.toast.incomplete" datatype="html">
         <source>Complétez les deux langues.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.ts</context>
-          <context context-type="linenumber">401</context>
+          <context context-type="linenumber">399</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.legal.toast.incompleteDescription" datatype="html">
         <source>La page est publiée dès son enregistrement, en français et en anglais.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-legal-page/admin-legal-page.component.ts</context>
-          <context context-type="linenumber">402</context>
+          <context context-type="linenumber">400</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.back" datatype="html">
         <source>Tous les projets</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">12,14</context>
+          <context context-type="linenumber">10,12</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">199,201</context>
+          <context context-type="linenumber">197,199</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.create.hint" datatype="html">
         <source> Le projet est créé en brouillon ; son adresse découle du titre français. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">31,34</context>
+          <context context-type="linenumber">29,32</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.properties" datatype="html">
         <source>Propriétés</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">46,48</context>
+          <context context-type="linenumber">44,46</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">51,53</context>
+          <context context-type="linenumber">49,51</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">167,168</context>
+          <context context-type="linenumber">165,166</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">176,178</context>
+          <context context-type="linenumber">174,176</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.viewPage" datatype="html">
         <source>Voir la page</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">66,68</context>
+          <context context-type="linenumber">64,66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.conflict.title" datatype="html">
         <source> Le projet a été modifié ailleurs depuis son ouverture. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">116,118</context>
+          <context context-type="linenumber">114,116</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.conflict.description" datatype="html">
         <source> Recharger remplace vos modifications. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">120,122</context>
+          <context context-type="linenumber">118,120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.conflict.reload" datatype="html">
         <source> Recharger </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">130,131</context>
+          <context context-type="linenumber">128,130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.resizeProperties" datatype="html">
         <source>Redimensionner le panneau Propriétés</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">157,158</context>
+          <context context-type="linenumber">155,156</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.notFound.title" datatype="html">
         <source> Projet introuvable </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">192,194</context>
+          <context context-type="linenumber">190,192</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.notFound.description" datatype="html">
         <source> Il a peut-être été supprimé, ou son adresse est incorrecte. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">196,198</context>
+          <context context-type="linenumber">194,196</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.loadFailed.title" datatype="html">
         <source> Impossible de charger le projet </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">204,206</context>
+          <context context-type="linenumber">202,204</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.loadFailed.retry" datatype="html">
         <source> Réessayer </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">216,218</context>
+          <context context-type="linenumber">214,216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.loading" datatype="html">
         <source>Chargement du projet…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">223,224</context>
+          <context context-type="linenumber">221,222</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.create.title" datatype="html">
         <source>Nouveau projet</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">204</context>
+          <context context-type="linenumber">202</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.publish.saveFirst" datatype="html">
         <source>Enregistrez d’abord les modifications.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">206</context>
+          <context context-type="linenumber">204</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.leave.confirmTitle" datatype="html">
         <source>Quitter sans enregistrer ?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">619</context>
+          <context context-type="linenumber">617</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.leave.confirmLabel" datatype="html">
         <source>Quitter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">621</context>
+          <context context-type="linenumber">619</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.saved" datatype="html">
         <source>Enregistré.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">722</context>
+          <context context-type="linenumber">720</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.savedDraft" datatype="html">
         <source>Enregistré (brouillon).</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">726</context>
+          <context context-type="linenumber">724</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.created" datatype="html">
         <source>« <x id="title" equiv-text="created.title.fr"/> » créé (brouillon).</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">761</context>
+          <context context-type="linenumber">759</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.unpublish.confirmTitle" datatype="html">
         <source>Dépublier « <x id="title" equiv-text="project.title.fr"/> » ?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">775</context>
+          <context context-type="linenumber">773</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">307</context>
+          <context context-type="linenumber">305</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.unpublish.confirmDescription" datatype="html">
         <source>Le projet repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">776</context>
+          <context context-type="linenumber">774</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">308</context>
+          <context context-type="linenumber">306</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.published" datatype="html">
         <source>Publié.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">791</context>
+          <context context-type="linenumber">789</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.unpublished" datatype="html">
         <source>Retiré du site public.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">792</context>
+          <context context-type="linenumber">790</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.upload.unexpected" datatype="html">
         <source>Une erreur inattendue est survenue.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">815</context>
+          <context context-type="linenumber">813</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.upload.tooLarge" datatype="html">
         <source>L’image dépasse 10 Mo.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">818</context>
+          <context context-type="linenumber">816</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.upload.unsupported" datatype="html">
         <source>Format non pris en charge : JPEG, PNG, WebP, AVIF ou GIF.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">820</context>
+          <context context-type="linenumber">818</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.upload.offline" datatype="html">
         <source>La connexion est indisponible. Réessayez.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">822</context>
+          <context context-type="linenumber">820</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.upload.server" datatype="html">
         <source>Le service ne répond pas. Réessayez dans un moment.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">824</context>
+          <context context-type="linenumber">822</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.upload.rejected" datatype="html">
         <source>L’image a été refusée.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">825</context>
+          <context context-type="linenumber">823</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.incomplete" datatype="html">
         <source>Un projet publié doit rester complet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">843</context>
+          <context context-type="linenumber">841</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.incompleteHint" datatype="html">
         <source>Complétez les deux langues ou dépubliez le projet avant de retirer un texte.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">845</context>
+          <context context-type="linenumber">843</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.documentTitle" datatype="html">
         <source><x id="project" equiv-text="current.title.fr"/> — Projets — Administration</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">877</context>
+          <context context-type="linenumber">875</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.notFound.documentTitle" datatype="html">
         <source>Projet introuvable — Projets — Administration</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">878</context>
+          <context context-type="linenumber">876</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.count.noun" datatype="html">
         <source>{VAR_PLURAL, plural, =0 {projet} =1 {projet} other {projets}}</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.html</context>
-          <context context-type="linenumber">12,16</context>
+          <context context-type="linenumber">10,14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.action.create" datatype="html">
         <source>Nouveau projet</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.html</context>
-          <context context-type="linenumber">21,25</context>
+          <context context-type="linenumber">19,23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.count.filtered" datatype="html">
         <source><x id="shown" equiv-text="shown"/> sur <x id="total" equiv-text="total"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">178</context>
+          <context context-type="linenumber">176</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.toast.published" datatype="html">
         <source>« <x id="title" equiv-text="project.title.fr"/> » publié.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">284</context>
+          <context context-type="linenumber">282</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.toast.unpublished" datatype="html">
         <source>« <x id="title" equiv-text="project.title.fr"/> » retiré du site public.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">319</context>
+          <context context-type="linenumber">317</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.subject.title" datatype="html">
         <source>« <x id="title" equiv-text="targets[0]?.title.fr"/> »</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">349</context>
+          <context context-type="linenumber">347</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.skipped.one" datatype="html">
         <source><x id="count" equiv-text="count"/> projet sélectionné n&apos;est pas concerné.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">403</context>
+          <context context-type="linenumber">401</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.skipped.other" datatype="html">
         <source><x id="count" equiv-text="count"/> projets sélectionnés ne sont pas concernés.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">404</context>
+          <context context-type="linenumber">402</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.conflict" datatype="html">
         <source>Un projet a été modifié entre-temps : la liste a été rechargée, recommencez.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">463</context>
+          <context context-type="linenumber">461</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.failed" datatype="html">
         <source>La requête a échoué.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">464</context>
+          <context context-type="linenumber">462</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.failures.one" datatype="html">
         <source>1 échec : <x id="reason" equiv-text="reason"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">467</context>
+          <context context-type="linenumber">465</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.failures.other" datatype="html">
         <source><x id="count" equiv-text="failures"/> échecs : <x id="reason" equiv-text="reason"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">468</context>
+          <context context-type="linenumber">466</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.noneChanged.one" datatype="html">
         <source>Aucun projet modifié sur <x id="total" equiv-text="total"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">472</context>
+          <context context-type="linenumber">470</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.noneChanged.other" datatype="html">
         <source>Aucun projet modifié sur <x id="total" equiv-text="total"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">473</context>
+          <context context-type="linenumber">471</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.toast.conflict" datatype="html">
         <source>Le projet a été modifié entre-temps : la liste a été rechargée, recommencez.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
-          <context context-type="linenumber">524</context>
+          <context context-type="linenumber">522</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.version" datatype="html">
         <source>Version <x id="INTERPOLATION" equiv-text="{{ current.version }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">31,32</context>
+          <context context-type="linenumber">29,30</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.conflict" datatype="html">
         <source> L’entrée a été modifiée ailleurs depuis son ouverture. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">62,64</context>
+          <context context-type="linenumber">60,62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.conflictHint" datatype="html">
         <source> Recharger remplace vos modifications. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">66,68</context>
+          <context context-type="linenumber">64,66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.action.reload" datatype="html">
         <source> Recharger </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">76,78</context>
+          <context context-type="linenumber">74,76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.propertiesLabel" datatype="html">
         <source>Propriétés</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">97,98</context>
+          <context context-type="linenumber">95,96</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">114,115</context>
+          <context context-type="linenumber">112,113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.properties" datatype="html">
         <source> Propriétés </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">104,106</context>
+          <context context-type="linenumber">102,104</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">122,124</context>
+          <context context-type="linenumber">120,122</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.missing" datatype="html">
         <source> Entrée introuvable </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">137,139</context>
+          <context context-type="linenumber">135,137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.missingHint" datatype="html">
         <source> Elle a peut-être été supprimée, ou son adresse est incorrecte. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">141,143</context>
+          <context context-type="linenumber">139,141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.loadFailed" datatype="html">
         <source> Impossible de charger l’entrée </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">147,149</context>
+          <context context-type="linenumber">145,147</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.action.retry" datatype="html">
         <source> Réessayer </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">159,161</context>
+          <context context-type="linenumber">157,159</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.html</context>
-          <context context-type="linenumber">37,40</context>
+          <context context-type="linenumber">35,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.editor.loading" datatype="html">
         <source>Chargement de l’entrée…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.html</context>
-          <context context-type="linenumber">166,168</context>
+          <context context-type="linenumber">164,166</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.confirm.leave.title" datatype="html">
         <source>Quitter sans enregistrer ?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">424</context>
+          <context context-type="linenumber">422</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.confirm.leave.confirm" datatype="html">
         <source>Quitter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">426</context>
+          <context context-type="linenumber">424</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.created" datatype="html">
         <source>« <x id="title" equiv-text="created.title.fr"/> » ajoutée.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">505</context>
+          <context context-type="linenumber">503</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.saved" datatype="html">
         <source>Enregistré.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">518</context>
+          <context context-type="linenumber">516</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.confirm.delete.title" datatype="html">
         <source>Supprimer « <x id="title" equiv-text="entry.title.fr"/> » ?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">539</context>
+          <context context-type="linenumber">537</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">317</context>
+          <context context-type="linenumber">315</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">357</context>
+          <context context-type="linenumber">355</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.confirm.delete.description" datatype="html">
         <source>Elle disparaîtra du site public à la prochaine reconstruction (quelques minutes). Cette action est définitive.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
+          <context context-type="linenumber">538</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
+          <context context-type="linenumber">316</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
+          <context context-type="linenumber">358</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.timeline.action.cancel" datatype="html">
+        <source>Annuler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
           <context context-type="linenumber">540</context>
@@ -5067,205 +5482,81 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">360</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.timeline.action.cancel" datatype="html">
-        <source>Annuler</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">542</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">320</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">363</context>
+          <context context-type="linenumber">361</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.deleted" datatype="html">
         <source>« <x id="title" equiv-text="entry.title.fr"/> » supprimée.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">548</context>
+          <context context-type="linenumber">546</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">328</context>
+          <context context-type="linenumber">326</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.incomplete" datatype="html">
         <source>Complétez les deux langues.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">573</context>
+          <context context-type="linenumber">571</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.incompleteHint" datatype="html">
         <source>Une entrée est publiée dès son enregistrement, en français et en anglais.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">574</context>
+          <context context-type="linenumber">572</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.title.missing" datatype="html">
         <source>Entrée introuvable</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-edit-page/admin-timeline-edit-page.component.ts</context>
-          <context context-type="linenumber">598</context>
+          <context context-type="linenumber">596</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.confirm.deleteMany.title" datatype="html">
         <source>Supprimer <x id="count" equiv-text="timelineCount(texts, entries.length, this.locale)"/> ?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">358</context>
+          <context context-type="linenumber">356</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.confirm.deleteMany.description" datatype="html">
         <source>Elles disparaîtront du site public à la prochaine reconstruction (quelques minutes). Cette action est définitive.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">361</context>
+          <context context-type="linenumber">359</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.requestFailed" datatype="html">
         <source>La requête a échoué.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">425</context>
+          <context context-type="linenumber">423</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.failureReason" datatype="html">
         <source><x id="failures" equiv-text="timelineFailures(failures, this.locale)"/> : <x id="reason" equiv-text="reason"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">426</context>
+          <context context-type="linenumber">424</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.deletedOutOf" datatype="html">
         <source><x id="deleted" equiv-text="deleted"/> sur <x id="total" equiv-text="total"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">432</context>
+          <context context-type="linenumber">430</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.toast.listChanged" datatype="html">
         <source>La liste a été modifiée entre-temps : elle a été rechargée, recommencez.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
-          <context context-type="linenumber">452</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.label" datatype="html">
-        <source>Publication</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">3,4</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.conflict" datatype="html">
-        <source> Des modifications ont été enregistrées. Actualisez l’état avant de publier. </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">10,12</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.error" datatype="html">
-        <source> Impossible de récupérer ou modifier l’état de publication. Réessayez. </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">14,16</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.active" datatype="html">
-        <source> Publication groupée en cours </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">19,21</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.hint" datatype="html">
-        <source> Les modifications enregistrées restent en attente jusqu’à la publication du groupe. </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">22,24</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.immediate" datatype="html">
-        <source> Les modifications publiques demandent automatiquement une reconstruction. </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">26,29</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.loading" datatype="html">
-        <source> Chargement de l’état de publication… </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">31,35</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.refresh" datatype="html">
-        <source> Actualiser l’état </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">44,46</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.publish" datatype="html">
-        <source> Publier le groupe </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">56,59</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.ts</context>
-          <context context-type="linenumber">37</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.start" datatype="html">
-        <source> Préparer une publication groupée </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.html</context>
-          <context context-type="linenumber">68,72</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.confirm.title" datatype="html">
-        <source>Publier les modifications enregistrées ?</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.ts</context>
-          <context context-type="linenumber">35</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.confirm.description" datatype="html">
-        <source>Tous les changements enregistrés dans les projets, le parcours, les informations et les documents légaux seront publiés ensemble. Les champs non enregistrés ne sont pas inclus.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.ts</context>
-          <context context-type="linenumber">36</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.started" datatype="html">
-        <source>Publication groupée activée.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.ts</context>
-          <context context-type="linenumber">46</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.requested" datatype="html">
-        <source>Publication demandée. Le site sera mis à jour après la reconstruction.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.ts</context>
-          <context context-type="linenumber">48</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.publication.closed" datatype="html">
-        <source>Publication groupée terminée sans modification.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/sections/admin-publication-section/admin-publication-section.component.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">450</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.article.imageFile.type" datatype="html">
@@ -7720,28 +8011,28 @@
         <source>Erreur <x id="INTERPOLATION" equiv-text="{{ known() }}"/> : </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page/error-page.component.ts</context>
-          <context context-type="linenumber">63,64</context>
+          <context context-type="linenumber">64,65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="error.retry" datatype="html">
         <source>Réessayer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page/error-page.component.ts</context>
-          <context context-type="linenumber">75,76</context>
+          <context context-type="linenumber">76,77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="error.home" datatype="html">
         <source>Retour à l&apos;accueil</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page/error-page.component.ts</context>
-          <context context-type="linenumber">85,86</context>
+          <context context-type="linenumber">86,87</context>
         </context-group>
       </trans-unit>
       <trans-unit id="error.contact" datatype="html">
         <source>Me contacter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/error-page/error-page.component.ts</context>
-          <context context-type="linenumber">94,95</context>
+          <context context-type="linenumber">95,96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="route.home" datatype="html">
@@ -7757,6 +8048,14 @@
           <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/area-chart/area-chart.component.ts</context>
           <context context-type="linenumber">149</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/column-chart/column-chart.component.ts</context>
+          <context context-type="linenumber">160</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/line-chart/line-chart.component.ts</context>
+          <context context-type="linenumber">216</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="ui.chart.valueHeader" datatype="html">
         <source>Valeur</source>
@@ -7764,12 +8063,77 @@
           <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/area-chart/area-chart.component.ts</context>
           <context context-type="linenumber">161</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/column-chart/column-chart.component.ts</context>
+          <context context-type="linenumber">164</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="ui.chart.keyboardHint" datatype="html">
         <source>Flèches gauche et droite pour parcourir les valeurs.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/area-chart/area-chart.component.ts</context>
           <context context-type="linenumber">174</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/column-chart/column-chart.component.ts</context>
+          <context context-type="linenumber">169</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/line-chart/line-chart.component.ts</context>
+          <context context-type="linenumber">220</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.less" datatype="html">
+        <source>Moins</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/heatmap/heatmap.component.ts</context>
+          <context context-type="linenumber">151</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.more" datatype="html">
+        <source>Plus</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/heatmap/heatmap.component.ts</context>
+          <context context-type="linenumber">154</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.heatmapKeyboardHint" datatype="html">
+        <source>Flèches pour parcourir les cases.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/heatmap/heatmap.component.ts</context>
+          <context context-type="linenumber">158</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.nameHeader" datatype="html">
+        <source>Élément</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/scatter-chart/scatter-chart.component.ts</context>
+          <context context-type="linenumber">170</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/stacked-bars/stacked-bars.component.ts</context>
+          <context context-type="linenumber">181</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.scatterKeyboardHint" datatype="html">
+        <source>Flèches gauche et droite pour parcourir les points.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/scatter-chart/scatter-chart.component.ts</context>
+          <context context-type="linenumber">181</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.totalHeader" datatype="html">
+        <source>Total</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/stacked-bars/stacked-bars.component.ts</context>
+          <context context-type="linenumber">186</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.partsKeyboardHint" datatype="html">
+        <source>Flèches gauche et droite pour parcourir les parts.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/stacked-bars/stacked-bars.component.ts</context>
+          <context context-type="linenumber">191</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ui.command.placeholder" datatype="html">

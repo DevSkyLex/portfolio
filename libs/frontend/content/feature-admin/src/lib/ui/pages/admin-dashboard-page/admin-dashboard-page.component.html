@@ -8,7 +8,8 @@
   >
 </header>
 
-<div class="flex flex-1 flex-col">
+<!-- One tab set: its triggers sit in the page header, its panels hold one source each (D51). -->
+<div uiTabs class="flex flex-1 flex-col gap-0" [value]="tab()" (valueChange)="selectTab($event)">
   <ui-page-header>
     <h1 uiPageHeaderTitle i18n="@@admin.dashboard.title">Tableau de bord</h1>
     <p uiPageHeaderMeta>
@@ -79,173 +80,137 @@
         }
       </button>
     </div>
+    <div uiPageHeaderTabs>
+      <div uiTabsList class="gap-5" i18n-aria-label="@@admin.dashboard.tabs" aria-label="Rapports">
+        @for (entry of tabs(); track entry.id) {
+          <button class="h-10 shrink-0 text-[13px] font-medium" [uiTabsTrigger]="entry.id">
+            <ng-icon [svg]="entry.icon" size="14" aria-hidden="true" />
+            {{ entry.label }}
+            @if (entry.failed) {
+              <span class="size-1.5 rounded-full bg-warning" aria-hidden="true"></span>
+              <span class="sr-only" i18n="@@admin.dashboard.tabs.failed"
+                >(dernière collecte en échec)</span
+              >
+            }
+          </button>
+        }
+      </div>
+    </div>
   </ui-page-header>
 
-  <div
-    class="@container/dashboard flex w-full min-w-0 flex-1 flex-col px-6 pb-12 @max-[640px]:px-4"
-  >
-    @if (store.loadCallState().error; as failure) {
-      <div uiAlert variant="danger" class="mt-6">
-        <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
-        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.loadError">
-          Impossible de charger le tableau de bord
-        </p>
-        <div uiAlertDescription class="gap-2 text-[13px]/5">
-          <p>{{ failure.message }}</p>
-          <button
-            uiBtn
-            variant="secondary"
-            size="xs"
-            type="button"
-            (click)="reload()"
-            i18n="@@admin.dashboard.retry"
-          >
-            Réessayer
-          </button>
-        </div>
-      </div>
-    }
-
-    @if (store.pollCallState().error; as failure) {
-      <div uiAlert variant="warning" class="mt-6">
-        <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
-        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.pollError">
-          Le suivi de l’actualisation a été interrompu
-        </p>
-        <div uiAlertDescription class="gap-2 text-[13px]/5">
-          <p>{{ failure.message }}</p>
-          <button
-            uiBtn
-            variant="secondary"
-            size="xs"
-            type="button"
-            (click)="reload()"
-            i18n="@@admin.dashboard.reload"
-          >
-            Recharger
-          </button>
-        </div>
-      </div>
-    }
-
-    @if (dashboard(); as current) {
-      @if (searchConsole(); as view) {
-        <section
-          class="flex flex-col gap-4 border-b border-border py-8"
-          aria-labelledby="dashboard-search-console"
+  @if (store.loadCallState().error; as failure) {
+    <div uiAlert variant="danger" class="mx-6 mt-6 w-auto @max-[640px]:mx-4">
+      <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+      <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.loadError">
+        Impossible de charger le tableau de bord
+      </p>
+      <div uiAlertDescription class="gap-2 text-[13px]/5">
+        <p>{{ failure.message }}</p>
+        <button
+          uiBtn
+          variant="secondary"
+          size="xs"
+          type="button"
+          (click)="reload()"
+          i18n="@@admin.dashboard.retry"
         >
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 id="dashboard-search-console" class="text-[15px]/6 font-semibold text-fg">
-              Search Console
-            </h2>
-            @if (view.data; as data) {
-              <p class="text-[12px]/4 text-fg-faint tabular-nums">
-                {{ windowSpan(data.window) }}
-                @if (view.fetchedAt; as fetchedAt) {
-                  <span aria-hidden="true"> · </span>
-                  <span i18n="@@admin.dashboard.section.fetched"
-                    >Collecté le {{ fetchedLabel(fetchedAt) }}</span
-                  >
-                }
-              </p>
-            }
-          </div>
-          <content-seo-source-state source="Search Console" [view]="view" />
+          Réessayer
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (store.pollCallState().error; as failure) {
+    <div uiAlert variant="warning" class="mx-6 mt-6 w-auto @max-[640px]:mx-4">
+      <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+      <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.dashboard.pollError">
+        Le suivi de l’actualisation a été interrompu
+      </p>
+      <div uiAlertDescription class="gap-2 text-[13px]/5">
+        <p>{{ failure.message }}</p>
+        <button
+          uiBtn
+          variant="secondary"
+          size="xs"
+          type="button"
+          (click)="reload()"
+          i18n="@@admin.dashboard.reload"
+        >
+          Recharger
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="@container/dashboard flex min-w-0 flex-1 flex-col">
+    @if (dashboard(); as current) {
+      <div uiTabsContent="search-console" class="flex flex-col">
+        @if (tab() === 'search-console' && searchConsole(); as view) {
+          <ng-container
+            [ngTemplateOutlet]="sourceState"
+            [ngTemplateOutletContext]="{ $implicit: view, source: 'Search Console' }"
+          />
           @if (view.data; as data) {
             <content-seo-search-console-panel [data]="data" [stale]="stale()" />
           }
-        </section>
-      }
-
-      @if (analytics(); as view) {
-        <section
-          class="flex flex-col gap-4 border-b border-border py-8"
-          aria-labelledby="dashboard-analytics"
-        >
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2
-              id="dashboard-analytics"
-              class="text-[15px]/6 font-semibold text-fg"
-              i18n="@@admin.dashboard.analytics.title"
-            >
-              Audience
-            </h2>
-            @if (view.data; as data) {
-              <p class="text-[12px]/4 text-fg-faint tabular-nums">
-                {{ windowSpan(data.window) }}
-                @if (view.fetchedAt; as fetchedAt) {
-                  <span aria-hidden="true"> · </span>
-                  <span i18n="@@admin.dashboard.section.fetched"
-                    >Collecté le {{ fetchedLabel(fetchedAt) }}</span
-                  >
-                }
-              </p>
-            }
-          </div>
-          <content-seo-source-state source="Google Analytics" [view]="view" />
+        }
+      </div>
+      <div uiTabsContent="audience" class="flex flex-col">
+        @if (tab() === 'audience' && analytics(); as view) {
+          <ng-container
+            [ngTemplateOutlet]="sourceState"
+            [ngTemplateOutletContext]="{ $implicit: view, source: 'Google Analytics' }"
+          />
           @if (view.data; as data) {
             <content-seo-analytics-panel [data]="data" [stale]="stale()" />
           }
-        </section>
-      }
-
-      @if (webVitals(); as view) {
-        <section
-          class="flex flex-col gap-4 border-b border-border py-8"
-          aria-labelledby="dashboard-web-vitals"
-        >
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 id="dashboard-web-vitals" class="text-[15px]/6 font-semibold text-fg">
-              Core Web Vitals
-            </h2>
-            @if (view.fetchedAt; as fetchedAt) {
-              <p
-                class="text-[12px]/4 text-fg-faint tabular-nums"
-                i18n="@@admin.dashboard.section.fetched"
-              >
-                Collecté le {{ fetchedLabel(fetchedAt) }}
-              </p>
-            }
-          </div>
-          <content-seo-source-state source="PageSpeed Insights" [view]="view" />
+        }
+      </div>
+      <div uiTabsContent="vitals" class="flex flex-col">
+        @if (tab() === 'vitals' && webVitals(); as view) {
+          <ng-container
+            [ngTemplateOutlet]="sourceState"
+            [ngTemplateOutletContext]="{ $implicit: view, source: 'PageSpeed Insights' }"
+          />
           @if (view.data; as data) {
             <content-seo-web-vitals-panel [data]="data" />
           }
-        </section>
-      }
-
-      <section class="flex flex-col gap-4 py-8" aria-labelledby="dashboard-audit">
-        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2
-            id="dashboard-audit"
-            class="text-[15px]/6 font-semibold text-fg"
-            i18n="@@admin.dashboard.audit.title"
-          >
-            Audit SEO
-          </h2>
-          <p
-            class="text-[12px]/4 text-fg-faint tabular-nums"
-            i18n="@@admin.dashboard.audit.generated"
-          >
-            Calculé le {{ fetchedLabel(current.audit.generatedAt) }}
-          </p>
-        </div>
-        <content-seo-audit-panel [audit]="current.audit" />
-      </section>
+        }
+      </div>
+      <div uiTabsContent="audit" class="flex flex-col">
+        @if (tab() === 'audit') {
+          <content-seo-audit-panel [audit]="current.audit" />
+        }
+      </div>
     } @else if (!store.loadCallState().error) {
       <span class="sr-only" role="status" i18n="@@admin.dashboard.loading"
         >Chargement du tableau de bord…</span
       >
-      <div class="flex flex-col gap-4 py-8" aria-hidden="true">
-        <span uiSkeleton class="h-6 w-40"></span>
-        <div class="grid grid-cols-2 gap-3 @min-[48rem]/dashboard:grid-cols-4">
-          <span uiSkeleton class="h-24"></span>
-          <span uiSkeleton class="h-24"></span>
-          <span uiSkeleton class="h-24"></span>
-          <span uiSkeleton class="h-24"></span>
+      <div class="flex flex-col" aria-hidden="true">
+        <div class="grid grid-cols-2 border-b border-border @min-[48rem]/dashboard:grid-cols-4">
+          @for (cell of skeletonCells; track cell) {
+            <div class="flex flex-col gap-2 border-e border-border px-6 py-4">
+              <span uiSkeleton class="h-4 w-24"></span>
+              <span uiSkeleton class="h-7 w-16"></span>
+            </div>
+          }
         </div>
-        <span uiSkeleton class="h-56 w-full"></span>
+        <div class="px-6 py-5">
+          <span uiSkeleton class="h-48 w-full"></span>
+        </div>
       </div>
     }
   </div>
 </div>
+
+<!-- Setup, first collection or failure of a source, padded like the page's content. -->
+<ng-template #sourceState let-view let-source="source">
+  @if (view.status !== 'ok') {
+    <div
+      class="flex flex-col border-b border-border px-6 py-6 @max-[640px]:px-4"
+      [class.border-b-0]="!view.data"
+    >
+      <content-seo-source-state [source]="source" [view]="view" />
+    </div>
+  }
+</ng-template>

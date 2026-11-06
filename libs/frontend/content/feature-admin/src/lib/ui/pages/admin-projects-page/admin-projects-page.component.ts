@@ -1,4 +1,3 @@
-import { AdminPublicationSectionComponent } from '@internal/content-web-feature-admin/lib/ui/sections/admin-publication-section/admin-publication-section.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -57,7 +56,6 @@ import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/u
 @Component({
   selector: 'content-admin-projects-page',
   imports: [
-    AdminPublicationSectionComponent,
     ButtonDirective,
     PAGE_HEADER_IMPORTS,
     ProjectListDataviewComponent,

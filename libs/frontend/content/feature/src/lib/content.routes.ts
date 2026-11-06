@@ -1,5 +1,6 @@
 import type { Routes } from '@angular/router';
 import { projectExistsGuard } from '@internal/content-web-feature/lib/http/guards/project-exists/project-exists.guard';
+import { projectMatchGuard } from '@internal/content-web-feature/lib/http/guards/project-match/project-match.guard';
 
 /**
  * Configuration CONTENT_ROUTES
@@ -12,6 +13,7 @@ import { projectExistsGuard } from '@internal/content-web-feature/lib/http/guard
 export const CONTENT_ROUTES: Routes = [
   {
     path: 'projects/:slug',
+    canMatch: [projectMatchGuard],
     canActivate: [projectExistsGuard],
     loadComponent: async () =>
       (

@@ -79,6 +79,7 @@ const AUDIT: SeoDashboard['audit'] = {
  */
 const unconfigured = (range: SeoDashboard['range'] = '28d'): SeoDashboard => ({
   range,
+  demo: false,
   refresh: { running: false, startedAt: null, finishedAt: null, nextAllowedAt: null },
   searchConsole: {
     status: 'not-configured',
@@ -272,26 +273,74 @@ const text = (element: Element | null | undefined): string =>
   (element?.textContent ?? '').replace(/[\s\u2009\u202f\u00a0]+/g, ' ').trim();
 
 /**
- * Function section
+ * Function cells
  *
  * @description
- * Section of the page labelled by its heading.
+ * Texts of a table row's cells, without the empty spacer cell hidden from assistive technologies.
+ *
+ * @param {HTMLTableRowElement | null | undefined} row - Row.
+ *
+ * @returns {string[]} Cell texts.
+ */
+const cells = (row: HTMLTableRowElement | null | undefined): string[] =>
+  [...(row?.cells ?? [])]
+    .filter((cell: HTMLTableCellElement): boolean => cell.getAttribute('aria-hidden') !== 'true')
+    .map(text);
+
+/**
+ * Function panel
+ *
+ * @description
+ * Tab panel shown, the only one not hidden.
  *
  * @param {HTMLElement} root - Page.
- * @param {string} id - Heading id.
  *
- * @returns {HTMLElement | null} Section.
+ * @returns {HTMLElement | null} Panel.
  */
-const section = (root: HTMLElement, id: string): HTMLElement | null =>
-  root.querySelector<HTMLElement>(`section[aria-labelledby="${id}"]`);
+const panel = (root: HTMLElement): HTMLElement | null =>
+  root.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])');
+
+/**
+ * Function trigger
+ *
+ * @description
+ * Tab trigger whose text starts with the name.
+ *
+ * @param {HTMLElement} root - Page.
+ * @param {string} name - Tab name.
+ *
+ * @returns {HTMLButtonElement | undefined} Trigger.
+ */
+const trigger = (root: HTMLElement, name: string): HTMLButtonElement | undefined =>
+  [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find(
+    (candidate: HTMLButtonElement): boolean => text(candidate).startsWith(name),
+  );
+
+/**
+ * Function show
+ *
+ * @description
+ * Selects a tab by its name and returns its panel once rendered.
+ *
+ * @param {Opened} opened - Harness.
+ * @param {string} name - Tab name.
+ *
+ * @returns {Promise<HTMLElement | null>} Panel.
+ */
+async function show(opened: Opened, name: string): Promise<HTMLElement | null> {
+  trigger(opened.root(), name)?.click();
+  await opened.settle();
+  return panel(opened.root());
+}
 
 describe('ADMIN_DASHBOARD_ROUTES', (): void => {
   afterEach((): void => {
     TestBed.inject<HttpTestingController>(HttpTestingController).verify();
   });
 
-  it('names the sections to configure, the first collection to come and the audit findings', async (): Promise<void> => {
-    const { backend, root, settle } = await open();
+  it('names the sources to configure, the first collection to come and the audit findings, one tab each', async (): Promise<void> => {
+    const opened: Opened = await open();
+    const { backend, root, settle } = opened;
     expect(root().querySelector('[role="status"]')?.textContent).toContain(
       'Chargement du tableau de bord',
     );
@@ -301,7 +350,19 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     expect(text(root().querySelector('[data-slot="page-header-meta"]'))).toBe(
       'Aucune collecte Google pour l’instant',
     );
-    const search: HTMLElement | null = section(root(), 'dashboard-search-console');
+    // The tabs sit in the page header, the first one open.
+    const list: Element | null = root().querySelector('ui-page-header [role="tablist"]');
+    expect(list?.getAttribute('aria-label')).toBe('Rapports');
+    expect([...(list?.querySelectorAll('[role="tab"]') ?? [])].map(text)).toEqual([
+      'Search Console',
+      'Audience',
+      'Core Web Vitals',
+      'Audit SEO',
+    ]);
+    expect(trigger(root(), 'Search Console')?.getAttribute('aria-selected')).toBe('true');
+    expect(root().querySelectorAll('[role="tabpanel"]')).toHaveLength(4);
+
+    const search: HTMLElement | null = panel(root());
     expect(text(search?.querySelector('[data-slot="empty-title"]'))).toBe(
       'Search Console n’est pas configuré',
     );
@@ -313,18 +374,36 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
       'SEO_SEARCH_CONSOLE_PROPERTY',
     ]);
     expect(
-      text(section(root(), 'dashboard-web-vitals')?.querySelector('[data-slot="empty-title"]')),
+      text((await show(opened, 'Core Web Vitals'))?.querySelector('[data-slot="empty-title"]')),
     ).toBe('Aucune collecte pour l’instant');
+    // A tab is kept in the address, the history entry replaced.
+    expect(TestBed.inject<Router>(Router).url).toBe('/admin/dashboard?onglet=vitals');
 
-    const audit: HTMLElement | null = section(root(), 'dashboard-audit');
-    expect(text(audit?.querySelector('h2'))).toBe('Audit SEO');
+    const audit: HTMLElement | null = await show(opened, 'Audit SEO');
+    expect([...(audit?.querySelectorAll('content-seo-section-header h2') ?? [])].map(text)).toEqual(
+      ['Synthèse de l’audit', 'Problèmes relevés'],
+    );
     expect(text(audit)).toContain('Erreurs1Avertissements1Infos0');
     expect(text(audit)).toContain('Projets publiés1Brouillons2URL du sitemap10');
+    // Findings by project, split by severity, and by kind.
+    const projects: Element | null | undefined = audit?.querySelector('ui-stacked-bars');
+    expect(
+      [...(projects?.querySelectorAll('[data-slot="chart-legend"] li') ?? [])].map(text),
+    ).toEqual(['Erreur', 'Avertissement', 'Info']);
+    expect(
+      [...(projects?.querySelectorAll('table tbody tr') ?? [])].map((row: Element) =>
+        [...row.children].map(text),
+      ),
+    ).toEqual([['Movah', '1', '1', '0', '2']]);
+    expect([...(audit?.querySelectorAll('ui-bar-list li') ?? [])].map(text)).toEqual([
+      'Titre de recherche trop court1',
+      'Couverture sans texte alternatif1',
+    ]);
     const rows: HTMLTableRowElement[] = [
-      ...(audit?.querySelectorAll<HTMLTableRowElement>('tbody tr') ?? []),
+      ...(audit?.querySelectorAll<HTMLTableRowElement>('ui-data-table tbody tr') ?? []),
     ];
     // The most serious first.
-    expect(rows.map((row: HTMLTableRowElement) => [...row.cells].map(text))).toEqual([
+    expect(rows.map(cells)).toEqual([
       ['Erreur', 'Movah', 'EN', 'Couverture sans texte alternatif.'],
       [
         'Avertissement',
@@ -334,56 +413,109 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
       ],
     ]);
     expect(rows[0]?.querySelector('a')?.getAttribute('href')).toBe('/admin/projects/p1');
-    expect(rows[0]?.querySelector('[data-slot="badge"]')?.className).toContain(
-      'before:bg-danger-ink',
+    // A status icon in the ink of its meaning, its word as a tooltip and as hidden text.
+    const severity: Element | null | undefined = rows[0]?.querySelector(
+      '[data-slot="status-icon"]',
     );
+    expect(severity?.className).toContain('text-danger-ink');
+    expect(severity?.getAttribute('data-slot')).toBe('status-icon');
+    expect(severity?.querySelector('ng-icon')?.getAttribute('aria-hidden')).toBe('true');
+    expect(text(severity?.querySelector('.sr-only'))).toBe('Erreur');
+    expect(rows[0]?.querySelector('[data-slot="badge"]')).toBeNull();
   });
 
-  it('shows the reports, a failed collection above its last report, and the vitals with words', async (): Promise<void> => {
-    const { backend, root, settle } = await open();
+  it('shows each report as figure cells, a chart grid fitting its data and full-width tables', async (): Promise<void> => {
+    const opened: Opened = await open();
+    const { backend, root, settle } = opened;
     backend.expectOne(`${URL}?range=28d`).flush(reported());
     await settle();
     expect(text(root().querySelector('[data-slot="page-header-meta"]'))).toMatch(
       /^Dernière collecte Google le 4 nov\. 2026/,
     );
+    // The failed audience collection is flagged on its tab.
+    expect(text(trigger(root(), 'Audience'))).toBe('Audience (dernière collecte en échec)');
 
-    const search: HTMLElement | null = section(root(), 'dashboard-search-console');
+    const search: HTMLElement | null = panel(root());
+    // Each major section opens on its title and one line on what it shows.
+    const sections = (tab: HTMLElement | null): string[] =>
+      [...(tab?.querySelectorAll('content-seo-section-header h2') ?? [])].map(text);
+    expect(sections(search)).toEqual([
+      'Performance dans Google',
+      'Requêtes et appareils',
+      'Requêtes principales',
+      'Pages principales',
+    ]);
+    expect(
+      search?.querySelector('section[aria-labelledby="sc-queries"] content-seo-section-header p'),
+    ).not.toBeNull();
+    // Full-width tables: every column resizable, the widths shares of the frame (spread in the
+    // browser; the test frame measures nothing, so the shares show as they are).
+    const queries: Element | null | undefined = search?.querySelector(
+      'section[aria-labelledby="sc-queries"] ui-data-table',
+    );
+    expect(queries?.querySelectorAll('[data-slot="data-table-resize-handle"]')).toHaveLength(5);
+    expect(
+      [...(queries?.querySelectorAll<HTMLElement>('col') ?? [])].map(
+        (col: HTMLElement): string => col.style.width,
+      ),
+    ).toEqual(['280px', '96px', '120px', '96px', '104px']);
     const tiles: string[] = [...(search?.querySelectorAll('content-seo-kpi-tile') ?? [])].map(text);
     expect(tiles[0]).toBe('Clics120 +20 % vs 7 sept. – 4 oct. 2026(favorable)');
     expect(tiles[1]).toBe('Impressions4 000 -20 % vs 7 sept. – 4 oct. 2026(défavorable)');
     // A lower average position is better.
     expect(tiles[3]).toBe('Position moyenne8,4 -1,2 vs 7 sept. – 4 oct. 2026(favorable)');
-    expect(text(search)).toContain('5 oct. – 1 nov. 2026');
-    const charts: HTMLElement[] = [
-      ...(search?.querySelectorAll<HTMLElement>('ui-area-chart') ?? []),
-    ];
+    expect(search?.querySelector('[data-slot="card"]')).toBeNull();
+    // No window or collection strip above the figures: the page header dates the last collection.
+    expect(text(search)).not.toContain('Collecté le');
+    const plots: string[] = [...(search?.querySelectorAll('[role="group"]') ?? [])].map(
+      (plot: Element): string => plot.getAttribute('aria-label') ?? '',
+    );
+    expect(plots).toEqual([
+      'Clics par jour',
+      'Impressions par jour',
+      'CTR par jour',
+      'Position moyenne par jour',
+      'CTR selon la position, par requête',
+      'Clics par appareil',
+    ]);
+    const clicks: Element | null | undefined = search?.querySelector('ui-column-chart');
     expect(
-      charts.map((chart: HTMLElement) =>
-        chart.querySelector('[role="group"]')?.getAttribute('aria-label'),
-      ),
-    ).toEqual(['Clics par jour', 'Impressions par jour']);
-    expect(
-      [...(charts[0]?.querySelectorAll('table tbody tr') ?? [])].map((row: Element) =>
+      [...(clicks?.querySelectorAll('table tbody tr') ?? [])].map((row: Element) =>
         [...row.children].map(text),
       ),
     ).toEqual([
       ['31 oct.', '4'],
       ['1 nov.', '6'],
     ]);
+    expect(search?.querySelector('ui-line-chart[invert]')).not.toBeNull();
+    // Only the placed query: « portfolio angular » has no position.
+    expect(
+      [...(search?.querySelectorAll('ui-scatter-chart tbody tr') ?? [])].map((row: Element) =>
+        [...row.children].map(text),
+      ),
+    ).toEqual([['valentin fortin', '1,2', '27 %']]);
+    // Devices in their fixed order, desktop first, each share printed on its part.
+    const devices: Element | null | undefined = search?.querySelector('ui-stacked-bars');
+    expect(
+      [...(devices?.querySelectorAll('[data-slot="chart-legend"] li') ?? [])].map(text),
+    ).toEqual(['Ordinateur', 'Mobile']);
+    expect(text(devices?.querySelector('[aria-hidden="true"].flex.gap-0\\.5'))).toBe('75 % 25 %');
     const tables: HTMLTableElement[] = [
       ...(search?.querySelectorAll('ui-data-table table') ?? []),
     ] as HTMLTableElement[];
-    expect([...(tables[0]?.tBodies[0]?.rows ?? [])].map((row) => [...row.cells].map(text))).toEqual(
-      [
-        ['valentin fortin', '80', '300', '27 %', '1,2'],
-        ['portfolio angular', '2', '900', '0,2 %', '—'],
-      ],
-    );
+    expect([...(tables[0]?.tBodies[0]?.rows ?? [])].map(cells)).toEqual([
+      ['valentin fortin', '80', '300', '27 %', '1,2'],
+      ['portfolio angular', '2', '900', '0,2 %', '—'],
+    ]);
     expect(text(tables[1]?.tBodies[0]?.rows[0]?.cells[0])).toBe('/projects/movah');
-    const devices: string[] = [...(search?.querySelectorAll('ui-bar-list li') ?? [])].map(text);
-    expect(devices).toEqual(['Ordinateur90 · 75 %', 'Mobile30 · 25 %']);
 
-    const audience: HTMLElement | null = section(root(), 'dashboard-analytics');
+    const audience: HTMLElement | null = await show(opened, 'Audience');
+    expect(sections(audience)).toEqual([
+      'Fréquentation',
+      'Provenance des visites',
+      'Pages les plus vues',
+    ]);
+    expect(TestBed.inject<Router>(Router).url).toBe('/admin/dashboard?onglet=audience');
     const alert: Element | null | undefined = audience?.querySelector('[data-slot="alert"]');
     expect(alert?.getAttribute('data-variant')).toBe('warning');
     expect(text(alert)).toContain('Échec de la dernière collecte de Google Analytics');
@@ -394,6 +526,22 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     expect(text(alert)).toContain('Tentative du 4 nov. 2026');
     expect(text(alert)).toContain('Données affichées du 3 nov. 2026');
     expect(text(audience)).toContain('Durée d’engagement moyenne1 min 23 s');
+    // Three counts of one unit on one chart, a legend naming them.
+    const daily: Element | null | undefined = audience?.querySelector('ui-line-chart');
+    expect([...(daily?.querySelectorAll('[data-slot="chart-legend"] li') ?? [])].map(text)).toEqual(
+      ['Utilisateurs actifs', 'Sessions', 'Vues'],
+    );
+    expect(
+      [...(daily?.querySelectorAll('table tbody tr') ?? [])].map((row: Element) =>
+        [...row.children].map(text),
+      ),
+    ).toEqual([['3 nov.', '3', '4', '9']]);
+    // 3 November 2026 is a Tuesday: second row of the calendar.
+    expect(
+      [...(audience?.querySelectorAll('ui-heatmap tbody tr') ?? [])].map((row: Element) =>
+        [...row.children].map(text),
+      ),
+    ).toEqual([['mardi 3 novembre', '4 sessions']]);
     expect(
       [...(audience?.querySelectorAll('ui-bar-list') ?? [])].map((list) =>
         list.querySelector('ul')?.getAttribute('aria-label'),
@@ -402,9 +550,26 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     // Shares of the window's sessions, most first.
     expect(text(audience?.querySelector('ui-bar-list li'))).toBe('Organic Search60 · 75 %');
 
-    const vitals: HTMLElement | null = section(root(), 'dashboard-web-vitals');
-    const row: HTMLTableRowElement | null | undefined = vitals?.querySelector('tbody tr');
-    expect([...(row?.cells ?? [])].map(text)).toEqual([
+    const vitals: HTMLElement | null = await show(opened, 'Core Web Vitals');
+    expect(sections(vitals)).toEqual(['Synthèse des performances', 'Mesures par page']);
+    expect(text(vitals?.querySelector('section[aria-labelledby="cwv-pages"] p'))).toContain(
+      '75e centile des visites réelles de Chrome',
+    );
+    expect(text(vitals)).toContain('Mesures1Mesures impossibles0');
+    expect(text(vitals)).toContain('Score labo médian, mobile42Score labo médian, ordinateur—');
+    expect(
+      [...(vitals?.querySelectorAll('ui-stacked-bars tbody tr') ?? [])].map((row: Element) =>
+        [...row.children].map(text),
+      ),
+    ).toEqual([
+      ['LCP', '1 mesure', '0 mesure', '0 mesure', '1 mesure'],
+      ['INP', '0 mesure', '1 mesure', '0 mesure', '1 mesure'],
+      ['Score labo', '0 mesure', '0 mesure', '1 mesure', '1 mesure'],
+    ]);
+    expect(text(vitals?.querySelector('ui-dumbbell-chart li.grid'))).toBe('/Mobile42·Ordinateur—');
+    const row: HTMLTableRowElement | null | undefined =
+      vitals?.querySelector('ui-data-table tbody tr');
+    expect(cells(row)).toEqual([
       '/Données terrain de l’origine',
       'Mobile',
       '2,4 sBon',
@@ -412,6 +577,29 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
       '—Non renseigné',
       '42Mauvais',
     ]);
+    expect(
+      [...(row?.querySelectorAll('[data-slot="status-icon"]') ?? [])].map(
+        (icon: Element): string => icon.className,
+      ),
+    ).toEqual([
+      expect.stringContaining('text-success-ink'),
+      expect.stringContaining('text-warning-ink'),
+      expect.stringContaining('text-danger-ink'),
+    ]);
+  });
+
+  it('opens the tab named in ?onglet= and falls back to the first one on an unknown name', async (): Promise<void> => {
+    const opened: Opened = await open('/admin/dashboard?onglet=audit');
+    opened.backend.expectOne(`${URL}?range=28d`).flush(unconfigured());
+    await opened.settle();
+    expect(trigger(opened.root(), 'Audit SEO')?.getAttribute('aria-selected')).toBe('true');
+    expect(panel(opened.root())?.querySelector('content-seo-audit-panel')).not.toBeNull();
+    // Back to the first tab: the parameter goes.
+    await show(opened, 'Search Console');
+    expect(TestBed.inject<Router>(Router).url).toBe('/admin/dashboard');
+    await opened.harness.navigateByUrl('/admin/dashboard?onglet=nope');
+    await opened.settle();
+    expect(trigger(opened.root(), 'Search Console')?.getAttribute('aria-selected')).toBe('true');
   });
 
   it('keeps the window in ?periode= and the previous figures dimmed while it loads', async (): Promise<void> => {
@@ -426,7 +614,7 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     await settle();
     expect(TestBed.inject<Router>(Router).url).toBe('/admin/dashboard?periode=7j');
     const request: TestRequest = backend.expectOne(`${URL}?range=7d`);
-    expect(root().querySelector('ui-area-chart')?.hasAttribute('data-stale')).toBe(true);
+    expect(root().querySelector('ui-column-chart')?.hasAttribute('data-stale')).toBe(true);
     request.flush(unconfigured('7d'));
     await settle();
     expect(seven?.getAttribute('aria-pressed')).toBe('true');

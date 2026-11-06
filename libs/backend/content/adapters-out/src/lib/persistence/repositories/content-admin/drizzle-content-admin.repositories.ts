@@ -212,12 +212,13 @@ export class DrizzleSiteBuildRequestRepository implements SiteBuildRequestReposi
    * @method request
    *
    * @description
-   * Atomically increments the singleton content revision and inserts its pending build request.
+   * Atomically increments the revision visible to live public content readers.
    *
    * @param {Date} now - Request creation time.
-   * @returns {Promise<number>} New revision stored in the outbox.
+   * @returns {Promise<number>} New public content revision.
    */
-  public async request(now: Date): Promise<number> {
+  public async request(_now: Date): Promise<number> {
+    void _now;
     const [row] = await this.db
       .insert(contentRevision)
       .values({ id: 1, revision: 1 })
@@ -226,16 +227,7 @@ export class DrizzleSiteBuildRequestRepository implements SiteBuildRequestReposi
         set: { revision: sql`${contentRevision.revision} + 1` },
       })
       .returning({ revision: contentRevision.revision });
-    const revision: number = row?.revision ?? 1;
-    const [batch] = await this.db
-      .select({ frozen: publicationState.frozen })
-      .from(publicationState)
-      .where(eq(publicationState.id, 1));
-    if (batch?.frozen !== null && batch?.frozen !== undefined) return revision;
-    await this.db
-      .insert(siteBuildRequests)
-      .values({ revision, status: 'pending', requestedAt: now, nextAttemptAt: now });
-    return revision;
+    return row?.revision ?? 1;
   }
 
   /**
@@ -264,10 +256,7 @@ export class DrizzleSiteBuildRequestRepository implements SiteBuildRequestReposi
           .from(contentRevision)
           .where(eq(contentRevision.id, 1))
           .for('update');
-        const [batch] = await tx
-          .select({ frozen: publicationState.frozen })
-          .from(publicationState)
-          .where(eq(publicationState.id, 1));
+        const [batch] = await tx.select().from(publicationState).where(eq(publicationState.id, 1));
         if (batch?.frozen !== null && batch?.frozen !== undefined) return null;
         const [active] = await tx
           .select({ revision: siteBuildRequests.revision })
@@ -357,7 +346,7 @@ export class DrizzleSiteBuildRequestRepository implements SiteBuildRequestReposi
  * @class DrizzleContentUnitOfWork
  *
  * @description
- * Runs project, media and rebuild outbox changes in one transaction.
+ * Runs project, media and revision changes in one transaction.
  */
 export class DrizzleContentUnitOfWork implements ContentUnitOfWork {
   // #region Constructor
@@ -380,7 +369,7 @@ export class DrizzleContentUnitOfWork implements ContentUnitOfWork {
    * @template T - Value returned by the transaction callback.
    *
    * @description
-   * Executes the supplied callback with project, media and outbox repositories bound to one
+   * Executes the supplied callback with project, media and revision repositories bound to one
    * transaction.
    *
    * @param {(repositories: ContentRepositories) => Promise<T>} work - Atomic operation.

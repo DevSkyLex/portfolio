@@ -13,6 +13,8 @@ portfolio_contact_mail_from: "{{ lookup('ansible.builtin.env', 'CONTACT_MAIL_FRO
 portfolio_contact_notify_to: "{{ lookup('ansible.builtin.env', 'CONTACT_NOTIFY_TO') | default('contact@' ~ domain, true) }}"
 portfolio_web_memory_limit: "{{ lookup('ansible.builtin.env', 'WEB_MEMORY_LIMIT') | default('128M', true) }}"
 portfolio_web_cpu_limit: "{{ lookup('ansible.builtin.env', 'WEB_CPU_LIMIT') | default('1.0', true) }}"
+portfolio_ssr_memory_limit: "{{ lookup('ansible.builtin.env', 'SSR_MEMORY_LIMIT') | default('512M', true) }}"
+portfolio_ssr_cpu_limit: "{{ lookup('ansible.builtin.env', 'SSR_CPU_LIMIT') | default('1.0', true) }}"
 portfolio_log_max_size: "{{ lookup('ansible.builtin.env', 'LOG_MAX_SIZE') | default('10m', true) }}"
 portfolio_log_max_files: "{{ lookup('ansible.builtin.env', 'LOG_MAX_FILES') | default('5', true) }}"
 # SEO dashboard (D47), all optional: Search Console property, numeric GA4 property id and the

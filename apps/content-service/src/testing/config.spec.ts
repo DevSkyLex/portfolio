@@ -19,46 +19,12 @@ const base: Readonly<Record<string, string>> = {
   AUTH_JWKS_URL: 'http://identity:3103/api/auth/jwks.json',
 };
 
-/**
- * Constant token
- *
- * @description
- * Provides a sufficiently long fixture value for the optional site-build credential schema.
- */
-const token: string = 'github_pat_0123456789abcdef';
-
 describe('loadContentServiceConfig', (): void => {
-  it('applies the defaults and leaves the site rebuild off', (): void => {
+  it('applies the defaults without requiring rebuild credentials', (): void => {
     expect(loadContentServiceConfig(base)).toMatchObject({
       CONTENT_PORT: 3101,
-      SITE_BUILD_WORKFLOW: 'site-build.yml',
-      SITE_BUILD_REF: 'main',
       LOG_LEVEL: 'info',
     });
-    const blank: ContentServiceConfig = loadContentServiceConfig({
-      ...base,
-      SITE_BUILD_REPOSITORY: '',
-      SITE_BUILD_TOKEN: '',
-    });
-    expect([blank.SITE_BUILD_REPOSITORY, blank.SITE_BUILD_TOKEN]).toEqual([undefined, undefined]);
-  });
-
-  it('enables the rebuild with a repository and its token', (): void => {
-    const config: ContentServiceConfig = loadContentServiceConfig({
-      ...base,
-      SITE_BUILD_REPOSITORY: 'devskylex/portfolio',
-      SITE_BUILD_TOKEN: token,
-    });
-    expect(config).toMatchObject({
-      SITE_BUILD_REPOSITORY: 'devskylex/portfolio',
-      SITE_BUILD_TOKEN: token,
-    });
-  });
-
-  it('refuses a repository without its token', (): void => {
-    expect(() =>
-      loadContentServiceConfig({ ...base, SITE_BUILD_REPOSITORY: 'devskylex/portfolio' }),
-    ).toThrow(/SITE_BUILD_TOKEN: required when SITE_BUILD_REPOSITORY is set/);
   });
 
   it('leaves media serving off and resolves the media directory per environment', (): void => {
@@ -106,6 +72,7 @@ describe('loadContentServiceConfig', (): void => {
       analyticsPropertyId: null,
       pageSpeedApiKey: null,
       webVitalsUrls: [],
+      demoData: false,
     });
   });
 
@@ -126,7 +93,11 @@ describe('loadContentServiceConfig', (): void => {
       analyticsPropertyId: '123456789',
       pageSpeedApiKey: 'AIzaSyFakeKeyForTheDashboardTests0000',
       webVitalsUrls: ['https://valentin-fortin.pro/', 'https://valentin-fortin.pro/en/'],
+      demoData: false,
     });
+    expect(
+      seoDashboardOptions(loadContentServiceConfig({ ...base, SEO_DEMO_DATA: 'true' })).demoData,
+    ).toBe(true);
     expect(
       loadContentServiceConfig({
         ...base,

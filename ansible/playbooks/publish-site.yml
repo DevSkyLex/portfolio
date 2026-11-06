@@ -1,7 +1,0 @@
-# Publishes the built site (dist/apps/web):
-#   ansible-playbook playbooks/publish-site.yml -e release=<name>
-- name: Publish the static site
-  hosts: vps
-  become: false
-  roles:
-    - site

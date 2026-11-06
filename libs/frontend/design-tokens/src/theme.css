@@ -69,6 +69,14 @@
   --danger-ink: #ff8590;
   --info: var(--aurora-blue);
   --info-ink: #8aa9ff;
+  /*
+   * Chart series (D51), in this fixed order: the aurora hues stepped into the chart lightness band
+   * (OKLCH L 0.48–0.67 here, 0.43–0.77 in the light theme) and checked for colour-vision separation on
+   * every pair. `chart-1` is the one hue of a single series and of the sequential heat ramp.
+   */
+  --chart-1: #9b6dff;
+  --chart-2: #1aa3be;
+  --chart-3: #e9578c;
   --scrim: color-mix(in srgb, var(--surface-sunk) 66%, transparent);
   --shadow-float: 0 24px 48px -16px color-mix(in srgb, var(--surface-sunk) 90%, transparent);
   --glow: 0 0 32px 0 color-mix(in srgb, var(--aurora-violet) 45%, transparent);
@@ -125,6 +133,9 @@
   --danger: #d1243b;
   --danger-ink: #b51d32;
   --info-ink: #1d48c0;
+  --chart-1: #6a3fe6;
+  --chart-2: #00869f;
+  --chart-3: #c8156f;
   --scrim: color-mix(in srgb, var(--fg) 32%, transparent);
   --shadow-float: 0 16px 32px -16px color-mix(in srgb, var(--fg) 25%, transparent);
   --glow: 0 0 24px 0 color-mix(in srgb, var(--aurora-violet) 25%, transparent);
@@ -168,6 +179,9 @@
   --color-aurora-violet: var(--aurora-violet);
   --color-aurora-blue: var(--aurora-blue);
   --color-aurora-cyan: var(--aurora-cyan);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
   --color-accent: var(--accent);
   --color-success: var(--success);
   --color-success-ink: var(--success-ink);

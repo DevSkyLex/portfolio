@@ -3,8 +3,8 @@
 ## Nx
 
 - **Named inputs**: `production` excludes specs, `testing/` folders, test configs (`vite.config.*`, `vitest.config.*`, `tsconfig.spec.json`, `test-setup.ts`), ESLint configs and Markdown, so a test-only change does not invalidate builds. `sharedGlobals`: `tsconfig.base.json`, the lockfile, the Node version.
-- **`web:build`** also takes `apps/web/content-snapshot/*.json` as input (D7): new published content means a new build, unchanged content hits the cache.
-- **Target defaults**: `build`, `lint`, `test`, `typecheck` are cached; type-aware lint reads dependencies, hence `^production` in its inputs. `serve`, `e2e`, `content-snapshot`, `db-migrate`, `db-seed`, `generate-key` are never cached (side effects or external state).
+- **`web:build`** builds code for the request-time SSR runtime. Public content is fetched at render time and does not require a rebuild.
+- **Target defaults**: `build`, `lint`, `test`, `typecheck` are cached; type-aware lint reads dependencies, hence `^production` in its inputs. `serve`, `serve-ssr`, `e2e`, `db-migrate`, `db-seed`, `generate-key` are never cached (side effects or external state).
 - **Plugins**: `@nx/vitest` infers `test` (`vitest run`, coverage directory as output), `@nx/eslint` infers `lint`, `@nx/playwright` infers `e2e`, `@nx/webpack` the services' `build`/`serve`. No test atomization (`ciTargetName`): without distributed execution it only multiplies targets.
 - **Pipeline**: `build` depends on `^build`; `web-e2e:e2e` depends on `web:build`.
 - **Affected**: `defaultBase: main`; CI uses `nrwl/nx-set-shas` (last successful run on `main`, or the pull request base).
@@ -12,11 +12,10 @@
 
 ## CI (`.github/workflows`)
 
-| Workflow         | Trigger                                               | Jobs                                                                                                                                                                                                    |
-| ---------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ci.yml`         | pull request, push on `main`                          | `quality` (format check, architecture, affected lint/typecheck/build), `tests` (coverage, summary, report artefact), `e2e` (built site, four browsers; affected on pull requests), `e2e-stack` (opt-in) |
-| `deploy.yml`     | CI success on `main`, manual                          | services deployed only if the commit is still the head of `main`; manual run takes an explicit `ref` (rollback)                                                                                         |
-| `site-build.yml` | Automatic service deployment, content-service, manual | same head-of-`main` check; `ref` input for a rollback build                                                                                                                                             |
+| Workflow     | Trigger                      | Jobs                                                                                                                                                                                                    |
+| ------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`     | pull request, push on `main` | `quality` (format check, architecture, affected lint/typecheck/build), `tests` (coverage, summary, report artefact), `e2e` (built site, four browsers; affected on pull requests), `e2e-stack` (opt-in) |
+| `deploy.yml` | CI success on `main`, manual | API and SSR images deployed only if the commit is still the head of `main`; manual run takes an explicit `ref` (rollback)                                                                               |
 
 ## Lint
 
@@ -52,18 +51,15 @@ unmeasured violation counts in documentation.
 `tools/` contains recurring workspace-wide checks only; see its [inventory](../../tools/README.md).
 The owning Nx projects run their own helpers:
 
-| Owner            | Command                                                  | Purpose                                                                                     |
-| ---------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `web`            | `npx nx run web:content-snapshot`                        | Collect matching FR/EN revisions before a public release                                    |
-| `web`            | `npx nx run web:test-snapshot`                           | Prove failed collection preserves existing snapshots; test the sitemap and robots generator |
-| `web`            | `npx nx run web:seo-files`                               | Build, then write `sitemap.xml` and `robots.txt` (D42)                                      |
-| `web-e2e`        | `npx nx run web-e2e:test-tooling`                        | Verify preview routing and disposable Compose lifecycle                                     |
-| CI               | `node .github/scripts/coverage-summary.mjs`              | Present native coverage summaries in GitHub Actions                                         |
-| Claude and Codex | `node .agents/scripts/comment-diff.mjs <before> <after>` | Check syntax and protected directives during comment maintenance                            |
+| Owner            | Command                                                  | Purpose                                                          |
+| ---------------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
+| `web-e2e`        | `npx nx run web-e2e:test-tooling`                        | Verify preview routing and disposable Compose lifecycle          |
+| CI               | `node .github/scripts/coverage-summary.mjs`              | Present native coverage summaries in GitHub Actions              |
+| Claude and Codex | `node .agents/scripts/comment-diff.mjs <before> <after>` | Check syntax and protected directives during comment maintenance |
 
 E2E helpers are inside the E2E project, so Nx affected selection sees their changes. Both browser
-targets depend on their tooling tests. The collector depends on its own tests; CI quality also runs
-these owner targets independently of a live API or Docker stack.
+targets depend on their tooling tests. CI quality also runs the owner tooling tests independently
+of a live API or Docker stack. Runtime sitemap and robots behavior is tested at the SSR boundary.
 
 ## Format
 

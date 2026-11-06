@@ -3,7 +3,7 @@ import type { Server } from 'node:http';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { AdminAuthModule } from '@vfortin/backend-auth';
 import { ObservabilityModule } from '@vfortin/backend-observability';
-import { MediaPurgeJobs, SiteBuildJobs } from '@vfortin/content-adapters-in';
+import { MediaPurgeJobs } from '@vfortin/content-adapters-in';
 import { GetPublishedContent } from '@vfortin/content-application';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -46,12 +46,6 @@ describe('migrateContent and seedContentDatabase', (): void => {
         AdminAuthModule.forRoot({ issuer: 'https://exemple.fr/api/auth', jwks: { keys: [] } }),
         ContentModule.register({
           databaseUrl: url,
-          siteBuild: {
-            repository: 'moi/portfolio',
-            workflow: 'site-build.yml',
-            ref: 'main',
-            token: 't',
-          },
           workers: true,
           mediaDirectory: join(root, 'media'),
         }),
@@ -60,7 +54,6 @@ describe('migrateContent and seedContentDatabase', (): void => {
     const app: INestApplication<Server> =
       moduleRef.createNestApplication<INestApplication<Server>>();
     await app.init();
-    expect(app.get<SiteBuildJobs>(SiteBuildJobs)).toBeInstanceOf(SiteBuildJobs);
     expect(app.get<MediaPurgeJobs>(MediaPurgeJobs)).toBeInstanceOf(MediaPurgeJobs);
     await expect(
       app.get<GetPublishedContent>(GetPublishedContent).execute(),

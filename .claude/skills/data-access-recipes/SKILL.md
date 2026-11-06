@@ -57,15 +57,9 @@ stable `code`, `title`, optional `errors` per field. `toStoreError` turns any fa
 
 ## Public content
 
-The production site never fetches content live. `npx nx run web:content-snapshot`
-(`apps/web/scripts/fetch-content-snapshot.mjs`, content service running) writes
-`apps/web/content-snapshot/{fr,en}.json`; the build prerenders from it (D7) and validates it with the
-contract at prerender (D10). `SiteContentService`
-(`libs/frontend/content/data-access/src/lib/services/site-content/site-content.service.ts`) exposes it.
-Only `nx serve web` reads the content API: the `development` configuration replaces
-`apps/web/src/environments/content-snapshot.ts` with `content-snapshot.development.ts` (`fileReplacements`),
-which falls back on the committed snapshot when the service is down. Docker stack:
-`node apps/web/scripts/local-refresh.mjs` (`docs/operations/deployment.md`).
+The public site renders published content at request time through the content service (D7). The server
+loader validates the response against the contract (D10), and `SiteContentService` exposes it to pages.
+See `apps/web/README.md` and `docs/operations/deployment.md` for the server and local stack.
 
 ## Tests
 

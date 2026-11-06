@@ -95,6 +95,7 @@ import { DataTablePaginationComponent } from '@internal/ui/lib/data-table/compon
 import { DataTableColumnWidthsService } from '@internal/ui/lib/data-table/services/data-table-column-widths/data-table-column-widths.service';
 import {
   clampWidth,
+  distributedColumnWidths,
   contentWidth,
   keptColumnWidths,
   resizeDirection,
@@ -115,6 +116,8 @@ interface DataTableResizeHandle<T> {
   readonly side: 'start' | 'end';
   readonly target: DataTableColumn<T>;
   readonly targetSide: 'start' | 'end';
+  /** Whether the handle stands on the table's end edge, drawn inside it so the frame never overflows. */
+  readonly edge?: boolean;
 }
 
 /**
@@ -436,6 +439,25 @@ export class DataTableComponent<T> {
    * @type {InputSignalWithTransform<boolean, unknown>}
    */
   public readonly resizableColumns: InputSignalWithTransform<boolean, unknown> = input<
+    boolean,
+    unknown
+  >(false, { transform: booleanAttribute });
+
+  /**
+   * Property distributeColumns
+   * @readonly
+   *
+   * @description
+   * With resizable columns that all have a `width`: the widths are shares of the frame and minimums.
+   * Until the user resizes one, the frame's width is spread over the columns in proportion to their
+   * widths (up to their maximums), again whenever the frame resizes; below their sum the table keeps
+   * them and scrolls. The first resize pins the layout on screen in pixels, so nothing moves, and an
+   * empty last column hidden from assistive technologies takes the room left; a reset (Shift with a
+   * double click or Enter) returns to the spread. Every column resizes from its end edge.
+   *
+   * @type {InputSignalWithTransform<boolean, unknown>}
+   */
+  public readonly distributeColumns: InputSignalWithTransform<boolean, unknown> = input<
     boolean,
     unknown
   >(false, { transform: booleanAttribute });
@@ -1263,6 +1285,7 @@ export class DataTableComponent<T> {
         min: this.minWidth(column),
         max: this.maxWidth(column),
       }),
+      this.distributing(),
     ),
   );
 
@@ -1283,6 +1306,78 @@ export class DataTableComponent<T> {
           (column: DataTableColumn<T>): boolean => column.width === undefined,
         )?.id ?? null)
       : null,
+  );
+
+  /**
+   * Property distributing
+   * @readonly
+   *
+   * @description
+   * Whether the widths are shares of the frame (`distributeColumns`): resizable columns, all with a
+   * width.
+   *
+   * @type {Signal<boolean>}
+   */
+  private readonly distributing: Signal<boolean> = computed<boolean>(
+    (): boolean =>
+      this.distributeColumns() && this.resizableColumns() && this.fillColumn() === null,
+  );
+
+  /**
+   * Property distributedWidths
+   * @readonly
+   *
+   * @description
+   * Widths spread over the measured frame while no width is pinned; empty otherwise, before the
+   * first measure, or when the frame does not exceed the columns.
+   *
+   * @type {Signal<ReadonlyMap<string, number>>}
+   */
+  private readonly distributedWidths: Signal<ReadonlyMap<string, number>> = computed<
+    ReadonlyMap<string, number>
+  >((): ReadonlyMap<string, number> => {
+    const { width, hidden } = this.layout();
+    if (!this.distributing() || this.keptWidths().size > 0 || width <= 0)
+      return new Map<string, number>();
+    return distributedColumnWidths(
+      this.visibleColumns()
+        .filter((column: DataTableColumn<T>): boolean => !hidden.has(column.id))
+        .map((column: DataTableColumn<T>) => ({
+          id: column.id,
+          width: column.width ?? 0,
+          max: this.maxWidth(column),
+        })),
+      width - (this.selectable() ? this.selectionWidth() : 0),
+    );
+  });
+
+  /**
+   * Property spacer
+   * @readonly
+   *
+   * @description
+   * Whether the empty trailing column of `distributeColumns` is drawn: when the columns leave room in
+   * the measured frame, after a resize or at their maximums.
+   *
+   * @type {Signal<boolean>}
+   */
+  protected readonly spacer: Signal<boolean> = computed<boolean>((): boolean => {
+    const width: number = this.layout().width;
+    return this.distributing() && width > 0 && this.requiredWidth() < width;
+  });
+
+  /**
+   * Property absorbs
+   * @readonly
+   *
+   * @description
+   * Whether a column takes the room the fixed columns leave (a fill column or the spacer), so that
+   * the table spans its frame rather than the sum of its columns.
+   *
+   * @type {Signal<boolean>}
+   */
+  protected readonly absorbs: Signal<boolean> = computed<boolean>(
+    (): boolean => this.fillColumn() !== null || this.spacer(),
   );
 
   /**
@@ -1318,7 +1413,12 @@ export class DataTableComponent<T> {
         if (!right) {
           // The table's end edge: a handle only when no fill column absorbs the change.
           if (fill === null && this.canResize(left))
-            handles.set(left.id, { side: 'end', target: left, targetSide: 'end' });
+            handles.set(left.id, {
+              side: 'end',
+              target: left,
+              targetSide: 'end',
+              edge: !this.spacer(),
+            });
           continue;
         }
         let handle: DataTableResizeHandle<T> | null = null;
@@ -1482,11 +1582,15 @@ export class DataTableComponent<T> {
    * hairline while the heading row is hovered, 2 px `border-strong` under the pointer and 2 px `fg`
    * while dragged or focused.
    *
-   * @type {Readonly<Record<'start' | 'end', string>>}
+   * The table's end edge takes `edge`: the target inside the heading, its bar on the edge itself, so
+   * that half of it never overflows a frame the table fills exactly.
+   *
+   * @type {Readonly<Record<'start' | 'end' | 'edge', string>>}
    */
-  protected readonly resizeHandleClasses: Readonly<Record<'start' | 'end', string>> = {
+  protected readonly resizeHandleClasses: Readonly<Record<'start' | 'end' | 'edge', string>> = {
     start:
       "absolute inset-y-0 -start-1.5 z-10 w-3 cursor-col-resize touch-none outline-none select-none after:pointer-events-none after:absolute after:inset-x-0 after:top-1/2 after:mx-auto after:h-4 after:-translate-y-1/2 after:w-px after:rounded-full after:bg-transparent after:transition-[background-color,width] after:duration-(--dur-pop) after:content-[''] group-hover/head:after:bg-border hover:after:w-0.5 hover:after:bg-border-strong focus-visible:after:w-0.5 focus-visible:after:bg-fg data-dragging:after:w-0.5 data-dragging:after:bg-fg motion-reduce:after:transition-none",
+    edge: "absolute inset-y-0 end-0 z-10 w-3 cursor-col-resize touch-none outline-none select-none after:pointer-events-none after:absolute after:end-0 after:top-1/2 after:h-4 after:-translate-y-1/2 after:w-px after:rounded-full after:bg-transparent after:transition-[background-color,width] after:duration-(--dur-pop) after:content-[''] group-hover/head:after:bg-border hover:after:w-0.5 hover:after:bg-border-strong focus-visible:after:w-0.5 focus-visible:after:bg-fg data-dragging:after:w-0.5 data-dragging:after:bg-fg motion-reduce:after:transition-none",
     end: "absolute inset-y-0 -end-1.5 z-10 w-3 cursor-col-resize touch-none outline-none select-none after:pointer-events-none after:absolute after:inset-x-0 after:top-1/2 after:mx-auto after:h-4 after:-translate-y-1/2 after:w-px after:rounded-full after:bg-transparent after:transition-[background-color,width] after:duration-(--dur-pop) after:content-[''] group-hover/head:after:bg-border hover:after:w-0.5 hover:after:bg-border-strong focus-visible:after:w-0.5 focus-visible:after:bg-fg data-dragging:after:w-0.5 data-dragging:after:bg-fg motion-reduce:after:transition-none",
   };
 
@@ -1660,7 +1764,12 @@ export class DataTableComponent<T> {
    * @returns {number} Pixels; `0` for a column without `width`.
    */
   protected fixedWidth(column: DataTableColumn<T>): number {
-    return this.keptWidths().get(column.id) ?? column.width ?? 0;
+    return (
+      this.keptWidths().get(column.id) ??
+      this.distributedWidths().get(column.id) ??
+      column.width ??
+      0
+    );
   }
 
   /**
@@ -1737,13 +1846,14 @@ export class DataTableComponent<T> {
     } catch {
       // A pointer the browser no longer tracks (released, synthetic): the drag runs uncaptured.
     }
+    const pinned: boolean = this.pinDistribution();
     const start: number = this.fixedWidth(column);
     const scrolls: boolean = !this.stickyHeader() || this.scrolls();
     this.frozenScrolls.set(this.scrolls());
-    this.dragFloor.set(scrolls && this.fillColumn() !== null ? this.requiredWidth() : 0);
+    this.dragFloor.set(scrolls && this.absorbs() ? this.requiredWidth() : 0);
     const frameWidth: number = this.frame()?.nativeElement.clientWidth ?? 0;
     const slack: number =
-      scrolls || this.fillColumn() === null || frameWidth === 0
+      scrolls || !this.absorbs() || frameWidth === 0
         ? Number.POSITIVE_INFINITY
         : Math.max(0, frameWidth - this.requiredWidth());
     const bounds: DOMRect = handle.getBoundingClientRect();
@@ -1757,7 +1867,8 @@ export class DataTableComponent<T> {
       start,
       direction: resizeDirection(side, getComputedStyle(handle).direction === 'rtl'),
       max: Math.max(start, Math.min(this.maxWidth(column), start + slack)),
-      previous: this.resizedWidths().get(column.id),
+      previous: pinned ? undefined : this.resizedWidths().get(column.id),
+      pinned,
       latestX: event.clientX,
       frame: null,
     };
@@ -1842,6 +1953,7 @@ export class DataTableComponent<T> {
       else this.fitWidth(column);
       return;
     }
+    if (['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) this.pinDistribution();
     const step: number = event.shiftKey
       ? dataTableColumnWidths.largeStep
       : dataTableColumnWidths.step;
@@ -1888,6 +2000,13 @@ export class DataTableComponent<T> {
    * @param {DataTableColumn<T>} column - Column reset.
    */
   private resetWidth(column: DataTableColumn<T>): void {
+    if (this.distributing()) {
+      // Pinned widths are one layout: resetting returns the whole table to the spread.
+      if (this.resizedWidths().size === 0) return;
+      this.resizedWidths.set(new Map<string, number>());
+      this.persistWidths();
+      return;
+    }
     if (!this.resizedWidths().has(column.id)) return;
     this.resizedWidths.update(
       (widths: ReadonlyMap<string, number>): ReadonlyMap<string, number> => {
@@ -1914,6 +2033,7 @@ export class DataTableComponent<T> {
     const table: HTMLTableElement | undefined = this.tableElement()?.nativeElement;
     const col: HTMLTableColElement | undefined = this.colElement(column.id);
     if (!table || !col) return;
+    this.pinDistribution();
     const cells: HTMLElement[] = Array.from(
       table.querySelectorAll<HTMLElement>('th[data-column], td[data-column]'),
     ).filter((cell: HTMLElement): boolean => cell.dataset['column'] === column.id);
@@ -2000,7 +2120,13 @@ export class DataTableComponent<T> {
     );
     if (!column) return;
     if (commit) {
-      if (this.resizedWidths().get(column.id) !== drag.previous) this.persistWidths();
+      if (drag.pinned || this.resizedWidths().get(column.id) !== drag.previous)
+        this.persistWidths();
+      return;
+    }
+    if (drag.pinned) {
+      // Escape: back to the spread the drag started from.
+      this.resizedWidths.set(new Map<string, number>());
       return;
     }
     this.resizedWidths.update(
@@ -2028,7 +2154,7 @@ export class DataTableComponent<T> {
     if (col) col.style.width = `${this.fixedWidth(column)}px`;
     const table: HTMLTableElement | undefined = this.tableElement()?.nativeElement;
     if (!table) return;
-    if (this.fillColumn() === null) table.style.width = `${this.requiredWidth()}px`;
+    if (!this.absorbs()) table.style.width = `${this.requiredWidth()}px`;
     else table.style.minWidth = `${this.tableMinWidth()}px`;
   }
 
@@ -2126,6 +2252,23 @@ export class DataTableComponent<T> {
    * @param {DataTableColumn<T>} column - Column resized.
    * @param {number} width - Wanted width in pixels.
    */
+  /**
+   * Method pinDistribution
+   * @method pinDistribution
+   *
+   * @description
+   * Turns a spread layout into the user's widths before a resize, so that the columns keep the widths
+   * they show and only the resized one changes.
+   *
+   * @returns {boolean} Whether a spread layout was pinned.
+   */
+  private pinDistribution(): boolean {
+    const spread: ReadonlyMap<string, number> = this.distributedWidths();
+    if (spread.size === 0 || this.resizedWidths().size > 0) return false;
+    this.resizedWidths.set(new Map<string, number>(spread));
+    return true;
+  }
+
   private setWidth(column: DataTableColumn<T>, width: number): void {
     const next: number = clampWidth(width, this.minWidth(column), this.maxWidth(column));
     if (this.resizedWidths().get(column.id) === next) return;

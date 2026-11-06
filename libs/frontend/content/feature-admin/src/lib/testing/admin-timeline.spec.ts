@@ -1,4 +1,3 @@
-import { PUBLICATION_TEST_PROVIDER } from '@internal/content-web-feature-admin/lib/testing/publication-test-provider';
 import type { Mock } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
 import {
@@ -130,8 +129,7 @@ const toasts: () => [string, string][] = (): [string, string][] =>
  * @description
  * Site rebuild notice every timeline write merges into its toast, since each one triggers a build.
  */
-const REBUILD: string =
-  'Les modifications seront visibles après publication et reconstruction du site.';
+const REBUILD: string = 'Le site sera mis à jour automatiquement après les modifications.';
 
 /**
  * Function descriptions
@@ -174,7 +172,6 @@ interface Opened {
 async function open(url: string, providers: Provider[] = []): Promise<Opened> {
   TestBed.configureTestingModule({
     providers: [
-      PUBLICATION_TEST_PROVIDER,
       { provide: LOCALE_ID, useValue: 'fr' },
       ...providers,
       provideHttpClient(),

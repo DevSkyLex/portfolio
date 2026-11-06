@@ -198,6 +198,7 @@ export function toSeoDashboardDto(view: SeoDashboardView): SeoDashboardDto {
   };
   return {
     range: view.range,
+    demo: view.demo,
     refresh: {
       running: view.refresh.running,
       startedAt: view.refresh.startedAt?.toISOString() ?? null,

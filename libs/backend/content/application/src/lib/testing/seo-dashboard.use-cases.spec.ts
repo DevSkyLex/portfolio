@@ -409,9 +409,21 @@ describe('GetSeoDashboard', (): void => {
   const dashboard = (): Promise<SeoDashboardView> =>
     new GetSeoDashboard(store, sources, repository, clock).execute('28d');
 
+  it('announces demonstration figures when a source is a demo stand-in', async (): Promise<void> => {
+    const view: SeoDashboardView = await new GetSeoDashboard(
+      store,
+      { ...sources, analytics: { reader: { report: async () => AUDIENCE }, demo: true } },
+      repository,
+      clock,
+    ).execute('28d');
+    expect(view.demo).toBe(true);
+    expect(view.analytics).toEqual({ status: 'pending' });
+  });
+
   it('shows unconfigured and never fetched sections and the audit', async (): Promise<void> => {
     const view: SeoDashboardView = await dashboard();
     expect(view.range).toBe('28d');
+    expect(view.demo).toBe(false);
     expect(view.searchConsole).toEqual({ status: 'pending' });
     expect(view.analytics).toEqual({ status: 'not-configured', missing: ['SEO_GA4_PROPERTY_ID'] });
     expect(view.refresh).toEqual({

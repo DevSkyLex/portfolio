@@ -517,6 +517,8 @@ export type SeoAuditDto = z.infer<typeof SeoAuditSchema>;
  */
 export const SeoDashboardDtoSchema = z.object({
   range: SeoRangeSchema,
+  /** Whether a Google section shows demonstration figures (D52), never real measures. */
+  demo: z.boolean(),
   refresh: z.object({
     running: z.boolean(),
     startedAt: z.nullable(IsoDateTime),

@@ -12,17 +12,23 @@ import {
 } from '@angular/core';
 import type { AnalyticsData } from '@vfortin/content-web-data-access/admin';
 import {
-  AreaChartComponent,
   BarListComponent,
-  CARD_IMPORTS,
   DataTableComponent,
+  HeatmapComponent,
+  LineChartComponent,
   type BarListItem,
   type ChartPoint,
+  type ChartSeries,
   type DataTableColumn,
 } from '@vfortin/ui';
 import type { SeoDelta } from '@internal/content-web-feature-admin/lib/models/seo-delta/seo-delta.interface';
 import type { SeoFormatter } from '@internal/content-web-feature-admin/lib/models/seo-formatter/seo-formatter.interface';
 import { SeoKpiTileComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-kpi-tile/seo-kpi-tile.component';
+import { SeoSectionHeaderComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-section-header/seo-section-header.component';
+import {
+  type SeoCalendar,
+  seoCalendar,
+} from '@internal/content-web-feature-admin/lib/utils/seo-calendar/seo-calendar.utils';
 import { relativeDelta } from '@internal/content-web-feature-admin/lib/utils/seo-delta/seo-delta.utils';
 import { seoFormatter } from '@internal/content-web-feature-admin/lib/utils/seo-format/seo-format.utils';
 
@@ -64,40 +70,29 @@ interface Kpi {
 }
 
 /**
- * Interface DailyChart
- *
- * @description
- * One of the small multiples of the daily series.
- */
-interface DailyChart {
-  readonly id: string;
-  readonly label: string;
-  readonly valueHeader: string;
-  readonly points: readonly ChartPoint[];
-}
-
-/**
  * Component SeoAnalyticsPanelComponent
  * @class SeoAnalyticsPanelComponent
  *
  * @description
- * Google Analytics 4 report of the « Tableau de bord » (D47, D48): five stat tiles (active users,
- * sessions, views, engagement rate, average engagement time) with their change against the period
- * before; the three daily series as small multiples, one chart per measure; the top pages in a
- * sortable table; sessions per channel and per country as ranked bars with their share. `stale`
- * dims it while another window loads.
+ * Google Analytics 4 tab of the « Tableau de bord » (D47, D48, D51), full width: a strip of five
+ * figure cells (active users, sessions, views, engagement rate, average engagement time) with their
+ * change against the period before; a grid of chart cells: the three daily counts on one line chart
+ * (one unit, one scale), sessions laid out by weekday and week as a heatmap, sessions per channel and
+ * per country as ranked bars with their share; then the top pages as a full-width sortable table.
+ * `stale` dims it while another window loads.
  */
 @Component({
   selector: 'content-seo-analytics-panel',
   imports: [
-    AreaChartComponent,
     BarListComponent,
-    CARD_IMPORTS,
     DataTableComponent,
+    HeatmapComponent,
+    LineChartComponent,
     SeoKpiTileComponent,
+    SeoSectionHeaderComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-col gap-3' },
+  host: { class: 'flex flex-col' },
   templateUrl: './seo-analytics-panel.component.html',
 })
 export class SeoAnalyticsPanelComponent {
@@ -128,6 +123,17 @@ export class SeoAnalyticsPanelComponent {
   );
 
   /**
+   * Property locale
+   * @readonly
+   *
+   * @description
+   * Locale of the build, for the weekday names of the calendar.
+   *
+   * @type {string}
+   */
+  private readonly locale: string = inject<string>(LOCALE_ID);
+
+  /**
    * Property format
    * @readonly
    *
@@ -136,7 +142,7 @@ export class SeoAnalyticsPanelComponent {
    *
    * @type {SeoFormatter}
    */
-  protected readonly format: SeoFormatter = seoFormatter(inject<string>(LOCALE_ID));
+  protected readonly format: SeoFormatter = seoFormatter(this.locale);
 
   /**
    * Property comparison
@@ -204,44 +210,66 @@ export class SeoAnalyticsPanelComponent {
   });
 
   /**
-   * Property charts
+   * Property daily
    * @readonly
    *
    * @description
-   * Daily series, one chart per measure.
+   * Active users, sessions and views of each day: three counts of one unit, so one chart and one
+   * scale, in the series tones' fixed order.
    *
-   * @type {Signal<readonly DailyChart[]>}
+   * @type {Signal<readonly ChartSeries[]>}
    */
-  protected readonly charts: Signal<readonly DailyChart[]> = computed<readonly DailyChart[]>(
-    (): readonly DailyChart[] => {
-      const daily: readonly AudienceDay[] = this.data().daily;
-      const series = (pick: (day: AudienceDay) => number): readonly ChartPoint[] =>
-        daily.map((day: AudienceDay): ChartPoint => ({
+  protected readonly daily: Signal<readonly ChartSeries[]> = computed<readonly ChartSeries[]>(
+    (): readonly ChartSeries[] => {
+      const days: readonly AudienceDay[] = this.data().daily;
+      const points = (pick: (day: AudienceDay) => number): readonly ChartPoint[] =>
+        days.map((day: AudienceDay): ChartPoint => ({
           label: this.format.day(day.date),
           value: pick(day),
           display: this.format.count(pick(day)),
         }));
       return [
         {
-          id: 'users',
-          label: $localize`:@@admin.dashboard.analytics.usersPerDay:Utilisateurs actifs par jour`,
-          valueHeader: $localize`:@@admin.dashboard.analytics.activeUsers:Utilisateurs actifs`,
-          points: series((day: AudienceDay): number => day.activeUsers),
+          key: 'users',
+          label: $localize`:@@admin.dashboard.analytics.activeUsers:Utilisateurs actifs`,
+          tone: 'chart-1',
+          points: points((day: AudienceDay): number => day.activeUsers),
         },
         {
-          id: 'sessions',
-          label: $localize`:@@admin.dashboard.analytics.sessionsPerDay:Sessions par jour`,
-          valueHeader: $localize`:@@admin.dashboard.analytics.sessions:Sessions`,
-          points: series((day: AudienceDay): number => day.sessions),
+          key: 'sessions',
+          label: $localize`:@@admin.dashboard.analytics.sessions:Sessions`,
+          tone: 'chart-2',
+          points: points((day: AudienceDay): number => day.sessions),
         },
         {
-          id: 'views',
-          label: $localize`:@@admin.dashboard.analytics.viewsPerDay:Vues par jour`,
-          valueHeader: $localize`:@@admin.dashboard.analytics.views:Vues`,
-          points: series((day: AudienceDay): number => day.views),
+          key: 'views',
+          label: $localize`:@@admin.dashboard.analytics.views:Vues`,
+          tone: 'chart-3',
+          points: points((day: AudienceDay): number => day.views),
         },
       ];
     },
+  );
+
+  /**
+   * Property calendar
+   * @readonly
+   *
+   * @description
+   * Sessions of each day by weekday and week.
+   *
+   * @type {Signal<SeoCalendar>}
+   */
+  protected readonly calendar: Signal<SeoCalendar> = computed<SeoCalendar>((): SeoCalendar =>
+    seoCalendar(
+      this.data().daily,
+      (day: AudienceDay): number => day.sessions,
+      (value: number): string =>
+        value === 1
+          ? $localize`:@@admin.dashboard.analytics.sessionCount.one:${this.format.count(value)}:count: session`
+          : $localize`:@@admin.dashboard.analytics.sessionCount.other:${this.format.count(value)}:count: sessions`,
+      this.locale,
+    ),
   );
 
   /**
@@ -285,10 +313,14 @@ export class SeoAnalyticsPanelComponent {
       header: $localize`:@@admin.dashboard.searchConsole.page:Page`,
       cell: (page: AudiencePage): string => page.path,
       sortable: true,
-      class: 'max-w-0 w-full truncate',
+      width: 360,
+      minWidth: 160,
+      maxWidth: 1200,
+      class: 'truncate',
     },
     {
       id: 'views',
+      width: 112,
       header: $localize`:@@admin.dashboard.analytics.views:Vues`,
       cell: (page: AudiencePage): string => this.format.count(page.views),
       sortValue: (page: AudiencePage): number => page.views,
@@ -298,6 +330,7 @@ export class SeoAnalyticsPanelComponent {
     },
     {
       id: 'users',
+      width: 168,
       header: $localize`:@@admin.dashboard.analytics.activeUsers:Utilisateurs actifs`,
       cell: (page: AudiencePage): string => this.format.count(page.activeUsers),
       sortValue: (page: AudiencePage): number => page.activeUsers,

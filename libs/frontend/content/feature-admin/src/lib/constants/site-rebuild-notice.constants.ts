@@ -7,4 +7,4 @@
  *
  * @type {string}
  */
-export const SITE_REBUILD_NOTICE: string = $localize`:@@admin.content.rebuildNotice:Les modifications seront visibles après publication et reconstruction du site.`;
+export const SITE_REBUILD_NOTICE: string = $localize`:@@admin.content.rebuildNotice:Le site sera mis à jour automatiquement après les modifications.`;

@@ -14,7 +14,8 @@ workflows remain with their features even when their results appear in layouts o
 | `@vfortin/web-shell/server` | `web`     |
 
 The root publishes `provideWebShell` and its options. `/server` publishes `provideWebShellServer` with
-rendering policy and prerender validation; the browser entry must not re-export it.
+rendering policy and request content validation; the browser entry must not re-export it. The server
+entry also exposes the runtime sitemap used by the Node bootstrap.
 
 ## Provider scope
 
@@ -28,7 +29,8 @@ inject these ports rather than concrete business stores, services or DTOs.
 - French `/fr/` and English `/en/` serve public content and the administration (`/fr/admin`, `/en/admin`,
   CSR and noindex); the admin sidebar's « Langue » menu switches between the two builds (D18).
 - Root initialization is reserved for requirements shared by the whole application.
-- Public content failure preserves prerendered readability and does not prevent login.
+- Public pages render per request with Angular's SSR engine; the admin remains CSR and noindex.
+- Public content failure returns a temporary failure and does not prevent login.
 - Owner route trees/pages are lazy; login does not load protected workflows.
 - Failed count/search is unknown/failed, never a successful empty result.
 - Inbox changes invalidate owner summary without waiting for unrelated navigation.

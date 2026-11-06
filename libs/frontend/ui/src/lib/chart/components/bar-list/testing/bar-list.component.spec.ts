@@ -23,13 +23,16 @@ describe('BarListComponent', (): void => {
       'Email 0 · 0 %',
     ]);
     const bars: (HTMLElement | null)[] = rows.map((row: HTMLLIElement) =>
-      row.querySelector<HTMLElement>('.bg-aurora-violet'),
+      row.querySelector<HTMLElement>('.bg-chart-1'),
     );
     expect(bars[0]?.style.width).toBe('100%');
     expect(bars[1]?.style.width).toBe('50%');
-    // A zero draws nothing.
+    // A zero draws no fill, only the empty track.
     expect(bars[2]).toBeNull();
-    expect(bars[0]?.className).toContain('rounded-e-xs');
+    expect(bars[0]?.className).toContain('rounded-xs');
+    expect(rows[2]?.querySelector('[aria-hidden="true"]')?.className).toContain(
+      'bg-surface-raised',
+    );
   });
 
   it('dims stale rows', async (): Promise<void> => {

@@ -1,58 +1,131 @@
-<div
-  class="grid grid-cols-2 gap-3 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-6"
->
-  @for (total of totals(); track total.id) {
-    <content-seo-kpi-tile [label]="total.label" [value]="total.value" [compared]="false" />
-  }
-</div>
-
-<ui-data-table
-  density="compact"
-  caption="Problèmes relevés"
-  i18n-caption="@@admin.dashboard.audit.caption"
-  [data]="rows()"
-  [columns]="columns"
-  [facets]="facets"
-  [rowKey]="rowKey"
-  [columnMenu]="false"
->
-  <ng-template uiDataTableCell="gravite" [uiDataTableCellRows]="rows()" let-row>
-    <span uiBadge dot [variant]="row.variant">{{ row.severityLabel }}</span>
-  </ng-template>
-
-  <ng-template uiDataTableCell="projet" [uiDataTableCellRows]="rows()" let-row>
-    <a
-      class="block max-w-56 truncate font-medium whitespace-nowrap text-fg outline-2 outline-offset-2 outline-transparent hover:underline focus-visible:rounded-xs focus-visible:outline-accent/55"
-      [routerLink]="['/admin/projects', row.projectId]"
-      >{{ row.project }}</a
+<!-- Full-width figure strip and chart grid: the hairlines between cells replace cards (D36). -->
+<section aria-labelledby="audit-summary">
+  <content-seo-section-header
+    headingId="audit-summary"
+    heading="Synthèse de l’audit"
+    i18n-heading="@@admin.dashboard.audit.summary"
+    description="Problèmes relevés sur les textes de recherche, les images et les traductions des projets publiés."
+    i18n-description="@@admin.dashboard.audit.summaryHint"
+  />
+  <div class="overflow-hidden border-b border-border">
+    <div
+      class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-6"
     >
-  </ng-template>
+      @for (total of totals(); track total.id) {
+        <content-seo-kpi-tile [label]="total.label" [value]="total.value" [compared]="false" />
+      }
+    </div>
+  </div>
 
-  <ng-template uiDataTableCell="probleme" [uiDataTableCellRows]="rows()" let-row>
-    <span class="block w-0 min-w-full truncate text-fg-muted" [title]="row.message">{{
-      row.message
-    }}</span>
-  </ng-template>
-
-  <ng-template uiDataTableEmpty let-layout>
-    <div uiEmpty [layout]="layout">
-      <div uiEmptyHeader>
-        <div uiEmptyMedia variant="icon">
-          <ng-icon [svg]="audit().totals.published ? icons.clean : icons.none" size="16" />
-        </div>
-        @if (audit().totals.published) {
-          <p uiEmptyTitle i18n="@@admin.dashboard.audit.empty.title">Aucun problème relevé</p>
-          <p uiEmptyDescription i18n="@@admin.dashboard.audit.empty.description">
-            Les textes de recherche, les images et les traductions des projets publiés sont
-            complets.
-          </p>
-        } @else {
-          <p uiEmptyTitle i18n="@@admin.dashboard.audit.none.title">Aucun projet publié</p>
-          <p uiEmptyDescription i18n="@@admin.dashboard.audit.none.description">
-            L’audit porte sur les projets publiés : publiez-en un pour l’analyser.
-          </p>
-        }
+  @if (rows().length) {
+    <div class="overflow-hidden border-b border-border">
+      <div class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2">
+        <section
+          class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+          aria-labelledby="audit-projects"
+        >
+          <h3
+            id="audit-projects"
+            class="text-[13px]/5 font-medium text-fg"
+            i18n="@@admin.dashboard.audit.byProject"
+          >
+            Problèmes par projet
+          </h3>
+          <ui-stacked-bars
+            label="Problèmes par projet"
+            i18n-label="@@admin.dashboard.audit.byProject"
+            nameHeader="Projet"
+            i18n-nameHeader="@@admin.dashboard.audit.project"
+            scale="absolute"
+            [rows]="byProject()"
+            [legend]="severityLegend"
+          />
+        </section>
+        <section
+          class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+          aria-labelledby="audit-kinds"
+        >
+          <h3
+            id="audit-kinds"
+            class="text-[13px]/5 font-medium text-fg"
+            i18n="@@admin.dashboard.audit.byKind"
+          >
+            Problèmes par type
+          </h3>
+          <ui-bar-list
+            label="Problèmes par type"
+            i18n-label="@@admin.dashboard.audit.byKind"
+            [items]="byKind()"
+          />
+        </section>
       </div>
     </div>
-  </ng-template>
-</ui-data-table>
+  }
+</section>
+
+<section aria-labelledby="audit-issues">
+  <content-seo-section-header
+    headingId="audit-issues"
+    heading="Problèmes relevés"
+    i18n-heading="@@admin.dashboard.audit.caption"
+    description="Un problème par ligne, le plus grave d’abord ; filtrez par gravité ou cherchez un projet."
+    i18n-description="@@admin.dashboard.audit.issuesHint"
+  />
+  <ui-data-table
+    resizableColumns
+    distributeColumns
+    columnWidthsKey="portfolio.admin.table.seo-audit"
+    density="compact"
+    caption="Problèmes relevés"
+    i18n-caption="@@admin.dashboard.audit.caption"
+    [framed]="false"
+    [data]="rows()"
+    [columns]="columns"
+    [facets]="facets"
+    [rowKey]="rowKey"
+    [columnMenu]="false"
+  >
+    <ng-template uiDataTableCell="gravite" [uiDataTableCellRows]="rows()" let-row>
+      <span data-slot="status-icon" [class]="row.status.classes" [uiTooltip]="row.severityLabel">
+        <ng-icon [svg]="row.status.icon" size="14" aria-hidden="true" />
+        <span class="sr-only">{{ row.severityLabel }}</span>
+      </span>
+    </ng-template>
+
+    <ng-template uiDataTableCell="projet" [uiDataTableCellRows]="rows()" let-row>
+      <a
+        class="block max-w-56 truncate font-medium whitespace-nowrap text-fg outline-2 outline-offset-2 outline-transparent hover:underline focus-visible:rounded-xs focus-visible:outline-accent/55"
+        [routerLink]="['/admin/projects', row.projectId]"
+        >{{ row.project }}</a
+      >
+    </ng-template>
+
+    <ng-template uiDataTableCell="probleme" [uiDataTableCellRows]="rows()" let-row>
+      <span class="block w-0 min-w-full truncate text-fg-muted" [title]="row.message">{{
+        row.message
+      }}</span>
+    </ng-template>
+
+    <ng-template uiDataTableEmpty let-layout>
+      <div uiEmpty [layout]="layout">
+        <div uiEmptyHeader>
+          <div uiEmptyMedia variant="icon">
+            <ng-icon [svg]="audit().totals.published ? icons.clean : icons.none" size="16" />
+          </div>
+          @if (audit().totals.published) {
+            <p uiEmptyTitle i18n="@@admin.dashboard.audit.empty.title">Aucun problème relevé</p>
+            <p uiEmptyDescription i18n="@@admin.dashboard.audit.empty.description">
+              Les textes de recherche, les images et les traductions des projets publiés sont
+              complets.
+            </p>
+          } @else {
+            <p uiEmptyTitle i18n="@@admin.dashboard.audit.none.title">Aucun projet publié</p>
+            <p uiEmptyDescription i18n="@@admin.dashboard.audit.none.description">
+              L’audit porte sur les projets publiés : publiez-en un pour l’analyser.
+            </p>
+          }
+        </div>
+      </div>
+    </ng-template>
+  </ui-data-table>
+</section>

@@ -11,7 +11,7 @@ import type { AdminTimelineView } from '@internal/content-application/lib/use-ca
  * @interface TimelineListChangeResult
  *
  * @description
- * List of one kind after a reorder or a deletion, and the rebuild revision queued with it.
+ * List of one kind after a reorder or deletion, and its public content revision.
  */
 export interface TimelineListChangeResult extends AdminTimelineView {
   // #region Properties
@@ -20,7 +20,7 @@ export interface TimelineListChangeResult extends AdminTimelineView {
    * @readonly
    *
    * @description
-   * Content revision queued for the site rebuild, or `null` when the order did not change.
+   * Public content revision, or `null` when the order did not change.
    */
   readonly revision: number | null;
   // #endregion
@@ -45,7 +45,7 @@ export class ReorderTimeline {
    * @description
    * Wires the transaction boundary and the request clock.
    *
-   * @param {TimelineUnitOfWork} unitOfWork - Atomic timeline and outbox writes.
+   * @param {TimelineUnitOfWork} unitOfWork - Atomic timeline and revision writes.
    * @param {Clock} clock - Rebuild request time.
    */
   public constructor(
@@ -60,8 +60,8 @@ export class ReorderTimeline {
    * @method execute
    *
    * @description
-   * Checks and bumps the list version, then writes the moved positions and requests the rebuild; an
-   * unchanged order still bumps the version (the client receives it) but queues no rebuild.
+   * Checks and bumps the list version, then writes the moved positions and advances the revision; an
+   * unchanged order still bumps the version (the client receives it) but does not advance the content revision.
    *
    * @param {TimelineKind} kind - Kind of the list.
    * @param {number} expectedVersion - List version read by the client (`If-Match`).

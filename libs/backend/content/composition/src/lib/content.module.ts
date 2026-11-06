@@ -1,10 +1,4 @@
-import {
-  type DynamicModule,
-  Inject,
-  Logger,
-  Module,
-  type OnApplicationShutdown,
-} from '@nestjs/common';
+import { type DynamicModule, Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { McpAuthModule, type McpAuthOptions } from '@vfortin/backend-auth';
@@ -24,7 +18,6 @@ import {
   ContentMcpTools,
   MediaPurgeJobs,
   SeoDashboardJobs,
-  SiteBuildJobs,
   contentProblemMapper,
 } from '@vfortin/content-adapters-in';
 import {
@@ -38,18 +31,17 @@ import {
   DrizzleProfileRepository,
   DrizzleProjectRepository,
   DrizzleSeoReportStore,
-  DrizzleSiteBuildRequestRepository,
   DrizzleSiteTextsUnitOfWork,
   DrizzleTimelineEntryRepository,
   DrizzleTimelineListRepository,
   DrizzleTimelineUnitOfWork,
-  type GithubDispatchOptions,
-  GithubSiteBuildDispatcher,
+  DemoAnalyticsReader,
+  DemoSearchConsoleReader,
+  DemoWebVitalsReader,
   GoogleAnalyticsReader,
   type GoogleAccessTokens,
   GoogleSearchConsoleReader,
   GoogleServiceAccountTokens,
-  LogSiteBuildDispatcher,
   PageSpeedWebVitalsReader,
   RandomIdGenerator,
   SharpImageProcessor,
@@ -60,7 +52,6 @@ import {
   type Clock,
   CreateTimelineEntry,
   DeleteTimelineEntry,
-  DispatchSiteBuild,
   GetAdminLegalDocument,
   GetAdminProfile,
   GetAdminProject,
@@ -81,8 +72,11 @@ import {
   ReviseProject,
   CreateProject,
   ReviseTimelineEntry,
+  type AnalyticsReader,
+  type SearchConsoleReader,
+  type SeoSourceSetup,
   type SeoSources,
-  type SiteBuildDispatcher,
+  type WebVitalsReader,
   UnpublishProject,
   UploadMedia,
 } from '@vfortin/content-application';
@@ -99,7 +93,7 @@ export const CONTENT_DATABASE: unique symbol = Symbol('CONTENT_DATABASE');
  * Constant CLOCK
  *
  * @description
- * Private Nest injection token for the clock used by content commands and the rebuild worker.
+ * Private Nest injection token for the clock used by content commands and scheduled jobs.
  */
 const CLOCK: unique symbol = Symbol('CLOCK');
 
@@ -199,6 +193,16 @@ export interface ContentSeoOptions {
   readonly webVitalsUrls: readonly string[];
 
   /**
+   * Property demoData
+   * @readonly
+   *
+   * @description
+   * Replaces each unconfigured Google source by demonstration figures (D52), for local development
+   * only; the dashboard announces them.
+   */
+  readonly demoData?: boolean;
+
+  /**
    * Property sources
    * @readonly
    *
@@ -242,19 +246,28 @@ export function seoSources(seo: ContentSeoOptions): SeoSources {
     const names: string[] = tokens === null ? [SEO_SETTINGS.credentials] : [];
     return value === null ? [...names, name] : names;
   };
+  // An unconfigured source falls back on demonstration figures when they are enabled (D52).
+  const demo = <R>(missing: readonly string[], reader: () => R): SeoSourceSetup<R> =>
+    seo.demoData === true ? { reader: reader(), demo: true } : { missing };
   return {
     searchConsole:
       tokens !== null && seo.searchConsoleProperty !== null
         ? { reader: new GoogleSearchConsoleReader({ property: seo.searchConsoleProperty, tokens }) }
-        : { missing: missing(seo.searchConsoleProperty, SEO_SETTINGS.searchConsole) },
+        : demo(
+            missing(seo.searchConsoleProperty, SEO_SETTINGS.searchConsole),
+            (): SearchConsoleReader => new DemoSearchConsoleReader(seo.siteOrigin),
+          ),
     analytics:
       tokens !== null && seo.analyticsPropertyId !== null
         ? { reader: new GoogleAnalyticsReader({ propertyId: seo.analyticsPropertyId, tokens }) }
-        : { missing: missing(seo.analyticsPropertyId, SEO_SETTINGS.analytics) },
+        : demo(
+            missing(seo.analyticsPropertyId, SEO_SETTINGS.analytics),
+            (): AnalyticsReader => new DemoAnalyticsReader(),
+          ),
     webVitals:
       seo.pageSpeedApiKey !== null
         ? { reader: new PageSpeedWebVitalsReader({ apiKey: seo.pageSpeedApiKey }) }
-        : { missing: [SEO_SETTINGS.pageSpeed] },
+        : demo([SEO_SETTINGS.pageSpeed], (): WebVitalsReader => new DemoWebVitalsReader()),
   };
 }
 
@@ -263,7 +276,7 @@ export function seoSources(seo: ContentSeoOptions): SeoSources {
  * @interface ContentModuleOptions
  *
  * @description
- * Runtime configuration for connecting the content module to persistence and rebuild dispatch.
+ * Runtime configuration for connecting the content module to persistence and scheduled jobs.
  */
 export interface ContentModuleOptions {
   /** Enables the stateless MCP resource with the identity service's issuer and keys (D49). */
@@ -279,20 +292,11 @@ export interface ContentModuleOptions {
   readonly databaseUrl: string;
 
   /**
-   * Property siteBuild
-   * @readonly
-   *
-   * @description
-   * GitHub workflow configuration; `null` selects log-only dispatch when no dispatcher override is provided.
-   */
-  readonly siteBuild: GithubDispatchOptions | null;
-
-  /**
    * Property workers
    * @readonly
    *
    * @description
-   * Enables scheduled outbox processing; tests can disable the worker.
+   * Enables scheduled media purge and SEO refresh; tests can disable the workers.
    */
   readonly workers: boolean;
 
@@ -324,15 +328,6 @@ export interface ContentModuleOptions {
   readonly prepare?: (database: ContentDatabaseHandle) => Promise<void>;
 
   /**
-   * Property siteBuildDispatcher
-   * @readonly
-   *
-   * @description
-   * Optional dispatcher override for tests or another runtime integration.
-   */
-  readonly siteBuildDispatcher?: SiteBuildDispatcher;
-
-  /**
    * Property clock
    * @readonly
    *
@@ -358,7 +353,7 @@ export interface ContentModuleOptions {
  *
  * @description
  * Wires content persistence, public queries, project, timeline, profile, legal and media
- * administration, rebuild dispatch, the media purge and the SEO dashboard into Nest.
+ * administration, the media purge and the SEO dashboard into Nest.
  */
 @Module({})
 export class ContentModule implements OnApplicationShutdown {
@@ -382,7 +377,7 @@ export class ContentModule implements OnApplicationShutdown {
    * @static
    *
    * @description
-   * Creates a dynamic module with runtime-specific database, use-case and dispatcher providers.
+   * Creates a dynamic module with runtime-specific database and use-case providers.
    * Scheduled workers are registered only when enabled in the options.
    *
    * @param {ContentModuleOptions} options - Content infrastructure configuration.
@@ -413,17 +408,25 @@ export class ContentModule implements OnApplicationShutdown {
       providers: [
         {
           provide: ManagePublication,
-          inject: [CONTENT_DATABASE, CLOCK],
-          useFactory: (database: ContentDatabaseHandle, clock: Clock): ManagePublication =>
-            new ManagePublication(new DrizzlePublicationRepository(database.db), clock),
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): ManagePublication =>
+            new ManagePublication(new DrizzlePublicationRepository(database.db)),
         },
         ...(options.mcp ? [ContentMcpTools] : []),
         {
           provide: CONTENT_DATABASE,
           useFactory: async (): Promise<ContentDatabaseHandle> => {
             const database: ContentDatabaseHandle = await openContentDatabase(options.databaseUrl);
-            await options.prepare?.(database);
-            return database;
+            try {
+              await options.prepare?.(database);
+              await new DrizzlePublicationRepository(database.db).recover(
+                options.clock?.now() ?? new Date(),
+              );
+              return database;
+            } catch (error) {
+              await database.close();
+              throw error;
+            }
           },
         },
         { provide: CLOCK, useFactory: (): Clock => options.clock ?? new SystemClock() },
@@ -571,23 +574,6 @@ export class ContentModule implements OnApplicationShutdown {
             clock: Clock,
           ): PurgeMedia => new PurgeMedia(new DrizzleMediaRepository(database.db), storage, clock),
         },
-        {
-          provide: DispatchSiteBuild,
-          inject: [CONTENT_DATABASE, CLOCK],
-          useFactory: (database: ContentDatabaseHandle, clock: Clock): DispatchSiteBuild => {
-            const logger: Logger = new Logger('SiteBuild');
-            const dispatcher: SiteBuildDispatcher =
-              options.siteBuildDispatcher ??
-              (options.siteBuild
-                ? new GithubSiteBuildDispatcher(options.siteBuild)
-                : new LogSiteBuildDispatcher((line: string): void => logger.log(line)));
-            return new DispatchSiteBuild(
-              new DrizzleSiteBuildRequestRepository(database.db),
-              dispatcher,
-              clock,
-            );
-          },
-        },
         { provide: SEO_SOURCES, useFactory: (): SeoSources => seoSources(seo) },
         {
           provide: GetSeoDashboard,
@@ -627,11 +613,11 @@ export class ContentModule implements OnApplicationShutdown {
             databaseReadinessCheck(database),
           ],
         },
-        ...(options.workers ? [SiteBuildJobs, MediaPurgeJobs, SeoDashboardJobs] : []),
+        ...(options.workers ? [MediaPurgeJobs, SeoDashboardJobs] : []),
         { provide: PROBLEM_MAPPER, useValue: contentProblemMapper },
         { provide: APP_FILTER, useClass: ProblemDetailsFilter },
       ],
-      exports: [READINESS_CHECKS, DispatchSiteBuild, PurgeMedia],
+      exports: [READINESS_CHECKS, PurgeMedia],
     };
   }
 

@@ -51,10 +51,11 @@ interface BarListRow {
             }}</span>
             <span class="shrink-0 text-fg-muted tabular-nums">{{ row.item.display }}</span>
           </div>
-          <span class="flex h-1.5" aria-hidden="true">
+          <!-- The track shows the full scale; the fill keeps rounded ends at any length. -->
+          <span class="flex h-1.5 overflow-hidden rounded-xs bg-surface-raised" aria-hidden="true">
             @if (row.width > 0) {
               <span
-                class="h-full min-w-0.5 rounded-e-xs bg-aurora-violet"
+                class="h-full min-w-1.5 rounded-xs bg-chart-1"
                 [style.width.%]="row.width"
               ></span>
             }

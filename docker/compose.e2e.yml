@@ -1,6 +1,9 @@
 # Disposable acceptance stack. Only committed, public development placeholders are mounted.
 # Always combine with compose.dev.yml and an explicit portfolio-e2e-* project name.
 services:
+  web:
+    environment:
+      SITE_ORIGIN: http://localhost:18080
   nginx:
     ports: !override ['127.0.0.1:18080:80']
   mailpit:

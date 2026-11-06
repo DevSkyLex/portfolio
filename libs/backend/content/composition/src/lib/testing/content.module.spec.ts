@@ -6,10 +6,20 @@ import { AdminAuthModule } from '@vfortin/backend-auth';
 import { ObservabilityModule } from '@vfortin/backend-observability';
 import {
   type ContentDatabaseHandle,
+  DrizzlePublicationRepository,
+  DrizzleProfileRepository,
+  DrizzleSiteTextsUnitOfWork,
   migrateContentDatabase,
   seedContent,
 } from '@vfortin/content-adapters-out';
-import { DispatchSiteBuild, MEDIA_GRACE_MS, PurgeMedia } from '@vfortin/content-application';
+import {
+  GetPublishedContent,
+  MEDIA_GRACE_MS,
+  PurgeMedia,
+  ReviseProfile,
+  type PublishedContent,
+} from '@vfortin/content-application';
+import type { Profile } from '@vfortin/content-domain';
 import { type JWK, SignJWT, exportJWK, generateKeyPair } from 'jose';
 import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -113,7 +123,6 @@ describe('ContentModule', (): void => {
   let app: INestApplication<Server>;
   let adminToken: string;
   let mediaDirectory: string;
-  const dispatched: number[] = [];
   const clock: { current: Date; now(): Date } = {
     current: new Date('2026-11-02T10:00:00Z'),
     now(): Date {
@@ -141,14 +150,9 @@ describe('ContentModule', (): void => {
         AdminAuthModule.forRoot({ issuer: ISSUER, jwks: { keys: [jwk] } }),
         ContentModule.register({
           databaseUrl: 'pglite:memory',
-          siteBuild: null,
           workers: false,
           mediaDirectory,
           clock,
-          siteBuildDispatcher: {
-            dispatch: async (revision: number): Promise<undefined> =>
-              void dispatched.push(revision),
-          },
           prepare: async (database: ContentDatabaseHandle): Promise<void> => {
             await migrateContentDatabase(database, MIGRATIONS);
             await seedContent(database.db);
@@ -170,6 +174,49 @@ describe('ContentModule', (): void => {
   afterAll(async (): Promise<void> => {
     await app.close();
     rmSync(mediaDirectory, { recursive: true, force: true });
+  });
+
+  it('releases a legacy frozen batch before the service starts reading public content', async (): Promise<void> => {
+    const moduleRef: TestingModule = await Test.createTestingModule({
+      imports: [
+        ObservabilityModule.forRoot({ service: 'content-test', level: 'silent', pretty: false }),
+        AdminAuthModule.forRoot({ issuer: ISSUER, jwks: { keys: [] } }),
+        ContentModule.register({
+          databaseUrl: 'pglite:memory',
+          workers: false,
+          mediaDirectory,
+          clock,
+          prepare: async (database: ContentDatabaseHandle): Promise<void> => {
+            await migrateContentDatabase(database, MIGRATIONS);
+            await seedContent(database.db);
+            const publication: DrizzlePublicationRepository = new DrizzlePublicationRepository(
+              database.db,
+            );
+            await publication.start((await publication.status()).version);
+            const profile: Profile = await new DrizzleProfileRepository(database.db).load();
+            await new ReviseProfile(new DrizzleSiteTextsUnitOfWork(database.db), clock).execute(
+              profile.version,
+              {
+                heroIntro: { fr: 'Nouvelle introduction', en: 'New introduction' },
+                aboutStatement: profile.aboutStatement.toProps(),
+                aboutLead: profile.aboutLead.toProps(),
+                facts: [],
+                links: [],
+              },
+            );
+          },
+        }),
+      ],
+    }).compile();
+    try {
+      const content: PublishedContent = await moduleRef
+        .get<GetPublishedContent>(GetPublishedContent)
+        .execute();
+      expect(content.profile.heroIntro.fr).toBe('Nouvelle introduction');
+      expect(content.revision).toBe(2);
+    } finally {
+      await moduleRef.close();
+    }
   });
 
   it('serves the French snapshot matching the contract', async (): Promise<void> => {
@@ -253,7 +300,7 @@ describe('ContentModule', (): void => {
       expect((await admin().post(path).set(auth).set('if-match', '"9"')).status).toBe(412);
     });
 
-    it('unpublishes, returns the new version and requests a site rebuild', async (): Promise<void> => {
+    it('unpublishes and exposes the change in the next public snapshot', async (): Promise<void> => {
       const response: request.Response = await admin()
         .post('/api/content/admin/projects/project-movah/unpublish')
         .set(auth)
@@ -261,10 +308,12 @@ describe('ContentModule', (): void => {
       expect(response.status).toBe(200);
       expect(response.headers['etag']).toBe('"2"');
       expect(response.body.status).toBe('draft');
-      await expect(app.get<DispatchSiteBuild>(DispatchSiteBuild).execute()).resolves.toEqual({
-        dispatched: 2,
-      });
-      expect(dispatched).toEqual([2]);
+      const snapshot: request.Response = await request(app.getHttpServer()).get(
+        '/api/content/snapshot?locale=fr',
+      );
+      expect(
+        snapshot.body.projects.map((project: { id: string }): string => project.id),
+      ).not.toContain('project-movah');
     });
 
     it('refuses to empty the English text of a published project', async (): Promise<void> => {
@@ -502,8 +551,7 @@ describe('ContentModule', (): void => {
         expect(response.status).toBe(401);
       });
 
-      it('creates, edits, moves and deletes an experience, each time queueing a rebuild', async (): Promise<void> => {
-        const before: number = dispatched.length;
+      it('creates, edits, moves and deletes an experience', async (): Promise<void> => {
         const list: request.Response = await admin().get(`${base}/experience/entries`).set(auth);
         expect(list.status).toBe(200);
         expect(list.body.member.map((e: { id: string }): string => e.id)).toEqual([
@@ -577,9 +625,6 @@ describe('ContentModule', (): void => {
           0, 1, 2,
         ]);
         expect((await admin().get(`${base}/experience/entries/${id}`).set(auth)).status).toBe(404);
-
-        await app.get<DispatchSiteBuild>(DispatchSiteBuild).execute();
-        expect(dispatched.length).toBe(before + 1);
       });
 
       it('refuses an entry without English (422) and an entry of the other kind (404)', async (): Promise<void> => {
@@ -620,7 +665,6 @@ describe('ContentModule', (): void => {
       });
 
       it('accepts the seeded profile back, then publishes a new link', async (): Promise<void> => {
-        const before: number = dispatched.length;
         const loaded: request.Response = await admin().get('/api/content/admin/profile').set(auth);
         expect(loaded.status).toBe(200);
         const { version, ...profile } = loaded.body as Record<string, unknown> & {
@@ -651,8 +695,6 @@ describe('ContentModule', (): void => {
         expect(
           snapshot.body.profile.links.map((link: { kind: string }): string => link.kind),
         ).toEqual(['email', 'github', 'linkedin', 'malt']);
-        await app.get<DispatchSiteBuild>(DispatchSiteBuild).execute();
-        expect(dispatched.length).toBe(before + 1);
       });
 
       it('accepts each seeded legal document back, dated by the save', async (): Promise<void> => {

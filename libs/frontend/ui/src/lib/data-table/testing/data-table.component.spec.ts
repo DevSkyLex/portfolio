@@ -620,6 +620,7 @@ describe('DataTableComponent options', (): void => {
     [searchable]="false"
     [paginated]="false"
     [stickyHeader]="sticky()"
+    [distributeColumns]="spread()"
     [data]="rows"
     [columns]="columns()"
     [rowKey]="key"
@@ -639,6 +640,7 @@ class ResizableHostComponent {
     { id: 'age', header: 'Âge', cell: (p) => p.age, width: 60, resizable: false },
   ]);
   public readonly sticky: WritableSignal<boolean> = signal<boolean>(false);
+  public readonly spread: WritableSignal<boolean> = signal<boolean>(false);
   public readonly key: (person: Person) => number = (person: Person): number => person.id;
   public readonly state: WritableSignal<DataTableState> =
     signal<DataTableState>(DATA_TABLE_INITIAL_STATE);
@@ -1166,6 +1168,71 @@ describe('DataTableComponent column resizing', (): void => {
     await fixture.whenStable();
     expect(col('city')?.style.width).toBe('136px');
     expect(table().style.width).toBe('396px');
+  });
+
+  it('spreads the frame over columns that all have a width, pins it on the first resize and resets back', async (): Promise<void> => {
+    const { fixture, element, col, handle, table, pointer, frames, stored } = await resizable(
+      1000,
+      (host: ResizableHostComponent): void => {
+        host.spread.set(true);
+        host.columns.update((columns) =>
+          columns.map((column) => (column.id === 'name' ? { ...column, width: 160 } : column)),
+        );
+      },
+    );
+    const width = (id: string): number => Number.parseFloat(col(id)?.style.width ?? '0');
+    // 1000 px less the 40 px selection column, in proportion to 160, 120 and 60 px; the city stops
+    // at its 200 px maximum and its share goes to the others.
+    expect(width('city')).toBe(200);
+    expect(width('name') + width('city') + width('age')).toBe(960);
+    expect(width('name') / width('age')).toBeCloseTo(160 / 60, 1);
+    expect(element.querySelector('[data-slot="data-table-spacer"]')).toBeNull();
+    expect(table().style.width).toBe('1000px');
+    expect(handle('Nom').dataset['side']).toBe('end');
+    expect(handle('Ville').dataset['side']).toBe('end');
+    const name: number = width('name');
+    // A drag pins the shown widths: only the dragged column changes, the room left goes to a spacer.
+    pointer(handle('Nom'), 'pointerdown', 500);
+    pointer(handle('Nom'), 'pointermove', 400);
+    frames();
+    await fixture.whenStable();
+    expect(width('name')).toBe(name - 100);
+    expect(width('city')).toBe(200);
+    const spacer: HTMLElement | null = element.querySelector('th[data-slot="data-table-spacer"]');
+    expect(spacer?.getAttribute('aria-hidden')).toBe('true');
+    for (const row of element.querySelectorAll('tbody tr'))
+      expect(row.lastElementChild?.getAttribute('aria-hidden')).toBe('true');
+    expect(table().style.minWidth).toBe('900px');
+    // Escape puts the spread back.
+    handle('Nom').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await fixture.whenStable();
+    expect(width('name')).toBe(name);
+    expect(element.querySelector('[data-slot="data-table-spacer"]')).toBeNull();
+    // A committed key resize is stored with every pinned width; Shift+Enter returns to the spread.
+    press(handle('Ville'), 'ArrowLeft');
+    await fixture.whenStable();
+    expect(width('city')).toBe(184);
+    expect(width('name')).toBe(name);
+    expect(stored()).toEqual({ name, city: 184, age: width('age') });
+    handle('Ville').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', shiftKey: true, bubbles: true }),
+    );
+    await fixture.whenStable();
+    expect(width('city')).toBe(200);
+    // Nothing left to keep: the stored entry goes.
+    expect(stored()).toBeNull();
+  });
+
+  it('keeps the widths below a frame narrower than their sum, the table scrolling', async (): Promise<void> => {
+    const { col, element, table } = await resizable(300, (host: ResizableHostComponent): void => {
+      host.spread.set(true);
+      host.columns.update((columns) =>
+        columns.map((column) => (column.id === 'name' ? { ...column, width: 160 } : column)),
+      );
+    });
+    expect(col('name')?.style.width).toBe('160px');
+    expect(table().style.width).toBe('380px');
+    expect(element.querySelector('[data-slot="data-table-spacer"]')).toBeNull();
   });
 
   it('drops the col of a hidden column with it', async (): Promise<void> => {

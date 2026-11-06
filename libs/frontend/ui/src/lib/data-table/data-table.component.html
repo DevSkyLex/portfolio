@@ -91,8 +91,8 @@
     #table
     [id]="tableId"
     [class]="tableClasses()"
-    [style.min-width.px]="resizableColumns() && fillColumn() !== null ? tableMinWidth() : null"
-    [style.width.px]="resizableColumns() && fillColumn() === null ? requiredWidth() : null"
+    [style.min-width.px]="resizableColumns() && absorbs() ? tableMinWidth() : null"
+    [style.width.px]="resizableColumns() && !absorbs() ? requiredWidth() : null"
     [attr.aria-busy]="loading() || null"
   >
     @if (caption(); as label) {
@@ -120,6 +120,9 @@
             [attr.data-column]="column.id"
             [style.width.px]="colWidth(column)"
           />
+        }
+        @if (spacer()) {
+          <col data-slot="data-table-spacer" />
         }
       </colgroup>
     }
@@ -179,7 +182,7 @@
                 aria-orientation="vertical"
                 data-slot="data-table-resize-handle"
                 [attr.data-side]="handle.side"
-                [class]="resizeHandleClasses[handle.side]"
+                [class]="resizeHandleClasses[handle.edge ? 'edge' : handle.side]"
                 [attr.aria-label]="text().resizeColumn(handle.target.header)"
                 [attr.aria-valuenow]="fixedWidth(handle.target)"
                 [attr.aria-valuemin]="minWidth(handle.target)"
@@ -196,6 +199,9 @@
             }
           </th>
         }
+        @if (spacer()) {
+          <th aria-hidden="true" data-slot="data-table-spacer" [class]="plainCellClasses('')"></th>
+        }
       </tr>
     </thead>
     <tbody>
@@ -208,6 +214,9 @@
             <td [class]="cellClasses(column)">
               <span uiSkeleton shape="text" [class]="skeletonWidth(placeholder, col)"></span>
             </td>
+          }
+          @if (spacer()) {
+            <td aria-hidden="true" [class]="plainCellClasses('')"></td>
           }
         </tr>
       } @empty {
@@ -244,6 +253,9 @@
                   }
                 }
               </td>
+            }
+            @if (spacer()) {
+              <td aria-hidden="true" [class]="plainCellClasses('')"></td>
             }
           </tr>
         }

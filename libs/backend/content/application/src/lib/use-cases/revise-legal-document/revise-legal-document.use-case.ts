@@ -44,7 +44,7 @@ export interface LegalDocumentChangeResult {
    * @readonly
    *
    * @description
-   * Published-content revision whose rebuild was requested.
+   * Published-content revision of the change.
    */
   readonly revision: number;
   // #endregion
@@ -56,7 +56,7 @@ export interface LegalDocumentChangeResult {
  *
  * @description
  * Replaces both languages of a legal document, dates the save (« Dernière mise à jour ») and requests
- * the site rebuild in the same unit of work.
+ * the content revision in the same unit of work.
  */
 export class ReviseLegalDocument {
   // #region Constructor
@@ -65,9 +65,9 @@ export class ReviseLegalDocument {
    * @constructor
    *
    * @description
-   * Wires the transaction boundary and the clock, which dates both the save and the rebuild request.
+   * Wires the transaction boundary and the clock, which dates the save.
    *
-   * @param {SiteTextsUnitOfWork} unitOfWork - Atomic document and outbox writes.
+   * @param {SiteTextsUnitOfWork} unitOfWork - Atomic document and revision writes.
    * @param {Clock} clock - Current time.
    */
   public constructor(

@@ -38,7 +38,10 @@
           }
         ],
         "server": "apps/web/src/main.server.ts",
-        "outputMode": "static",
+        "outputMode": "server",
+        "ssr": {
+          "entry": "apps/web/src/server.ts"
+        },
         "localize": true,
         "i18nMissingTranslation": "error",
         "polyfills": ["@angular/localize/init"]
@@ -104,45 +107,16 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,
-          "localize": ["fr"],
-          "fileReplacements": [
-            {
-              "replace": "apps/web/src/environments/content-snapshot.ts",
-              "with": "apps/web/src/environments/content-snapshot.development.ts"
-            }
-          ]
+          "localize": ["fr"]
         }
       },
-      "inputs": ["production", "^production", "{projectRoot}/content-snapshot/*.json"]
-    },
-    "seo-files": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["build", "test-snapshot"],
-      "cache": true,
-      "inputs": [
-        "{projectRoot}/scripts/generate-seo-files.mjs",
-        "{projectRoot}/content-snapshot/*.json",
-        {
-          "env": "SITE_ORIGIN"
-        }
-      ],
-      "outputs": [
-        "{workspaceRoot}/dist/apps/web/browser/sitemap.xml",
-        "{workspaceRoot}/dist/apps/web/browser/robots.txt"
-      ],
-      "options": {
-        "command": "node apps/web/scripts/generate-seo-files.mjs"
-      }
+      "inputs": ["production", "^production"]
     },
     "e2e-site": {
       "executor": "nx:run-commands",
       "cache": false,
-      "dependsOn": ["test-snapshot"],
       "options": {
-        "commands": [
-          "npx nx run web:build:e2e",
-          "node apps/web/scripts/generate-seo-files.mjs dist/apps/web-e2e-site/browser"
-        ],
+        "commands": ["npx nx run web:build:e2e"],
         "parallel": false
       }
     },
@@ -174,51 +148,15 @@
           "apps/web/src/**/testing/**",
           "apps/web/src/**/*.spec.ts",
           "apps/web/src/main.ts",
-          "apps/web/src/main.server.ts"
+          "apps/web/src/main.server.ts",
+          "apps/web/src/server.ts",
+          "apps/web/src/environments/audience-measurement.e2e.ts"
         ],
         "coverageReporters": ["text", "html", "lcov", "json-summary"],
         "coverageThresholds": {
           "lines": 90,
           "branches": 80
         }
-      }
-    },
-    "serve-static": {
-      "continuous": true,
-      "readyWhen": {
-        "signal": true
-      },
-      "dependsOn": ["build"],
-      "executor": "@nx/web:file-server",
-      "options": {
-        "buildTarget": "web:build",
-        "port": 4200,
-        "staticFilePath": "dist/apps/web/browser",
-        "spa": true
-      }
-    },
-    "content-snapshot": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "dependsOn": ["test-snapshot"],
-      "options": {
-        "command": "node apps/web/scripts/fetch-content-snapshot.mjs"
-      }
-    },
-    "local-refresh": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "dependsOn": ["test-snapshot"],
-      "options": {
-        "command": "node apps/web/scripts/local-refresh.mjs"
-      }
-    },
-    "test-snapshot": {
-      "executor": "nx:run-commands",
-      "cache": true,
-      "inputs": ["{projectRoot}/scripts/**/*.mjs", "sharedGlobals"],
-      "options": {
-        "command": "node --test apps/web/scripts/testing/fetch-content-snapshot.test.mjs apps/web/scripts/testing/generate-seo-files.test.mjs apps/web/scripts/testing/local-refresh.test.mjs"
       }
     },
     "extract-i18n": {
@@ -248,6 +186,17 @@
       ],
       "options": {
         "command": "tsc -p apps/web/tsconfig.spec.json --noEmit"
+      }
+    },
+    "serve-ssr": {
+      "continuous": true,
+      "readyWhen": {
+        "signal": true
+      },
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node dist/apps/web/server/server.mjs"
       }
     }
   },

@@ -23,7 +23,8 @@ stores or issue live content API queries.
 
 ## Invariants
 
-- An unknown project has an explicit not-found outcome and coherent metadata, not an empty detail view.
+- An unknown project falls through route matching to the shell's HTTP 404 page without a redirect or
+  an empty detail view. Content-service failures propagate as temporary rendering failures.
 - Pages orchestrate route inputs, metadata and navigation; children receive display models.
 - French source copy has explicit localization IDs and English translations.
 - Public content and administration retain separate entries even when both concern projects.

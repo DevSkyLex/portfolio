@@ -17,7 +17,6 @@ import {
   skillGroups,
   legalDocuments,
   media,
-  siteBuildRequests,
   type FrozenContentRows,
 } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
 import { lockContentRevision } from '@internal/content-adapters-out/lib/persistence/repositories/publication/publication-lock';
@@ -110,18 +109,28 @@ export class DrizzlePublicationRepository implements PublicationRepository {
           baseRevision: status.revision,
         })
         .where(eq(publicationState.id, 1));
-      if (status.pendingChanges) {
-        await tx
-          .insert(siteBuildRequests)
-          .values({
-            revision: status.revision,
-            status: 'pending',
-            requestedAt: now,
-            nextAttemptAt: now,
-          })
-          .onConflictDoNothing();
-      }
       return this.readStatus(tx);
+    });
+  }
+
+  /** Release a batch left open by an older version before accepting public requests. */
+  public recover(now: Date): Promise<void> {
+    return this.db.transaction(async (tx: ContentTransaction): Promise<void> => {
+      await lockContentRevision(tx);
+      const [state] = await tx.select().from(publicationState).where(eq(publicationState.id, 1));
+      if (!state?.frozen) return;
+      const [content] = await tx.select().from(contentRevision).where(eq(contentRevision.id, 1));
+      const retained: string[] = state.frozen.media.map((row) => row.id);
+      if (retained.length > 0) {
+        await tx
+          .update(media)
+          .set({ unlinkedAt: now })
+          .where(and(inArray(media.id, retained), isNotNull(media.unlinkedAt)));
+      }
+      await tx
+        .update(publicationState)
+        .set({ frozen: null, version: state.version + 1, baseRevision: content?.revision ?? 0 })
+        .where(eq(publicationState.id, 1));
     });
   }
 }

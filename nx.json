@@ -92,9 +92,6 @@
     "serve": {
       "cache": false
     },
-    "content-snapshot": {
-      "cache": false
-    },
     "db-migrate": {
       "cache": false
     },

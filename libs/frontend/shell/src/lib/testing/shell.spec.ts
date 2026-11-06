@@ -1,5 +1,5 @@
-import type { ServerRoute } from '@angular/ssr';
-import { EnvironmentInjector, LOCALE_ID, runInInjectionContext } from '@angular/core';
+import { RenderMode } from '@angular/ssr';
+import { LOCALE_ID, RESPONSE_INIT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
@@ -186,26 +186,19 @@ describe('shell', () => {
     expect(harness.routeNativeElement?.querySelector('article')).toBeNull();
   });
 
-  it('prerenders one page per snapshot project', async () => {
-    const route: ServerRoute | undefined = SERVER_ROUTES.find((r) => r.path === 'projects/:slug');
-    const getParams: (() => Promise<Record<string, string>[]>) | undefined =
-      route && 'getPrerenderParams' in route ? route.getPrerenderParams : undefined;
-    const params: Record<string, string>[] | undefined = await runInInjectionContext(
-      TestBed.inject<EnvironmentInjector>(EnvironmentInjector),
-      () => getParams?.(),
-    );
-    expect(params).toEqual([{ slug: 'movah' }, { slug: 'crm-kodoka' }]);
-  });
-
-  it('prerenders one error page per known code', async () => {
-    const route: ServerRoute | undefined = SERVER_ROUTES.find((r) => r.path === 'error/:code');
-    const getParams: (() => Promise<Record<string, string>[]>) | undefined =
-      route && 'getPrerenderParams' in route ? route.getPrerenderParams : undefined;
-    await expect(getParams?.()).resolves.toEqual([
-      { code: '403' },
-      { code: '404' },
-      { code: '500' },
-      { code: '503' },
+  it('renders public URLs per request and keeps the administration client rendered', () => {
+    expect(SERVER_ROUTES).toEqual([
+      {
+        path: 'admin',
+        renderMode: RenderMode.Client,
+        headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' },
+      },
+      {
+        path: 'admin/**',
+        renderMode: RenderMode.Client,
+        headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' },
+      },
+      { path: '**', renderMode: RenderMode.Server, headers: { 'Cache-Control': 'no-store' } },
     ]);
   });
 
@@ -213,6 +206,16 @@ describe('shell', () => {
     const harness: RouterTestingHarness = await RouterTestingHarness.create('/error/418');
     const doc: Document | undefined = harness.routeNativeElement?.ownerDocument;
     expect(doc?.querySelector('h1')?.textContent).toContain('Page introuvable');
+  });
+
+  it('sets real server error statuses for missing URLs and unavailable pages', async () => {
+    const response: ResponseInit = {};
+    TestBed.overrideProvider(RESPONSE_INIT, { useValue: response });
+    const harness: RouterTestingHarness = await RouterTestingHarness.create('/unknown');
+    expect(response.status).toBe(404);
+    expect(new Headers(response.headers).get('X-Robots-Tag')).toBe('noindex');
+    await harness.navigateByUrl('/error/503');
+    expect(response.status).toBe(503);
   });
 
   it('updates the title when an error route is reused with another code', async () => {

@@ -47,9 +47,7 @@ you work; none of it widens **what** you were asked to do.
   checked out, `packages: write` only where images are pushed, GHCR lowercase owner, `environment:
 production` for the Ansible job, `concurrency` without cancelling a running deployment, secrets
   `VPS_HOST`, `VPS_SSH_KEY`, `VPS_SSH_KNOWN_HOSTS` and application secrets never echoed, known hosts pinned.
-- `site-build.yml`: dispatch with `revision` from content-service and `workflow_run` after CI, the most
-  recent rebuild replacing a pending one (`cancel-in-progress: true`), snapshot before build, atomic
-  publication through `ansible/playbooks/publish-site.yml`.
+- Public pages use the SSR image deployed with the services; content changes are visible at request time.
 - Actions pinned by version tag at least; third-party actions preferably by SHA; Node 24 matches
   `engines`; `npm ci` with cache.
 - Hooks: `.githooks/commit-msg` runs commitlint (`commitlint.config.mjs`); `.githooks/pre-push` runs

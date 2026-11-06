@@ -18,6 +18,7 @@ import {
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
 import {
   siteBuildRequests,
+  contentRevision,
   timelineEntries,
   timelineLists,
 } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
@@ -103,7 +104,7 @@ describe('Timeline administration (Postgres via PGlite)', (): void => {
     expect(await lists.version('education')).toBe(2);
   });
 
-  it('creates an ongoing entry at the end of its kind with an outbox row', async (): Promise<void> => {
+  it('creates an ongoing entry and increments public content without a rebuild', async (): Promise<void> => {
     const result: TimelineEntryChangeResult = await new CreateTimelineEntry(
       unitOfWork,
       { next: (): string => 'stage' },
@@ -121,11 +122,8 @@ describe('Timeline administration (Postgres via PGlite)', (): void => {
       endMonth: null,
       title: { fr: 'Stage', en: 'Internship' },
     });
-    expect(
-      (await handle.db.select().from(siteBuildRequests)).map(
-        (request: { revision: number }): number => request.revision,
-      ),
-    ).toEqual([2]);
+    expect((await handle.db.select().from(contentRevision))[0]?.revision).toBe(2);
+    expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
   });
 
   it('saves content only with the read version and never moves the entry', async (): Promise<void> => {

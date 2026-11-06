@@ -17,7 +17,7 @@ import { findTimelineEntry } from '@internal/content-application/lib/use-cases/g
  * @class ReviseTimelineEntry
  *
  * @description
- * Replaces the content of an entry with optimistic locking and requests the site rebuild in the same
+ * Replaces an entry with optimistic locking and advances the content revision in the same
  * unit of work.
  */
 export class ReviseTimelineEntry {
@@ -29,7 +29,7 @@ export class ReviseTimelineEntry {
    * @description
    * Wires the transaction boundary and the request clock.
    *
-   * @param {TimelineUnitOfWork} unitOfWork - Atomic timeline and outbox writes.
+   * @param {TimelineUnitOfWork} unitOfWork - Atomic timeline and revision writes.
    * @param {Clock} clock - Rebuild request time.
    */
   public constructor(

@@ -63,7 +63,7 @@ const storedRefusal: {
  * Configuration web end-to-end tests
  *
  * @description
- * Configures browser projects and serves the prerendered site locally unless a preview base URL is provided.
+ * Configures browser projects and serves the built SSR site locally unless a preview base URL is provided.
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
@@ -78,11 +78,11 @@ export default defineConfig({
   webServer: process.env['BASE_URL']
     ? []
     : {
-        // Built and prerendered site (both languages), as in production but for its placeholder GA4
-        // measurement id (`web:build:e2e`, D48); no services: the admin area stays on the login page
-        // and the contact form is only tested client-side.
+        // Built SSR site (both languages), as in production but for its placeholder GA4
+        // measurement id (`web:build:e2e`, D48); an isolated content fixture replaces the content service.
+        // The admin stays on the login page and contact is tested client-side.
         // web-e2e:e2e depends on web:e2e-site (apps/web-e2e/project.json).
-        command: `node apps/web-e2e/support/preview/serve-site.mjs dist/apps/web-e2e-site/browser ${localPort}`,
+        command: `node apps/web-e2e/support/preview/serve-ssr.mjs dist/apps/web-e2e-site ${localPort}`,
         url: localURL,
         // A stale local server must not answer for CI.
         reuseExistingServer: !process.env['CI'],

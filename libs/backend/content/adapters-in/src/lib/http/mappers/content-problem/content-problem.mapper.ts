@@ -2,6 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import type { ProblemMapper } from '@vfortin/backend-http';
 import {
   MediaMissingError,
+  ManualPublicationDisabledError,
   MediaNotFoundError,
   MediaTooLargeError,
   NotFoundError,
@@ -39,6 +40,9 @@ const FIELD_ERROR_CODES: ReadonlySet<string> = new Set<string>([
 export const contentProblemMapper: ProblemMapper = (
   exception: unknown,
 ): ReturnType<ProblemMapper> => {
+  if (exception instanceof ManualPublicationDisabledError) {
+    return { status: HttpStatus.GONE, code: exception.code, title: exception.message };
+  }
   if (exception instanceof VersionMismatchError) {
     return {
       status: HttpStatus.PRECONDITION_FAILED,

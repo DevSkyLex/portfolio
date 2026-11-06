@@ -1,71 +1,145 @@
-<div
-  class="grid grid-cols-2 gap-3 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-5"
->
-  @for (kpi of kpis(); track kpi.id) {
-    <content-seo-kpi-tile
-      [label]="kpi.label"
-      [value]="kpi.value"
-      [delta]="kpi.delta"
-      [comparison]="comparison()"
-    />
-  }
-</div>
-
-<div class="grid gap-3 @min-[48rem]/dashboard:grid-cols-3">
-  @for (chart of charts(); track chart.id) {
-    <div uiCard variant="outline" class="min-w-0 gap-4 p-4">
-      <h3 class="text-[13px]/5 font-medium text-fg">{{ chart.label }}</h3>
-      <ui-area-chart
-        [label]="chart.label"
-        [valueHeader]="chart.valueHeader"
-        [points]="chart.points"
-        [formatTick]="format.compact"
-        [stale]="stale()"
-      />
-    </div>
-  }
-</div>
-
-<div class="grid gap-3 @min-[72rem]/dashboard:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-  <div class="flex min-w-0 flex-col gap-2">
-    <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.analytics.topPages">
-      Pages les plus vues
-    </h3>
-    <ui-data-table
-      density="compact"
-      caption="Pages les plus vues"
-      i18n-caption="@@admin.dashboard.analytics.topPages"
-      [class]="stale() ? 'opacity-50' : ''"
-      [data]="data().pages"
-      [columns]="pageColumns"
-      [rowKey]="pageKey"
-      [searchable]="false"
-      [columnMenu]="false"
-      [paginated]="false"
-    />
-  </div>
-  <div class="flex min-w-0 flex-col gap-3">
-    <div uiCard variant="outline" class="gap-4 p-4">
-      <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.analytics.channels">
-        Sessions par canal
-      </h3>
-      <ui-bar-list
-        label="Sessions par canal"
-        i18n-label="@@admin.dashboard.analytics.channels"
-        [items]="channels()"
-        [stale]="stale()"
-      />
-    </div>
-    <div uiCard variant="outline" class="gap-4 p-4">
-      <h3 class="text-[13px]/5 font-medium text-fg" i18n="@@admin.dashboard.analytics.countries">
-        Sessions par pays
-      </h3>
-      <ui-bar-list
-        label="Sessions par pays"
-        i18n-label="@@admin.dashboard.analytics.countries"
-        [items]="countries()"
-        [stale]="stale()"
-      />
+<!-- Full-width figure strip and chart grid: the hairlines between cells replace cards (D36). -->
+<section aria-labelledby="ga-traffic">
+  <content-seo-section-header
+    headingId="ga-traffic"
+    heading="Fréquentation"
+    i18n-heading="@@admin.dashboard.analytics.traffic"
+    description="Visiteurs, sessions et pages vues de la période, comparés à la période précédente."
+    i18n-description="@@admin.dashboard.analytics.trafficHint"
+  />
+  <div class="overflow-hidden border-b border-border">
+    <div
+      class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-5"
+    >
+      @for (kpi of kpis(); track kpi.id) {
+        <content-seo-kpi-tile
+          [label]="kpi.label"
+          [value]="kpi.value"
+          [delta]="kpi.delta"
+          [comparison]="comparison()"
+        />
+      }
     </div>
   </div>
-</div>
+
+  <div class="overflow-hidden border-b border-border">
+    <div class="-me-px -mb-px grid">
+      <section
+        class="col-span-full flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="ga-daily"
+      >
+        <h3
+          id="ga-daily"
+          class="text-[13px]/5 font-medium text-fg"
+          i18n="@@admin.dashboard.analytics.daily"
+        >
+          Utilisateurs, sessions et vues par jour
+        </h3>
+        <ui-line-chart
+          label="Utilisateurs, sessions et vues par jour"
+          i18n-label="@@admin.dashboard.analytics.daily"
+          [series]="daily()"
+          [formatTick]="format.compact"
+          [stale]="stale()"
+        />
+      </section>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="ga-origin">
+  <content-seo-section-header
+    headingId="ga-origin"
+    heading="Provenance des visites"
+    i18n-heading="@@admin.dashboard.analytics.origin"
+    description="Jours de visite, canaux d’acquisition et pays des sessions."
+    i18n-description="@@admin.dashboard.analytics.originHint"
+  />
+  <div class="overflow-hidden border-b border-border">
+    <div
+      class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2 @min-[80rem]/dashboard:grid-cols-3"
+    >
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="ga-weekdays"
+      >
+        <h3
+          id="ga-weekdays"
+          class="text-[13px]/5 font-medium text-fg"
+          i18n="@@admin.dashboard.analytics.weekdays"
+        >
+          Sessions par jour de la semaine
+        </h3>
+        <ui-heatmap
+          label="Sessions par jour de la semaine"
+          i18n-label="@@admin.dashboard.analytics.weekdays"
+          [rows]="calendar().rows"
+          [columns]="calendar().columns"
+          [stale]="stale()"
+        />
+      </section>
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="ga-channels"
+      >
+        <h3
+          id="ga-channels"
+          class="text-[13px]/5 font-medium text-fg"
+          i18n="@@admin.dashboard.analytics.channels"
+        >
+          Sessions par canal
+        </h3>
+        <ui-bar-list
+          label="Sessions par canal"
+          i18n-label="@@admin.dashboard.analytics.channels"
+          [items]="channels()"
+          [stale]="stale()"
+        />
+      </section>
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="ga-countries"
+      >
+        <h3
+          id="ga-countries"
+          class="text-[13px]/5 font-medium text-fg"
+          i18n="@@admin.dashboard.analytics.countries"
+        >
+          Sessions par pays
+        </h3>
+        <ui-bar-list
+          label="Sessions par pays"
+          i18n-label="@@admin.dashboard.analytics.countries"
+          [items]="countries()"
+          [stale]="stale()"
+        />
+      </section>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="ga-pages">
+  <content-seo-section-header
+    headingId="ga-pages"
+    heading="Pages les plus vues"
+    i18n-heading="@@admin.dashboard.analytics.topPages"
+    description="Les pages du site les plus consultées de la période et leurs visiteurs."
+    i18n-description="@@admin.dashboard.analytics.topPagesHint"
+  />
+  <ui-data-table
+    resizableColumns
+    distributeColumns
+    columnWidthsKey="portfolio.admin.table.seo-audience-pages"
+    density="compact"
+    caption="Pages les plus vues"
+    i18n-caption="@@admin.dashboard.analytics.topPages"
+    [framed]="false"
+    [class]="stale() ? 'opacity-50' : ''"
+    [data]="data().pages"
+    [columns]="pageColumns"
+    [rowKey]="pageKey"
+    [searchable]="false"
+    [columnMenu]="false"
+    [paginated]="false"
+  />
+</section>

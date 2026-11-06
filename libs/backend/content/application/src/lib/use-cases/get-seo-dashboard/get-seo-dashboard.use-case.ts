@@ -176,6 +176,15 @@ export interface SeoDashboardView {
   readonly range: SeoRange;
 
   /**
+   * Property demo
+   * @readonly
+   *
+   * @description
+   * Whether a Google section shows demonstration figures instead of an unconfigured source (D52).
+   */
+  readonly demo: boolean;
+
+  /**
    * Property refresh
    * @readonly
    *
@@ -356,8 +365,16 @@ export class GetSeoDashboard {
       this.projects.list(),
     ]);
     const now: Date = this.clock.now();
+    const setups: readonly SeoSourceSetup<unknown>[] = [
+      this.sources.searchConsole,
+      this.sources.analytics,
+      this.sources.webVitals,
+    ];
     return {
       range,
+      demo: setups.some(
+        (setup: SeoSourceSetup<unknown>): boolean => 'reader' in setup && setup.demo === true,
+      ),
       refresh: refreshOf(cache.refresh, now),
       searchConsole: sectionOf(this.sources.searchConsole, cache.searchConsole),
       analytics: sectionOf(this.sources.analytics, cache.analytics),

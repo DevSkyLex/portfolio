@@ -16,7 +16,7 @@ import type {
  * @interface TimelineEntryChangeResult
  *
  * @description
- * Entry written by a command, its new version and the rebuild revision queued with it.
+ * Entry written by a command, its new version and the public content revision.
  */
 export interface TimelineEntryChangeResult {
   // #region Properties
@@ -43,7 +43,7 @@ export interface TimelineEntryChangeResult {
    * @readonly
    *
    * @description
-   * Content revision queued for the site rebuild.
+   * Content revision after the change.
    */
   readonly revision: number;
   // #endregion
@@ -54,7 +54,7 @@ export interface TimelineEntryChangeResult {
  * @class CreateTimelineEntry
  *
  * @description
- * Adds an entry at the end of its kind's list and requests the site rebuild in the same unit of work.
+ * Adds an entry at the end of its kind and advances the content revision in the same unit of work.
  */
 export class CreateTimelineEntry {
   // #region Constructor
@@ -65,7 +65,7 @@ export class CreateTimelineEntry {
    * @description
    * Wires the transaction boundary, the identifier source and the request clock.
    *
-   * @param {TimelineUnitOfWork} unitOfWork - Atomic timeline and outbox writes.
+   * @param {TimelineUnitOfWork} unitOfWork - Atomic timeline and revision writes.
    * @param {IdGenerator} ids - Identifier of the new entry.
    * @param {Clock} clock - Rebuild request time.
    */

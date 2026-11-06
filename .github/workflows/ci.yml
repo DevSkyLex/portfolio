@@ -34,7 +34,7 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
       - run: npx nx format:check
       - run: npx nx run-many -t test typecheck lint -p architecture
-      - run: npx nx run-many -t test-tooling test-snapshot -p web-e2e web
+      - run: npx nx run web-e2e:test-tooling
       - run: npx nx affected -t lint typecheck build --parallel=3
 
   # Docker, Nginx, shell scripts and Ansible checks (docs/operations/deployment.md).
@@ -89,7 +89,7 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  # Built, prerendered site served with the Nginx routing (apps/web-e2e/support/preview/serve-site.mjs), no services.
+  # Built SSR application with a disposable content fixture API for browser acceptance.
   e2e:
     needs: quality
     # Keep the browser dependencies on a stable runner while ubuntu-latest migrates to 26.04.
@@ -104,8 +104,10 @@ jobs:
           cache: npm
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
+      # The hosted Azure mirror can be too slow for Playwright's browser dependencies.
+      - run: sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/apt-mirrors.txt
       - run: npx playwright install --with-deps chromium firefox webkit
-        timeout-minutes: 10
+        timeout-minutes: 30
       # web-e2e:e2e depends on web:build; on a pull request it only runs when the site is affected.
       - run: npx nx ${{ github.event_name == 'pull_request' && 'affected -t e2e' || 'run-many -t e2e -p web-e2e' }}
       - uses: actions/upload-artifact@v4

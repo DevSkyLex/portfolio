@@ -10,45 +10,12 @@ import {
 } from '@playwright/test';
 
 /**
- * Function activeSnapshotChunk
- *
- * @description
- * Discovers the locale's content chunk from the built composition bundle rather than freezing a hash.
- *
- * @param {APIRequestContext} request - Same-origin test client.
- * @returns {Promise<string>} Relative French snapshot chunk filename.
- */
-async function activeSnapshotChunk(request: APIRequestContext): Promise<string> {
-  const html: string = await (await request.get('/')).text();
-  const main: string | undefined = /src="([^"]*main-[^"]+\.js)"/.exec(html)?.[1];
-  if (!main) throw new Error('Missing built main bundle.');
-  const bundle: string = await (
-    await request.get(new URL(main, 'https://example.test/fr/').pathname)
-  ).text();
-  // The option is either an inline loader or a reference to the environment's loader function
-  // (`contentSnapshot:t2` … `function t2(a){…}`, D7 development exception), whose body holds the imports.
-  const option: string | undefined = /contentSnapshot:.{0,350}/.exec(bundle)?.[0];
-  const reference: string | undefined = /^contentSnapshot:([\w$]+)[,}]/.exec(option ?? '')?.[1];
-  const loader: string | undefined = reference
-    ? new RegExp(`function ${reference.replace(/\$/g, '\\$')}\\([^)]*\\)\\{.{0,350}`).exec(
-        bundle,
-      )?.[0]
-    : option;
-  const chunks: RegExpExecArray[] = [
-    ...(loader ?? '').matchAll(/import\([`'"]\.\/(chunk-[^`'"]+\.js)[`'"]\)/g),
-  ];
-  const french: string | undefined = chunks[1]?.[1];
-  if (!french) throw new Error('Missing locale snapshot import.');
-  return french;
-}
-
-/**
  * Function readable
  *
  * @description
  * Checks actual rendered opacity through ancestors; Playwright visibility alone accepts opacity zero.
  *
- * @param {Locator} heading - Prerendered page heading.
+ * @param {Locator} heading - Server-rendered page heading.
  * @returns {Promise<boolean>} Whether meaningful heading text remains readable.
  */
 async function readable(heading: Locator): Promise<boolean> {
@@ -78,16 +45,13 @@ async function readable(heading: Locator): Promise<boolean> {
   });
 }
 
-test('admin startup is independent of the public content chunk', async ({
+test('admin startup does not fetch public content', async ({
   page,
-  request,
 }: {
   page: Page;
-  request: APIRequestContext;
 }): Promise<void> => {
-  const snapshot: string = await activeSnapshotChunk(request);
   let requests: number = 0;
-  await page.route('**/' + snapshot, (route: Route): Promise<void> => {
+  await page.route('**/api/content/snapshot**', (route: Route): Promise<void> => {
     requests++;
     return route.abort('failed');
   });
@@ -96,16 +60,13 @@ test('admin startup is independent of the public content chunk', async ({
   expect(requests).toBe(0);
 });
 
-test('public hydration uses its prerendered snapshot without a duplicate chunk dependency', async ({
+test('public hydration uses its server snapshot without a duplicate API request', async ({
   page,
-  request,
 }: {
   page: Page;
-  request: APIRequestContext;
 }): Promise<void> => {
-  const snapshot: string = await activeSnapshotChunk(request);
   let requests: number = 0;
-  await page.route('**/' + snapshot, (route: Route): Promise<void> => {
+  await page.route('**/api/content/snapshot**', (route: Route): Promise<void> => {
     requests++;
     return route.abort('failed');
   });
@@ -117,7 +78,7 @@ test('public hydration uses its prerendered snapshot without a duplicate chunk d
     .toBe(true);
 });
 
-test('public prerendered content remains readable when the application bundle fails', async ({
+test('public server-rendered content remains readable when the application bundle fails', async ({
   page,
   request,
 }: {
@@ -147,10 +108,10 @@ test('public prerendered content remains readable when the application bundle fa
  * Function publicStylesheet
  *
  * @description
- * Reads the stylesheet a prerendered page links, discovered from its HTML rather than a frozen hash.
+ * Reads the stylesheet a server-rendered page links, discovered from its HTML rather than a frozen hash.
  *
  * @param {APIRequestContext} request - Same-origin test client.
- * @param {string} html - Prerendered page.
+ * @param {string} html - Server-rendered page.
  * @returns {Promise<string>} Public stylesheet text.
  */
 async function publicStylesheet(request: APIRequestContext, html: string): Promise<string> {
@@ -165,9 +126,9 @@ async function publicStylesheet(request: APIRequestContext, html: string): Promi
  * Function projectPath
  *
  * @description
- * First project page linked by the prerendered home page, read from the build instead of a fixture.
+ * First project page linked by the server-rendered home page, read from the build instead of a fixture.
  *
- * @param {string} home - Prerendered home page.
+ * @param {string} home - Server-rendered home page.
  * @returns {string} Root-relative project page path.
  */
 function projectPath(home: string): string {

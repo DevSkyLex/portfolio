@@ -77,23 +77,12 @@ describe.each(TARGETS)('Content workers in parallel (%s)', (_target, url): void 
     await handle.close();
   });
 
-  it('lets a single worker claim a rebuild at a time', async (): Promise<void> => {
+  it('keeps simultaneous content revision increments distinct', async (): Promise<void> => {
     const requests: DrizzleSiteBuildRequestRepository = new DrizzleSiteBuildRequestRepository(
       handle.db,
     );
-    await requests.request(now);
-    await requests.request(now);
-    const lease: Date = new Date(now.getTime() + 60_000);
-    const claims: ({ revision: number; attempts: number } | null)[] = await Promise.all(
-      Array.from({ length: 4 }, (): Promise<{ revision: number; attempts: number } | null> =>
-        new DrizzleSiteBuildRequestRepository(handle.db).claimLatest(now, lease),
-      ),
-    );
-    expect(
-      claims.filter(
-        (claim: { revision: number; attempts: number } | null): boolean => claim !== null,
-      ),
-    ).toEqual([{ revision: 3, attempts: 0 }]);
+    const revisions: number[] = await Promise.all([requests.request(now), requests.request(now)]);
+    expect(revisions.sort()).toEqual([2, 3]);
   });
 
   it('reads the revision and the content from the same snapshot', async (): Promise<void> => {

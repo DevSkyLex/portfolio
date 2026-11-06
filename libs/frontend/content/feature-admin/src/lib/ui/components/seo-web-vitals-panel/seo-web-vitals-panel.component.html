@@ -1,63 +1,152 @@
-<p class="max-w-[72ch] text-[13px]/5 text-fg-muted" i18n="@@admin.dashboard.vitals.note">
-  LCP, INP et CLS : 75e centile des visites réelles de Chrome (CrUX) sur 28 jours, ceux de l’origine
-  quand l’adresse n’a pas assez de visites. Score labo : performance Lighthouse d’une mesure
-  simulée.
-</p>
-
-<ng-template #vital let-cell>
-  @if (cell) {
-    <span class="flex items-center gap-2">
-      <span class="text-fg tabular-nums">{{ cell.display }}</span>
-      <span uiBadge dot [variant]="cell.variant">{{ cell.word }}</span>
-    </span>
-  } @else {
-    <ui-data-table-empty-cell />
-  }
-</ng-template>
-
-<ui-data-table
-  density="compact"
-  caption="Core Web Vitals"
-  [data]="rows()"
-  [columns]="columns"
-  [rowKey]="rowKey"
-  [searchable]="false"
-  [columnMenu]="false"
-  [paginated]="false"
->
-  <ng-template uiDataTableCell="page" [uiDataTableCellRows]="rows()" let-row>
-    <div class="flex w-0 min-w-full flex-col">
-      <a
-        class="truncate text-fg outline-2 outline-offset-2 outline-transparent hover:underline focus-visible:rounded-xs focus-visible:outline-accent/55"
-        target="_blank"
-        rel="noopener"
-        [href]="row.url"
-        [title]="row.url"
-        >{{ row.path }}</a
-      >
-      @if (row.error) {
-        <span
-          class="truncate text-[12px]/4 text-danger-ink"
-          i18n="@@admin.dashboard.vitals.rowError"
-          >Mesure impossible : {{ row.error }}</span
-        >
-      } @else if (row.origin) {
-        <span class="truncate text-[12px]/4 text-fg-faint" i18n="@@admin.dashboard.vitals.origin"
-          >Données terrain de l’origine</span
-        >
+<!-- Full-width figure strip and chart grid: the hairlines between cells replace cards (D36). -->
+<section aria-labelledby="cwv-summary">
+  <content-seo-section-header
+    headingId="cwv-summary"
+    heading="Synthèse des performances"
+    i18n-heading="@@admin.dashboard.vitals.summary"
+    description="Catégories des mesures terrain et scores de laboratoire des pages clés, sur mobile et sur ordinateur."
+    i18n-description="@@admin.dashboard.vitals.summaryHint"
+  />
+  <div class="overflow-hidden border-b border-border">
+    <div class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-4">
+      @for (figure of figures(); track figure.id) {
+        <content-seo-kpi-tile [label]="figure.label" [value]="figure.value" [compared]="false" />
       }
     </div>
+  </div>
+
+  <div class="overflow-hidden border-b border-border">
+    <div class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2">
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="cwv-distribution"
+      >
+        <div class="flex flex-col gap-1">
+          <h3
+            id="cwv-distribution"
+            class="text-[13px]/5 font-medium text-fg"
+            i18n="@@admin.dashboard.vitals.distribution"
+          >
+            Répartition des mesures
+          </h3>
+          <p class="text-[12px]/4 text-fg-faint" i18n="@@admin.dashboard.vitals.distributionHint">
+            Part des pages et appareils mesurés dans chaque catégorie.
+          </p>
+        </div>
+        <ui-stacked-bars
+          label="Répartition des mesures"
+          i18n-label="@@admin.dashboard.vitals.distribution"
+          nameHeader="Mesure"
+          i18n-nameHeader="@@admin.dashboard.vitals.metric"
+          [rows]="distribution()"
+          [legend]="categoryLegend"
+        />
+      </section>
+      <section
+        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        aria-labelledby="cwv-scores"
+      >
+        <div class="flex flex-col gap-1">
+          <h3
+            id="cwv-scores"
+            class="text-[13px]/5 font-medium text-fg"
+            i18n="@@admin.dashboard.vitals.scores"
+          >
+            Score labo, mobile et ordinateur
+          </h3>
+          <p class="text-[12px]/4 text-fg-faint" i18n="@@admin.dashboard.vitals.scoresHint">
+            Performance Lighthouse sur 100, d’une mesure simulée par page.
+          </p>
+        </div>
+        <ui-dumbbell-chart
+          label="Score labo, mobile et ordinateur"
+          i18n-label="@@admin.dashboard.vitals.scores"
+          startLabel="Mobile"
+          i18n-startLabel="@@admin.dashboard.strategy.mobile"
+          endLabel="Ordinateur"
+          i18n-endLabel="@@admin.dashboard.strategy.desktop"
+          [max]="100"
+          [rows]="scores()"
+        />
+      </section>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="cwv-pages">
+  <content-seo-section-header
+    headingId="cwv-pages"
+    heading="Mesures par page"
+    i18n-heading="@@admin.dashboard.vitals.pages"
+    description="LCP, INP et CLS : 75e centile des visites réelles de Chrome (CrUX) sur 28 jours, ceux de l’origine quand l’adresse n’a pas assez de visites. Score labo : performance Lighthouse d’une mesure simulée."
+    i18n-description="@@admin.dashboard.vitals.note"
+  />
+
+  <ng-template #vital let-cell>
+    @if (cell) {
+      <span class="flex items-center gap-1.5">
+        <span class="text-fg tabular-nums">{{ cell.display }}</span>
+        <span data-slot="status-icon" [class]="cell.status.classes" [uiTooltip]="cell.word">
+          <ng-icon [svg]="cell.status.icon" size="14" aria-hidden="true" />
+          <span class="sr-only">{{ cell.word }}</span>
+        </span>
+      </span>
+    } @else {
+      <ui-data-table-empty-cell />
+    }
   </ng-template>
-  <ng-template uiDataTableCell="lcp" [uiDataTableCellRows]="rows()" let-row>
-    <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.lcp }" />
-  </ng-template>
-  <ng-template uiDataTableCell="inp" [uiDataTableCellRows]="rows()" let-row>
-    <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.inp }" />
-  </ng-template>
-  <ng-template uiDataTableCell="cls" [uiDataTableCellRows]="rows()" let-row>
-    <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.cls }" />
-  </ng-template>
-  <ng-template uiDataTableCell="score" [uiDataTableCellRows]="rows()" let-row>
-    <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.score }" />
-  </ng-template>
-</ui-data-table>
+
+  <ui-data-table
+    resizableColumns
+    distributeColumns
+    columnWidthsKey="portfolio.admin.table.seo-vitals"
+    density="compact"
+    caption="Core Web Vitals"
+    [framed]="false"
+    [data]="rows()"
+    [columns]="columns"
+    [rowKey]="rowKey"
+    [searchable]="false"
+    [columnMenu]="false"
+    [paginated]="false"
+  >
+    <ng-template uiDataTableCell="page" [uiDataTableCellRows]="rows()" let-row>
+      <div class="flex w-0 min-w-full flex-col">
+        <a
+          class="truncate text-fg outline-2 outline-offset-2 outline-transparent hover:underline focus-visible:rounded-xs focus-visible:outline-accent/55"
+          target="_blank"
+          rel="noopener"
+          [href]="row.url"
+          [title]="row.url"
+          >{{ row.path }}</a
+        >
+        @if (row.error) {
+          <span
+            class="truncate text-[12px]/4 text-danger-ink"
+            i18n="@@admin.dashboard.vitals.rowError"
+            >Mesure impossible : {{ row.error }}</span
+          >
+        } @else if (row.origin) {
+          <span class="truncate text-[12px]/4 text-fg-faint" i18n="@@admin.dashboard.vitals.origin"
+            >Données terrain de l’origine</span
+          >
+        }
+      </div>
+    </ng-template>
+    <ng-template uiDataTableCell="lcp" [uiDataTableCellRows]="rows()" let-row>
+      <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.lcp }" />
+    </ng-template>
+    <ng-template uiDataTableCell="inp" [uiDataTableCellRows]="rows()" let-row>
+      <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.inp }" />
+    </ng-template>
+    <ng-template uiDataTableCell="cls" [uiDataTableCellRows]="rows()" let-row>
+      <ng-container [ngTemplateOutlet]="vital" [ngTemplateOutletContext]="{ $implicit: row.cls }" />
+    </ng-template>
+    <ng-template uiDataTableCell="score" [uiDataTableCellRows]="rows()" let-row>
+      <ng-container
+        [ngTemplateOutlet]="vital"
+        [ngTemplateOutletContext]="{ $implicit: row.score }"
+      />
+    </ng-template>
+  </ui-data-table>
+</section>

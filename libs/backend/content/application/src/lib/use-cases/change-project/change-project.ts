@@ -12,7 +12,7 @@ import type {
  * @interface ProjectChangeResult
  *
  * @description
- * Result of an optimistic project update and its optional public rebuild request.
+ * Result of an optimistic project update and its optional public content revision.
  */
 export interface ProjectChangeResult {
   // #region Properties
@@ -39,7 +39,7 @@ export interface ProjectChangeResult {
    * @readonly
    *
    * @description
-   * Revision queued for a rebuild, or `null` when the project was and remains a draft.
+   * Public content revision, or `null` when the project was and remains a draft.
    */
   readonly revision: number | null;
 
@@ -71,14 +71,14 @@ export type ProjectChange = (
  *
  * @description
  * Applies a project mutation with optimistic locking. If it was or becomes published, the
- * content revision and rebuild request are written in the same unit of work as the project.
+ * content revision is written in the same unit of work as the project.
  *
- * @param {ContentUnitOfWork} unitOfWork - Transaction boundary for the project and outbox writes.
+ * @param {ContentUnitOfWork} unitOfWork - Transaction boundary for the project and revision writes.
  * @param {Clock} clock - Source of the request timestamp.
  * @param {string} id - Project identifier to load.
  * @param {number} expectedVersion - Version that must still be stored for the save to succeed.
  * @param {ProjectChange} change - Mutation applied to the loaded aggregate.
- * @returns {Promise<ProjectChangeResult>} Updated project, new version, optional rebuild revision
+ * @returns {Promise<ProjectChangeResult>} Updated project, new version, optional public content revision
  * and referenced media.
  */
 export function changeProject(

@@ -1,5 +1,6 @@
 {
   "range": "28d",
+  "demo": false,
   "refresh": {
     "running": false,
     "startedAt": "2026-11-04T05:30:00.000Z",

@@ -1,6 +1,7 @@
 import {
   clampWidth,
   contentWidth,
+  distributedColumnWidths,
   keptColumnWidths,
   resizeDirection,
   storedColumnWidths,
@@ -133,5 +134,73 @@ describe('contentWidth', (): void => {
       if (native) Object.defineProperty(Range.prototype, 'getBoundingClientRect', native);
       else delete (Range.prototype as Partial<Range>).getBoundingClientRect;
     }
+  });
+});
+
+describe('distributedColumnWidths', (): void => {
+  it('spreads the room in proportion, in whole pixels adding up to it', (): void => {
+    const widths: ReadonlyMap<string, number> = distributedColumnWidths(
+      [
+        { id: 'query', width: 280, max: 640 },
+        { id: 'clicks', width: 96, max: 640 },
+        { id: 'ctr', width: 96, max: 640 },
+      ],
+      944,
+    );
+    expect([...widths]).toEqual([
+      ['query', 560],
+      ['clicks', 192],
+      ['ctr', 192],
+    ]);
+  });
+
+  it('stops a column at its maximum and gives its share to the others, the remainder to the first', (): void => {
+    const widths: ReadonlyMap<string, number> = distributedColumnWidths(
+      [
+        { id: 'a', width: 100, max: 150 },
+        { id: 'b', width: 100, max: 640 },
+        { id: 'c', width: 100, max: 640 },
+      ],
+      601,
+    );
+    expect(widths.get('a')).toBe(150);
+    expect((widths.get('b') ?? 0) + (widths.get('c') ?? 0)).toBe(451);
+    expect(widths.get('b')).toBe(226);
+  });
+
+  it('leaves room past every maximum, and spreads nothing in a narrow frame or without columns', (): void => {
+    expect([
+      ...distributedColumnWidths(
+        [
+          { id: 'a', width: 100, max: 120 },
+          { id: 'b', width: 100, max: 130 },
+        ],
+        1000,
+      ),
+    ]).toEqual([
+      ['a', 120],
+      ['b', 130],
+    ]);
+    expect(distributedColumnWidths([{ id: 'a', width: 300, max: 640 }], 200).size).toBe(0);
+    expect(distributedColumnWidths([], 800).size).toBe(0);
+  });
+});
+
+describe('keptColumnWidths (pinned)', (): void => {
+  it('keeps the width of a column that does not resize once a spread layout is pinned', (): void => {
+    const columns: { id: string; width: number; resizable?: boolean }[] = [
+      { id: 'a', width: 100 },
+      { id: 'b', width: 60, resizable: false },
+    ];
+    const stored: ReadonlyMap<string, number> = new Map([
+      ['a', 300],
+      ['b', 180],
+    ]);
+    const bounds = (): { min: number; max: number } => ({ min: 64, max: 640 });
+    expect([...keptColumnWidths(stored, columns, bounds)]).toEqual([['a', 300]]);
+    expect([...keptColumnWidths(stored, columns, bounds, true)]).toEqual([
+      ['a', 300],
+      ['b', 180],
+    ]);
   });
 });

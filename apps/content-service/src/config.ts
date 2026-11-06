@@ -19,78 +19,66 @@ const optional = <T extends z.ZodType>(schema: T): z.ZodPreprocess<z.ZodOptional
  * Constant ContentServiceConfigSchema
  *
  * @description
- * Validates content service environment values and requires a workflow token whenever a rebuild repository is configured.
+ * Validates content service environment values.
  */
-const ContentServiceConfigSchema = z
-  .object({
-    CONTENT_PORT: z.coerce.number().int().positive().default(3101),
-    /** `postgres://…` in production; `pglite:<directory>` or `pglite:memory` without Docker. */
-    CONTENT_DATABASE_URL: z.string().min(1),
-    /** Drizzle migrations directory; defaults to the one copied next to the bundle. */
-    CONTENT_MIGRATIONS_DIR: z.string().min(1).optional(),
-    /** Issuer of the admin tokens and JWKS of the identity service (internal network). */
-    AUTH_ISSUER: z.url(),
-    AUTH_JWKS_URL: z.url(),
-    /** Site rebuild through a GitHub workflow; absent: the request is only logged. */
-    SITE_BUILD_REPOSITORY: optional(z.string().regex(/^[\w.-]+\/[\w.-]+$/)),
-    SITE_BUILD_WORKFLOW: z.string().default('site-build.yml'),
-    SITE_BUILD_REF: z.string().default('main'),
-    SITE_BUILD_TOKEN: optional(z.string().min(20)),
-    /**
-     * Directory of the uploaded media (D40); required by the HTTP service in production (see
-     * `mediaDirectory`), unused by the migrate and seed commands.
-     */
-    CONTENT_MEDIA_DIR: optional(z.string().min(1)),
-    /** Serve `/media/` from the service, for `nx serve` behind the Angular proxy; Nginx serves it otherwise. */
-    CONTENT_MEDIA_SERVE: z.preprocess(
-      (value: unknown): unknown => (value === '' ? undefined : value),
-      z.stringbool().default(false),
-    ),
-    /** Public origin of the site, for the default Web Vitals URLs of the SEO dashboard (D47). */
-    SEO_SITE_ORIGIN: z
+const ContentServiceConfigSchema = z.object({
+  CONTENT_PORT: z.coerce.number().int().positive().default(3101),
+  /** `postgres://…` in production; `pglite:<directory>` or `pglite:memory` without Docker. */
+  CONTENT_DATABASE_URL: z.string().min(1),
+  /** Drizzle migrations directory; defaults to the one copied next to the bundle. */
+  CONTENT_MIGRATIONS_DIR: z.string().min(1).optional(),
+  /** Issuer of the admin tokens and JWKS of the identity service (internal network). */
+  AUTH_ISSUER: z.url(),
+  AUTH_JWKS_URL: z.url(),
+  /**
+   * Directory of the uploaded media (D40); required by the HTTP service in production (see
+   * `mediaDirectory`), unused by the migrate and seed commands.
+   */
+  CONTENT_MEDIA_DIR: optional(z.string().min(1)),
+  /** Serve `/media/` from the service, for `nx serve` behind the Angular proxy; Nginx serves it otherwise. */
+  CONTENT_MEDIA_SERVE: z.preprocess(
+    (value: unknown): unknown => (value === '' ? undefined : value),
+    z.stringbool().default(false),
+  ),
+  /** Public origin of the site, for the default Web Vitals URLs of the SEO dashboard (D47). */
+  SEO_SITE_ORIGIN: z
+    .string()
+    .regex(/^https?:\/\/[^/\s]+\/?$/)
+    .default('https://valentin-fortin.pro')
+    .transform((origin: string): string => origin.replace(/\/$/, '')),
+  /**
+   * Google service account key file (a Docker secret), read by the dashboard on first use only;
+   * deliberately not a `_FILE` variable, which would read it at startup.
+   */
+  SEO_GOOGLE_CREDENTIALS_PATH: optional(z.string().min(1)),
+  /** Search Console property: `sc-domain:<domain>` or a URL prefix ending with `/`. */
+  SEO_SEARCH_CONSOLE_PROPERTY: optional(
+    z.string().regex(/^(?:sc-domain:[a-z0-9.-]+\.[a-z]{2,}|https?:\/\/\S+\/)$/),
+  ),
+  /** Numeric GA4 property identifier (Admin › Property details), not the `G-` measurement id. */
+  SEO_GA4_PROPERTY_ID: optional(z.string().regex(/^\d{6,12}$/)),
+  /** PageSpeed Insights API key, from `SEO_PAGESPEED_API_KEY_FILE` in production. */
+  SEO_PAGESPEED_API_KEY: optional(z.string().regex(/^[\w-]{20,100}$/)),
+  /** Demonstration figures for each unconfigured Google source (D52); local development only. */
+  SEO_DEMO_DATA: z.preprocess(
+    (value: unknown): unknown => (value === '' ? undefined : value),
+    z.stringbool().default(false),
+  ),
+  /** Key URLs measured by PageSpeed Insights, comma-separated; default: home FR/EN and a project. */
+  SEO_WEB_VITALS_URLS: optional(
+    z
       .string()
-      .regex(/^https?:\/\/[^/\s]+\/?$/)
-      .default('https://valentin-fortin.pro')
-      .transform((origin: string): string => origin.replace(/\/$/, '')),
-    /**
-     * Google service account key file (a Docker secret), read by the dashboard on first use only;
-     * deliberately not a `_FILE` variable, which would read it at startup.
-     */
-    SEO_GOOGLE_CREDENTIALS_PATH: optional(z.string().min(1)),
-    /** Search Console property: `sc-domain:<domain>` or a URL prefix ending with `/`. */
-    SEO_SEARCH_CONSOLE_PROPERTY: optional(
-      z.string().regex(/^(?:sc-domain:[a-z0-9.-]+\.[a-z]{2,}|https?:\/\/\S+\/)$/),
-    ),
-    /** Numeric GA4 property identifier (Admin › Property details), not the `G-` measurement id. */
-    SEO_GA4_PROPERTY_ID: optional(z.string().regex(/^\d{6,12}$/)),
-    /** PageSpeed Insights API key, from `SEO_PAGESPEED_API_KEY_FILE` in production. */
-    SEO_PAGESPEED_API_KEY: optional(z.string().regex(/^[\w-]{20,100}$/)),
-    /** Key URLs measured by PageSpeed Insights, comma-separated; default: home FR/EN and a project. */
-    SEO_WEB_VITALS_URLS: optional(
-      z
-        .string()
-        .transform((value: string): string[] =>
-          value
-            .split(',')
-            .map((url: string): string => url.trim())
-            .filter((url: string): boolean => url !== ''),
-        )
-        .pipe(z.array(z.url({ protocol: /^https$/ })).max(10)),
-    ),
-    LOG_LEVEL: z
-      .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
-      .default('info'),
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  })
-  // A repository without its token would silently turn rebuilds into log lines.
-  .refine(
-    (config): boolean =>
-      config.SITE_BUILD_REPOSITORY === undefined || config.SITE_BUILD_TOKEN !== undefined,
-    {
-      path: ['SITE_BUILD_TOKEN'],
-      message: 'required when SITE_BUILD_REPOSITORY is set',
-    },
-  );
+      .transform((value: string): string[] =>
+        value
+          .split(',')
+          .map((url: string): string => url.trim())
+          .filter((url: string): boolean => url !== ''),
+      )
+      .pipe(z.array(z.url({ protocol: /^https$/ })).max(10)),
+  ),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+});
 
 /**
  * Type ContentServiceConfig
@@ -149,6 +137,7 @@ export function seoDashboardOptions(config: ContentServiceConfig): ContentSeoOpt
     analyticsPropertyId: config.SEO_GA4_PROPERTY_ID ?? null,
     pageSpeedApiKey: config.SEO_PAGESPEED_API_KEY ?? null,
     webVitalsUrls: config.SEO_WEB_VITALS_URLS ?? [],
+    demoData: config.SEO_DEMO_DATA,
   };
 }
 

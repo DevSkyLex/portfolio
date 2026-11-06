@@ -1437,8 +1437,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.content.rebuildNotice" datatype="html">
-        <source>Les modifications seront visibles après publication et reconstruction du site.</source>
-        <target>Changes will be visible after publication and the site rebuild.</target>
+        <source>Le site sera mis à jour automatiquement après les modifications.</source>
+        <target>The site will be updated automatically after changes.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/site-rebuild-notice.constants.ts</context>
           <context context-type="linenumber">10</context>
@@ -8061,10 +8061,6 @@
         <source>Chargement du tableau de bord…</source>
         <target>Loading the dashboard…</target>
       </trans-unit>
-      <trans-unit id="admin.dashboard.section.fetched" datatype="html">
-        <source>Collecté le <x id="INTERPOLATION" equiv-text="{{ fetchedLabel(fetchedAt) }}"/></source>
-        <target>Collected on <x id="INTERPOLATION" equiv-text="{{ fetchedLabel(fetchedAt) }}"/></target>
-      </trans-unit>
       <trans-unit id="admin.dashboard.analytics.title" datatype="html">
         <source> Audience </source>
         <target>Audience</target>
@@ -8072,10 +8068,6 @@
       <trans-unit id="admin.dashboard.audit.title" datatype="html">
         <source> Audit SEO </source>
         <target>SEO audit</target>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.audit.generated" datatype="html">
-        <source> Calculé le <x id="INTERPOLATION" equiv-text="{{ fetchedLabel(current.audit.generatedAt) }}"/> </source>
-        <target>Computed on <x id="INTERPOLATION" equiv-text="{{ fetchedLabel(current.audit.generatedAt) }}"/></target>
       </trans-unit>
       <trans-unit id="admin.dashboard.kpi.comparison" datatype="html">
         <source>vs <x id="span" equiv-text="span"/></source>
@@ -8160,18 +8152,6 @@
       <trans-unit id="admin.dashboard.analytics.averageEngagement" datatype="html">
         <source>Durée d’engagement moyenne</source>
         <target>Average engagement time</target>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.usersPerDay" datatype="html">
-        <source>Utilisateurs actifs par jour</source>
-        <target>Active users per day</target>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.sessionsPerDay" datatype="html">
-        <source>Sessions par jour</source>
-        <target>Sessions per day</target>
-      </trans-unit>
-      <trans-unit id="admin.dashboard.analytics.viewsPerDay" datatype="html">
-        <source>Vues par jour</source>
-        <target>Views per day</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.topPages" datatype="html">
         <source> Pages les plus vues </source>
@@ -8506,65 +8486,517 @@
           <context context-type="linenumber">19,23</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.label" datatype="html">
-        <source>Publication</source>
-        <target>Publication</target>
+      <trans-unit id="admin.dashboard.audit.code.searchTitleMissing" datatype="html">
+        <source>Titre de recherche absent</source>
+        <target>Search title missing</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">128</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.conflict" datatype="html">
-        <source>Des modifications ont été enregistrées. Actualisez l’état avant de publier.</source>
-        <target>Changes have been saved. Refresh the status before publishing.</target>
+      <trans-unit id="admin.dashboard.audit.code.searchTitleTooShort" datatype="html">
+        <source>Titre de recherche trop court</source>
+        <target>Search title too short</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">129</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.error" datatype="html">
-        <source>Impossible de récupérer ou modifier l’état de publication. Réessayez.</source>
-        <target>Unable to retrieve or change the publication status. Try again.</target>
+      <trans-unit id="admin.dashboard.audit.code.searchTitleTooLong" datatype="html">
+        <source>Titre de recherche trop long</source>
+        <target>Search title too long</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.active" datatype="html">
-        <source>Publication groupée en cours</source>
-        <target>Grouped publication in progress</target>
+      <trans-unit id="admin.dashboard.audit.code.searchDescriptionMissing" datatype="html">
+        <source>Description de recherche absente</source>
+        <target>Search description missing</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">131</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.hint" datatype="html">
-        <source>Les modifications enregistrées restent en attente jusqu’à la publication du groupe.</source>
-        <target>Saved changes remain pending until the group is published.</target>
+      <trans-unit id="admin.dashboard.audit.code.searchDescriptionTooShort" datatype="html">
+        <source>Description de recherche trop courte</source>
+        <target>Search description too short</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.immediate" datatype="html">
-        <source>Les modifications publiques demandent automatiquement une reconstruction.</source>
-        <target>Public changes automatically request a site rebuild.</target>
+      <trans-unit id="admin.dashboard.audit.code.searchDescriptionTooLong" datatype="html">
+        <source>Description de recherche trop longue</source>
+        <target>Search description too long</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">133</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.loading" datatype="html">
-        <source>Chargement de l’état de publication…</source>
-        <target>Loading publication status…</target>
+      <trans-unit id="admin.dashboard.audit.code.keywordsMissing" datatype="html">
+        <source>Mots-clés absents</source>
+        <target>Keywords missing</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.refresh" datatype="html">
-        <source>Actualiser l’état</source>
-        <target>Refresh status</target>
+      <trans-unit id="admin.dashboard.audit.code.coverMissing" datatype="html">
+        <source>Couverture absente</source>
+        <target>Cover missing</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">135</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.publish" datatype="html">
-        <source>Publier le groupe</source>
-        <target>Publish the group</target>
+      <trans-unit id="admin.dashboard.audit.code.coverAltMissing" datatype="html">
+        <source>Couverture sans texte alternatif</source>
+        <target>Cover without alternative text</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">136</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.start" datatype="html">
-        <source>Préparer une publication groupée</source>
-        <target>Prepare a grouped publication</target>
+      <trans-unit id="admin.dashboard.audit.code.imageAltMissing" datatype="html">
+        <source>Images sans texte alternatif</source>
+        <target>Images without alternative text</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">137</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.started" datatype="html">
-        <source>Publication groupée activée.</source>
-        <target>Grouped publication enabled.</target>
+      <trans-unit id="admin.dashboard.audit.code.translationMissing" datatype="html">
+        <source>Traduction manquante</source>
+        <target>Translation missing</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/seo-dashboard-labels.constants.ts</context>
+          <context context-type="linenumber">138</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.requested" datatype="html">
-        <source>Publication demandée. Le site sera mis à jour après la reconstruction.</source>
-        <target>Publication requested. The site will be updated after the rebuild.</target>
+      <trans-unit id="admin.dashboard.analytics.daily" datatype="html">
+        <source> Utilisateurs, sessions et vues par jour </source>
+        <target> Users, sessions and views per day </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">30,33</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">33,34</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.closed" datatype="html">
-        <source>Publication groupée terminée sans modification.</source>
-        <target>Grouped publication ended without changes.</target>
+      <trans-unit id="admin.dashboard.analytics.weekdays" datatype="html">
+        <source> Sessions par jour de la semaine </source>
+        <target> Sessions per weekday </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">49,52</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">52,53</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.confirm.title" datatype="html">
-        <source>Publier les modifications enregistrées ?</source>
-        <target>Publish the saved changes?</target>
+      <trans-unit id="admin.dashboard.analytics.sessionCount.one" datatype="html">
+        <source><x id="count" equiv-text="this.format.count(value)"/> session</source>
+        <target><x id="count" equiv-text="this.format.count(value)"/> session</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
+          <context context-type="linenumber">267</context>
+        </context-group>
       </trans-unit>
-      <trans-unit id="admin.publication.confirm.description" datatype="html">
-        <source>Tous les changements enregistrés dans les projets, le parcours, les informations et les documents légaux seront publiés ensemble. Les champs non enregistrés ne sont pas inclus.</source>
-        <target>All saved changes to projects, your journey, profile information and legal documents will be published together. Unsaved fields are not included.</target>
+      <trans-unit id="admin.dashboard.analytics.sessionCount.other" datatype="html">
+        <source><x id="count" equiv-text="this.format.count(value)"/> sessions</source>
+        <target><x id="count" equiv-text="this.format.count(value)"/> sessions</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.ts</context>
+          <context context-type="linenumber">268</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.byProject" datatype="html">
+        <source> Problèmes par projet </source>
+        <target> Findings per project </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">24,26</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">27,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.byKind" datatype="html">
+        <source> Problèmes par type </source>
+        <target> Findings per kind </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">45,47</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">48,49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.ctrPerDay" datatype="html">
+        <source> CTR par jour </source>
+        <target> CTR per day </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">68,71</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">71,72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.positionPerDay" datatype="html">
+        <source> Position moyenne par jour </source>
+        <target> Average position per day </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">88,90</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">95,96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.positionHint" datatype="html">
+        <source> Plus haut est meilleur </source>
+        <target> Higher is better </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">91,95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.ctrByPosition" datatype="html">
+        <source> CTR selon la position, par requête </source>
+        <target> CTR by position, per query </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">113,116</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">124,125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.ctrByPositionHint" datatype="html">
+        <source> Une requête bien placée mais peu cliquée appelle un meilleur titre ou une meilleure description. </source>
+        <target> A well-placed query with few clicks calls for a better title or description. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">119,123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.distribution" datatype="html">
+        <source> Répartition des mesures </source>
+        <target> Measure distribution </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">22,24</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">29,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.distributionHint" datatype="html">
+        <source> Part des pages et appareils mesurés dans chaque catégorie. </source>
+        <target> Share of the measured pages and devices in each category. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">25,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.metric" datatype="html">
+        <source>Mesure</source>
+        <target>Metric</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.scores" datatype="html">
+        <source> Score labo, mobile et ordinateur </source>
+        <target> Lab score, mobile and desktop </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">47,49</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">54,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.scoresHint" datatype="html">
+        <source> Performance Lighthouse sur 100, d’une mesure simulée par page. </source>
+        <target> Lighthouse performance out of 100, from one simulated run per page. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">50,53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.pages" datatype="html">
+        <source> Mesures par page </source>
+        <target> Measures per page </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">76,78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.figures.measures" datatype="html">
+        <source>Mesures</source>
+        <target>Measures</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">269</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.figures.failed" datatype="html">
+        <source>Mesures impossibles</source>
+        <target>Failed measures</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">274</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.figures.mobile" datatype="html">
+        <source>Score labo médian, mobile</source>
+        <target>Median lab score, mobile</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">281</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.figures.desktop" datatype="html">
+        <source>Score labo médian, ordinateur</source>
+        <target>Median lab score, desktop</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">286</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.measureCount.one" datatype="html">
+        <source><x id="count" equiv-text="this.format.count(count)"/> mesure</source>
+        <target><x id="count" equiv-text="this.format.count(count)"/> measure</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">444</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.measureCount.other" datatype="html">
+        <source><x id="count" equiv-text="this.format.count(count)"/> mesures</source>
+        <target><x id="count" equiv-text="this.format.count(count)"/> measures</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.ts</context>
+          <context context-type="linenumber">445</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.tabs" datatype="html">
+        <source>Rapports</source>
+        <target>Reports</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">88,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.tabs.failed" datatype="html">
+        <source>(dernière collecte en échec)</source>
+        <target>(last collection failed)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-dashboard-page/admin-dashboard-page.component.html</context>
+          <context context-type="linenumber">97,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.less" datatype="html">
+        <source>Moins</source>
+        <target>Less</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/heatmap/heatmap.component.ts</context>
+          <context context-type="linenumber">142</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.more" datatype="html">
+        <source>Plus</source>
+        <target>More</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/heatmap/heatmap.component.ts</context>
+          <context context-type="linenumber">145</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.heatmapKeyboardHint" datatype="html">
+        <source>Flèches pour parcourir les cases.</source>
+        <target>Arrow keys move through the cells.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/heatmap/heatmap.component.ts</context>
+          <context context-type="linenumber">149</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.nameHeader" datatype="html">
+        <source>Élément</source>
+        <target>Item</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/scatter-chart/scatter-chart.component.ts</context>
+          <context context-type="linenumber">167</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/stacked-bars/stacked-bars.component.ts</context>
+          <context context-type="linenumber">178</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.scatterKeyboardHint" datatype="html">
+        <source>Flèches gauche et droite pour parcourir les points.</source>
+        <target>Left and right arrows move through the points.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/scatter-chart/scatter-chart.component.ts</context>
+          <context context-type="linenumber">178</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.totalHeader" datatype="html">
+        <source>Total</source>
+        <target>Total</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/stacked-bars/stacked-bars.component.ts</context>
+          <context context-type="linenumber">183</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.chart.partsKeyboardHint" datatype="html">
+        <source>Flèches gauche et droite pour parcourir les parts.</source>
+        <target>Left and right arrows move through the parts.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/ui/src/lib/chart/components/stacked-bars/stacked-bars.component.ts</context>
+          <context context-type="linenumber">188</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.traffic" datatype="html">
+        <source>Fréquentation</source>
+        <target>Traffic</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.trafficHint" datatype="html">
+        <source>Visiteurs, sessions et pages vues de la période, comparés à la période précédente.</source>
+        <target>Visitors, sessions and page views of the period, compared with the period before.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.origin" datatype="html">
+        <source>Provenance des visites</source>
+        <target>Where visits come from</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">53,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.originHint" datatype="html">
+        <source>Jours de visite, canaux d’acquisition et pays des sessions.</source>
+        <target>Visit days, acquisition channels and countries of the sessions.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.analytics.topPagesHint" datatype="html">
+        <source>Les pages du site les plus consultées de la période et leurs visiteurs.</source>
+        <target>The most viewed pages of the site in the period and their visitors.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-analytics-panel/seo-analytics-panel.component.html</context>
+          <context context-type="linenumber">126,127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.summary" datatype="html">
+        <source>Synthèse de l’audit</source>
+        <target>Audit summary</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.summaryHint" datatype="html">
+        <source>Problèmes relevés sur les textes de recherche, les images et les traductions des projets publiés.</source>
+        <target>Issues found in the search texts, images and translations of the published projects.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.issuesHint" datatype="html">
+        <source>Un problème par ligne, le plus grave d’abord ; filtrez par gravité ou cherchez un projet.</source>
+        <target>One issue per row, the most serious first; filter by severity or search a project.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
+          <context context-type="linenumber">71,72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.performance" datatype="html">
+        <source>Performance dans Google</source>
+        <target>Performance in Google</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.performanceHint" datatype="html">
+        <source>Clics, impressions, taux de clic et position moyenne de la période, comparés à la période précédente.</source>
+        <target>Clicks, impressions, click-through rate and average position of the period, compared with the period before.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.reach" datatype="html">
+        <source>Requêtes et appareils</source>
+        <target>Queries and devices</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">121,122</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.reachHint" datatype="html">
+        <source>Position et taux de clic de chaque requête, et appareils des clics.</source>
+        <target>Position and click-through rate of each query, and the devices of the clicks.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">123,124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.topQueriesHint" datatype="html">
+        <source>Les requêtes les plus cliquées de la période, avec leurs impressions, leur taux de clic et leur position.</source>
+        <target>The most clicked queries of the period, with their impressions, click-through rate and position.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">191,192</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.searchConsole.topPagesHint" datatype="html">
+        <source>Les pages du site qui reçoivent le plus de clics depuis Google.</source>
+        <target>The pages of the site that receive the most clicks from Google.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-search-console-panel/seo-search-console-panel.component.html</context>
+          <context context-type="linenumber">217,218</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.summary" datatype="html">
+        <source>Synthèse des performances</source>
+        <target>Performance summary</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.vitals.summaryHint" datatype="html">
+        <source>Catégories des mesures terrain et scores de laboratoire des pages clés, sur mobile et sur ordinateur.</source>
+        <target>Categories of the field measures and lab scores of the key pages, on mobile and on desktop.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-web-vitals-panel/seo-web-vitals-panel.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
       </trans-unit>
     </body>
   </file>

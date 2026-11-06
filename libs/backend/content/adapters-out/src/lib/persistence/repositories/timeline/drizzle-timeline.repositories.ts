@@ -263,7 +263,7 @@ export class DrizzleTimelineListRepository implements TimelineListRepository {
  * @class DrizzleTimelineUnitOfWork
  *
  * @description
- * Runs timeline entry, list version and rebuild outbox writes in one transaction (D3).
+ * Runs timeline entry, list version and content revision writes in one transaction.
  */
 export class DrizzleTimelineUnitOfWork implements TimelineUnitOfWork {
   // #region Constructor

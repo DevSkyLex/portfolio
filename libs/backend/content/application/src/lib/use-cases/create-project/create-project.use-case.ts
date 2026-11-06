@@ -14,7 +14,7 @@ import type { ProjectChangeResult } from '@internal/content-application/lib/use-
  *
  * @description
  * Adds a draft project after the last one. Its slug derives from the French title and stays fixed
- * afterwards (the public URL); a draft is not on the public site, so no rebuild is requested.
+ * afterwards (the public URL); a draft does not advance the public content revision.
  */
 export class CreateProject {
   // #region Constructor

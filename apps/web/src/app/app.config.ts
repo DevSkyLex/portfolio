@@ -8,9 +8,8 @@ import { contentSnapshot } from '@internal/web/environments/content-snapshot';
  *
  * @description
  * Configures browser-wide error reporting and the public web shell.
- * Content snapshots are selected by locale: the committed ones, loaded as separate build chunks, or
- * the content API's on the dev server (`content-snapshot.development.ts`). The audience measurement id
- * comes from `environments/audience-measurement.ts` (D48).
+ * Public content comes from the content API and is transferred by SSR for hydration. The audience
+ * measurement id comes from `environments/audience-measurement.ts` (D48).
  */
 export const appConfig: ApplicationConfig = {
   providers: [

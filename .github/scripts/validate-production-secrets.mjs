@@ -24,7 +24,7 @@ export function validateProductionSecrets(env) {
   if (new Set(passwordNames.map((name) => env[name])).size !== passwordNames.length) {
     errors.push('Postgres passwords must be distinct');
   }
-  for (const name of ['VPS_HOST', 'GHCR_USERNAME', 'GHCR_TOKEN', 'SITE_BUILD_TOKEN']) {
+  for (const name of ['VPS_HOST', 'GHCR_USERNAME', 'GHCR_TOKEN']) {
     if (!present(name)) errors.push(`${name} is required`);
   }
   for (const name of ['BREVO_SMTP_LOGIN', 'BREVO_SMTP_KEY']) {
