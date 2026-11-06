@@ -1,7 +1,7 @@
 {
   "name": "@vfortin/source",
   "version": "0.0.0",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "scripts": {
     "ai:configure": "nx configure-ai-agents --agents claude codex --no-interactive",
     "prepare": "git config core.hooksPath .githooks",

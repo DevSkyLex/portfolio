@@ -1,0 +1,37 @@
+name: Prepare Playwright
+description: Restore browser binaries and install the matching system dependencies.
+inputs:
+  browsers:
+    description: Space-separated browser names
+    default: chromium
+runs:
+  using: composite
+  steps:
+    - name: Identify the Ubuntu image
+      id: runner
+      shell: bash
+      run: |
+        . /etc/os-release
+        echo "image=$ID-$VERSION_ID" >> "$GITHUB_OUTPUT"
+    - name: Cache Playwright browsers
+      id: browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: browsers-v1-${{ runner.os }}-${{ steps.runner.outputs.image }}-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}-${{ inputs.browsers }}
+    - name: Prepare Playwright browsers
+      shell: bash
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+        CACHE_HIT: ${{ steps.browsers.outputs.cache-hit }}
+      run: |
+        read -r -a browsers <<< "$BROWSERS"
+        for browser in "${browsers[@]}"; do
+          case "$browser" in chromium|firefox|webkit) ;; *) echo 'Unsupported Playwright browser'; exit 1 ;; esac
+        done
+        [ "${#browsers[@]}" -gt 0 ] || exit 1
+        if [ "$CACHE_HIT" = true ]; then
+          npx --no-install playwright install-deps "${browsers[@]}"
+        else
+          npx --no-install playwright install --with-deps "${browsers[@]}"
+        fi

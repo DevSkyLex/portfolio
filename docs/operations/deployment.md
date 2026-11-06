@@ -181,14 +181,22 @@ The worker retries failed deliveries; its Message-ID is stable, but delivery rem
 
 Connection secrets of the `production` environment: `VPS_HOST`, `VPS_SSH_KEY` (private key of the deployment account) and `VPS_SSH_KNOWN_HOSTS` (complete verified OpenSSH known_hosts entries). Optional `VPS_USER` overrides the SSH account; it defaults to `deploy`. Rename the former `VPS_KNOWN_HOSTS` secret to `VPS_SSH_KNOWN_HOSTS`. For a nonstandard SSH port, obtain the fingerprint for that port.
 
-Both deployment and site release copies use the configured SSH port and verify the server against
-`known_hosts`.
+Deployment uses the configured SSH port and verifies the server against `known_hosts`.
 
-- `CI`: format, lint, typecheck, tests, build, architecture test; operations checks (`docker/scripts/check-ops.sh`); e2e (Playwright, four browsers) on `main`.
-- `Deploy services` (after CI on `main`): builds the three API contexts and the Angular SSR code,
+- `CI` runs on pull requests targeting `main`: format, lint, typecheck, tests, build, architecture and
+  operations checks (`docker/scripts/check-ops.sh`), plus built-site and full-stack e2e tests.
+  Coverage runs in three parallel platform partitions; acceptance jobs start independently of quality.
+  See the [CI execution budget](../workspace/testing.md#ci-execution-budget) for selection and limits.
+- `Deploy services` runs when a GitHub release is published, including a published prerelease. It builds the three API contexts and the Angular SSR code,
   publishes four immutable images to GHCR, then runs `playbooks/deploy.yml -e tag=<sha>` through the
-  existing deployment script. The same head-of-main and explicit rollback ref checks apply to all
-  four images. There is no separate site-build workflow and no content publication credential.
+  existing deployment script. All four images use the release tag's commit SHA. There is no separate
+  site-build workflow and no content publication credential.
+  Release preparation pins npm from `packageManager` and installs dependencies without restoring a
+  dependency cache. All jobs use Ubuntu 24.04; only image publication has package-write permission.
+
+Publish a release only for a reviewed commit: the release workflow does not run CI or check that its
+tag points to `main`. A merge alone does not deploy. The `production` environment's deployment rules
+must allow the release tags. For rollback, use the procedure under Routine operations.
 
 The `web` container runs as UID 1000 with a read-only filesystem and bounded temporary storage.
 Its memory and CPU limits use separate `SSR_MEMORY_LIMIT` / `SSR_CPU_LIMIT` variables, preserving the
@@ -334,7 +342,7 @@ Owner setup, once:
    « Cookies et mesure d'audience » text (French and English, see the seed
    `libs/backend/content/adapters-out/src/lib/seed/legal-documents.seed.ts`) and adjust the first
    paragraph of « Données collectées »; saving rebuilds the site.
-9. **Deploy**: run the `Deploy services` workflow (or `playbooks/deploy.yml`) so Ansible writes the two
+9. **Deploy**: publish a GitHub release (or run `playbooks/deploy.yml`) so Ansible writes the two
    secret files and the variables, then refresh the dashboard (`POST /api/content/admin/seo/dashboard/refresh`, once per 10 minutes) or wait for the daily job.
 
 Existing installation: content migration `0013_seo_dashboard` (D47) adds `content.seo_reports` and

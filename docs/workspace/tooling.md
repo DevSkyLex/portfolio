@@ -7,15 +7,23 @@
 - **Target defaults**: `build`, `lint`, `test`, `typecheck` are cached; type-aware lint reads dependencies, hence `^production` in its inputs. `serve`, `serve-ssr`, `e2e`, `db-migrate`, `db-seed`, `generate-key` are never cached (side effects or external state).
 - **Plugins**: `@nx/vitest` infers `test` (`vitest run`, coverage directory as output), `@nx/eslint` infers `lint`, `@nx/playwright` infers `e2e`, `@nx/webpack` the services' `build`/`serve`. No test atomization (`ciTargetName`): without distributed execution it only multiplies targets.
 - **Pipeline**: `build` depends on `^build`; `web-e2e:e2e` depends on `web:build`.
-- **Affected**: `defaultBase: main`; CI uses `nrwl/nx-set-shas` (last successful run on `main`, or the pull request base).
+- **Affected**: `defaultBase: main`; CI compares the pull request base SHA with the tested merge commit.
 - **Release**: none. The packages are private and nothing is published; the site and the services are released by the workflows below.
+
+CI runs coverage tests concurrently on separate web, server and neutral runners, with one Nx test
+target at a time inside each runner. Browser jobs start independently of quality; public browser
+installation is skipped when the suite is unaffected. Full-stack acceptance remains unconditional.
+See [CI execution budget](testing.md#ci-execution-budget) for coverage artifacts and resource limits.
+The [GitHub automation guide](../../.github/README.md) describes reusable preparation actions,
+dependency caches, monthly Dependabot updates, ownership and PR conventions. `conventions.yml` checks
+branch names, PR titles and commits on PRs targeting `main`.
 
 ## CI (`.github/workflows`)
 
-| Workflow     | Trigger                      | Jobs                                                                                                                                                                                                    |
-| ------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ci.yml`     | pull request, push on `main` | `quality` (format check, architecture, affected lint/typecheck/build), `tests` (coverage, summary, report artefact), `e2e` (built site, four browsers; affected on pull requests), `e2e-stack` (opt-in) |
-| `deploy.yml` | CI success on `main`, manual | API and SSR images deployed only if the commit is still the head of `main`; manual run takes an explicit `ref` (rollback)                                                                               |
+| Workflow     | Trigger                       | Jobs                                                                                                                                                                                                                        |
+| ------------ | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`     | pull request targeting `main` | `quality` (format check, architecture, affected lint/typecheck/build), `ops`, `ai-tooling`, `tests` (combined coverage status), coverage (three platform partitions), `e2e` (affected built site), `e2e-stack` (full stack) |
+| `deploy.yml` | published GitHub release      | Build and publish API and SSR images for the release commit, then deploy them to production                                                                                                                                 |
 
 ## Lint
 

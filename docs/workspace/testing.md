@@ -142,3 +142,23 @@ built-site suite remains responsible for public navigation, preferences, renderi
 
 CI's `e2e-stack` job runs the same Nx target on a fresh runner; enabling a repository variable is not
 required. Runner lifecycle unit tests prove disposable-project validation and cleanup on failure.
+
+## CI execution budget
+
+Coverage tests run in three concurrent jobs, partitioned by the owning project's `platform:web`,
+`platform:server` or `platform:neutral` tag. The architecture gate requires exactly one platform tag,
+so each affected test project belongs to one partition. Architecture and acceptance tooling tests
+remain in the quality job. Each coverage runner executes one Nx test target at a time; Vitest can
+still use its own file workers. This avoids multiplying project workers and file workers on the
+same machine. Every partition retains its coverage thresholds, summary and `coverage-<platform>`
+artifact. A failing partition does not cancel the others.
+The final `tests` job requires every partition to succeed, preserving the required-check name used
+by branch protection.
+
+Both acceptance jobs start independently of quality. The public suite detects affected projects
+before installing Playwright browsers; the full-stack suite runs on every PR, including changes to
+operations files outside the project graph. Nx still runs each suite's build and tooling dependencies.
+Jobs have explicit time limits, and new PR commits cancel obsolete runs. The shared Node action pins
+npm from `packageManager` and caches exact locked `node_modules` installations. A cache miss runs
+`npm ci`; lifecycle-disabled tooling jobs use a separate cache. Release builds always install fresh.
+See the [GitHub automation guide](../../.github/README.md) for cache keys and conventions.

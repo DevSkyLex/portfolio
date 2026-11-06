@@ -1,19 +1,10 @@
 # Services: images built and published to GHCR, then deployed to the VPS (backup → migrations → restart).
-# After CI on main, only the commit that is still the head of main is deployed: an older CI run that
-# finishes late is skipped. Manual run (workflow_dispatch) = explicit ref, which is also the rollback path.
+# A published GitHub release deploys the commit referenced by its tag.
 name: Deploy services
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: Commit SHA, tag or branch to deploy (rollback = an older SHA)
-        required: true
-        default: main
+  release:
+    types: [published]
 
 concurrency:
   group: deploy-services
@@ -21,41 +12,24 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   resolve:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    runs-on: ubuntu-24.04
     outputs:
       sha: ${{ steps.target.outputs.sha }}
-      deploy: ${{ steps.target.outputs.deploy }}
     steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
       - id: target
-        env:
-          GH_TOKEN: ${{ github.token }}
-          EVENT: ${{ github.event_name }}
-          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
-          REF: ${{ inputs.ref }}
-        run: |
-          if [ "$EVENT" = "workflow_dispatch" ]; then
-            sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$REF" --jq .sha)
-            deploy=true
-          else
-            head=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
-            sha="$RUN_SHA"
-            if [ "$head" = "$sha" ]; then deploy=true; else
-              deploy=false
-              echo "::notice::$sha is no longer the head of main ($head): not deployed"
-            fi
-          fi
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   prepare:
+    timeout-minutes: 30
     needs: resolve
-    if: needs.resolve.outputs.deploy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       NX_DAEMON: 'false'
       NX_ISOLATE_PLUGINS: 'false'
@@ -63,11 +37,9 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ needs.resolve.outputs.sha }}
-      - uses: actions/setup-node@v5
+      - uses: ./.github/actions/prepare-node-workspace
         with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
+          cache-dependencies: 'false'
       - name: Prepare service build contexts
         run: npx nx run-many -t prune -p identity-service content-service contact-service --parallel=2
       - name: Build request-time SSR application
@@ -90,9 +62,12 @@ jobs:
           overwrite: true
 
   images:
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 30
     needs: [resolve, prepare]
-    if: needs.resolve.outputs.deploy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         service: [identity-service, content-service, contact-service, web]
@@ -122,11 +97,15 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/portfolio-${{ matrix.service }}:${{ needs.resolve.outputs.sha }}
-            ${{ github.event_name == 'workflow_run' && format('{0}/portfolio-{1}:latest', env.REGISTRY, matrix.service) || '' }}
+            ${{ env.REGISTRY }}/portfolio-${{ matrix.service }}:latest
 
   deploy:
+    permissions:
+      contents: read
+      packages: read
+    timeout-minutes: 30
     needs: [resolve, images]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     env:
       VPS_USER: ${{ secrets.VPS_USER }}
@@ -154,18 +133,6 @@ jobs:
       IDENTITY_SIGNING_KID: ${{ vars.IDENTITY_SIGNING_KID || 'k1' }}
       GHCR_USERNAME: ${{ vars.GHCR_USERNAME || github.actor }}
     steps:
-      # Images take minutes: a newer commit may have reached main meanwhile, and its own run deploys it.
-      - name: Still the head of main
-        if: github.event_name == 'workflow_run'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SHA: ${{ needs.resolve.outputs.sha }}
-        run: |
-          head=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
-          if [ "$head" != "$SHA" ]; then
-            echo "::error::$SHA is no longer the head of main ($head): deployment stopped"
-            exit 1
-          fi
       - uses: actions/checkout@v5
         with:
           ref: ${{ needs.resolve.outputs.sha }}

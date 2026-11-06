@@ -1,37 +1,34 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    branches: [main]
 
 permissions:
   contents: read
-  actions: read
 
-# One run per branch or pull request; a new push cancels the previous run (never on main).
+# A new push to the pull request cancels its previous run.
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 env:
   NX_NO_CLOUD: true
+  NX_DAEMON: 'false'
+  NX_TUI: 'false'
+  NX_BASE: ${{ github.event.pull_request.base.sha }}
+  NX_HEAD: ${{ github.sha }}
 
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/prepare-node-workspace
       - run: node --test .github/scripts/validate-production-secrets.test.mjs
-      # NX_BASE/NX_HEAD: last successful CI run on main, or the pull request base.
-      - uses: nrwl/nx-set-shas@v4
       - run: npx nx format:check
       - run: npx nx run-many -t test typecheck lint -p architecture
       - run: npx nx run web-e2e:test-tooling
@@ -39,23 +36,24 @@ jobs:
 
   # Docker, Nginx, shell scripts and Ansible checks (docs/operations/deployment.md).
   ops:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - run: bash docker/scripts/check-ops.sh
 
   # Tests and validators of the AI tooling (.claude/README.md, .codex/maintenance.md).
   ai-tooling:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: ./.github/actions/prepare-node-workspace
         with:
-          node-version: 24
+          ignore-scripts: 'true'
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-      - run: npm ci --ignore-scripts
       - run: node --test .claude/hooks/*.test.mjs .codex/hooks/*.test.mjs .codex/scripts/*.test.mjs
         env:
           TMPDIR: ${{ runner.temp }}
@@ -63,53 +61,71 @@ jobs:
       - run: python -B .codex/scripts/validate.py
 
   # Unit, component and integration tests with coverage thresholds (docs/workspace/testing.md).
-  tests:
-    runs-on: ubuntu-latest
+  coverage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      # Collect every partition's failures and coverage even if another one fails.
+      fail-fast: false
+      matrix:
+        platform: [web, server, neutral]
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - uses: nrwl/nx-set-shas@v4
-      - name: Tests with coverage (affected on pull requests, everything on main)
-        # Each test target starts its own workers; serial targets avoid exhausting the hosted runner.
-        run: npx nx ${{ github.event_name == 'pull_request' && 'affected' || 'run-many' }} -t test --coverage --parallel=1 --exclude=web-e2e,architecture
+      - uses: ./.github/actions/prepare-node-workspace
+      - name: Tests with coverage (affected projects)
+        # Partitions run on separate runners. Keep nested Vitest workers within each runner's budget.
+        run: npx nx affected -t test --coverage --parallel=1 --exclude='*,!tag:platform:${{ matrix.platform }},web-e2e,architecture'
       - name: Coverage summary
         if: always()
         run: node .github/scripts/coverage-summary.mjs >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: coverage
+          name: coverage-${{ matrix.platform }}
           path: coverage/
           retention-days: 7
           if-no-files-found: ignore
 
+  # Keep a single required check for branch protection while the partitions run independently.
+  tests:
+    if: always()
+    needs: coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require all coverage partitions
+        env:
+          RESULT: ${{ needs.coverage.result }}
+        run: test "$RESULT" = success
+
   # Built SSR application with a disposable content fixture API for browser acceptance.
   e2e:
-    needs: quality
     # Keep the browser dependencies on a stable runner while ubuntu-latest migrates to 26.04.
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - uses: nrwl/nx-set-shas@v4
+      - uses: ./.github/actions/prepare-node-workspace
+      - name: Detect affected browser suite
+        id: affected
+        run: |
+          npx nx show projects --affected --withTarget=e2e --json > "$RUNNER_TEMP/e2e-projects.json"
+          node -e "const fs = require('node:fs'); const projects = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); console.log('run=' + projects.includes('web-e2e'));" "$RUNNER_TEMP/e2e-projects.json" >> "$GITHUB_OUTPUT"
       # The hosted Azure mirror can be too slow for Playwright's browser dependencies.
       - run: sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/apt-mirrors.txt
-      - run: npx playwright install --with-deps chromium firefox webkit
+        if: steps.affected.outputs.run == 'true'
+      - uses: ./.github/actions/prepare-playwright
+        if: steps.affected.outputs.run == 'true'
+        with:
+          browsers: chromium firefox webkit
         timeout-minutes: 30
-      # web-e2e:e2e depends on web:build; on a pull request it only runs when the site is affected.
-      - run: npx nx ${{ github.event_name == 'pull_request' && 'affected -t e2e' || 'run-many -t e2e -p web-e2e' }}
+      # web-e2e:e2e depends on web:build and runs when the site is affected.
+      - run: npx nx affected -t e2e
+        if: steps.affected.outputs.run == 'true'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -120,16 +136,12 @@ jobs:
   # Full stack (Compose: Postgres, services, Nginx, Mailpit) for the admin and contact journeys.
   # The runner owns a disposable Compose project and tears it down even after failure.
   e2e-stack:
-    needs: quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-node-workspace
+      - uses: ./.github/actions/prepare-playwright
       - name: Isolated authenticated acceptance
         run: npx nx run web-e2e:e2e-stack
       - uses: actions/upload-artifact@v4
