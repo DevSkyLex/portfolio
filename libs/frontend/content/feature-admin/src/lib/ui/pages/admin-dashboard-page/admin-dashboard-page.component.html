@@ -123,69 +123,57 @@
         }
 
         <div class="@container/dashboard flex min-w-0 flex-1 flex-col">
-          @if (dashboard(); as current) {
-            <div uiTabsContent="search-console" class="flex flex-col">
-              @if (tab() === 'search-console' && searchConsole(); as view) {
-                <ng-container
-                  [ngTemplateOutlet]="sourceState"
-                  [ngTemplateOutletContext]="{ $implicit: view, source: 'Search Console' }"
+          <!-- Panel shells stay mounted so every tab controls an existing element while loading. -->
+          <div uiTabsContent="search-console" class="flex flex-col">
+            @if (tab() === 'search-console' && searchConsole(); as view) {
+              <ng-container
+                [ngTemplateOutlet]="sourceState"
+                [ngTemplateOutletContext]="{ $implicit: view, source: 'Search Console' }"
+              />
+              @if (view.data; as data) {
+                <content-seo-search-console-panel
+                  [data]="data"
+                  [stale]="stale()"
+                  [strip]="narrow()"
                 />
-                @if (view.data; as data) {
-                  <content-seo-search-console-panel
-                    [data]="data"
-                    [stale]="stale()"
-                    [strip]="narrow()"
-                  />
-                }
               }
-            </div>
-            <div uiTabsContent="audience" class="flex flex-col">
-              @if (tab() === 'audience' && analytics(); as view) {
-                <ng-container
-                  [ngTemplateOutlet]="sourceState"
-                  [ngTemplateOutletContext]="{ $implicit: view, source: 'Google Analytics' }"
-                />
-                @if (view.data; as data) {
-                  <content-seo-analytics-panel [data]="data" [stale]="stale()" [strip]="narrow()" />
-                }
+            } @else if (tab() === 'search-console') {
+              <ng-container [ngTemplateOutlet]="loadingDashboard" />
+            }
+          </div>
+          <div uiTabsContent="audience" class="flex flex-col">
+            @if (tab() === 'audience' && analytics(); as view) {
+              <ng-container
+                [ngTemplateOutlet]="sourceState"
+                [ngTemplateOutletContext]="{ $implicit: view, source: 'Google Analytics' }"
+              />
+              @if (view.data; as data) {
+                <content-seo-analytics-panel [data]="data" [stale]="stale()" [strip]="narrow()" />
               }
-            </div>
-            <div uiTabsContent="vitals" class="flex flex-col">
-              @if (tab() === 'vitals' && webVitals(); as view) {
-                <ng-container
-                  [ngTemplateOutlet]="sourceState"
-                  [ngTemplateOutletContext]="{ $implicit: view, source: 'PageSpeed Insights' }"
-                />
-                @if (view.data; as data) {
-                  <content-seo-web-vitals-panel [data]="data" [strip]="narrow()" />
-                }
+            } @else if (tab() === 'audience') {
+              <ng-container [ngTemplateOutlet]="loadingDashboard" />
+            }
+          </div>
+          <div uiTabsContent="vitals" class="flex flex-col">
+            @if (tab() === 'vitals' && webVitals(); as view) {
+              <ng-container
+                [ngTemplateOutlet]="sourceState"
+                [ngTemplateOutletContext]="{ $implicit: view, source: 'PageSpeed Insights' }"
+              />
+              @if (view.data; as data) {
+                <content-seo-web-vitals-panel [data]="data" [strip]="narrow()" />
               }
-            </div>
-            <div uiTabsContent="audit" class="flex flex-col">
-              @if (tab() === 'audit') {
-                <content-seo-audit-panel [audit]="current.audit" [strip]="narrow()" />
-              }
-            </div>
-          } @else if (!store.loadCallState().error) {
-            <span class="sr-only" role="status" i18n="@@admin.dashboard.loading"
-              >Chargement du tableau de bord…</span
-            >
-            <div class="flex flex-col" aria-hidden="true">
-              <div
-                class="grid grid-cols-2 border-b border-border @min-[48rem]/dashboard:grid-cols-4"
-              >
-                @for (cell of skeletonCells; track cell) {
-                  <div class="flex flex-col gap-2 border-e border-border px-6 py-4">
-                    <span uiSkeleton class="h-4 w-24"></span>
-                    <span uiSkeleton class="h-7 w-16"></span>
-                  </div>
-                }
-              </div>
-              <div class="px-6 py-5">
-                <span uiSkeleton class="h-48 w-full"></span>
-              </div>
-            </div>
-          }
+            } @else if (tab() === 'vitals') {
+              <ng-container [ngTemplateOutlet]="loadingDashboard" />
+            }
+          </div>
+          <div uiTabsContent="audit" class="flex flex-col">
+            @if (tab() === 'audit' && dashboard(); as current) {
+              <content-seo-audit-panel [audit]="current.audit" [strip]="narrow()" />
+            } @else if (tab() === 'audit') {
+              <ng-container [ngTemplateOutlet]="loadingDashboard" />
+            }
+          </div>
         </div>
       </div>
     </div>
@@ -345,6 +333,28 @@
   <div class="flex flex-col gap-8">
     <ng-container [ngTemplateOutlet]="details" />
   </div>
+</ng-template>
+
+<!-- The selected report owns the loading announcement and its placeholder. -->
+<ng-template #loadingDashboard>
+  @if (!store.loadCallState().error) {
+    <span class="sr-only" role="status" i18n="@@admin.dashboard.loading"
+      >Chargement du tableau de bord…</span
+    >
+    <div class="flex flex-col" aria-hidden="true">
+      <div class="grid grid-cols-2 border-b border-border @min-[48rem]/dashboard:grid-cols-4">
+        @for (cell of skeletonCells; track cell) {
+          <div class="flex flex-col gap-2 border-e border-border px-6 py-4">
+            <span uiSkeleton class="h-4 w-24"></span>
+            <span uiSkeleton class="h-7 w-16"></span>
+          </div>
+        }
+      </div>
+      <div class="px-6 py-5">
+        <span uiSkeleton class="h-48 w-full"></span>
+      </div>
+    </div>
+  }
 </ng-template>
 
 <!-- Setup, first collection or failure of a source, padded like the page's content. -->

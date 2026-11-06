@@ -340,6 +340,59 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     localStorage.clear();
   });
 
+  it('keeps every report tab linked to its panel while the initial request loads, fails and retries', async (): Promise<void> => {
+    const opened: Opened = await open();
+    const { backend, root, settle } = opened;
+    const request: TestRequest = backend.expectOne(`${URL}?range=28d`);
+    const linkedPanels = (): HTMLElement[] => {
+      const tabs: HTMLButtonElement[] = [
+        ...root().querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+      ];
+      const panels: HTMLElement[] = [...root().querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+      expect(tabs).toHaveLength(4);
+      expect(panels).toHaveLength(4);
+      for (const tab of tabs) {
+        const controlled: HTMLElement | undefined = panels.find(
+          (entry: HTMLElement): boolean => entry.id === tab.getAttribute('aria-controls'),
+        );
+        expect(controlled).toBeDefined();
+        expect(controlled?.getAttribute('aria-labelledby')).toBe(tab.id);
+        expect(controlled?.hidden).toBe(tab.getAttribute('aria-selected') !== 'true');
+      }
+      return panels;
+    };
+
+    const panels: HTMLElement[] = linkedPanels();
+    expect(text(panel(root())?.querySelector('[role="status"]'))).toContain(
+      'Chargement du tableau de bord',
+    );
+    await show(opened, 'Audience');
+    expect(linkedPanels()).toEqual(panels);
+    expect(text(panel(root())?.querySelector('[role="status"]'))).toContain(
+      'Chargement du tableau de bord',
+    );
+
+    request.flush(null, { status: 503, statusText: 'Service Unavailable' });
+    await settle();
+    expect(linkedPanels()).toEqual(panels);
+    expect(text(root())).toContain('Impossible de charger le tableau de bord');
+    expect(root().querySelector('[role="status"]')).toBeNull();
+
+    const retry: HTMLButtonElement | undefined = [
+      ...root().querySelectorAll<HTMLButtonElement>('button'),
+    ].find((button: HTMLButtonElement): boolean => text(button) === 'Réessayer');
+    expect(retry).toBeDefined();
+    retry?.click();
+    await settle();
+    expect(linkedPanels()).toEqual(panels);
+    backend.expectOne(`${URL}?range=28d`).flush(unconfigured());
+    await settle();
+    expect(linkedPanels()).toEqual(panels);
+    expect(text(panel(root())?.querySelector('[data-slot="empty-title"]'))).toBe(
+      'Google Analytics n’est pas configuré',
+    );
+  });
+
   it('names the sources to configure, the first collection to come and the audit findings, one tab each', async (): Promise<void> => {
     const opened: Opened = await open();
     const { backend, root, settle } = opened;
