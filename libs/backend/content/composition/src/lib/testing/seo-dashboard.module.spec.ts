@@ -186,10 +186,10 @@ describe('ContentModule', (): void => {
         missing: ['SEO_GA4_PROPERTY_ID'],
       });
       expect(body.audit.projects.map((project: { slug: string }): string => project.slug)).toEqual([
-        'movah',
-        'rdi-manager',
-        'crm-kodoka',
-        'iotplatform',
+        'library-trails',
+        'workshop-calendar',
+        'neighborhood-atlas',
+        'accessibility-notebook',
       ]);
       expect(body.audit.sitemap).toEqual({ pages: 7, urls: 14 });
     });
@@ -211,7 +211,7 @@ describe('ContentModule', (): void => {
       expect((await dashboard('7d')).searchConsole).toMatchObject({
         data: { totals: { clicks: 7 } },
       });
-      expect(measured).toContain('https://valentin-fortin.pro/fr/projects/movah');
+      expect(measured).toContain('https://valentin-fortin.pro/fr/projects/library-trails');
       expect((await dashboard()).refresh.nextAllowedAt).not.toBeNull();
 
       const again: request.Response = await request(app.getHttpServer())

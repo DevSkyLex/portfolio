@@ -33,19 +33,19 @@ const AUDIT: SeoDashboard['audit'] = {
   projects: [
     {
       id: 'p1',
-      slug: 'movah',
-      title: 'Movah',
+      slug: 'library-trails',
+      title: 'Library Trails',
       pages: {
         fr: {
-          path: '/projects/movah',
-          title: 'Movah — Valentin Fortin',
+          path: '/projects/library-trails',
+          title: 'Library Trails — Valentin Fortin',
           description: 'Résumé',
           keywords: ['angular'],
           keywordsSource: 'techs',
         },
         en: {
-          path: '/en/projects/movah',
-          title: 'Movah — Valentin Fortin',
+          path: '/en/projects/library-trails',
+          title: 'Library Trails — Valentin Fortin',
           description: 'Summary',
           keywords: ['angular'],
           keywordsSource: 'techs',
@@ -118,12 +118,12 @@ const reported = (): SeoDashboard => ({
         { date: '2026-11-01', clicks: 6, impressions: 160, ctr: 0.037, position: 7.5 },
       ],
       queries: [
-        { key: 'valentin fortin', clicks: 80, impressions: 300, ctr: 0.27, position: 1.2 },
+        { key: 'morgan exemple', clicks: 80, impressions: 300, ctr: 0.27, position: 1.2 },
         { key: 'portfolio angular', clicks: 2, impressions: 900, ctr: 0.002, position: 0 },
       ],
       pages: [
         {
-          key: 'https://valentin-fortin.pro/projects/movah',
+          key: 'https://valentin-fortin.pro/projects/library-trails',
           clicks: 40,
           impressions: 1000,
           ctr: 0.04,
@@ -340,6 +340,59 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     localStorage.clear();
   });
 
+  it('keeps every report tab linked to its panel while the initial request loads, fails and retries', async (): Promise<void> => {
+    const opened: Opened = await open();
+    const { backend, root, settle } = opened;
+    const request: TestRequest = backend.expectOne(`${URL}?range=28d`);
+    const linkedPanels = (): HTMLElement[] => {
+      const tabs: HTMLButtonElement[] = [
+        ...root().querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+      ];
+      const panels: HTMLElement[] = [...root().querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+      expect(tabs).toHaveLength(4);
+      expect(panels).toHaveLength(4);
+      for (const tab of tabs) {
+        const controlled: HTMLElement | undefined = panels.find(
+          (entry: HTMLElement): boolean => entry.id === tab.getAttribute('aria-controls'),
+        );
+        expect(controlled).toBeDefined();
+        expect(controlled?.getAttribute('aria-labelledby')).toBe(tab.id);
+        expect(controlled?.hidden).toBe(tab.getAttribute('aria-selected') !== 'true');
+      }
+      return panels;
+    };
+
+    const panels: HTMLElement[] = linkedPanels();
+    expect(text(panel(root())?.querySelector('[role="status"]'))).toContain(
+      'Chargement du tableau de bord',
+    );
+    await show(opened, 'Audience');
+    expect(linkedPanels()).toEqual(panels);
+    expect(text(panel(root())?.querySelector('[role="status"]'))).toContain(
+      'Chargement du tableau de bord',
+    );
+
+    request.flush(null, { status: 503, statusText: 'Service Unavailable' });
+    await settle();
+    expect(linkedPanels()).toEqual(panels);
+    expect(text(root())).toContain('Impossible de charger le tableau de bord');
+    expect(root().querySelector('[role="status"]')).toBeNull();
+
+    const retry: HTMLButtonElement | undefined = [
+      ...root().querySelectorAll<HTMLButtonElement>('button'),
+    ].find((button: HTMLButtonElement): boolean => text(button) === 'Réessayer');
+    expect(retry).toBeDefined();
+    retry?.click();
+    await settle();
+    expect(linkedPanels()).toEqual(panels);
+    backend.expectOne(`${URL}?range=28d`).flush(unconfigured());
+    await settle();
+    expect(linkedPanels()).toEqual(panels);
+    expect(text(panel(root())?.querySelector('[data-slot="empty-title"]'))).toBe(
+      'Google Analytics n’est pas configuré',
+    );
+  });
+
   it('names the sources to configure, the first collection to come and the audit findings, one tab each', async (): Promise<void> => {
     const opened: Opened = await open();
     const { backend, root, settle } = opened;
@@ -408,7 +461,7 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
       [...(projects?.querySelectorAll('table tbody tr') ?? [])].map((row: Element) =>
         [...row.children].map(text),
       ),
-    ).toEqual([['Movah', '1', '1', '0', '2']]);
+    ).toEqual([['Library Trails', '1', '1', '0', '2']]);
     expect([...(audit?.querySelectorAll('ui-bar-list li') ?? [])].map(text)).toEqual([
       'Titre de recherche trop court1',
       'Couverture sans texte alternatif1',
@@ -418,10 +471,10 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     ];
     // The most serious first.
     expect(rows.map(cells)).toEqual([
-      ['Erreur', 'Movah', 'EN', 'Couverture sans texte alternatif.'],
+      ['Erreur', 'Library Trails', 'EN', 'Couverture sans texte alternatif.'],
       [
         'Avertissement',
-        'Movah',
+        'Library Trails',
         'FR',
         'Titre de recherche trop court : 23 caractères, 30 au minimum.',
       ],
@@ -533,7 +586,7 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
       [...(search?.querySelectorAll('ui-scatter-chart tbody tr') ?? [])].map((row: Element) =>
         [...row.children].map(text),
       ),
-    ).toEqual([['valentin fortin', '1,2', '27 %']]);
+    ).toEqual([['morgan exemple', '1,2', '27 %']]);
     // Devices in their fixed order, desktop first, each share printed on its part.
     const devices: Element | null | undefined = search?.querySelector('ui-stacked-bars');
     expect(
@@ -544,10 +597,10 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
       ...(search?.querySelectorAll('ui-data-table table') ?? []),
     ] as HTMLTableElement[];
     expect([...(tables[0]?.tBodies[0]?.rows ?? [])].map(cells)).toEqual([
-      ['valentin fortin', '80', '300', '27 %', '1,2'],
+      ['morgan exemple', '80', '300', '27 %', '1,2'],
       ['portfolio angular', '2', '900', '0,2 %', '—'],
     ]);
-    expect(text(tables[1]?.tBodies[0]?.rows[0]?.cells[0])).toBe('/projects/movah');
+    expect(text(tables[1]?.tBodies[0]?.rows[0]?.cells[0])).toBe('/projects/library-trails');
 
     const audience: HTMLElement | null = await show(opened, 'Audience');
     expect(sections(audience)).toEqual([

@@ -92,8 +92,8 @@ function doc(alts: readonly string[] = []): ArticleDocument {
 function project(overrides: Partial<ProjectProps> = {}): Project {
   return Project.rehydrate({
     id: 'p-1',
-    slug: Slug.of('movah'),
-    title: text('Movah', 'Movah'),
+    slug: Slug.of('library-trails'),
+    title: text('Library Trails', 'Library Trails'),
     summary: text(SUMMARY_FR, SUMMARY_EN),
     lead: text('Intro', 'Lead'),
     period: ProjectPeriod.of({ start: { year: 2026, month: null }, end: null }),
@@ -109,7 +109,10 @@ function project(overrides: Partial<ProjectProps> = {}): Project {
     article: { fr: doc(), en: doc() },
     cover: { media: MEDIA[0], alt: { fr: 'Écran', en: 'Screen' } },
     seo: ProjectSeo.of({
-      title: { fr: 'Movah, suivi de séries et de films', en: 'Movah, a series and film tracker' },
+      title: {
+        fr: 'Library Trails, suivi de séries et de films',
+        en: 'Library Trails, a series and film tracker',
+      },
       description: { fr: SUMMARY_FR, en: SUMMARY_EN },
       keywords: { fr: ['suivi de séries'], en: ['series tracker'] },
     }),
@@ -121,26 +124,30 @@ describe('auditProjectSeo', (): void => {
   it('reports nothing for complete metadata and lists what each page emits', (): void => {
     const audit: ProjectSeoAudit = auditProjectSeo(project());
     expect(audit.issues).toEqual([]);
-    expect(audit).toMatchObject({ projectId: 'p-1', slug: 'movah', title: 'Movah' });
+    expect(audit).toMatchObject({
+      projectId: 'p-1',
+      slug: 'library-trails',
+      title: 'Library Trails',
+    });
     expect(audit.pages.fr).toEqual({
-      path: '/fr/projects/movah',
-      title: 'Movah, suivi de séries et de films',
+      path: '/fr/projects/library-trails',
+      title: 'Library Trails, suivi de séries et de films',
       description: SUMMARY_FR,
       keywords: ['suivi de séries'],
       keywordsSource: 'custom',
     });
-    expect(audit.pages.en.path).toBe('/en/projects/movah');
+    expect(audit.pages.en.path).toBe('/en/projects/library-trails');
   });
 
   it('reports the fallbacks the page applies and their lengths', (): void => {
     const audit: ProjectSeoAudit = auditProjectSeo(
       project({
-        title: text('Movah', 'Movah'),
+        title: text('Atlas', 'Atlas'),
         summary: text('Suivi de séries.', `${'Series '.repeat(30)}tracker`),
         seo: ProjectSeo.empty(),
       }),
     );
-    expect(audit.pages.fr.title).toBe('Movah — Valentin Fortin');
+    expect(audit.pages.fr.title).toBe('Atlas — Valentin Fortin');
     expect(audit.pages.fr.keywords).toEqual(['flutter', 'supabase']);
     expect(audit.pages.fr.keywordsSource).toBe('techs');
     expect(audit.pages.en.description.length).toBeLessThanOrEqual(160);
@@ -208,8 +215,8 @@ describe('auditProjectSeo', (): void => {
         cover: null,
         seo: ProjectSeo.of({
           title: {
-            fr: 'Movah, suivi de séries et de films',
-            en: 'Movah, a series and film tracker',
+            fr: 'Library Trails, suivi de séries et de films',
+            en: 'Library Trails, a series and film tracker',
           },
           description: { fr: SUMMARY_FR, en: SUMMARY_EN },
           keywords: {},

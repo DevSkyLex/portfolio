@@ -38,10 +38,13 @@ describe('ProjectRevisionRequestSchema', (): void => {
   it('accepts the revision built from the fixture and trims the texts', (): void => {
     const parsed: ProjectRevisionRequest = ProjectRevisionRequestSchema.parse({
       ...revisionOf(project),
-      title: { fr: '  Movah  ', en: ' Movah ' },
+      title: { fr: '  Library Trails  ', en: ' Library Trails ' },
     });
-    expect(parsed.title).toEqual({ fr: 'Movah', en: 'Movah' });
-    expect(parsed.period).toEqual({ start: { year: 2026, month: 7 }, end: null });
+    expect(parsed.title).toEqual({ fr: 'Library Trails', en: 'Library Trails' });
+    expect(parsed.period).toEqual({
+      start: { year: 2025, month: 2 },
+      end: { year: 2025, month: 10 },
+    });
   });
 
   it.each([
@@ -58,7 +61,7 @@ describe('ProjectRevisionRequestSchema', (): void => {
 
   it.each([
     ['an empty French title', { title: { fr: '   ' } }],
-    ['a plain http link', { siteUrl: 'http://movah.app' }],
+    ['a plain http link', { siteUrl: 'http://example.com/demos/library-trails' }],
     ['a malformed tech key', { techs: ['Vue.js'] }],
     ['too many techs', { techs: Array.from({ length: 13 }, (_, i): string => `t${i}`) }],
     ['an article without French document', { article: { en: project.article.en } }],

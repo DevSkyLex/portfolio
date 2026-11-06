@@ -6,7 +6,7 @@ import snapshot from '@internal/content-contracts/lib/testing/content-snapshot.f
 
 describe('ContentSnapshotSchema', (): void => {
   it('accepts the fixture shared by the service and the site', (): void => {
-    expect(ContentSnapshotSchema.parse(snapshot).projects[0]?.slug).toBe('movah');
+    expect(ContentSnapshotSchema.parse(snapshot).projects[0]?.slug).toBe('library-trails');
   });
 
   it('rejects a malformed tech key', (): void => {

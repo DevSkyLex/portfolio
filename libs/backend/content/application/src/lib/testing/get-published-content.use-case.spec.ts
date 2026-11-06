@@ -102,7 +102,7 @@ function entry(
     id,
     kind,
     title: t(id),
-    place: t('Tours'),
+    place: t('Ville-Exemple'),
     description: t('d'),
     period: Period.of({ year: start, month: 9 }, end === null ? null : { year: end, month: 6 }),
     techs: [],
@@ -301,13 +301,16 @@ describe('GetPublishedContent', (): void => {
       [
         project('crm', 2, 'published'),
         project('draft', 0, 'draft'),
-        project('movah', 1, 'published'),
+        project('library-trails', 1, 'published'),
       ],
       [],
       [],
     );
     const content: PublishedContent = await new GetPublishedContent(repository).execute();
-    expect(content.projects.map((p: Project): string => p.slug.value)).toEqual(['movah', 'crm']);
+    expect(content.projects.map((p: Project): string => p.slug.value)).toEqual([
+      'library-trails',
+      'crm',
+    ]);
     expect(content.revision).toBe(7);
   });
 

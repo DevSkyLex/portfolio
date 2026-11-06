@@ -65,9 +65,9 @@ const text = (value: string): LocalizedText => LocalizedText.of('t', { fr: value
  * Published project audited by the dashboard fixture.
  */
 const PROJECT: Project = Project.rehydrate({
-  id: 'movah',
-  slug: Slug.of('movah'),
-  title: text('Movah'),
+  id: 'library-trails',
+  slug: Slug.of('library-trails'),
+  title: text('Atlas'),
   summary: text('Application mobile de suivi de séries.'),
   lead: text('Intro'),
   period: ProjectPeriod.of({ start: { year: 2026, month: null }, end: null }),
@@ -105,7 +105,7 @@ const SEARCH: SearchConsoleData = {
   totals: { clicks: 42, impressions: 1830, ctr: 0.0229, position: 18.4 },
   previous: { clicks: 30, impressions: 1402, ctr: 0.0214, position: 21.9 },
   daily: [{ date: '2026-10-05', clicks: 2, impressions: 61, ctr: 0.0328, position: 17.2 }],
-  queries: [{ key: 'valentin fortin', clicks: 21, impressions: 64, ctr: 0.3281, position: 1.3 }],
+  queries: [{ key: 'morgan exemple', clicks: 21, impressions: 64, ctr: 0.3281, position: 1.3 }],
   pages: [],
   devices: [{ key: 'MOBILE', clicks: 17, impressions: 730, ctr: 0.0233, position: 20.8 }],
 };
@@ -242,7 +242,7 @@ describe('AdminSeoDashboardController', (): void => {
         ],
       },
     });
-    expect(dto.audit.projects[0]).toMatchObject({ id: 'movah', slug: 'movah' });
+    expect(dto.audit.projects[0]).toMatchObject({ id: 'library-trails', slug: 'library-trails' });
     expect(dto.audit.projects[0]?.issues).toContainEqual({
       code: 'search-title-too-short',
       severity: 'warning',

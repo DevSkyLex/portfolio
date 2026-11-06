@@ -103,8 +103,8 @@ function project(
  * Two published projects (the featured one later in the list) and a draft.
  */
 const PROJECTS: readonly Project[] = [
-  project('crm-kodoka', { position: 0, published: true }),
-  project('movah', { position: 1, published: true, featured: true }),
+  project('neighborhood-atlas', { position: 0, published: true }),
+  project('library-trails', { position: 1, published: true, featured: true }),
   project('brouillon', { position: 2, published: false, featured: true }),
 ];
 
@@ -243,8 +243,8 @@ describe('RefreshSeoDashboard', (): void => {
       `desktop ${ORIGIN}/fr/`,
       `mobile ${ORIGIN}/en/`,
       `desktop ${ORIGIN}/en/`,
-      `mobile ${ORIGIN}/fr/projects/movah`,
-      `desktop ${ORIGIN}/fr/projects/movah`,
+      `mobile ${ORIGIN}/fr/projects/library-trails`,
+      `desktop ${ORIGIN}/fr/projects/library-trails`,
     ]);
     expect(store.entries.get('search-console:28d')).toMatchObject({
       failure: null,
@@ -325,7 +325,7 @@ describe('RefreshSeoDashboard', (): void => {
   });
 
   it('keeps failed runs in the Web Vitals report unless every run failed', async (): Promise<void> => {
-    const urls: string[] = [`${ORIGIN}/projects/movah`];
+    const urls: string[] = [`${ORIGIN}/projects/library-trails`];
     webVitals.measure.mockImplementation(
       async (_url: string, strategy: PageSpeedStrategy): Promise<WebVitalsMeasure> => {
         if (strategy === 'desktop')
@@ -375,7 +375,7 @@ describe('defaultWebVitalsUrls', (): void => {
         PROJECTS[0] as Project,
         project('iot', { position: 0, published: true }),
       ]),
-    ).toEqual([`${ORIGIN}/fr/`, `${ORIGIN}/en/`, `${ORIGIN}/fr/projects/crm-kodoka`]);
+    ).toEqual([`${ORIGIN}/fr/`, `${ORIGIN}/en/`, `${ORIGIN}/fr/projects/neighborhood-atlas`]);
   });
 });
 
@@ -432,7 +432,10 @@ describe('GetSeoDashboard', (): void => {
       finishedAt: null,
       nextAllowedAt: null,
     });
-    expect(view.audit.projects.map((audit) => audit.slug)).toEqual(['crm-kodoka', 'movah']);
+    expect(view.audit.projects.map((audit) => audit.slug)).toEqual([
+      'neighborhood-atlas',
+      'library-trails',
+    ]);
     expect(view.audit.sitemap).toEqual({ pages: 5, urls: 10 });
     expect(view.audit.totals.published).toBe(2);
     expect(view.audit.totals.drafts).toBe(1);

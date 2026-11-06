@@ -113,7 +113,7 @@ The contact service sends notifications through Brevo over SMTPS (`smtp-relay.br
 2. Activate transactional email if Brevo requires it. In Settings → SMTP & API → SMTP, copy the displayed SMTP login and generate a dedicated SMTP key; enter them as GitHub `production` secrets `BREVO_SMTP_LOGIN` and `BREVO_SMTP_KEY`. The SMTP key is different from a Brevo API key. Check the account's IP authorization if enabled.
 3. Set `CONTACT_MAIL_FROM` to an address on the authenticated sender domain and `CONTACT_NOTIFY_TO` to an existing mailbox. For `send.valentin-fortin.pro`, use `Portfolio <noreply@send.valentin-fortin.pro>` as the sender. Brevo's sending service does not itself create the receiving inbox. Notifications keep the visitor's address as Reply-To.
 4. Check the VPS can reach `smtp-relay.brevo.com` on port 465. After deployment, submit a contact message and check the mailbox and Brevo's transactional email logs; SMTP acceptance alone does not prove delivery.
-5. Review and publish the French and English privacy policy before enabling Brevo. The contact notification includes the visitor's details and message. The initial legal seed describes Brevo; an existing policy must be updated through the admin « Légal » page and republished. Do not rerun the content seed on an existing site: it replaces all content.
+5. Review and publish the French and English privacy policy before enabling Brevo. The contact notification includes the visitor's details and message. The legal seed is fictional demonstration copy; document the actual processing through the admin « Légal » page and republish. Do not rerun the content seed on an existing site: it replaces all content.
 
 Brevo states that an SMTP key can be deactivated after 90 days without a successful send, even when it has no fixed expiration date. Monitor the key's status and the provider's warning emails; check the [SMTP key policy](https://help.brevo.com/hc/en-us/articles/7959631848850-Create-and-manage-your-SMTP-keys).
 
@@ -160,7 +160,7 @@ The worker retries failed deliveries; its Message-ID is stable, but delivery rem
    for the password again, shows the QR code and manual key once, and activates the code after a first
    code from the authenticator app (D17). Until then the login asks for the password alone.
 
-   The optional `content-seed` job replaces all content with the mockup examples; do not run it on an
+   The optional `content-seed` job replaces all content with fictional demonstration records; do not run it on an
    existing site or when starting with an empty portfolio.
 
    Existing installation: the release adds migration `0003_optional_totp` (nullable `totp_secret`, new
@@ -338,10 +338,10 @@ Owner setup, once:
    « Edit API key › API restrictions › Restrict key › PageSpeed Insights API » (optionally an « IP
    addresses » application restriction to the VPS egress address). Put it in
    the `SEO_PAGESPEED_API_KEY` GitHub environment secret.
-8. **Privacy policy**: on the admin « Légal » page, replace the policy's « Cookies » section with the
-   « Cookies et mesure d'audience » text (French and English, see the seed
-   `libs/backend/content/adapters-out/src/lib/seed/legal-documents.seed.ts`) and adjust the first
-   paragraph of « Données collectées »; saving rebuilds the site.
+8. **Privacy policy**: on the admin « Légal » page, review the French and English policy against the
+   actual Google Analytics configuration, cookies, collected data and recipients. The legal seed is
+   fictional demonstration copy and must not be published as a production policy. Saving republishes
+   the legal content.
 9. **Deploy**: publish a GitHub release (or run `playbooks/deploy.yml`) so Ansible writes the two
    secret files and the variables, then refresh the dashboard (`POST /api/content/admin/seo/dashboard/refresh`, once per 10 minutes) or wait for the daily job.
 

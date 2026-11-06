@@ -50,13 +50,18 @@ const ISSUER: string = 'https://exemple.fr/api/auth';
  * Valid profile revision body.
  */
 const PROFILE_BODY: ProfileRevisionRequest = {
-  heroIntro: { fr: 'Développeur à Blois.', en: 'Developer in Blois.' },
+  heroIntro: { fr: 'Designer fictif à Ville-Exemple.', en: 'Fictional designer in Example Town.' },
   aboutStatement: { fr: 'Phrase', en: 'Statement' },
   aboutLead: { fr: 'Chapeau', en: 'Lead' },
-  facts: [{ label: { fr: 'Basé à', en: 'Based in' }, value: { fr: 'Blois', en: 'Blois' } }],
+  facts: [
+    {
+      label: { fr: 'Basé à', en: 'Based in' },
+      value: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
+    },
+  ],
   links: [
-    { kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null },
-    { kind: 'github', url: 'https://github.com/DevSkyLex', label: null },
+    { kind: 'email', url: 'mailto:morgan@example.com', label: null },
+    { kind: 'github', url: 'https://example.com/demo/code', label: null },
   ],
 };
 

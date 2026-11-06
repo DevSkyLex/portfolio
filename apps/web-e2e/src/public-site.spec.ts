@@ -22,11 +22,11 @@ test.describe('public site', (): void => {
   }): Promise<void> => {
     await page.goto('/');
     await page
-      .getByRole('link', { name: /IOTPlatform/ })
+      .getByRole('link', { name: /Carnet d’accessibilité/ })
       .first()
       .click();
-    await expect(page).toHaveURL(/\/projects\/iotplatform$/);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('IOTPlatform');
+    await expect(page).toHaveURL(/\/projects\/accessibility-notebook$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Carnet d’accessibilité');
   });
 
   test('lists the level-2 headings of a case study in its contents and reaches them by fragment', async ({
@@ -36,8 +36,8 @@ test.describe('public site', (): void => {
   }): Promise<void> => {
     // The contents column needs a 1024 px page; the mobile project would hide it.
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/projects/movah');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Movah');
+    await page.goto('/projects/library-trails');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Parcours de lecture');
     const sections: { id: string; title: string }[] = await page
       .locator('article > section')
       .evaluateAll((elements: Element[]): { id: string; title: string }[] =>
@@ -58,7 +58,7 @@ test.describe('public site', (): void => {
     expect(entries).toEqual(
       sections.map(
         (section: { id: string; title: string }): { href: string | null; label: string } => ({
-          href: `/fr/projects/movah#${section.id}`,
+          href: `/fr/projects/library-trails#${section.id}`,
           label: section.title,
         }),
       ),
@@ -74,7 +74,7 @@ test.describe('public site', (): void => {
     }).toPass();
     await expect(page.getByRole('heading', { level: 2, name: last.title })).toBeInViewport();
 
-    await page.goto(`/fr/projects/movah#${first.id}`);
+    await page.goto(`/fr/projects/library-trails#${first.id}`);
     await expect(page.getByRole('heading', { level: 2, name: first.title })).toBeInViewport();
   });
 
@@ -91,11 +91,13 @@ test.describe('public site', (): void => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Politique de confidentialité',
     );
-    await expect(page.getByText('Dernière mise à jour : 2 novembre 2026')).toBeVisible();
+    await expect(page.getByText('Dernière mise à jour : 15 janvier 2025')).toBeVisible();
     await page.goto('/legal-notice');
     await expect(page.getByRole('heading', { name: 'Hébergement' })).toBeVisible();
     // The documents are content (D44): each heading labels its section.
-    await expect(page.getByRole('region', { name: 'Hébergement' })).toContainText('OVH SAS');
+    await expect(page.getByRole('region', { name: 'Hébergement' })).toContainText(
+      'Hébergement Démo',
+    );
   });
 
   test('shows a 404 page for an unknown address', async ({
@@ -151,7 +153,7 @@ test.describe('admin', (): void => {
 });
 
 test.describe('accessibility (axe)', (): void => {
-  for (const path of ['/', '/projects/movah', '/en/', '/privacy', '/error/404']) {
+  for (const path of ['/', '/projects/library-trails', '/en/', '/privacy', '/error/404']) {
     test(`no serious violation on ${path}`, async ({ page }: { page: Page }): Promise<void> => {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

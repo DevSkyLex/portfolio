@@ -51,8 +51,13 @@ const DRAFT: ProfileDraft = {
   heroIntro: { fr: 'Nouvelle intro', en: 'New intro' },
   aboutStatement: { fr: 'Phrase', en: 'Statement' },
   aboutLead: { fr: 'Chapeau', en: 'Lead' },
-  facts: [{ label: { fr: 'Basé à', en: 'Based in' }, value: { fr: 'Blois', en: 'Blois' } }],
-  links: [{ kind: 'github', url: 'https://github.com/DevSkyLex', label: null }],
+  facts: [
+    {
+      label: { fr: 'Basé à', en: 'Based in' },
+      value: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
+    },
+  ],
+  links: [{ kind: 'github', url: 'https://example.com/demo/code', label: null }],
 };
 
 /**

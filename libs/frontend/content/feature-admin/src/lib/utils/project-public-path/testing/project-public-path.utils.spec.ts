@@ -2,8 +2,8 @@ import { projectPublicPath } from '@internal/content-web-feature-admin/lib/utils
 
 describe('projectPublicPath', (): void => {
   it('links the French build to the French page and the English build to the English one', (): void => {
-    expect(projectPublicPath('movah', 'fr')).toBe('/fr/projects/movah');
-    expect(projectPublicPath('movah', 'en')).toBe('/en/projects/movah');
-    expect(projectPublicPath('movah', 'en-US')).toBe('/en/projects/movah');
+    expect(projectPublicPath('library-trails', 'fr')).toBe('/fr/projects/library-trails');
+    expect(projectPublicPath('library-trails', 'en')).toBe('/en/projects/library-trails');
+    expect(projectPublicPath('library-trails', 'en-US')).toBe('/en/projects/library-trails');
   });
 });

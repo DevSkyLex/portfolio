@@ -14,8 +14,8 @@ import { seoGeneratedTags } from '@internal/content-web-feature-admin/lib/utils/
  * French case study without cover nor custom search values.
  */
 const SOURCE: ProjectPageSeoSource = {
-  slug: 'movah',
-  title: 'Movah',
+  slug: 'library-trails',
+  title: 'Library Trails',
   summary: 'Une application mobile.',
   techs: ['flutter', 'supabase'],
   cover: null,
@@ -39,7 +39,7 @@ describe('seoGeneratedTags', (): void => {
       'flutter, supabase',
     );
     expect(rows.find((tag: SeoGeneratedTag): boolean => tag.name === 'hreflang en')?.value).toBe(
-      'https://valentin-fortin.pro/en/projects/movah',
+      'https://valentin-fortin.pro/en/projects/library-trails',
     );
     const jsonLd: SeoGeneratedTag | undefined = rows.at(-1);
     expect(jsonLd?.value).toBe(

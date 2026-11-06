@@ -21,7 +21,7 @@ describe('SocialPreviewComponent', (): void => {
   it('shows the cover, domain, title and description under its caption', async (): Promise<void> => {
     const root: HTMLElement = await render({
       domain: 'valentin-fortin.pro',
-      title: 'Movah — Valentin Fortin',
+      title: 'Library Trails — Valentin Fortin',
       description: 'Une application mobile.',
       image: { src: '/media/cover.webp', alt: 'Accueil' },
     });
@@ -35,7 +35,7 @@ describe('SocialPreviewComponent', (): void => {
       'valentin-fortin.pro',
     );
     expect(root.querySelector('[data-slot="social-preview-title"]')?.textContent).toBe(
-      'Movah — Valentin Fortin',
+      'Library Trails — Valentin Fortin',
     );
     expect(root.querySelector('[data-slot="social-preview-placeholder"]')).toBeNull();
   });
@@ -43,7 +43,7 @@ describe('SocialPreviewComponent', (): void => {
   it('shows a neutral placeholder without cover', async (): Promise<void> => {
     const root: HTMLElement = await render({
       domain: 'valentin-fortin.pro',
-      title: 'Movah',
+      title: 'Library Trails',
       description: 'Résumé.',
       image: null,
     });

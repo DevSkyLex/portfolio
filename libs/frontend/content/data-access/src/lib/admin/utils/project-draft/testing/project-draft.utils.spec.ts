@@ -57,17 +57,17 @@ const FRENCH: ArticleDocumentDraft = {
  */
 const project: AdminProject = {
   id: 'p1',
-  slug: 'movah',
+  slug: 'library-trails',
   status: 'published',
   version: 3,
   position: 0,
-  title: t('Movah', 'Movah'),
+  title: t('Library Trails', 'Library Trails'),
   summary: t('Résumé', 'Summary'),
   lead: t('Chapô'),
   period: { start: { year: 2026, month: null }, end: null },
   client: t('Perso', 'Personal'),
   role: t('Dév', 'Dev'),
-  place: t('Blois', 'Blois'),
+  place: t('Ville-Exemple', 'Ville-Exemple'),
   siteUrl: null,
   techs: ['flutter', 'dart'],
   featured: true,
@@ -75,7 +75,7 @@ const project: AdminProject = {
   cover: { media: MEDIA, alt: t('Couverture') },
   media: [{ id: MEDIA, src: `/media/${MEDIA}.webp`, width: 1600, height: 900 }],
   seo: {
-    title: { fr: 'Movah, app de covoiturage' },
+    title: { fr: 'Library Trails, app de covoiturage' },
     description: {},
     keywords: { fr: ['covoiturage', 'Flutter'], en: [] },
   },
@@ -96,7 +96,7 @@ describe('toProjectDraft', (): void => {
 
   it('opens the absent search texts as empty fields', (): void => {
     expect(toProjectDraft(project).seo).toEqual({
-      title: { fr: 'Movah, app de covoiturage', en: '' },
+      title: { fr: 'Library Trails, app de covoiturage', en: '' },
       description: { fr: '', en: '' },
       keywords: { fr: ['covoiturage', 'Flutter'], en: [] },
     });
@@ -123,7 +123,7 @@ describe('toRevisionRequest', (): void => {
     expect(request.lead).toEqual({ fr: 'Chapô' });
     expect(request.techs).toEqual(['flutter', 'dart']);
     expect(request.seo).toEqual({
-      title: { fr: 'Movah, app de covoiturage' },
+      title: { fr: 'Library Trails, app de covoiturage' },
       description: {},
       keywords: { fr: ['covoiturage', 'Flutter'] },
     });
@@ -149,13 +149,13 @@ describe('toRevisionRequest', (): void => {
   it('trims the search values and omits the blank languages, which fall back', (): void => {
     const draft: ProjectDraft = toProjectDraft(project);
     draft.seo = {
-      title: { fr: '   ', en: '  Movah, carpooling app  ' },
+      title: { fr: '   ', en: '  Library Trails, carpooling app  ' },
       description: { fr: ' Covoiturage local. ', en: '' },
       keywords: { fr: [], en: [' carpooling ', '  '] },
     };
     const request: ProjectRevisionRequest = toRevisionRequest(draft);
     expect(request.seo).toEqual({
-      title: { en: 'Movah, carpooling app' },
+      title: { en: 'Library Trails, carpooling app' },
       description: { fr: 'Covoiturage local.' },
       keywords: { fr: [], en: ['carpooling'] },
     });

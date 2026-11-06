@@ -122,7 +122,7 @@ describe('PageSpeedWebVitalsReader', (): void => {
   it('reports no field data for a URL CrUX does not know', async (): Promise<void> => {
     server.handler = (): FakeReply => ({ json: { lighthouseResult: LIGHTHOUSE } });
     expect(
-      (await reader.measure('https://valentin-fortin.pro/projects/movah', 'mobile')).field,
+      (await reader.measure('https://valentin-fortin.pro/projects/library-trails', 'mobile')).field,
     ).toBeNull();
   });
 

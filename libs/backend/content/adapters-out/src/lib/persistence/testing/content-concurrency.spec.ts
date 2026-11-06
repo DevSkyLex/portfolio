@@ -91,7 +91,7 @@ describe.each(TARGETS)('Content workers in parallel (%s)', (_target, url): void 
     const reads: [PublishedContent, void, PublishedContent] = await Promise.all([
       new GetPublishedContent(reader).execute(),
       uow.run(async ({ projects, buildRequests }): Promise<void> => {
-        const project: Project | null = await projects.get('project-movah');
+        const project: Project | null = await projects.get('project-library-trails');
         if (!project) throw new Error('project missing');
         project.unpublish();
         await projects.save(project, 1);
@@ -100,8 +100,10 @@ describe.each(TARGETS)('Content workers in parallel (%s)', (_target, url): void 
       new GetPublishedContent(reader).execute(),
     ]);
     for (const content of [reads[0], reads[2]]) {
-      const hasMovah: boolean = content.projects.some((p): boolean => p.slug.value === 'movah');
-      expect(hasMovah).toBe(content.revision === 1);
+      const hasLibraryTrails: boolean = content.projects.some(
+        (p): boolean => p.slug.value === 'library-trails',
+      );
+      expect(hasLibraryTrails).toBe(content.revision === 1);
     }
   });
 });

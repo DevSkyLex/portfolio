@@ -30,9 +30,12 @@ describe('LocalizedText', (): void => {
 });
 
 describe('Slug', (): void => {
-  it.each(['iotplatform', 'rdi-manager', 'crm-2023'])('accepts "%s"', (value): void => {
-    expect(Slug.of(value).value).toBe(value);
-  });
+  it.each(['accessibility-notebook', 'workshop-calendar', 'crm-2023'])(
+    'accepts "%s"',
+    (value): void => {
+      expect(Slug.of(value).value).toBe(value);
+    },
+  );
 
   it.each(['RDI', 'rdi--manager', '-rdi', 'rdi manager', '', 'a'.repeat(81)])(
     'rejects "%s"',
@@ -42,15 +45,17 @@ describe('Slug', (): void => {
   );
 
   it('compares by value', (): void => {
-    expect(Slug.of('movah').equals(Slug.of('movah'))).toBe(true);
-    expect(Slug.of('movah').equals(Slug.of('crm'))).toBe(false);
+    expect(Slug.of('library-trails').equals(Slug.of('library-trails'))).toBe(true);
+    expect(Slug.of('library-trails').equals(Slug.of('crm'))).toBe(false);
   });
 
   it('derives a free slug from a title', (): void => {
     expect(Slug.fromTitle('  Refonte : Café & Crème !', new Set()).value).toBe(
       'refonte-cafe-creme',
     );
-    expect(Slug.fromTitle('Movah', new Set(['movah', 'movah-2'])).value).toBe('movah-3');
+    expect(
+      Slug.fromTitle('Library Trails', new Set(['library-trails', 'library-trails-2'])).value,
+    ).toBe('library-trails-3');
     expect(Slug.fromTitle('—', new Set()).value).toBe('projet');
     expect(Slug.fromTitle('a'.repeat(120), new Set()).value).toHaveLength(72);
   });

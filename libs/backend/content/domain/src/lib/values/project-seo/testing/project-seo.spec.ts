@@ -12,12 +12,12 @@ import {
 describe('ProjectSeo', (): void => {
   it('trims the texts and keywords and leaves blank texts and empty lists out', (): void => {
     const seo: ProjectSeo = ProjectSeo.of({
-      title: { fr: '  Movah, suivi de séries  ', en: '   ' },
+      title: { fr: '  Library Trails, suivi de séries  ', en: '   ' },
       description: { en: ' A series tracker. ' },
       keywords: { fr: ['  Flutter ', 'Supabase'], en: [] },
     });
     expect(seo.toProps()).toEqual({
-      title: { fr: 'Movah, suivi de séries' },
+      title: { fr: 'Library Trails, suivi de séries' },
       description: { en: 'A series tracker.' },
       keywords: { fr: ['Flutter', 'Supabase'] },
     });
@@ -25,12 +25,12 @@ describe('ProjectSeo', (): void => {
 
   it('resolves one language without falling back on the other', (): void => {
     const seo: ProjectSeo = ProjectSeo.of({
-      title: { fr: 'Movah, suivi de séries' },
+      title: { fr: 'Library Trails, suivi de séries' },
       description: { en: 'A series tracker.' },
       keywords: { en: ['series tracker'] },
     });
     expect(seo.in('fr')).toEqual({
-      title: 'Movah, suivi de séries',
+      title: 'Library Trails, suivi de séries',
       description: null,
       keywords: [],
     });

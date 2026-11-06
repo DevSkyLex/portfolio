@@ -12,10 +12,10 @@ import {
  * Resolved metadata of a French case study with optional overrides.
  */
 const page = (overrides: Partial<PageSeo> = {}): PageSeo => ({
-  title: 'Movah — Valentin Fortin',
+  title: 'Library Trails — Valentin Fortin',
   description: 'Une application mobile.',
   keywords: ['Flutter', 'suivi de séries'],
-  canonical: 'https://valentin-fortin.pro/projects/movah',
+  canonical: 'https://valentin-fortin.pro/projects/library-trails',
   alternates: [],
   type: 'article',
   locale: 'fr_FR',
@@ -24,7 +24,7 @@ const page = (overrides: Partial<PageSeo> = {}): PageSeo => ({
     url: 'https://valentin-fortin.pro/media/cover.webp',
     width: 2400,
     height: 1350,
-    alt: 'Accueil de Movah',
+    alt: 'Accueil de Library Trails',
   },
   structuredData: null,
   ...overrides,
@@ -38,21 +38,21 @@ describe('pageSeoMetaTags', (): void => {
       ['name="description"', 'Une application mobile.'],
       ['name="keywords"', 'Flutter, suivi de séries'],
       ['property="og:type"', 'article'],
-      ['property="og:title"', 'Movah — Valentin Fortin'],
+      ['property="og:title"', 'Library Trails — Valentin Fortin'],
       ['property="og:description"', 'Une application mobile.'],
-      ['property="og:url"', 'https://valentin-fortin.pro/projects/movah'],
+      ['property="og:url"', 'https://valentin-fortin.pro/projects/library-trails'],
       ['property="og:site_name"', 'Valentin Fortin'],
       ['property="og:locale"', 'fr_FR'],
       ['property="og:locale:alternate"', 'en_GB'],
       ['property="og:image"', 'https://valentin-fortin.pro/media/cover.webp'],
       ['property="og:image:width"', '2400'],
       ['property="og:image:height"', '1350'],
-      ['property="og:image:alt"', 'Accueil de Movah'],
+      ['property="og:image:alt"', 'Accueil de Library Trails'],
       ['name="twitter:card"', 'summary_large_image'],
-      ['name="twitter:title"', 'Movah — Valentin Fortin'],
+      ['name="twitter:title"', 'Library Trails — Valentin Fortin'],
       ['name="twitter:description"', 'Une application mobile.'],
       ['name="twitter:image"', 'https://valentin-fortin.pro/media/cover.webp'],
-      ['name="twitter:image:alt"', 'Accueil de Movah'],
+      ['name="twitter:image:alt"', 'Accueil de Library Trails'],
     ]);
   });
 

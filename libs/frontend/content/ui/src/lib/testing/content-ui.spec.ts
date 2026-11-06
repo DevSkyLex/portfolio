@@ -14,8 +14,8 @@ import { TimelineComponent } from '@internal/content-web-ui/lib/timeline/timelin
  * Featured project fixture with known and unknown technology keys for the shared component host.
  */
 const project: ProjectSummary = {
-  slug: 'movah',
-  title: 'Movah',
+  slug: 'library-trails',
+  title: 'Library Trails',
   summary: 'Suivre ses séries.',
   periodLabel: 'Depuis 2026',
   techs: ['flutter', 'ci-cd', 'unknown'],
@@ -43,8 +43,8 @@ const steps: TimelineStep[] = [
   {
     id: 'bts',
     kind: 'education',
-    title: 'BTS SIO',
-    place: 'Tours',
+    title: 'Diplôme de création visuelle fictif',
+    place: 'Ville-Exemple',
     description: 'Formation.',
     dateLabel: '2021 — 2023',
     start: 2021.67,
@@ -55,7 +55,7 @@ const steps: TimelineStep[] = [
     id: 'job',
     kind: 'experience',
     title: 'Développeur',
-    place: 'Blois',
+    place: 'Ville-Exemple',
     description: 'Poste.',
     dateLabel: 'Depuis 2023',
     start: 2023.67,
@@ -134,7 +134,7 @@ describe('content components', (): void => {
     const root: HTMLElement = fixture.nativeElement;
 
     const link: Element | null = root.querySelector('content-project-card a');
-    expect(link?.getAttribute('href')).toBe('/projects/movah');
+    expect(link?.getAttribute('href')).toBe('/projects/library-trails');
     expect(link?.className).toContain('grid-cols-[minmax(0,2fr)_minmax(0,1fr)]');
     expect(
       [...root.querySelectorAll('content-project-card li')].map((li: Element): string =>
@@ -168,7 +168,7 @@ describe('content components', (): void => {
       throw new Error('Missing timeline tracks or first education step.');
     expect(education.getAttribute('aria-label')).toBe('Formation');
     expect(firstStep.getAttribute('data-start')).toBe('2021.67');
-    expect(education.textContent).toContain('BTS SIO');
+    expect(education.textContent).toContain('Diplôme de création visuelle fictif');
     expect(experience.textContent).toContain('Développeur');
   });
 

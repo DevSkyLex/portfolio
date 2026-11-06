@@ -47,6 +47,8 @@ async function assertAdminAccessibility(page: Page): Promise<void> {
 }
 
 test.describe('isolated stack acceptance @stack', (): void => {
+  // Enrollment and content edits persist in this stack; retry by provisioning a fresh e2e-stack run.
+  test.describe.configure({ retries: 0 });
   test.skip(!process.env['STACK_PASSWORD'], 'Requires the isolated e2e-stack runner.');
   test('enrolls and authenticates with TOTP, rotates cookies, protects editor revisions and delivers contact notifications', async ({
     page,

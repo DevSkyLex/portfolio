@@ -14,7 +14,7 @@ import { seoPreview } from '@internal/content-web-feature-admin/lib/utils/seo-pr
  */
 const values = (seo: Omit<ProjectFormValues['seo'], 'keywords'>): ProjectFormValues => ({
   ...EMPTY_PROJECT_DRAFT,
-  title: { fr: 'Movah', en: 'Movah EN' },
+  title: { fr: 'Library Trails', en: 'Library Trails EN' },
   summary: { fr: 'Covoiturage local.', en: 'Local carpooling.' },
   seo: { ...seo, keywords: { fr: [], en: [] } },
 });
@@ -25,28 +25,28 @@ describe('seoPreview', (): void => {
       title: { fr: '  ', en: '' },
       description: { fr: '', en: '' },
     });
-    expect(seoPreview(blank, 'fr', 'movah')).toEqual({
-      title: 'Movah — Valentin Fortin',
+    expect(seoPreview(blank, 'fr', 'library-trails')).toEqual({
+      title: 'Library Trails — Valentin Fortin',
       description: 'Covoiturage local.',
-      breadcrumb: 'valentin-fortin.pro › fr › projects › movah',
+      breadcrumb: 'valentin-fortin.pro › fr › projects › library-trails',
     });
-    expect(seoPreview(blank, 'en', 'movah')).toEqual({
-      title: 'Movah EN — Valentin Fortin',
+    expect(seoPreview(blank, 'en', 'library-trails')).toEqual({
+      title: 'Library Trails EN — Valentin Fortin',
       description: 'Local carpooling.',
-      breadcrumb: 'valentin-fortin.pro › en › projects › movah',
+      breadcrumb: 'valentin-fortin.pro › en › projects › library-trails',
     });
-    expect(seoPreview({ ...blank, title: { fr: '', en: '' } }, 'fr', 'movah').title).toBe(
+    expect(seoPreview({ ...blank, title: { fr: '', en: '' } }, 'fr', 'library-trails').title).toBe(
       'Valentin Fortin',
     );
   });
 
   it('shows the custom texts as they are, trimmed', (): void => {
     const custom: ProjectFormValues = values({
-      title: { fr: ' Movah, app de covoiturage ', en: '' },
+      title: { fr: ' Library Trails, app de covoiturage ', en: '' },
       description: { fr: ' Une app. ', en: '' },
     });
-    expect(seoPreview(custom, 'fr', 'movah')).toMatchObject({
-      title: 'Movah, app de covoiturage',
+    expect(seoPreview(custom, 'fr', 'library-trails')).toMatchObject({
+      title: 'Library Trails, app de covoiturage',
       description: 'Une app.',
     });
   });
@@ -56,7 +56,7 @@ describe('seoPreview', (): void => {
     const cut: string = seoPreview(
       values({ title: { fr: '', en: '' }, description: { fr: long, en: '' } }),
       'fr',
-      'movah',
+      'library-trails',
     ).description;
     expect(cut.endsWith('mot …')).toBe(true);
     expect(cut.length).toBeLessThanOrEqual(157);
@@ -65,7 +65,7 @@ describe('seoPreview', (): void => {
       seoPreview(
         values({ title: { fr: '', en: '' }, description: { fr: word, en: '' } }),
         'fr',
-        'movah',
+        'library-trails',
       ).description,
     ).toBe(`${'x'.repeat(155)} …`);
   });

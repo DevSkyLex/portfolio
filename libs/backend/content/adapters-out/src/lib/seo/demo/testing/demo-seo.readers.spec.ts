@@ -120,7 +120,10 @@ describe('DemoWebVitalsReader', (): void => {
 
   it('measures each URL and strategy the same way, categories following the thresholds', async (): Promise<void> => {
     const reader: DemoWebVitalsReader = new DemoWebVitalsReader();
-    const urls: string[] = ['http://localhost:8080/', 'http://localhost:8080/projects/movah'];
+    const urls: string[] = [
+      'http://localhost:8080/',
+      'http://localhost:8080/projects/library-trails',
+    ];
     const measures: WebVitalsMeasure[] = [];
     for (const url of urls)
       for (const strategy of ['mobile', 'desktop'] as const)

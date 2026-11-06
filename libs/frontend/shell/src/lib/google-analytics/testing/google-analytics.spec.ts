@@ -175,18 +175,18 @@ describe('GoogleAnalyticsService', (): void => {
     expect(pageViews()).toEqual([
       { page_location: 'http://localhost:3000/', page_title: 'Valentin Fortin' },
     ]);
-    document.title = 'Movah — Valentin Fortin';
-    await router.navigateByUrl('/projects/movah');
+    document.title = 'Library Trails — Valentin Fortin';
+    await router.navigateByUrl('/projects/library-trails');
     TestBed.tick();
-    await router.navigateByUrl('/projects/movah#context');
+    await router.navigateByUrl('/projects/library-trails#context');
     TestBed.tick();
     await router.navigateByUrl('/admin');
     TestBed.tick();
     expect(pageViews()).toEqual([
       { page_location: 'http://localhost:3000/', page_title: 'Valentin Fortin' },
       {
-        page_location: 'http://localhost:3000/projects/movah',
-        page_title: 'Movah — Valentin Fortin',
+        page_location: 'http://localhost:3000/projects/library-trails',
+        page_title: 'Library Trails — Valentin Fortin',
       },
     ]);
   });
@@ -204,7 +204,7 @@ describe('GoogleAnalyticsService', (): void => {
     expect(testWindow()['ga-disable-G-TEST1234']).toBe(true);
     expect(document.cookie).toBe('theme=light');
     const views: number = pageViews().length;
-    await router.navigateByUrl('/projects/movah');
+    await router.navigateByUrl('/projects/library-trails');
     TestBed.tick();
     expect(pageViews()).toHaveLength(views);
 

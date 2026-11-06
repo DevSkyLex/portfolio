@@ -69,7 +69,7 @@ const PROFILE: ProfileRevisionRequest = {
 };
 const ENTRY: TimelineEntryRequest = {
   title: { fr: 'Développeur', en: 'Developer' },
-  place: { fr: 'Blois', en: 'Blois' },
+  place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
   description: { fr: 'Interfaces', en: 'Interfaces' },
   start: { year: 2025, month: 2 },
   end: null,
@@ -342,7 +342,7 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     const markdown: unknown = read.body.result.structuredContent.article.fr;
     expect(typeof markdown).toBe('string');
     expect(markdown).toContain('## Contexte');
-    expect(markdown).toContain('[le store](https://movah.app)');
+    expect(markdown).toContain('[la démo](https://example.com/demos/library-trails)');
 
     const media: string = FIXTURE.media[1]?.id ?? '';
     const article: string = `## Objectif

@@ -13,13 +13,24 @@ import {
  * Complete bilingual revision with one fact and two links.
  */
 const DRAFT: ProfileDraft = {
-  heroIntro: { fr: '  Développeur à Blois.  ', en: 'Developer in Blois.' },
+  heroIntro: {
+    fr: '  Designer fictif à Ville-Exemple.  ',
+    en: 'Fictional designer in Example Town.',
+  },
   aboutStatement: { fr: 'J’aime le code.', en: 'I like code.' },
-  aboutLead: { fr: 'Après un BTS.', en: 'After a BTS.' },
-  facts: [{ label: { fr: 'Basé à', en: 'Based in' }, value: { fr: 'Blois', en: 'Blois' } }],
+  aboutLead: {
+    fr: 'Après une formation fictive en design.',
+    en: 'After a fictional design course.',
+  },
+  facts: [
+    {
+      label: { fr: 'Basé à', en: 'Based in' },
+      value: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
+    },
+  ],
   links: [
-    { kind: 'email', url: ' mailto:contact@valentin-fortin.pro ', label: '  ' },
-    { kind: 'github', url: 'https://github.com/DevSkyLex', label: null },
+    { kind: 'email', url: ' mailto:morgan@example.com ', label: '  ' },
+    { kind: 'github', url: 'https://example.com/demo/code', label: null },
   ],
 };
 
@@ -44,11 +55,11 @@ function failure(draft: ProfileDraft): unknown {
 describe('reviseProfile', (): void => {
   it('trims the texts and the links and keeps the stored version', (): void => {
     const profile: Profile = reviseProfile(DRAFT, 3);
-    expect(profile.heroIntro.fr).toBe('Développeur à Blois.');
-    expect(profile.facts[0]?.value.en).toBe('Blois');
+    expect(profile.heroIntro.fr).toBe('Designer fictif à Ville-Exemple.');
+    expect(profile.facts[0]?.value.en).toBe('Ville-Exemple');
     expect(profile.links.map((link) => link.toProps())).toEqual([
-      { kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null },
-      { kind: 'github', url: 'https://github.com/DevSkyLex', label: null },
+      { kind: 'email', url: 'mailto:morgan@example.com', label: null },
+      { kind: 'github', url: 'https://example.com/demo/code', label: null },
     ]);
     expect(profile.version).toBe(3);
   });
@@ -133,7 +144,9 @@ describe('reviseProfile', (): void => {
     const error: unknown = failure({
       ...DRAFT,
       aboutLead: { fr: 'Lead' },
-      facts: [{ label: { fr: 'Basé à', en: ' ' }, value: { fr: 'Blois', en: 'Blois' } }],
+      facts: [
+        { label: { fr: 'Basé à', en: ' ' }, value: { fr: 'Ville-Exemple', en: 'Ville-Exemple' } },
+      ],
     });
     expect(error).toBeInstanceOf(DomainError);
     expect((error as DomainError).code).toBe('content.profile-incomplete');

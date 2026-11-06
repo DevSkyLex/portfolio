@@ -31,7 +31,7 @@ const dto = (
   position,
   version: 2,
   title: { fr: 'Développeur', en: 'Developer' },
-  place: { fr: 'Tours', en: 'Tours' },
+  place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
   description: { fr: 'CRM.', en: 'CRM.' },
   start: { year: 2023, month: 3 },
   end,
@@ -44,13 +44,13 @@ describe('toAdminTimelineList', (): void => {
       kind: 'experience',
       version: 4,
       totalItems: 2,
-      member: [dto('kodoka', 1, { year: 2023, month: 4 }), dto('oaas', 0, null)],
+      member: [dto('open-reading-collective', 1, { year: 2023, month: 4 }), dto('oaas', 0, null)],
     };
     const view: AdminTimelineList = toAdminTimelineList(list);
     expect(view).toMatchObject({ kind: 'experience', version: 4 });
     expect(view.entries.map((entry: AdminTimelineEntry): string => entry.id)).toEqual([
       'oaas',
-      'kodoka',
+      'open-reading-collective',
     ]);
     expect(view.entries[0]?.end).toBeNull();
     expect(view.entries[1]?.end).toEqual({ year: 2023, month: 4 });
@@ -59,10 +59,13 @@ describe('toAdminTimelineList', (): void => {
 
 describe('toAdminTimelineEntry', (): void => {
   it('leaves out an absent English text and copies the technologies', (): void => {
-    const source: AdminTimelineEntryDto = { ...dto('kodoka', 1, null), title: { fr: 'Seul' } };
+    const source: AdminTimelineEntryDto = {
+      ...dto('open-reading-collective', 1, null),
+      title: { fr: 'Seul' },
+    };
     const entry: AdminTimelineEntry = toAdminTimelineEntry(source);
     expect(entry.title).toEqual({ fr: 'Seul' });
-    expect(entry.place).toEqual({ fr: 'Tours', en: 'Tours' });
+    expect(entry.place).toEqual({ fr: 'Ville-Exemple', en: 'Ville-Exemple' });
     expect(entry.techs).toEqual(['codeigniter', 'php']);
     expect(entry.techs).not.toBe(source.techs);
   });

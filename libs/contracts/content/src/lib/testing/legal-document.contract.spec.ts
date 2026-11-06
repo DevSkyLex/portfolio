@@ -63,7 +63,7 @@ describe('LegalDocumentRevisionRequestSchema', (): void => {
 
 describe('PublicLegalDocumentSchema', (): void => {
   it('accepts the snapshot documents and refuses a date that is not YYYY-MM-DD', (): void => {
-    expect(PublicLegalDocumentSchema.parse(snapshot.legal.notice).updatedOn).toBe('2026-11-02');
+    expect(PublicLegalDocumentSchema.parse(snapshot.legal.notice).updatedOn).toBe('2025-01-15');
     expect(
       PublicLegalDocumentSchema.safeParse({ ...snapshot.legal.notice, updatedOn: '2026-13-02' })
         .success,

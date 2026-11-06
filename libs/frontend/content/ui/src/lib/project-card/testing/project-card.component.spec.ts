@@ -14,7 +14,7 @@ const cover: ProjectImage = {
   small: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f-960.webp',
   width: 2400,
   height: 1350,
-  alt: 'Accueil de Movah',
+  alt: 'Accueil de Library Trails',
 };
 
 /**
@@ -28,8 +28,8 @@ async function render(image: ProjectImage | null, featured: boolean): Promise<HT
   const fixture: ComponentFixture<ProjectCardComponent> =
     TestBed.createComponent(ProjectCardComponent);
   const project: ProjectSummary = {
-    slug: 'movah',
-    title: 'Movah',
+    slug: 'library-trails',
+    title: 'Library Trails',
     summary: 'Suivre ses séries.',
     periodLabel: 'Depuis 2026',
     techs: [],
@@ -37,7 +37,7 @@ async function render(image: ProjectImage | null, featured: boolean): Promise<HT
     cover: image,
   };
   fixture.componentRef.setInput('project', project);
-  fixture.componentRef.setInput('link', '/projects/movah');
+  fixture.componentRef.setInput('link', '/projects/library-trails');
   fixture.componentRef.setInput('featured', featured);
   await fixture.whenStable();
   const visual: HTMLElement | null = fixture.nativeElement.querySelector('[aria-hidden="true"]');

@@ -70,7 +70,7 @@ describe('Grouped publication (migrated PGlite)', (): void => {
       draft,
     );
     await new UnpublishProject(new DrizzleContentUnitOfWork(handle.db), CLOCK).execute(
-      'project-movah',
+      'project-library-trails',
       1,
     );
     const entry: TimelineEntry | undefined = before.timeline[0];
@@ -82,7 +82,9 @@ describe('Grouped publication (migrated PGlite)', (): void => {
     );
     expect((await read()).timeline.map((item) => item.id)).toContain(entry.id);
     expect((await read()).profile.heroIntro.fr).toBe(before.profile.heroIntro.fr);
-    expect((await read()).projects.map((project) => project.id)).toContain('project-movah');
+    expect((await read()).projects.map((project) => project.id)).toContain(
+      'project-library-trails',
+    );
     expect((await read()).legal.privacy.updatedAt).toBeInstanceOf(Date);
     expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
     const changed: PublicationStatus = await publication.status();
@@ -104,7 +106,7 @@ describe('Grouped publication (migrated PGlite)', (): void => {
     const after: PublishedContent = await read();
     expect(after.timeline.map((item) => item.id)).not.toContain(entry.id);
     expect(after.profile.heroIntro.fr).toBe('Nouvelle introduction');
-    expect(after.projects.map((project) => project.id)).not.toContain('project-movah');
+    expect(after.projects.map((project) => project.id)).not.toContain('project-library-trails');
     expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
     await expect(publication.publish(result.version, NOW)).rejects.toBeInstanceOf(
       VersionMismatchError,
@@ -164,7 +166,7 @@ describe('Grouped publication (migrated PGlite)', (): void => {
     await expect(
       new DrizzleContentUnitOfWork(handle.db).run(
         async ({ projects, buildRequests }): Promise<void> => {
-          const project: Project | null = await projects.get('project-movah');
+          const project: Project | null = await projects.get('project-library-trails');
           if (project === null) throw new Error('Missing fixture');
           project.unpublish();
           await projects.save(project, 1);

@@ -402,9 +402,9 @@ describe('admin area', () => {
       member: [
         {
           id: 'p1',
-          slug: 'movah',
+          slug: 'library-trails',
           status: 'published',
-          title: { fr: 'Movah', en: 'Movah' },
+          title: { fr: 'Library Trails', en: 'Library Trails' },
           version: 1,
           position: 0,
           summary: { fr: 'Summary' },
@@ -427,8 +427,8 @@ describe('admin area', () => {
     await flush();
     await fixture.whenStable();
     expect(document.querySelectorAll('[aria-label="Palette de commandes"]')).toHaveLength(1);
-    expect(item('Movah')).toBeDefined();
-    item('Movah')?.click();
+    expect(item('Library Trails')).toBeDefined();
+    item('Library Trails')?.click();
     await flush();
     await fixture.whenStable();
     expect(TestBed.inject<Router>(Router).url).toBe('/admin/projects/p1');
@@ -451,7 +451,7 @@ describe('admin area', () => {
       .flush(null, { status: 500, statusText: 'Server Error' });
     await flush();
     await fixture.whenStable();
-    expect(palette()?.textContent).not.toContain('Movah');
+    expect(palette()?.textContent).not.toContain('Library Trails');
     item('Voir le site')?.click();
     expect(open).toHaveBeenCalledWith('/fr/', '_blank', 'noopener');
     await fixture.whenStable();

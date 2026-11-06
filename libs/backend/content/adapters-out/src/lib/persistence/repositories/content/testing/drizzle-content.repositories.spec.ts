@@ -66,7 +66,7 @@ describe('DrizzleContentRepository (Postgres via PGlite)', (): void => {
     expect(await repository.currentRevision()).toBe(1);
   });
 
-  it('reads the mockup content back as domain objects', async (): Promise<void> => {
+  it('publishes fictional demonstration content with reserved contact links', async (): Promise<void> => {
     await seedContent(handle.db);
     const content: PublishedContent = await new GetPublishedContent(
       new DrizzleContentSnapshotReader(handle.db),
@@ -74,18 +74,18 @@ describe('DrizzleContentRepository (Postgres via PGlite)', (): void => {
 
     expect(content.revision).toBe(1);
     expect(content.projects.map((p): string => p.slug.value)).toEqual([
-      'movah',
-      'rdi-manager',
-      'crm-kodoka',
-      'iotplatform',
+      'library-trails',
+      'workshop-calendar',
+      'neighborhood-atlas',
+      'accessibility-notebook',
     ]);
     expect(content.timeline.map((e): string => e.id)).toEqual([
-      'bts-sio',
-      'bachelor-cefii',
-      'mastere-ynov',
-      'utopia',
-      'kodoka',
-      'object-as-a-service',
+      'visual-design-diploma',
+      'interaction-design-course',
+      'inclusive-design-workshop',
+      'paper-lantern-studio',
+      'open-reading-collective',
+      'independent-interface-practice',
     ]);
     expect(content.skills.map((s): string => s.id)).toEqual([
       'front-end',
@@ -93,6 +93,18 @@ describe('DrizzleContentRepository (Postgres via PGlite)', (): void => {
       'cms',
       'outils',
     ]);
+    expect(content.profile.heroIntro.fr).toContain('Morgan Exemple');
+    expect(content.profile.aboutLead.fr).toContain('fictif');
+    expect(content.profile.links.length).toBeGreaterThan(0);
+    for (const link of content.profile.links) {
+      const url: URL = new URL(link.url);
+      expect(url.protocol === 'mailto:' ? url.pathname.split('@')[1] : url.hostname).toBe(
+        'example.com',
+      );
+    }
+    expect(
+      content.timeline.every((entry): boolean => entry.place.fr.startsWith('Ville-Exemple')),
+    ).toBe(true);
     expect(content.profile.facts).toHaveLength(3);
   });
 
@@ -121,7 +133,7 @@ describe('toTimelineEntry', (): void => {
     id: 'poste',
     kind: 'experience' as const,
     title: { fr: 'Développeur' },
-    place: { fr: 'Tours' },
+    place: { fr: 'Ville-Exemple' },
     description: { fr: 'Interfaces IoT.' },
     startYear: 2023,
     startMonth: 9,

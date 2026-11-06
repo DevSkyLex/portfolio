@@ -80,8 +80,8 @@ function doc(
 function projectProps(overrides: Partial<ProjectProps> = {}): ProjectProps {
   return {
     id: 'p-1',
-    slug: Slug.of('movah'),
-    title: text('Movah', 'Movah'),
+    slug: Slug.of('library-trails'),
+    title: text('Library Trails', 'Library Trails'),
     summary: text('Résumé', 'Summary'),
     lead: text('Intro', 'Lead'),
     period: ProjectPeriod.of({ start: { year: 2026, month: null }, end: null }),
@@ -173,7 +173,7 @@ describe('Project', (): void => {
   it.each([
     ['a negative position', { position: -1 }],
     ['a zero version', { version: 0 }],
-    ['a non-https link', { siteUrl: 'http://iotplatform.fr' }],
+    ['a non-https link', { siteUrl: 'http://example.com' }],
     ['an invalid tech key', { techs: ['Vue.js'] }],
     ['a duplicate tech', { techs: ['dart', 'dart'] }],
     ['a cover without media', { cover: { media: ' ', alt: { fr: 'a' } } }],
@@ -189,7 +189,7 @@ describe('Project', (): void => {
     techs.push('dart');
     expect([project.id, project.slug.value, project.position, project.version]).toEqual([
       'p-1',
-      'movah',
+      'library-trails',
       3,
       2,
     ]);
@@ -222,13 +222,13 @@ describe('Project', (): void => {
     project.revise(
       {
         ...projectProps(),
-        title: text('Movah 2', 'Movah 2'),
+        title: text('Library Trails 2', 'Library Trails 2'),
         cover: { media: MEDIA[0], alt: { fr: 'Accueil', en: 'Home' } },
       },
       ['fr', 'en'],
     );
     expect(project.snapshot()).toMatchObject({
-      title: { en: 'Movah 2' },
+      title: { en: 'Library Trails 2' },
       cover: { media: MEDIA[0], alt: { fr: 'Accueil', en: 'Home' } },
     });
   });
@@ -236,12 +236,12 @@ describe('Project', (): void => {
   it('revises the search texts without making them a publication requirement', (): void => {
     const project: Project = Project.rehydrate(projectProps({ status: 'published' }));
     const seo: ProjectSeo = ProjectSeo.of({
-      title: { fr: 'Movah, suivi de séries' },
+      title: { fr: 'Library Trails, suivi de séries' },
       description: {},
       keywords: { fr: ['Flutter'] },
     });
     project.revise({ ...projectProps(), seo }, ['fr', 'en']);
-    expect(project.snapshot().seo.in('fr').title).toBe('Movah, suivi de séries');
+    expect(project.snapshot().seo.in('fr').title).toBe('Library Trails, suivi de séries');
     expect(project.snapshot().seo.in('fr').keywords).toEqual(['Flutter']);
     expect(project.missingFor(['fr', 'en'])).toEqual([]);
     project.revise({ ...projectProps(), seo: ProjectSeo.empty() }, ['fr', 'en']);
@@ -260,8 +260,8 @@ describe('Project', (): void => {
   });
 
   it('accepts an https link', (): void => {
-    const project: Project = Project.rehydrate(projectProps({ siteUrl: 'https://iotplatform.fr' }));
-    expect(project.snapshot().siteUrl).toBe('https://iotplatform.fr');
+    const project: Project = Project.rehydrate(projectProps({ siteUrl: 'https://example.com' }));
+    expect(project.snapshot().siteUrl).toBe('https://example.com');
   });
 });
 

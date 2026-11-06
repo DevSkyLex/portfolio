@@ -8,12 +8,12 @@ import { socialPreview } from '@internal/content-web-feature-admin/lib/utils/soc
  * English case study with a cover and a custom search title.
  */
 const SOURCE: ProjectPageSeoSource = {
-  slug: 'movah',
-  title: 'Movah',
+  slug: 'library-trails',
+  title: 'Library Trails',
   summary: 'A mobile app.',
   techs: [],
   cover: { src: '/media/cover.webp', small: null, width: 1200, height: 630, alt: 'Home' },
-  seo: { title: 'Movah in short', description: null, keywords: [] },
+  seo: { title: 'Library Trails in short', description: null, keywords: [] },
 };
 
 describe('socialPreview', (): void => {
@@ -21,7 +21,7 @@ describe('socialPreview', (): void => {
     const origin: string = 'https://valentin-fortin.pro';
     expect(socialPreview(projectPageSeo(SOURCE, 'en', origin), SOURCE, origin)).toEqual({
       domain: 'valentin-fortin.pro',
-      title: 'Movah in short',
+      title: 'Library Trails in short',
       description: 'A mobile app.',
       image: { src: '/media/cover.webp', alt: 'Home' },
     });

@@ -14,7 +14,7 @@ import { SkillColumnsComponent } from '@internal/content-web-ui/lib/skill-column
  */
 const project: ProjectSummary = {
   slug: 'rdi',
-  title: 'RDI Manager',
+  title: 'Workshop Calendar',
   summary: 'Suivi.',
   periodLabel: '2023 — 2026',
   techs: ['php'],

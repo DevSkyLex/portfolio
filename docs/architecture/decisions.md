@@ -45,9 +45,17 @@ former rebuild and manual-group mechanisms.
 
 An Nx project is only generated when it receives its first code. Ports exist for I/O and non-determinism (`Clock`, `IdGenerator`), not to wrap every class.
 
-## D9 — NestJS 11 rather than 12
+## D9 — NestJS 11 until Nx supports the next major
 
-Nx 24 (`@nx/nest`) targets NestJS 11, and NestJS 12 is published as ESM only, which is incompatible with the services' CommonJS webpack build. Move to 12 once `@nx/nest` supports it.
+The services remain on NestJS 11. Installed `@nx/nest` 24.0.3 and the reviewed 24.0.4 release declare
+`@nestjs/common` and `@nestjs/core` peer ranges of `>=10.0.0 <12.0.0`. NestJS 12 therefore prevents normal
+dependency resolution for this workspace. Node.js 24 can synchronously load Nest's ESM entry points
+from CommonJS, but runtime interoperability alone does not establish supported tooling.
+
+Dependabot ignores Nest major updates until the installed Nx plugin supports the selected major.
+When upgrading, align the workspace dependencies and every service's authored production manifest,
+regenerate lockfiles without peer-resolution bypasses, and verify the service builds, pruned production
+installations and isolated stack acceptance together.
 
 ## D10 — Contracts in `zod/mini`, validated on the server
 

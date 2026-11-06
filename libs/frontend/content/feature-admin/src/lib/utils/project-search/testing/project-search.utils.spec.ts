@@ -8,7 +8,7 @@ import { matchesProjectSearch } from '@internal/content-web-feature-admin/lib/ut
  * Project fields read by the search; the rest of the view model is irrelevant here.
  */
 const PROJECT: AdminProject = {
-  slug: 'movah',
+  slug: 'library-trails',
   title: { fr: 'Plateforme médecins' },
   techs: ['angular', 'nestjs'],
 } as unknown as AdminProject;
@@ -16,7 +16,7 @@ const PROJECT: AdminProject = {
 describe('matchesProjectSearch', (): void => {
   it('finds every word in a title, the slug or a technology, accents and case ignored', (): void => {
     expect(matchesProjectSearch(PROJECT, '  MEDECIN  ')).toBe(true);
-    expect(matchesProjectSearch(PROJECT, 'movah nest')).toBe(true);
+    expect(matchesProjectSearch(PROJECT, 'library-trails nest')).toBe(true);
     expect(matchesProjectSearch(PROJECT, '')).toBe(true);
     expect(matchesProjectSearch(PROJECT, 'medecin react')).toBe(false);
     expect(

@@ -649,7 +649,10 @@ describe('AdminTimelinePageComponent', (): void => {
   it('titles the page with its count and lists period, title, place and technologies', async (): Promise<void> => {
     const opened: Opened = await list([
       entry('oaas', 0),
-      entry('kodoka', 1, { start: { year: 2023, month: 3 }, end: { year: 2023, month: 4 } }),
+      entry('open-reading-collective', 1, {
+        start: { year: 2023, month: 3 },
+        end: { year: 2023, month: 4 },
+      }),
     ]);
     const root: HTMLElement = opened.root();
     expect(root.querySelector('h1')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
@@ -657,7 +660,7 @@ describe('AdminTimelinePageComponent', (): void => {
     );
     // Most recent start first, whatever the API order (by position).
     expect(rows(root)[0]).toContain('mars 2023 – avr. 2023');
-    expect(rows(root)[0]).toContain('Poste kodoka');
+    expect(rows(root)[0]).toContain('Poste open-reading-collective');
     expect(rows(root)[1]).toContain('janv. 2022 – aujourd’hui');
     expect(rows(root)[1]).toContain('Poste oaas');
     expect(rows(root)[1]).toContain('Lieu oaas');
@@ -946,14 +949,17 @@ describe('AdminTimelinePageComponent', (): void => {
 
   it('offers « État », « Lieu » and « Technos » facets whose options come from the rows', async (): Promise<void> => {
     const opened: Opened = await list([
-      entry('oaas', 0, { place: { fr: 'Tours', en: 'Tours' }, techs: ['php', 'angular'] }),
-      entry('kodoka', 1, {
+      entry('oaas', 0, {
+        place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
+        techs: ['php', 'angular'],
+      }),
+      entry('open-reading-collective', 1, {
         place: { fr: 'Paris', en: 'Paris' },
         techs: ['vue'],
         end: { year: 2023, month: 6 },
       }),
       entry('bts', 2, {
-        place: { fr: ' tours ', en: 'Tours' },
+        place: { fr: ' ville-exemple ', en: 'Ville-Exemple' },
         techs: ['angular'],
         start: { year: 2021, month: 9 },
         end: { year: 2023, month: 6 },
@@ -975,7 +981,7 @@ describe('AdminTimelinePageComponent', (): void => {
     await facet(opened, 'État');
     // One option per place whatever its case or spacing, the first spelling kept, in French order.
     await facet(opened, 'Lieu');
-    expect(facetOptions('Lieu')).toEqual(['Paris 1', 'Tours 2']);
+    expect(facetOptions('Lieu')).toEqual(['Paris 1', 'Ville-Exemple 2']);
     await facet(opened, 'Lieu');
     await facet(opened, 'Technos');
     expect(facetOptions('Technos')).toEqual(['angular 2', 'php 1', 'vue 1']);
@@ -983,14 +989,17 @@ describe('AdminTimelinePageComponent', (): void => {
 
   it('filters by the checked facets, combined with the search, and clears them from their chips', async (): Promise<void> => {
     const opened: Opened = await list([
-      entry('oaas', 0, { place: { fr: 'Tours', en: 'Tours' }, techs: ['php', 'angular'] }),
-      entry('kodoka', 1, {
+      entry('oaas', 0, {
+        place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
+        techs: ['php', 'angular'],
+      }),
+      entry('open-reading-collective', 1, {
         place: { fr: 'Paris', en: 'Paris' },
         techs: ['vue'],
         end: { year: 2023, month: 6 },
       }),
       entry('bts', 2, {
-        place: { fr: 'tours', en: 'Tours' },
+        place: { fr: 'ville-exemple', en: 'Ville-Exemple' },
         techs: ['angular'],
         start: { year: 2021, month: 9 },
         end: { year: 2023, month: 6 },
@@ -998,16 +1007,16 @@ describe('AdminTimelinePageComponent', (): void => {
     ]);
     const root: HTMLElement = opened.root();
     await facet(opened, 'Lieu');
-    await checkOption(opened, 'Lieu', 'Tours');
+    await checkOption(opened, 'Lieu', 'Ville-Exemple');
     await facet(opened, 'Lieu');
     expect(titles(root)).toEqual(['Poste oaas', 'Poste bts']);
-    expect(chips(root)).toEqual(['Lieu : Tours']);
+    expect(chips(root)).toEqual(['Lieu : Ville-Exemple']);
 
     await facet(opened, 'État');
     await checkOption(opened, 'État', 'Terminée');
     await facet(opened, 'État');
     expect(titles(root)).toEqual(['Poste bts']);
-    expect(chips(root)).toEqual(['État : Terminée', 'Lieu : Tours']);
+    expect(chips(root)).toEqual(['État : Terminée', 'Lieu : Ville-Exemple']);
 
     // The search narrows within the facets.
     await search(opened, 'angular');
@@ -1022,22 +1031,24 @@ describe('AdminTimelinePageComponent', (): void => {
 
     // Several technologies: a row matches when it has one of them.
     root
-      .querySelector<HTMLButtonElement>('button[aria-label="Retirer le filtre Lieu : Tours"]')
+      .querySelector<HTMLButtonElement>(
+        'button[aria-label="Retirer le filtre Lieu : Ville-Exemple"]',
+      )
       ?.click();
     await opened.settle();
     root
       .querySelector<HTMLButtonElement>('button[aria-label="Retirer le filtre État : Terminée"]')
       ?.click();
     await opened.settle();
-    expect(titles(root)).toEqual(['Poste oaas', 'Poste kodoka', 'Poste bts']);
+    expect(titles(root)).toEqual(['Poste oaas', 'Poste open-reading-collective', 'Poste bts']);
     await facet(opened, 'Technos');
     await checkOption(opened, 'Technos', 'php');
     await checkOption(opened, 'Technos', 'vue');
     await facet(opened, 'Technos');
-    expect(titles(root)).toEqual(['Poste oaas', 'Poste kodoka']);
+    expect(titles(root)).toEqual(['Poste oaas', 'Poste open-reading-collective']);
     expect(chips(root)).toEqual(['Technos : php', 'Technos : vue']);
     await search(opened, 'paris');
-    expect(titles(root)).toEqual(['Poste kodoka']);
+    expect(titles(root)).toEqual(['Poste open-reading-collective']);
   });
 
   it('lists the education entries on its own route', async (): Promise<void> => {
@@ -1189,8 +1200,8 @@ describe('AdminTimelineEditPageComponent', (): void => {
     for (const [id, value] of [
       ['edit-timeline-title-fr', 'Licence'],
       ['edit-timeline-title-en', 'Degree'],
-      ['edit-timeline-place-fr', 'Tours'],
-      ['edit-timeline-place-en', 'Tours'],
+      ['edit-timeline-place-fr', 'Ville-Exemple'],
+      ['edit-timeline-place-en', 'Ville-Exemple'],
       ['edit-timeline-description-fr', 'Informatique.'],
       ['edit-timeline-description-en', 'Computing.'],
     ] as const) {
@@ -1206,7 +1217,7 @@ describe('AdminTimelineEditPageComponent', (): void => {
     expect(call.request.method).toBe('POST');
     expect(call.request.body).toEqual({
       title: { fr: 'Licence', en: 'Degree' },
-      place: { fr: 'Tours', en: 'Tours' },
+      place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
       description: { fr: 'Informatique.', en: 'Computing.' },
       start: { year: 2024, month: 9 },
       end: null,
@@ -1230,33 +1241,36 @@ describe('AdminTimelineEditPageComponent', (): void => {
   it('suggests the places of both kinds per language, and saves any other text', async (): Promise<void> => {
     const opened: Opened = await open('/admin/experiences/oaas');
     const current: AdminTimelineEntryDto = entry('oaas', 0, {
-      place: { fr: 'Tours', en: 'Tours' },
+      place: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
     });
     opened.backend.expectOne(`${API}/experience/entries/oaas`).flush(current);
     await places(
       opened,
-      [current, entry('kodoka', 1, { place: { fr: 'Paris', en: 'Paris' } })],
+      [current, entry('open-reading-collective', 1, { place: { fr: 'Paris', en: 'Paris' } })],
       [
         entry('bts', 0, {
           kind: 'education',
-          place: { fr: 'Joué-lès-Tours', en: 'Joue-les-Tours' },
+          place: { fr: 'Cité-des-Exemples', en: 'Cite-des-Exemples' },
         }),
       ],
     );
     expect(suggestions(opened, 'edit-timeline-place-fr')).toEqual([]);
-    await type(opened, 'edit-timeline-place-fr', 'joue');
-    expect(suggestions(opened, 'edit-timeline-place-fr')).toEqual(['Joué-lès-Tours']);
-    await type(opened, 'edit-timeline-place-fr', 'tour');
-    expect(suggestions(opened, 'edit-timeline-place-fr')).toEqual(['Joué-lès-Tours', 'Tours']);
+    await type(opened, 'edit-timeline-place-fr', 'cite');
+    expect(suggestions(opened, 'edit-timeline-place-fr')).toEqual(['Cité-des-Exemples']);
+    await type(opened, 'edit-timeline-place-fr', 'exemple');
+    expect(suggestions(opened, 'edit-timeline-place-fr')).toEqual([
+      'Cité-des-Exemples',
+      'Ville-Exemple',
+    ]);
     await type(opened, 'edit-timeline-place-en', 're');
     expect(suggestions(opened, 'edit-timeline-place-en')).toEqual(['Remote']);
     // A place nobody used yet closes the list and stays the value.
-    await type(opened, 'edit-timeline-place-fr', 'Saint-Avertin');
+    await type(opened, 'edit-timeline-place-fr', 'Port-Démo');
     expect(suggestions(opened, 'edit-timeline-place-fr')).toEqual([]);
     await submit(opened);
     const call: TestRequest = opened.backend.expectOne(`${API}/experience/entries/oaas`);
     expect(call.request.method).toBe('PUT');
-    expect(call.request.body.place).toEqual({ fr: 'Saint-Avertin', en: 're' });
+    expect(call.request.body.place).toEqual({ fr: 'Port-Démo', en: 're' });
   });
 
   it('keeps the place free text when its suggestions fail to load', async (): Promise<void> => {

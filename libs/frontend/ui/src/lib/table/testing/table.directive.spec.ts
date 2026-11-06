@@ -24,7 +24,7 @@ import { TABLE_IMPORTS } from '@internal/ui/lib/table/constants/table.imports';
       </thead>
       <tbody uiTableBody>
         <tr uiTableRow data-state="selected">
-          <td uiTableCell>Movah</td>
+          <td uiTableCell>Library Trails</td>
           <td uiTableCell class="text-right">2025</td>
         </tr>
       </tbody>

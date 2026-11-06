@@ -20,7 +20,7 @@ const step: (id: string, kind: TimelineStep['kind'], start: number) => TimelineS
   id,
   kind,
   title: id,
-  place: 'Tours',
+  place: 'Ville-Exemple',
   description: 'Description.',
   start,
   end: start + 1,

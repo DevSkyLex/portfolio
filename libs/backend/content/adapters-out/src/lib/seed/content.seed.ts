@@ -26,8 +26,8 @@ import {
 } from '@internal/content-adapters-out/lib/seed/legal-documents.seed';
 
 /*
- * Initial content taken from the "Portfolio — One page v2" mockup, in French and English.
- * CEFii Bachelor dates assumed (September 2023 – June 2024): the mockup showed "20XX".
+ * Fictional demonstration content in French and English.
+ * Names, organisations, projects and career details do not describe a real person.
  */
 /**
  * Type ProjectRow
@@ -127,591 +127,369 @@ const ul = (...items: string[]): ArticleBlock => ({
   content: items.map((item: string) => ({ type: 'listItem' as const, content: [p(item)] })),
 });
 
-/**
- * Constant SEED_PROJECTS
- *
- * @description
- * Initial published project rows adapted from the portfolio mockup content: each former case-study
- * section is a level-2 heading of the article document (D40); no project has a cover yet. The search
- * texts keep the column default (none): the public pages then use each project's title and summary.
- */
+/** Fictional published projects used by local development and automated acceptance. */
 export const SEED_PROJECTS: ProjectRow[] = [
   {
-    id: 'project-movah',
-    slug: 'movah',
-    title: { fr: 'Movah', en: 'Movah' },
+    id: 'project-library-trails',
+    slug: 'library-trails',
+    title: { fr: 'Parcours de lecture', en: 'Reading trails' },
     summary: {
-      fr: 'Une application mobile pour suivre ses séries, films et anime, et ne plus perdre le fil. Flutter sur Android et iOS, avec Supabase.',
-      en: 'A mobile app to keep track of series, films and anime without losing the thread. Flutter on Android and iOS, with Supabase.',
+      fr: 'Une bibliothèque fictive propose des parcours de lecture accessibles, classés par envie et durée.',
+      en: 'A fictional library offers accessible reading trails grouped by interest and reading time.',
     },
     lead: {
-      fr: 'Une application mobile pour suivre ses séries, films et anime, et ne plus perdre le fil. Flutter sur Android et iOS, avec Supabase.',
-      en: 'A mobile app to keep track of series, films and anime without losing the thread. Flutter on Android and iOS, with Supabase.',
+      fr: 'Une bibliothèque fictive propose des parcours de lecture accessibles, classés par envie et durée.',
+      en: 'A fictional library offers accessible reading trails grouped by interest and reading time.',
     },
-    period: { start: { year: 2026, month: 7 }, end: null },
-    client: { fr: 'Projet personnel', en: 'Personal project' },
-    role: { fr: 'Conception et développement', en: 'Design and development' },
-    place: { fr: 'Android et iOS', en: 'Android and iOS' },
-    siteUrl: null,
-    techs: ['flutter', 'dart', 'supabase'],
+    period: { start: { year: 2025, month: 2 }, end: { year: 2025, month: 10 } },
+    client: { fr: 'Collectif Lecture ouverte', en: 'Open Reading Collective' },
+    role: { fr: 'Design d’interface et prototypage', en: 'Interface design and prototyping' },
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
+    siteUrl: 'https://example.com/demos/library-trails',
+    techs: ['vue', 'typescript', 'css'],
     featured: true,
     position: 0,
     status: 'published',
     version: 1,
     article: {
       fr: doc(
-        h2('Contexte'),
+        h2('Scénario fictif'),
         p(
-          "Entre les plateformes de streaming, on oublie vite où l'on en est d'une série ou la date de sortie du prochain épisode. Movah réunit au même endroit ce que l'on regarde, ce que l'on veut voir et ce qui arrive bientôt.",
+          'Le catalogue de démonstration relie des ouvrages inventés à des parcours courts. Aucun emprunt réel ni compte de lecteur ne sont utilisés.',
         ),
+        h2('Démarche'),
         p(
-          "C'est un projet personnel, mené de la maquette à l'application, pour aller au bout d'un produit mobile complet : comptes, données, synchronisation et publication sur deux plateformes.",
+          'Des ateliers avec des personnages fictifs ont servi à organiser la navigation et les filtres.',
         ),
-        h2('Ce que j’ai fait'),
+        h2('Résultat de démonstration'),
         p(
-          "J'ai conçu la maquette haute fidélité, puis développé l'application Flutter et son backend Supabase.",
+          'Les états vides, le clavier et les contrastes ont été vérifiés sur un prototype autonome.',
         ),
-        ul(
-          'Le suivi des séries, films et anime, épisode par épisode.',
-          "Le catalogue et la recherche, alimentés par l'API de TMDB.",
-          'Le calendrier des sorties à venir, les listes et les statistiques.',
-          'La connexion par e-mail, Google ou Apple, en français et en anglais.',
-        ),
-        h2('Choix techniques'),
-        p(
-          "L'application n'appelle jamais TMDB directement : des Edge Functions Supabase servent d'intermédiaire, avec un cache dans Postgres. La clé d'API reste sur le serveur, et les écrans continuent d'afficher les dernières données connues si TMDB ne répond pas.",
-        ),
-        p(
-          "Le code est organisé par fonctionnalité, en couches données, domaine et présentation. Les entités du domaine ne dépendent ni de Flutter ni de Supabase, ce qui les rend simples à tester ; l'état de l'application passe par Riverpod.",
-        ),
-        h2('Résultat'),
-        p(
-          "L'application tourne sur Android et iOS, avec des thèmes clair et sombre fidèles à la maquette.",
-        ),
-        p(
-          "Chaque changement passe par une intégration continue GitHub Actions : formatage, analyse du code, tests, puis construction de l'application.",
-        ),
-        h2('Ce que je retiens'),
-        p(
-          "Partir d'une maquette complète avant d'écrire la première ligne a évité beaucoup d'allers-retours : chaque écran avait déjà ses états, ses couleurs et ses textes.",
-        ),
-        p(
-          "Passer d'Angular à Flutter m'a montré que les mêmes idées se retrouvent d'un framework à l'autre : des composants petits et des données qui circulent dans un seul sens.",
-        ),
+        ul('Données entièrement fictives', 'Navigation au clavier'),
       ),
       en: doc(
-        h2('Context'),
+        h2('Fictional scenario'),
         p(
-          'With so many streaming platforms, it is easy to forget where you are in a series or when the next episode comes out. Movah brings together what you are watching, what you want to watch and what is coming soon.',
+          'The demonstration catalogue connects invented books to short reading trails. It uses no actual loans or reader accounts.',
         ),
-        p(
-          'A personal project, taken from mockup to app, to see a complete mobile product through: accounts, data, sync and release on two platforms.',
-        ),
-        h2('What I did'),
-        p(
-          'I designed the high-fidelity mockup, then built the Flutter app and its Supabase backend.',
-        ),
-        ul(
-          'Tracking series, films and anime, episode by episode.',
-          'The catalogue and search, powered by the TMDB API.',
-          'The upcoming release calendar, lists and statistics.',
-          'Sign-in with email, Google or Apple, in French and English.',
-        ),
-        h2('Technical choices'),
-        p(
-          'The app never calls TMDB directly: Supabase Edge Functions sit in between, with a cache in Postgres. The API key stays on the server, and screens keep showing the last known data if TMDB does not respond.',
-        ),
-        p(
-          'The code is organised by feature, in data, domain and presentation layers. Domain entities depend on neither Flutter nor Supabase, which keeps them easy to test; app state goes through Riverpod.',
-        ),
-        h2('Outcome'),
-        p('The app runs on Android and iOS, with light and dark themes true to the mockup.'),
-        p(
-          'Every change goes through GitHub Actions continuous integration: formatting, code analysis, tests, then the app build.',
-        ),
-        h2('What I learned'),
-        p(
-          'Starting from a complete mockup before writing the first line saved a lot of back-and-forth: every screen already had its states, colours and copy.',
-        ),
-        p(
-          'Moving from Angular to Flutter showed me that the same ideas carry over between frameworks: small components and data that flows in one direction.',
-        ),
+        h2('Approach'),
+        p('Workshops with fictional personas informed the navigation and filters.'),
+        h2('Demonstration outcome'),
+        p('Empty states, keyboard use and contrast were checked in a standalone prototype.'),
+        ul('Entirely fictional data', 'Keyboard navigation'),
       ),
     },
     cover: null,
   },
   {
-    id: 'project-rdi-manager',
-    slug: 'rdi-manager',
-    title: { fr: 'RDI Manager', en: 'RDI Manager' },
+    id: 'project-workshop-calendar',
+    slug: 'workshop-calendar',
+    title: { fr: 'Agenda des ateliers', en: 'Workshop calendar' },
     summary: {
-      fr: "Suivi d'activité de la R&D chez Object as a Service : temps, planning, indicateurs. J'ai repris le suivi et modernisé l'application Symfony et Vue.js.",
-      en: 'R&D activity tracking at Object as a Service: time, planning, metrics. I took over maintenance and modernised the Symfony and Vue.js application.',
+      fr: 'Un agenda de démonstration pour organiser les ateliers créatifs d’une maison de quartier imaginaire.',
+      en: 'A demonstration calendar for creative workshops at an imaginary community centre.',
     },
     lead: {
-      fr: "Suivi d'activité de la R&D chez Object as a Service : temps, planning, indicateurs. Back-end Symfony, interface Vue.js.",
-      en: 'R&D activity tracking at Object as a Service: time, planning, metrics. Symfony back end, Vue.js interface.',
+      fr: 'Un agenda de démonstration pour organiser les ateliers créatifs d’une maison de quartier imaginaire.',
+      en: 'A demonstration calendar for creative workshops at an imaginary community centre.',
     },
-    period: { start: { year: 2023, month: null }, end: { year: 2026, month: null } },
-    client: { fr: 'Object as a Service', en: 'Object as a Service' },
-    role: { fr: 'Développeur web fullstack', en: 'Full-stack web developer' },
-    place: { fr: 'À distance', en: 'Remote' },
-    siteUrl: null,
-    techs: ['symfony', 'php', 'vue'],
+    period: { start: { year: 2024, month: 2 }, end: { year: 2024, month: 10 } },
+    client: { fr: 'Maison des idées — démonstration', en: 'House of Ideas — demonstration' },
+    role: { fr: 'Design d’interface et prototypage', en: 'Interface design and prototyping' },
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
+    siteUrl: 'https://example.com/demos/workshop-calendar',
+    techs: ['react', 'typescript', 'nodejs'],
     featured: false,
     position: 1,
     status: 'published',
     version: 1,
     article: {
       fr: doc(
-        h2('Contexte'),
+        h2('Scénario fictif'),
         p(
-          "RDI Manager est l'outil interne qui suit l'activité de la R&D d'Object as a Service : le temps passé sur chaque projet, le planning de l'équipe et les indicateurs qui servent au suivi des projets de recherche.",
+          'Le scénario présente des ateliers de gravure, de reliure et de dessin dans un lieu entièrement inventé.',
         ),
+        h2('Démarche'),
+        p('Le prototype sépare la consultation du programme et la réservation de places fictives.'),
+        h2('Résultat de démonstration'),
         p(
-          "L'application associe un back-end Symfony et une interface en Vue.js. Elle tournait depuis plusieurs années sur une version ancienne de Symfony. Chaque évolution devenait plus longue, et personne n'osait toucher au calcul des indicateurs.",
+          'Les messages de confirmation expliquent les étapes suivantes sans envoyer de notification à une personne réelle.',
         ),
-        h2('Ce que j’ai fait'),
-        p(
-          "J'ai repris la maintenance de l'outil, puis sa modernisation, sans interrompre son utilisation par l'équipe.",
-        ),
-        ul(
-          'La mise à jour de PHP, de Symfony et des dépendances, par étapes.',
-          'Des tests sur le calcul des indicateurs avant toute modification.',
-          'La réécriture des parties les plus fragiles : saisie des temps et calculs.',
-          "Les corrections et évolutions demandées par l'équipe R&D, côté Symfony comme côté Vue.js.",
-        ),
-        h2('Choix techniques'),
-        p(
-          "Une réécriture complète aurait gelé l'outil pendant des mois. J'ai préféré une migration progressive : chaque étape laissait l'application utilisable, et les tests vérifiaient que les indicateurs restaient identiques avant et après.",
-        ),
-        p(
-          'En contrepartie, quelques parties anciennes cohabitent encore avec le code modernisé. Elles sont isolées derrière des interfaces claires et documentées, pour pouvoir être remplacées plus tard.',
-        ),
-        h2('Résultat'),
-        p(
-          "L'outil tourne sur une version maintenue de Symfony, et les évolutions se font sans craindre de casser le calcul des indicateurs.",
-        ),
-        p(
-          "L'équipe R&D a continué à saisir ses temps et à suivre ses projets pendant toute la modernisation.",
-        ),
-        h2('Ce que je retiens'),
-        p(
-          'Commencer par les tests a été le meilleur investissement du projet : sans eux, chaque mise à jour aurait été un pari.',
-        ),
-        p(
-          "Reprendre le code de quelqu'un d'autre m'a appris à lire avant de juger. Plusieurs bizarreries avaient une raison métier qu'il fallait comprendre avant de les corriger.",
-        ),
+        ul('Données entièrement fictives', 'Navigation au clavier'),
       ),
       en: doc(
-        h2('Context'),
+        h2('Fictional scenario'),
         p(
-          "RDI Manager is the internal tool that tracks R&D activity at Object as a Service: time spent on each project, the team's schedule and the metrics used to follow research projects.",
+          'The scenario presents printmaking, bookbinding and drawing workshops at an entirely invented venue.',
         ),
-        p(
-          'The application pairs a Symfony back end with a Vue.js interface. It had been running for years on an old Symfony version. Every change took longer, and nobody dared touch the metrics calculation.',
-        ),
-        h2('What I did'),
-        p(
-          'I took over maintenance of the tool, then its modernisation, without interrupting the team using it.',
-        ),
-        ul(
-          'Upgrading PHP, Symfony and dependencies, step by step.',
-          'Tests on the metrics calculation before any change.',
-          'Rewriting the most fragile parts: time entry and calculations.',
-          'Fixes and features requested by the R&D team, on both the Symfony and Vue.js sides.',
-        ),
-        h2('Technical choices'),
-        p(
-          'A full rewrite would have frozen the tool for months. I chose a gradual migration: each step left the application usable, and tests checked that metrics stayed identical before and after.',
-        ),
-        p(
-          'The trade-off: a few older parts still live alongside the modernised code. They are isolated behind clear, documented interfaces so they can be replaced later.',
-        ),
-        h2('Outcome'),
-        p(
-          'The tool runs on a maintained Symfony version, and changes no longer risk breaking the metrics calculation.',
-        ),
-        p(
-          'The R&D team kept entering time and following its projects throughout the modernisation.',
-        ),
-        h2('What I learned'),
-        p(
-          'Starting with tests was the best investment of the project: without them, every upgrade would have been a gamble.',
-        ),
-        p(
-          "Taking over someone else's code taught me to read before judging. Several oddities had a business reason that needed understanding before fixing them.",
-        ),
+        h2('Approach'),
+        p('The prototype separates browsing the programme from reserving fictional places.'),
+        h2('Demonstration outcome'),
+        p('Confirmation messages explain the next steps without notifying a real person.'),
+        ul('Entirely fictional data', 'Keyboard navigation'),
       ),
     },
     cover: null,
   },
   {
-    id: 'project-crm-kodoka',
-    slug: 'crm-kodoka',
-    title: { fr: 'CRM Kodoka', en: 'Kodoka CRM' },
+    id: 'project-neighborhood-atlas',
+    slug: 'neighborhood-atlas',
+    title: { fr: 'Atlas du quartier', en: 'Neighbourhood atlas' },
     summary: {
-      fr: 'Un CRM sur mesure pour Kodoka : interfaces, règles métier et gestion des données.',
-      en: 'A custom CRM for Kodoka: interfaces, business rules and data management.',
+      fr: 'Une carte éditoriale de lieux imaginaires, conçue pour explorer des informations sans dépendre de la carte.',
+      en: 'An editorial map of imaginary places, designed to make information available without relying on the map.',
     },
     lead: {
-      fr: 'Un CRM sur mesure pour Kodoka : interfaces, règles métier et gestion des données.',
-      en: 'A custom CRM for Kodoka: interfaces, business rules and data management.',
+      fr: 'Une carte éditoriale de lieux imaginaires, conçue pour explorer des informations sans dépendre de la carte.',
+      en: 'An editorial map of imaginary places, designed to make information available without relying on the map.',
     },
-    period: { start: { year: 2023, month: 3 }, end: { year: 2023, month: 4 } },
-    client: { fr: 'Kodoka', en: 'Kodoka' },
-    role: { fr: 'Développeur web fullstack', en: 'Full-stack web developer' },
-    place: { fr: 'Joué-lès-Tours', en: 'Joué-lès-Tours' },
-    siteUrl: null,
-    techs: ['codeigniter', 'php'],
+    period: { start: { year: 2022, month: 2 }, end: { year: 2022, month: 10 } },
+    client: { fr: 'Atelier Lanterne de papier', en: 'Paper Lantern Studio' },
+    role: { fr: 'Design d’interface et prototypage', en: 'Interface design and prototyping' },
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
+    siteUrl: 'https://example.com/demos/neighborhood-atlas',
+    techs: ['svelte', 'typescript', 'css'],
     featured: false,
     position: 2,
     status: 'published',
     version: 1,
     article: {
       fr: doc(
-        h2('Contexte'),
+        h2('Scénario fictif'),
         p(
-          "Kodoka suivait ses clients et ses échanges commerciaux dans des fichiers séparés. Les informations étaient dispersées et difficiles à partager dans l'équipe.",
+          'Les lieux, les adresses et les itinéraires du scénario sont fictifs. Le projet illustre une alternative textuelle à une carte visuelle.',
         ),
+        h2('Démarche'),
         p(
-          "L'entreprise voulait un CRM simple, adapté à sa façon de travailler, plutôt qu'un outil généraliste à configurer pendant des semaines.",
+          'Les cartes de lieux utilisent des libellés explicites et une progression cohérente au clavier.',
         ),
-        h2('Ce que j’ai fait'),
-        p(
-          "En deux mois, j'ai conçu et développé le CRM avec CodeIgniter 4, de la base de données aux écrans.",
-        ),
-        ul(
-          "Les fiches clients et contacts, avec l'historique des échanges.",
-          'Le suivi des opportunités commerciales, étape par étape.',
-          'Les règles métier : statuts, relances et droits selon le rôle.',
-          "L'import des données existantes depuis les anciens fichiers.",
-        ),
-        h2('Choix techniques'),
-        p(
-          "CodeIgniter 4 était léger et déjà connu de l'équipe qui allait reprendre l'outil après moi. Pour un projet de deux mois, c'était plus important qu'un framework plus complet.",
-        ),
-        p(
-          "J'ai gardé une interface sobre, rendue côté serveur, pour livrer dans les délais. Seuls les écrans les plus utilisés ont reçu un peu de JavaScript, pour éviter les rechargements.",
-        ),
-        h2('Résultat'),
-        p(
-          "L'équipe retrouve les clients, leurs contacts et l'historique des échanges au même endroit, au lieu de fichiers séparés.",
-        ),
-        p(
-          "Le code a été remis avec une documentation d'installation et de prise en main, pour que l'équipe puisse le faire évoluer.",
-        ),
-        h2('Ce que je retiens'),
-        p(
-          "J'aurais passé plus de temps avec les utilisateurs avant de modéliser les données : deux champs ajoutés en fin de projet auraient été évidents après une matinée d'observation.",
-        ),
-        p(
-          "Livrer un projet entier en deux mois m'a appris à découper le travail en versions utilisables, plutôt qu'à tout finir en même temps.",
-        ),
+        h2('Résultat de démonstration'),
+        p('La vue liste conserve les mêmes informations et filtres que la carte.'),
+        ul('Données entièrement fictives', 'Navigation au clavier'),
       ),
       en: doc(
-        h2('Context'),
+        h2('Fictional scenario'),
         p(
-          'Kodoka tracked its clients and sales conversations in separate files. Information was scattered and hard to share across the team.',
+          'Places, addresses and routes in this scenario are fictional. The project illustrates a textual alternative to a visual map.',
         ),
-        p(
-          'The company wanted a simple CRM that fit the way it works, rather than a general-purpose tool that takes weeks to configure.',
-        ),
-        h2('What I did'),
-        p(
-          'In two months, I designed and built the CRM with CodeIgniter 4, from the database to the screens.',
-        ),
-        ul(
-          'Client and contact records, with the history of exchanges.',
-          'Tracking sales opportunities, stage by stage.',
-          'Business rules: statuses, follow-ups and role-based permissions.',
-          'Importing existing data from the old files.',
-        ),
-        h2('Technical choices'),
-        p(
-          'CodeIgniter 4 was lightweight and already known to the team who would take the tool over after me. For a two-month project, that mattered more than a fuller framework.',
-        ),
-        p(
-          'I kept a plain, server-rendered interface to deliver on time. Only the most used screens got a little JavaScript, to avoid page reloads.',
-        ),
-        h2('Outcome'),
-        p(
-          'The team finds clients, their contacts and the history of exchanges in one place, instead of separate files.',
-        ),
-        p(
-          'The code was handed over with setup and onboarding documentation, so the team could keep developing it.',
-        ),
-        h2('What I learned'),
-        p(
-          'I would have spent more time with users before modelling the data: two fields added at the end of the project would have been obvious after a morning of observation.',
-        ),
-        p(
-          'Delivering a whole project in two months taught me to split work into usable versions, rather than finishing everything at once.',
-        ),
+        h2('Approach'),
+        p('Place cards use explicit labels and consistent keyboard navigation.'),
+        h2('Demonstration outcome'),
+        p('The list view retains the same information and filters as the map.'),
+        ul('Entirely fictional data', 'Keyboard navigation'),
       ),
     },
     cover: null,
   },
   {
-    id: 'project-iotplatform',
-    slug: 'iotplatform',
-    title: { fr: 'IOTPlatform', en: 'IOTPlatform' },
+    id: 'project-accessibility-notebook',
+    slug: 'accessibility-notebook',
+    title: { fr: 'Carnet d’accessibilité', en: 'Accessibility notebook' },
     summary: {
-      fr: 'Supervision et pilotage de capteurs LoRaWAN pour Object as a Service. Front-end Angular et NgRx, évolutions du back-end Django.',
-      en: 'Monitoring and control of LoRaWAN sensors for Object as a Service. Angular and NgRx front end, improvements to the Django back end.',
+      fr: 'Un carnet pédagogique de démonstration pour documenter les observations d’accessibilité sur des interfaces inventées.',
+      en: 'An educational demonstration notebook for accessibility observations on invented interfaces.',
     },
     lead: {
-      fr: "Supervision et pilotage de capteurs et d'actionneurs LoRaWAN, édités par Object as a Service. J'ai développé le front-end Angular et fait évoluer le back-end Django.",
-      en: 'Monitoring and control of LoRaWAN sensors and actuators, published by Object as a Service. I built the Angular front end and improved the Django back end.',
+      fr: 'Un carnet pédagogique de démonstration pour documenter les observations d’accessibilité sur des interfaces inventées.',
+      en: 'An educational demonstration notebook for accessibility observations on invented interfaces.',
     },
-    period: { start: { year: 2023, month: null }, end: { year: 2026, month: null } },
-    client: { fr: 'Object as a Service', en: 'Object as a Service' },
-    role: { fr: 'Développeur web fullstack', en: 'Full-stack web developer' },
-    place: { fr: 'À distance', en: 'Remote' },
-    siteUrl: 'https://iotplatform.fr/fr/',
-    techs: ['angular', 'ngrx', 'django'],
+    period: { start: { year: 2023, month: 2 }, end: { year: 2023, month: 10 } },
+    client: { fr: 'Projet pédagogique fictif', en: 'Fictional learning project' },
+    role: { fr: 'Design d’interface et prototypage', en: 'Interface design and prototyping' },
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
+    siteUrl: 'https://example.com/demos/accessibility-notebook',
+    techs: ['html', 'css', 'javascript'],
     featured: false,
     position: 3,
     status: 'published',
     version: 1,
     article: {
       fr: doc(
-        h2('Contexte'),
+        h2('Scénario fictif'),
         p(
-          'IOTPlatform permet à des opérateurs industriels, des gestionnaires de réseaux et des collectivités de superviser et de piloter leurs équipements à distance : capteurs de niveau, de débit ou de température, et actionneurs, sur les réseaux Orange LoRa et The Things Network.',
+          'Le carnet rassemble des observations synthétiques sur des formulaires et des menus inventés. Il ne contient aucun audit de client réel.',
         ),
+        h2('Démarche'),
         p(
-          "La plateforme collecte et décode les trames envoyées par les équipements, déclenche des alertes par e-mail ou SMS, et permet d'envoyer des commandes aux actionneurs.",
+          'Chaque exemple associe une difficulté observable, une proposition et une méthode de vérification.',
         ),
-        h2('Ce que j’ai fait'),
-        p(
-          "J'ai pris en charge toute la partie front-end en Angular : la conception des pages et des composants, les appels aux API et la gestion d'état avec NgRx.",
-        ),
-        p(
-          "Côté back-end, en Django, j'ai amélioré le code existant et ajouté plusieurs fonctionnalités.",
-        ),
-        ul(
-          'Les tableaux de bord de supervision, sur plusieurs sites.',
-          "L'envoi de commandes aux actionneurs et leur historique.",
-          'Le paramétrage des alertes par e-mail ou SMS.',
-          "Les graphiques dans le temps et l'export des données en CSV.",
-        ),
-        h2('Choix techniques'),
-        p(
-          "Les données arrivent de nombreux équipements et changent souvent. J'ai centralisé l'état de l'application avec NgRx : les écrans lisent le même store, les appels aux API passent par des effets, et une donnée mise à jour l'est partout à la fois.",
-        ),
-        p(
-          "J'ai découpé l'interface en composants réutilisables (tableaux, graphiques, formulaires), partagés entre les écrans. L'interface reste cohérente à mesure que les fonctionnalités s'ajoutent.",
-        ),
-        h2('Résultat'),
-        p(
-          "Le front-end Angular est le point d'entrée des clients pour la supervision, les commandes et les alertes.",
-        ),
-        h2('Ce que je retiens'),
-        p(
-          "Travailler sur un produit en production m'a appris à faire évoluer l'existant sans casser ce que les clients utilisent chaque jour.",
-        ),
-        p(
-          "NgRx demande plus de code au départ, mais il rend le comportement de l'application prévisible quand les écrans se multiplient.",
-        ),
+        h2('Résultat de démonstration'),
+        p('Les fiches sont imprimables et utilisables sans animation ni dépendance réseau.'),
+        ul('Données entièrement fictives', 'Navigation au clavier'),
       ),
       en: doc(
-        h2('Context'),
+        h2('Fictional scenario'),
         p(
-          'IOTPlatform lets industrial operators, network managers and local authorities monitor and control their equipment remotely: level, flow or temperature sensors, and actuators, on the Orange LoRa and The Things Network networks.',
+          'The notebook gathers synthetic observations about invented forms and menus. It contains no actual client audit.',
         ),
-        p(
-          'The platform collects and decodes the frames sent by devices, triggers alerts by email or SMS, and sends commands to actuators.',
-        ),
-        h2('What I did'),
-        p(
-          'I owned the whole Angular front end: designing pages and components, API calls and state management with NgRx.',
-        ),
-        p('On the Django back end, I improved the existing code and added several features.'),
-        ul(
-          'Monitoring dashboards across several sites.',
-          'Sending commands to actuators, with their history.',
-          'Configuring email and SMS alerts.',
-          'Time-series charts and CSV data export.',
-        ),
-        h2('Technical choices'),
-        p(
-          'Data comes from many devices and changes often. I centralised application state with NgRx: screens read the same store, API calls go through effects, and updated data is updated everywhere at once.',
-        ),
-        p(
-          'I split the interface into reusable components (tables, charts, forms) shared between screens. The interface stays consistent as features are added.',
-        ),
-        h2('Outcome'),
-        p("The Angular front end is the clients' entry point for monitoring, commands and alerts."),
-        h2('What I learned'),
-        p(
-          'Working on a live product taught me to evolve existing code without breaking what clients use every day.',
-        ),
-        p(
-          'NgRx takes more code up front, but it keeps application behaviour predictable as screens multiply.',
-        ),
+        h2('Approach'),
+        p('Each example links an observable difficulty, a proposal and a verification method.'),
+        h2('Demonstration outcome'),
+        p('Notes can be printed and used without animation or a network connection.'),
+        ul('Entirely fictional data', 'Keyboard navigation'),
       ),
     },
     cover: null,
   },
 ];
 
-/**
- * Constant SEED_TIMELINE
- *
- * @description
- * Initial education and experience rows used to populate the portfolio timeline, each kind numbered
- * from 0 in chronological order.
- */
+/** Fictional education and employment, ordered within each timeline kind. */
 export const SEED_TIMELINE: TimelineRow[] = [
   {
-    id: 'bts-sio',
+    id: 'visual-design-diploma',
     position: 0,
     kind: 'education',
-    title: { fr: 'BTS SIO, option SLAM', en: 'BTS SIO, SLAM track' },
-    place: { fr: 'Chambray-lès-Tours', en: 'Chambray-lès-Tours' },
-    description: {
-      fr: 'Solutions logicielles et applications métiers.',
-      en: 'Software solutions and business applications.',
+    title: {
+      fr: 'Diplôme de création visuelle, École des formes — fictive',
+      en: 'Visual Design Diploma, School of Forms — fictional',
     },
-    startYear: 2021,
-    startMonth: 9,
-    endYear: 2023,
-    endMonth: 6,
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
+    description: {
+      fr: 'Pratique de la typographie, de la composition et de l’édition.',
+      en: 'Typography, composition and editorial practice.',
+    },
+    startYear: 2015,
+    startMonth: 1,
+    endYear: 2017,
+    endMonth: 12,
     techs: [],
   },
   {
-    id: 'bachelor-cefii',
+    id: 'interaction-design-course',
     position: 1,
     kind: 'education',
     title: {
-      fr: "Bachelor Développement d'application, CEFii",
-      en: 'Bachelor in Application Development, CEFii',
+      fr: 'Parcours design d’interaction, Institut des usages — fictif',
+      en: 'Interaction Design Course, Institute of Uses — fictional',
     },
-    place: { fr: 'Avrillé', en: 'Avrillé' },
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
     description: {
-      fr: 'Bac+3, applications web et mobiles.',
-      en: 'Three-year degree, web and mobile applications.',
+      fr: 'Prototypes, entretiens et architecture de l’information.',
+      en: 'Prototypes, interviews and information architecture.',
     },
-    startYear: 2023,
-    startMonth: 9,
-    endYear: 2024,
-    endMonth: 6,
+    startYear: 2018,
+    startMonth: 1,
+    endYear: 2019,
+    endMonth: 12,
     techs: [],
   },
   {
-    id: 'mastere-ynov',
+    id: 'inclusive-design-workshop',
     position: 2,
     kind: 'education',
     title: {
-      fr: 'Mastère Expert en développement logiciel, YNOV',
-      en: "Master's in Software Development, YNOV",
+      fr: 'Atelier de conception inclusive, Campus Démo',
+      en: 'Inclusive Design Workshop, Demo Campus',
     },
-    place: { fr: 'Paris', en: 'Paris' },
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
     description: {
-      fr: 'Bac+5 : architecture logicielle, sécurité, tests et CI/CD.',
-      en: 'Five-year degree: software architecture, security, testing and CI/CD.',
+      fr: 'Navigation au clavier, langage clair et tests de parcours.',
+      en: 'Keyboard navigation, plain language and journey testing.',
     },
-    startYear: 2024,
-    startMonth: 9,
-    endYear: 2026,
-    endMonth: 6,
+    startYear: 2020,
+    startMonth: 1,
+    endYear: 2020,
+    endMonth: 12,
     techs: [],
   },
   {
-    id: 'utopia',
+    id: 'paper-lantern-studio',
     position: 0,
     kind: 'experience',
-    title: { fr: 'Développeur web front-end, Utopia', en: 'Front-end web developer, Utopia' },
-    place: { fr: 'Tours', en: 'Tours' },
-    description: {
-      fr: "Sites vitrines WordPress et thème d'administration.",
-      en: 'WordPress showcase sites and an admin theme.',
+    title: {
+      fr: 'Designer junior, Atelier Lanterne de papier — fictif',
+      en: 'Junior Designer, Paper Lantern Studio — fictional',
     },
-    startYear: 2022,
-    startMonth: 5,
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
+    description: {
+      fr: 'Maquettes éditoriales et prototypes de sites culturels imaginaires.',
+      en: 'Editorial layouts and prototypes for imaginary cultural websites.',
+    },
+    startYear: 2017,
+    startMonth: 1,
+    endYear: 2019,
+    endMonth: 12,
+    techs: [],
+  },
+  {
+    id: 'open-reading-collective',
+    position: 1,
+    kind: 'experience',
+    title: {
+      fr: 'Designer d’interfaces, Collectif Lecture ouverte — fictif',
+      en: 'Interface Designer, Open Reading Collective — fictional',
+    },
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
+    description: {
+      fr: 'Exploration de catalogues et d’agendas avec des données synthétiques.',
+      en: 'Catalogue and calendar exploration using synthetic data.',
+    },
+    startYear: 2020,
+    startMonth: 1,
     endYear: 2022,
-    endMonth: 6,
-    techs: ['wordpress', 'php'],
+    endMonth: 12,
+    techs: [],
   },
   {
-    id: 'kodoka',
-    position: 1,
-    kind: 'experience',
-    title: { fr: 'Développeur web fullstack, Kodoka', en: 'Full-stack web developer, Kodoka' },
-    place: { fr: 'Joué-lès-Tours', en: 'Joué-lès-Tours' },
-    description: {
-      fr: 'Un CRM sur mesure avec CodeIgniter 4.',
-      en: 'A custom CRM built with CodeIgniter 4.',
-    },
-    startYear: 2023,
-    startMonth: 3,
-    endYear: 2023,
-    endMonth: 4,
-    techs: ['codeigniter', 'php'],
-  },
-  {
-    id: 'object-as-a-service',
+    id: 'independent-interface-practice',
     position: 2,
     kind: 'experience',
     title: {
-      fr: 'Développeur web fullstack, Object as a Service',
-      en: 'Full-stack web developer, Object as a Service',
+      fr: 'Conception indépendante — activité fictive',
+      en: 'Independent Design — fictional practice',
     },
-    place: { fr: 'Clerlande, à distance', en: 'Clerlande, remote' },
+    place: { fr: 'Ville-Exemple — lieu fictif', en: 'Example Town — fictional location' },
     description: {
-      fr: 'Front-end Angular et back-end Django d’IOTPlatform, modernisation de RDI Manager (Symfony, Vue.js).',
-      en: 'The Angular front end and Django back end of IOTPlatform, and the modernisation of RDI Manager (Symfony, Vue.js).',
+      fr: 'Prototypes accessibles pour des associations et services culturels inventés.',
+      en: 'Accessible prototypes for invented associations and cultural services.',
     },
     startYear: 2023,
-    startMonth: 9,
-    endYear: 2026,
-    endMonth: 6,
-    techs: ['angular', 'django', 'symfony', 'vue', 'php'],
+    startMonth: 1,
+    endYear: 2025,
+    endMonth: 12,
+    techs: [],
   },
 ];
 
-/**
- * Constant SEED_SKILLS
- *
- * @description
- * Initial skill-group rows used to populate the public skills section.
- */
+/** Demonstration skills for the fictional interface-design profile. */
 export const SEED_SKILLS: SkillRow[] = [
   {
     id: 'front-end',
-    domain: { fr: 'Front-end', en: 'Front end' },
+    domain: { fr: 'Interfaces', en: 'Interfaces' },
     techs: [
-      { key: 'angular', language: null },
-      { key: 'react', language: null },
+      { key: 'vue', language: null },
+      { key: 'svelte', language: null },
       { key: 'typescript', language: null },
     ],
     usage: {
-      fr: "Interfaces de supervision d'objets connectés, outils internes.",
-      en: 'Monitoring interfaces for connected devices, internal tools.',
+      fr: 'Prototypes de catalogues et de cartes éditoriales fictifs.',
+      en: 'Prototypes of fictional catalogues and editorial maps.',
     },
     position: 0,
   },
   {
     id: 'back-end',
-    domain: { fr: 'Back-end', en: 'Back end' },
+    domain: { fr: 'Données de démonstration', en: 'Demonstration data' },
     techs: [
-      { key: 'django', language: 'Python' },
-      { key: 'symfony', language: 'PHP' },
+      { key: 'nodejs', language: null },
+      { key: 'sqlite', language: null },
     ],
     usage: {
-      fr: "API des interfaces IoT, suivi d'activité de la R&D, CRM sur mesure.",
-      en: 'APIs for IoT interfaces, R&D activity tracking, custom CRM.',
+      fr: 'Petites API locales et jeux de données synthétiques.',
+      en: 'Small local APIs and synthetic datasets.',
     },
     position: 1,
   },
   {
     id: 'cms',
-    domain: { fr: 'CMS', en: 'CMS' },
-    techs: [{ key: 'wordpress', language: null }],
+    domain: { fr: 'Publication', en: 'Publishing' },
+    techs: [
+      { key: 'html', language: null },
+      { key: 'css', language: null },
+    ],
     usage: {
-      fr: "Sites vitrines et thème d'administration sur mesure.",
-      en: 'Showcase sites and a custom admin theme.',
+      fr: 'Documents structurés et parcours de lecture accessibles.',
+      en: 'Structured documents and accessible reading journeys.',
     },
     position: 2,
   },
@@ -719,79 +497,60 @@ export const SEED_SKILLS: SkillRow[] = [
     id: 'outils',
     domain: { fr: 'Outils', en: 'Tools' },
     techs: [
+      { key: 'figma', language: null },
       { key: 'git', language: null },
-      { key: 'github', language: null },
-      { key: 'ci-cd', language: null },
+      { key: 'playwright', language: null },
     ],
     usage: {
-      fr: 'Versionnement, revues de code, déploiements automatisés.',
-      en: 'Version control, code reviews, automated deployments.',
+      fr: 'Maquettes, versions et vérifications de navigation.',
+      en: 'Mockups, versioning and navigation checks.',
     },
     position: 3,
   },
 ];
 
-/**
- * Constant SEED_LINKS
- *
- * @description
- * Public links the site showed as constants before they became content: the contact address, then
- * the GitHub and LinkedIn profiles. Migration 0009 writes the same list into an existing profile row.
- */
+/** Reserved example links; these do not point to real social accounts. */
 export const SEED_LINKS: ProfileLinksColumn = [
-  { kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null },
-  { kind: 'github', url: 'https://github.com/DevSkyLex', label: null },
-  { kind: 'linkedin', url: 'https://www.linkedin.com/in/valentin-fortin', label: null },
+  { kind: 'email', url: 'mailto:morgan@example.com', label: 'Demo contact' },
+  { kind: 'github', url: 'https://example.com/demo/code', label: 'Demo code profile' },
+  { kind: 'linkedin', url: 'https://example.com/demo/profile', label: 'Demo professional profile' },
 ];
 
-/**
- * Constant SEED_LEGAL_DOCUMENTS
- *
- * @description
- * Legal notice and privacy policy rows, at version 1 and dated like the static pages they replace.
- */
+/** Illustrative legal documents; operators must replace them before publication. */
 export const SEED_LEGAL_DOCUMENTS: (typeof legalDocuments.$inferInsert)[] = [
   { kind: 'notice', body: SEED_LEGAL_NOTICE, updatedAt: SEED_LEGAL_UPDATED_AT, version: 1 },
   { kind: 'privacy', body: SEED_PRIVACY_POLICY, updatedAt: SEED_LEGAL_UPDATED_AT, version: 1 },
 ];
 
-/**
- * Constant SEED_PROFILE
- *
- * @description
- * Initial singleton profile row containing localized home and About content.
- */
+/** Clearly fictional singleton profile for development and acceptance. */
 export const SEED_PROFILE: ProfileRow = {
   id: 1,
   heroIntro: {
-    fr: "Développeur web fullstack à Blois. Je conçois des applications web soignées, de l'interface jusqu'au serveur.",
-    en: 'Full-stack web developer in Blois. I build carefully crafted web applications, from the interface to the server.',
+    fr: 'Morgan Exemple, personnage fictif de démonstration. Je conçois des interfaces accessibles pour des projets culturels imaginaires.',
+    en: 'Morgan Exemple, a fictional demonstration persona. I design accessible interfaces for imaginary cultural projects.',
   },
   aboutStatement: {
-    fr: "J'aime concevoir des applications qui répondent à des besoins concrets, avec autant d'attention pour le code que pour les personnes qui les utilisent.",
-    en: 'I like building applications that meet real needs, with as much care for the code as for the people who use them.',
+    fr: 'Ce profil inventé illustre une démarche de conception attentive aux différents usages.',
+    en: 'This invented profile illustrates a design approach attentive to different ways of using an interface.',
   },
   aboutLead: {
-    fr: "Après un BTS SIO et un bachelor, j'ai suivi le mastère de YNOV tout en travaillant trois ans chez Object as a Service, sur des interfaces IoT et des outils internes.",
-    en: "After a BTS SIO and a bachelor's degree, I completed YNOV's master's programme while working three years at Object as a Service, on IoT interfaces and internal tools.",
+    fr: 'Dans ce scénario fictif, un parcours en création visuelle conduit Morgan vers le design d’interaction, puis vers des prototypes pour la lecture et les ateliers créatifs.',
+    en: 'In this fictional scenario, a background in visual design leads Morgan into interaction design and then prototypes for reading and creative workshops.',
   },
   facts: [
     {
-      label: { fr: 'Basé à', en: 'Based in' },
-      value: { fr: 'Blois, Loir-et-Cher', en: 'Blois, France' },
+      label: { fr: 'Personnage', en: 'Persona' },
+      value: { fr: 'Morgan Exemple — fictif', en: 'Morgan Exemple — fictional' },
     },
     {
-      label: { fr: 'Formation', en: 'Education' },
-      value: {
-        fr: 'Mastère Expert en développement logiciel, YNOV',
-        en: "Master's in Software Development, YNOV",
-      },
+      label: { fr: 'Lieu fictif', en: 'Fictional location' },
+      value: { fr: 'Ville-Exemple', en: 'Example Town' },
     },
     {
-      label: { fr: 'En dehors du code', en: 'Outside of code' },
+      label: { fr: 'Activités inventées', en: 'Invented interests' },
       value: {
-        fr: 'Hardware, jeux vidéo, impression et modélisation 3D',
-        en: 'Hardware, video games, 3D printing and modelling',
+        fr: 'Reliure, gravure et carnets de voyage imaginaires',
+        en: 'Bookbinding, printmaking and imaginary travel journals',
       },
     },
   ],

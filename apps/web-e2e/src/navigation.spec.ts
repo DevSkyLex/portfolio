@@ -5,8 +5,8 @@ test('redirects legacy French links while preserving their query and fragment', 
 }: {
   page: Page;
 }): Promise<void> => {
-  await page.goto('/projects/movah?source=link#contexte');
-  await expect(page).toHaveURL(/\/fr\/projects\/movah\?source=link#contexte$/);
+  await page.goto('/projects/library-trails?source=link#contexte');
+  await expect(page).toHaveURL(/\/fr\/projects\/library-trails\?source=link#contexte$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 });
 

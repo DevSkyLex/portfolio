@@ -17,8 +17,8 @@ const ORIGIN: string = 'https://valentin-fortin.pro';
  * Builds a case study with optional overrides.
  */
 const article = (overrides: Partial<ProjectArticle> = {}): ProjectArticle => ({
-  slug: 'movah',
-  title: 'Movah',
+  slug: 'library-trails',
+  title: 'Library Trails',
   summary: 'Une application mobile pour suivre ses séries.',
   periodLabel: '2026',
   techs: ['flutter'],
@@ -38,7 +38,7 @@ const article = (overrides: Partial<ProjectArticle> = {}): ProjectArticle => ({
 describe('projectPageSeo', (): void => {
   it('falls back on the project title and summary without search texts', (): void => {
     const seo: PageSeo = projectPageSeo(article(), 'fr', ORIGIN);
-    expect(seo.title).toBe('Movah — Valentin Fortin');
+    expect(seo.title).toBe('Library Trails — Valentin Fortin');
     expect(seo.description).toBe('Une application mobile pour suivre ses séries.');
     expect(seo.type).toBe('article');
     expect(seo.image).toBeNull();
@@ -49,7 +49,7 @@ describe('projectPageSeo', (): void => {
     const seo: PageSeo = projectPageSeo(
       article({
         seo: {
-          title: 'Movah, suivi de séries',
+          title: 'Library Trails, suivi de séries',
           description: 'Description choisie.',
           keywords: ['suivi de séries', 'Flutter'],
         },
@@ -57,11 +57,11 @@ describe('projectPageSeo', (): void => {
       'fr',
       ORIGIN,
     );
-    expect(seo.title).toBe('Movah, suivi de séries');
+    expect(seo.title).toBe('Library Trails, suivi de séries');
     expect(seo.description).toBe('Description choisie.');
     expect(seo.keywords).toEqual(['suivi de séries', 'Flutter']);
     expect(seo.structuredData).toMatchObject({
-      headline: 'Movah',
+      headline: 'Library Trails',
       description: 'Description choisie.',
       keywords: 'suivi de séries, Flutter',
     });
@@ -88,11 +88,11 @@ describe('projectPageSeo', (): void => {
 
   it('builds the French canonical, alternates and Open Graph locales', (): void => {
     const seo: PageSeo = projectPageSeo(article(), 'fr', ORIGIN);
-    expect(seo.canonical).toBe('https://valentin-fortin.pro/fr/projects/movah');
+    expect(seo.canonical).toBe('https://valentin-fortin.pro/fr/projects/library-trails');
     expect(seo.alternates).toEqual([
-      { hreflang: 'fr', href: 'https://valentin-fortin.pro/fr/projects/movah' },
-      { hreflang: 'en', href: 'https://valentin-fortin.pro/en/projects/movah' },
-      { hreflang: 'x-default', href: 'https://valentin-fortin.pro/fr/projects/movah' },
+      { hreflang: 'fr', href: 'https://valentin-fortin.pro/fr/projects/library-trails' },
+      { hreflang: 'en', href: 'https://valentin-fortin.pro/en/projects/library-trails' },
+      { hreflang: 'x-default', href: 'https://valentin-fortin.pro/fr/projects/library-trails' },
     ]);
     expect([seo.locale, seo.alternateLocale]).toEqual(['fr_FR', 'en_GB']);
   });
@@ -100,32 +100,32 @@ describe('projectPageSeo', (): void => {
   it('builds the English page with an absolute cover and a CreativeWork', (): void => {
     const seo: PageSeo = projectPageSeo(
       article({
-        title: 'Movah',
+        title: 'Library Trails',
         cover: {
           src: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
           small: null,
           width: 2400,
           height: 1350,
-          alt: 'Movah home screen',
+          alt: 'Library Trails home screen',
         },
       }),
       'en',
       ORIGIN,
     );
-    expect(seo.canonical).toBe('https://valentin-fortin.pro/en/projects/movah');
+    expect(seo.canonical).toBe('https://valentin-fortin.pro/en/projects/library-trails');
     expect([seo.locale, seo.alternateLocale]).toEqual(['en_GB', 'fr_FR']);
     expect(seo.image).toEqual({
       url: 'https://valentin-fortin.pro/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
       width: 2400,
       height: 1350,
-      alt: 'Movah home screen',
+      alt: 'Library Trails home screen',
     });
     expect(seo.structuredData).toEqual({
       '@context': 'https://schema.org',
       '@type': 'CreativeWork',
-      headline: 'Movah',
+      headline: 'Library Trails',
       description: 'Une application mobile pour suivre ses séries.',
-      url: 'https://valentin-fortin.pro/en/projects/movah',
+      url: 'https://valentin-fortin.pro/en/projects/library-trails',
       inLanguage: 'en',
       keywords: 'flutter',
       image: 'https://valentin-fortin.pro/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',

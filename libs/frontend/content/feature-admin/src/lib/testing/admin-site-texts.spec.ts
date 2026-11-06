@@ -36,13 +36,21 @@ type AdminProfileDto = Omit<AdminProfile, 'facts' | 'links'> & {
  * Profile at version 3 with one fact and two links.
  */
 const PROFILE: AdminProfileDto = {
-  heroIntro: { fr: 'Développeur à Blois.', en: 'Developer in Blois.' },
+  heroIntro: { fr: 'Designer fictif à Ville-Exemple.', en: 'Fictional designer in Example Town.' },
   aboutStatement: { fr: 'J’aime le code.', en: 'I like code.' },
-  aboutLead: { fr: 'Après un BTS.', en: 'After a BTS.' },
-  facts: [{ label: { fr: 'Basé à', en: 'Based in' }, value: { fr: 'Blois', en: 'Blois' } }],
+  aboutLead: {
+    fr: 'Après une formation fictive en design.',
+    en: 'After a fictional design course.',
+  },
+  facts: [
+    {
+      label: { fr: 'Basé à', en: 'Based in' },
+      value: { fr: 'Ville-Exemple', en: 'Ville-Exemple' },
+    },
+  ],
   links: [
-    { kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null },
-    { kind: 'github', url: 'https://github.com/DevSkyLex', label: null },
+    { kind: 'email', url: 'mailto:morgan@example.com', label: null },
+    { kind: 'github', url: 'https://example.com/demo/code', label: null },
   ],
   version: 3,
 };
@@ -347,7 +355,7 @@ describe('AdminInformationPageComponent', (): void => {
     // No page tabs: each bilingual field shows French, with its selector joined to it.
     expect(root.querySelector('[role="tab"]')).toBeNull();
     expect(root.querySelector<HTMLTextAreaElement>('#edit-profile-heroIntro-fr')?.value).toBe(
-      'Développeur à Blois.',
+      'Designer fictif à Ville-Exemple.',
     );
     expect(root.querySelector('#edit-profile-heroIntro-en')).toBeNull();
     expect(root.querySelector('#edit-profile-heroIntro-fr')?.getAttribute('aria-label')).toBe(
@@ -355,18 +363,18 @@ describe('AdminInformationPageComponent', (): void => {
     );
     await showLanguage(opened, 'Introduction', 'en');
     const english: HTMLTextAreaElement | null = root.querySelector('#edit-profile-heroIntro-en');
-    expect(english?.value).toBe('Developer in Blois.');
+    expect(english?.value).toBe('Fictional designer in Example Town.');
     expect(english?.getAttribute('lang')).toBe('en');
     // The e-mail is edited without mailto:.
     expect(root.querySelector<HTMLInputElement>('#edit-profile-link-0-url')?.value).toBe(
-      'contact@valentin-fortin.pro',
+      'morgan@example.com',
     );
     expect(saveButton(root).disabled).toBe(true);
 
-    await type(opened, 'edit-profile-fact-0-value-fr', 'Blois, Loir-et-Cher');
+    await type(opened, 'edit-profile-fact-0-value-fr', 'Ville-Exemple, quartier imaginaire');
     button(root, 'Ajouter un lien').click();
     await opened.settle();
-    await type(opened, 'edit-profile-link-2-url', 'https://www.malt.fr/profile/valentin');
+    await type(opened, 'edit-profile-link-2-url', 'https://example.com/demo/freelance');
     await type(opened, 'edit-profile-link-2-label', 'Malt');
     await submit(opened);
     const call: TestRequest = opened.backend.expectOne({
@@ -374,11 +382,14 @@ describe('AdminInformationPageComponent', (): void => {
       url: '/api/content/admin/profile',
     });
     expect(call.request.headers.get('if-match')).toBe('"3"');
-    expect(call.request.body.facts[0].value).toEqual({ fr: 'Blois, Loir-et-Cher', en: 'Blois' });
+    expect(call.request.body.facts[0].value).toEqual({
+      fr: 'Ville-Exemple, quartier imaginaire',
+      en: 'Ville-Exemple',
+    });
     expect(call.request.body.links).toEqual([
-      { kind: 'email', url: 'mailto:contact@valentin-fortin.pro', label: null },
-      { kind: 'github', url: 'https://github.com/DevSkyLex', label: null },
-      { kind: 'website', url: 'https://www.malt.fr/profile/valentin', label: 'Malt' },
+      { kind: 'email', url: 'mailto:morgan@example.com', label: null },
+      { kind: 'github', url: 'https://example.com/demo/code', label: null },
+      { kind: 'website', url: 'https://example.com/demo/freelance', label: 'Malt' },
     ]);
     call.flush({ ...PROFILE, version: 4 });
     await opened.settle();
@@ -390,7 +401,7 @@ describe('AdminInformationPageComponent', (): void => {
     const opened: Opened = await information();
     const root: HTMLElement = opened.root();
     await type(opened, 'edit-profile-aboutLead-en', ' ');
-    await type(opened, 'edit-profile-link-1-url', 'http://github.com/DevSkyLex');
+    await type(opened, 'edit-profile-link-1-url', 'http://example.com/demo/code');
     button(root, 'Ajouter un lien').click();
     await opened.settle();
     await submit(opened);

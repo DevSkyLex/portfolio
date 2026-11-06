@@ -164,8 +164,8 @@ test.describe('cookie consent', (): void => {
       localStorage.getItem('cookie-consent'),
     );
     expect(JSON.parse(stored ?? '{}')).toMatchObject({ version: 1, analytics: false });
-    await page.goto('/projects/movah');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Movah');
+    await page.goto('/projects/library-trails');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Parcours de lecture');
     await expect(banner(page)).toHaveCount(0);
     expect(google).toEqual([]);
     expect(await commands(page)).toEqual([]);
@@ -218,14 +218,19 @@ test.describe('cookie consent', (): void => {
       }),
     ]);
     // A client-side navigation is one more page view.
-    await page.getByRole('link', { name: /Movah/ }).first().click();
-    await expect(page).toHaveURL(/\/projects\/movah$/);
+    await page
+      .getByRole('link', { name: /Parcours de lecture/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/projects\/library-trails$/);
     await expect
       .poll(async (): Promise<unknown[][]> => commands(page))
       .toContainEqual([
         'event',
         'page_view',
-        expect.objectContaining({ page_location: expect.stringMatching(/\/projects\/movah$/) }),
+        expect.objectContaining({
+          page_location: expect.stringMatching(/\/projects\/library-trails$/),
+        }),
       ]);
   });
 
@@ -247,6 +252,10 @@ test.describe('cookie consent', (): void => {
       name: 'Mesure d’audience (Google Analytics)',
     });
     await expect(purpose).toHaveAttribute('aria-checked', 'false');
+    // The entrance fades the panel and its contents; audit their settled contrast.
+    await dialog.evaluate(async (element: HTMLElement): Promise<void> => {
+      await Promise.all(element.getAnimations({ subtree: true }).map((motion) => motion.finished));
+    });
     expect(await seriousViolations(page)).toEqual([]);
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();

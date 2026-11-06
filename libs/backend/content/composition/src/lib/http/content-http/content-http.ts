@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { type NextFunction, type Request, type Response, static as serveStatic } from 'express';
 
@@ -15,7 +16,7 @@ export const JSON_BODY_LIMIT: string = '1mb';
  *
  * @description
  * Names served under `/media/`: a media UUID and its optional 960 px suffix, as Nginx serves them.
- * Anything else (temporary files included) falls through to the 404 problem of the router.
+ * Anything else (temporary files included) becomes a 404 problem through Nest's exception handler.
  */
 const MEDIA_FILE: RegExp = /^\/[0-9a-f-]{36}(-960)?\.webp$/;
 
@@ -82,9 +83,11 @@ export function configureContentHttp(
   });
   app.use('/media', (request: Request, response: Response, next: NextFunction): void => {
     if (MEDIA_FILE.test(request.path)) {
-      serve(request, response, next);
+      serve(request, response, (error?: unknown): void => {
+        next(error ?? new NotFoundException());
+      });
       return;
     }
-    next();
+    next(new NotFoundException());
   });
 }

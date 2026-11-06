@@ -25,7 +25,7 @@ const LEGEND: readonly ChartLegendEntry[] = [
 const ROWS: readonly StackedBarRow[] = [
   {
     key: 'a',
-    label: 'Movah',
+    label: 'Library Trails',
     display: '4',
     segments: [
       { key: 'error', value: 1, display: '1' },
@@ -99,7 +99,7 @@ describe('StackedBarsComponent', (): void => {
         [...row.children].map((cell: Element) => cell.textContent),
       ),
     ).toEqual([
-      ['Movah', '1', '3', '0', '4'],
+      ['Library Trails', '1', '3', '0', '4'],
       ['CRM', '0', '0', '2', '2'],
     ]);
   });
@@ -138,7 +138,7 @@ describe('StackedBarsComponent', (): void => {
       host.querySelector('[aria-live="polite"]')?.textContent?.replace(/\s+/g, ' ').trim();
     parts(host)[1]?.dispatchEvent(new PointerEvent('pointerenter'));
     await fixture.whenStable();
-    expect(live()).toBe('3 Avertissement · 75 % · Movah');
+    expect(live()).toBe('3 Avertissement · 75 % · Library Trails');
     expect(parts(host)[0]?.className).toContain('opacity-40');
     group.dispatchEvent(new PointerEvent('pointerleave'));
     await fixture.whenStable();
@@ -151,14 +151,14 @@ describe('StackedBarsComponent', (): void => {
     };
     group.dispatchEvent(new FocusEvent('focus'));
     await fixture.whenStable();
-    expect(live()).toBe('1 Erreur · 25 % · Movah');
+    expect(live()).toBe('1 Erreur · 25 % · Library Trails');
     expect((await key('ArrowDown')).defaultPrevented).toBe(true);
     await key('ArrowRight');
     expect(live()).toBe('2 Info · 100 % · CRM');
     await key('End');
     await key('ArrowUp');
     await key('ArrowLeft');
-    expect(live()).toBe('1 Erreur · 25 % · Movah');
+    expect(live()).toBe('1 Erreur · 25 % · Library Trails');
     await key('Home');
     expect((await key('a')).defaultPrevented).toBe(false);
     await key('Escape');

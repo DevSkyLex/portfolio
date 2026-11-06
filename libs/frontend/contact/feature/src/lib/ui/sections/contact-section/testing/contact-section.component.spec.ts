@@ -88,8 +88,8 @@ describe('ContactSectionComponent', () => {
     fixture.componentRef.setInput('links', [
       {
         kind: 'email',
-        href: 'mailto:contact@valentin-fortin.pro',
-        label: 'contact@valentin-fortin.pro',
+        href: 'mailto:morgan@example.com',
+        label: 'morgan@example.com',
       },
       { kind: 'malt', href: 'https://www.malt.fr/profile/x', label: 'Malt' },
     ]);
@@ -100,7 +100,7 @@ describe('ContactSectionComponent', () => {
       ...root.querySelectorAll<HTMLAnchorElement>('ul[role="list"] a'),
     ];
     expect(links.map((link) => [link.getAttribute('href'), link.textContent?.trim()])).toEqual([
-      ['mailto:contact@valentin-fortin.pro', 'contact@valentin-fortin.pro'],
+      ['mailto:morgan@example.com', 'morgan@example.com'],
       ['https://www.malt.fr/profile/x', 'Malt'],
     ]);
     expect(links.every((link) => link.querySelector('ng-icon svg') !== null)).toBe(true);

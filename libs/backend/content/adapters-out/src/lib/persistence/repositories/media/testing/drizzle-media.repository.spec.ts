@@ -144,7 +144,7 @@ describe('DrizzleMediaRepository (Postgres via PGlite)', (): void => {
   it('purges only unreferenced media unlinked before the limit', async (): Promise<void> => {
     const uow: DrizzleContentUnitOfWork = new DrizzleContentUnitOfWork(handle.db);
     await uow.run(async ({ projects }): Promise<void> => {
-      const project: Project | null = await projects.get('project-movah');
+      const project: Project | null = await projects.get('project-library-trails');
       if (!project) throw new Error('project missing');
       project.revise(
         {
@@ -157,7 +157,7 @@ describe('DrizzleMediaRepository (Postgres via PGlite)', (): void => {
       await projects.save(project, 1);
     });
     const saved: Project | null = await new DrizzleProjectRepository(handle.db).get(
-      'project-movah',
+      'project-library-trails',
     );
     expect(saved?.mediaIds()).toEqual([IDS[0], IDS[1], IDS[2]]);
     expect(saved?.snapshot().cover).toEqual({ media: IDS[0], alt: { fr: 'Accueil', en: 'Home' } });
@@ -174,7 +174,7 @@ describe('DrizzleMediaRepository (Postgres via PGlite)', (): void => {
     // Relinked rows are no longer stale, even unreferenced.
     await repository.relink([IDS[0]]);
     await uow.run(async ({ projects }): Promise<void> => {
-      const project: Project | null = await projects.get('project-movah');
+      const project: Project | null = await projects.get('project-library-trails');
       if (!project) throw new Error('project missing');
       project.revise({ ...project.snapshot(), cover: null }, ['fr', 'en']);
       await projects.save(project, 2);
