@@ -17,7 +17,7 @@ examples, rather than introducing a second architecture.
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `pf-angular`          | Angular 22 in Nx: typed DI, Signal Forms, NgRx 22 state ownership, Tailwind 4 tokens, Vitest 5/Analog tests, routing and hydration |
 | `angular-developer`   | Official Angular API reference pack, loaded with the portfolio overrides from `pf-angular`                                         |
-| `pf-nestjs`           | NestJS 11 transport adapters, providers, composition and lifecycle                                                                 |
+| `pf-nestjs`           | NestJS transport adapters, providers, composition and lifecycle; the runtime version follows D9                                    |
 | `pf-drizzle-postgres` | Drizzle 0.45 transactions, versions, outbox, migrations and PostgreSQL/PGlite test boundaries                                      |
 | `pf-zod-contracts`    | Zod 4 Mini request/response schemas, type-only browser contracts and field-error mapping                                           |
 | `pf-local-stack`      | Local Compose, Nginx routing and the shared Traefik/Ansible configuration contract                                                 |
