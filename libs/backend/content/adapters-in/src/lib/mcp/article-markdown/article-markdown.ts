@@ -443,7 +443,7 @@ function blocksMarkdown(nodes: readonly DocNode[]): string[] {
     if (node.type === 'orderedList')
       delimiter = previous === 'orderedList' && delimiter === '.' ? ')' : '.';
     const written: string | null = blockMarkdown(node, bullet, delimiter);
-    if (written !== null) {
+    if (written !== null && written !== '') {
       out.push(written);
       previous = node.type;
     }

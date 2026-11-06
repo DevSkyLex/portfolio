@@ -145,11 +145,10 @@ export class HttpsClientMetadataFetcher implements ClientMetadataFetcher {
       readonly headers: Record<string, string | string[] | undefined>;
       readonly body: Buffer;
     } = await this.fetcher.fetch(url, { maxBytes: METADATA_MAX_BYTES, accept: ACCEPT });
-    const type: string =
-      String(fetched.headers['content-type'] ?? '')
-        .split(';')[0]
-        ?.trim()
-        .toLowerCase() ?? '';
+    const type: string = String(fetched.headers['content-type'] ?? '')
+      .replace(/;.*$/s, '')
+      .trim()
+      .toLowerCase();
     if (type !== 'application/json' && !/^application\/[\w.-]+\+json$/.test(type)) {
       throw new Error('Client metadata must be served as JSON.');
     }

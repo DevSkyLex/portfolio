@@ -263,4 +263,108 @@ describe('markdownToArticle', (): void => {
     });
     expect(markdownToArticle('')).toEqual({ type: 'doc', content: [{ type: 'paragraph' }] });
   });
+
+  it('reads edge syntax: empty heading, indented and empty code, empty link, split lists', (): void => {
+    expect(
+      markdownToArticle('##\n\n    indented\n\n```\n```\n\n[vide]()\n\n1. a\n\n1) b\n\n> q\n'),
+    ).toEqual({
+      type: 'doc',
+      content: [
+        { type: 'heading', attrs: { level: 2 } },
+        {
+          type: 'codeBlock',
+          attrs: { language: null },
+          content: [{ type: 'text', text: 'indented' }],
+        },
+        { type: 'codeBlock', attrs: { language: null } },
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'vide', marks: [{ type: 'link', attrs: { href: '' } }] }],
+        },
+        {
+          type: 'orderedList',
+          attrs: { start: 1 },
+          content: [
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'a' }] }],
+            },
+          ],
+        },
+        {
+          type: 'orderedList',
+          attrs: { start: 1 },
+          content: [
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'b' }] }],
+            },
+          ],
+        },
+        {
+          type: 'blockquote',
+          content: [{ type: 'paragraph', content: [{ type: 'text', text: 'q' }] }],
+        },
+      ],
+    });
+    expect(() => markdownToArticle('![x]()')).toThrow('Images come from upload_media');
+    expect(new ArticleMarkdownError('No line', null).message).toBe('No line');
+  });
+});
+
+describe('articleToMarkdown with sparse nodes', (): void => {
+  it('falls back on defaults, keeps edge spaces out of marks and separates consecutive lists', (): void => {
+    const sparse: DocNode = {
+      type: 'doc',
+      content: [
+        { type: 'heading' },
+        { type: 'bulletList' },
+        { type: 'orderedList', content: [{ type: 'listItem' }] },
+        { type: 'blockquote' },
+        { type: 'codeBlock' },
+        { type: 'figure' },
+        { type: 'unknownBlock' },
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text' },
+            { type: 'text', text: '  ', marks: [{ type: 'bold' }] },
+            { type: 'text', text: ' gras ', marks: [{ type: 'bold' }] },
+            { type: 'text', text: '`x ', marks: [{ type: 'code' }] },
+            { type: 'text', text: 'lien', marks: [{ type: 'link' }] },
+            {
+              type: 'text',
+              text: 'deux',
+              marks: [{ type: 'link', attrs: { href: 'https://a.b/c d' } }],
+            },
+          ],
+        },
+        {
+          type: 'orderedList',
+          attrs: { start: 1 },
+          content: [
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'a' }] }],
+            },
+          ],
+        },
+        {
+          type: 'orderedList',
+          content: [
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'b' }] }],
+            },
+          ],
+        },
+      ],
+    };
+    expect(articleToMarkdown(sparse)).toBe(
+      '## \n\n1. \n\n>\n\n```\n```\n\n![](media:)\n\n   **gras** `` `x `` [lien]()[deux](<https://a.b/c d>)\n\n1. a\n\n1) b\n',
+    );
+    // `media:` without id does not read back: the document is handed out as JSON.
+    expect(exactMarkdown(sparse)).toBeNull();
+    expect(articleToMarkdown({ type: 'doc' })).toBe('\n');
+  });
 });

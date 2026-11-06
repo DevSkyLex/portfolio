@@ -16,6 +16,7 @@ import {
   ListAdminProjects,
   ManagePublication,
   ListAdminTimeline,
+  MediaUnreachableError,
   NotFoundError,
   PublishProject,
   ReorderTimeline,
@@ -432,6 +433,61 @@ Un site **rapide**.
       (await call('upload_media', { url: 'http://images.example/x.png' })).body.error.code,
     ).toBe(-32602);
     expect((await call('upload_media', {})).body.error.code).toBe(-32602);
+
+    useCases.importMedia.execute.mockRejectedValueOnce(
+      new MediaUnreachableError('Refused response (404).'),
+    );
+    const unreachable: request.Response = await call('upload_media', {
+      url: 'https://images.example/missing.png',
+    });
+    expect(unreachable.body.result.isError).toBe(true);
+    expect(unreachable.body.result.structuredContent).toMatchObject({
+      status: 422,
+      code: 'content.media-unreachable',
+    });
+  });
+
+  it('writes legal documents and French-only drafts as Markdown, naming contract violations', async (): Promise<void> => {
+    const legal: request.Response = await call('revise_legal_document', {
+      kind: 'notice',
+      expectedVersion: 4,
+      body: { fr: 'Publisher', en: 'Publisher' },
+    });
+    expect(legal.body.result.isError).toBeUndefined();
+    expect(useCases.reviseLegal.execute).toHaveBeenLastCalledWith('notice', 4, {
+      fr: DOC,
+      en: DOC,
+    });
+    expect(typeof legal.body.result.structuredContent.body.fr).toBe('string');
+
+    // A heading inside a quote is valid Markdown but not in the editor: the contract names the path.
+    const quoted: request.Response = await call('revise_legal_document', {
+      kind: 'notice',
+      expectedVersion: 4,
+      body: { fr: '> ## Titre', en: 'Publisher' },
+    });
+    expect(quoted.body.error.code).toBe(-32602);
+    expect(quoted.body.error.data.errors[0].field).toMatch(/^body\.fr\.content\.0/);
+
+    const created: request.Response = await call('create_project', {
+      project: { ...FIXTURE, article: { fr: 'Texte du projet.' } },
+    });
+    expect(created.body.result.isError).toBeUndefined();
+    expect(useCases.createProject.execute).toHaveBeenLastCalledWith(
+      toProjectRevision(
+        ProjectRevisionRequestSchema.parse({
+          ...FIXTURE,
+          article: {
+            fr: {
+              type: 'doc',
+              content: [
+                { type: 'paragraph', content: [{ type: 'text', text: 'Texte du projet.' }] },
+              ],
+            },
+          },
+        }),
+      ),
+    );
   });
 
   it('exposes publication state without manual batch tools', async (): Promise<void> => {
