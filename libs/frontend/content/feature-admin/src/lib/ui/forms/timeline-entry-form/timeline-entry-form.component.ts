@@ -48,6 +48,7 @@ import {
   TagsInputComponent,
   type PeriodBound,
 } from '@vfortin/ui';
+import { techKey } from '@vfortin/content-web-ui';
 import { TIMELINE_ENTRY_LIMITS } from '@internal/content-web-feature-admin/lib/constants/timeline-entry-limits.constants';
 import type { ContentLocale } from '@internal/content-web-feature-admin/lib/models/content-locale/content-locale.type';
 import type { LocaleFieldState } from '@internal/content-web-feature-admin/lib/models/locale-field-state/locale-field-state.type';
@@ -303,12 +304,12 @@ export class TimelineEntryFormComponent {
    * @readonly
    *
    * @description
-   * Lower-cases a typed technology key.
+   * Stores a typed technology as a catalogue key (`techKey`: trimmed, lowercase, an alias such as
+   * `postgres` replaced by `postgresql`).
    *
    * @type {(raw: string) => string}
    */
-  protected readonly normalizeTech: (raw: string) => string = (raw: string): string =>
-    raw.trim().toLowerCase();
+  protected readonly normalizeTech: (raw: string) => string = techKey;
 
   /**
    * Property icons

@@ -1,7 +1,9 @@
 import {
   MediaMissingError,
+  MediaUnreachableError,
   UnsupportedMediaError,
 } from '@internal/content-application/lib/errors/application-error';
+import { ImportRemoteMedia } from '@internal/content-application/lib/use-cases/import-remote-media/import-remote-media.use-case';
 import type { MediaRecord } from '@internal/content-application/lib/ports/content/content.ports';
 import {
   MEDIA_GRACE_MS,
@@ -129,6 +131,52 @@ describe('UploadMedia', (): void => {
       'fulfilled',
     ]);
     expect(processor.maxActive).toBe(1);
+  });
+});
+
+describe('ImportRemoteMedia', (): void => {
+  it('stores the downloaded image like an upload', async (): Promise<void> => {
+    const { upload, media } = setup();
+    const urls: string[] = [];
+    const importer: ImportRemoteMedia = new ImportRemoteMedia(
+      {
+        fetch: async (url: string): Promise<Uint8Array> => {
+          urls.push(url);
+          return bytes('IMGW remote');
+        },
+      },
+      upload,
+    );
+    const record: MediaRecord = await importer.execute('https://images.example/photo.png');
+    expect(urls).toEqual(['https://images.example/photo.png']);
+    expect(media.rows.get(record.id)).toEqual(record);
+    expect(record.unlinkedAt).not.toBeNull();
+  });
+
+  it('reports a failed download with its reason, and refuses bytes that are no image', async (): Promise<void> => {
+    const { upload, media } = setup();
+    const failing: ImportRemoteMedia = new ImportRemoteMedia(
+      {
+        fetch: async (): Promise<Uint8Array> => {
+          throw new Error('Refused response (404).');
+        },
+      },
+      upload,
+    );
+    const error: unknown = await failing
+      .execute('https://images.example/missing.png')
+      .catch((reason: unknown): unknown => reason);
+    expect(error).toBeInstanceOf(MediaUnreachableError);
+    expect((error as MediaUnreachableError).code).toBe('content.media-unreachable');
+    expect((error as MediaUnreachableError).message).toContain('Refused response (404).');
+    const page: ImportRemoteMedia = new ImportRemoteMedia(
+      { fetch: async (): Promise<Uint8Array> => bytes('<html>') },
+      upload,
+    );
+    await expect(page.execute('https://images.example/page')).rejects.toBeInstanceOf(
+      UnsupportedMediaError,
+    );
+    expect(media.rows.size).toBe(0);
   });
 });
 

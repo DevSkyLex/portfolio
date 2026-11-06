@@ -173,6 +173,6 @@ describe('content components', (): void => {
   });
 
   it('keeps a label for a tech outside the catalogue', (): void => {
-    expect(techDefinition('rust')).toEqual({ label: 'rust' });
+    expect(techDefinition('cobol')).toEqual({ label: 'cobol' });
   });
 });

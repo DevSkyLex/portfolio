@@ -12,9 +12,11 @@ import {
   GetAdminProfile,
   GetAdminProject,
   GetAdminTimelineEntry,
+  ImportRemoteMedia,
   ListAdminProjects,
   ManagePublication,
   ListAdminTimeline,
+  MediaUnreachableError,
   NotFoundError,
   PublishProject,
   ReorderTimeline,
@@ -24,6 +26,7 @@ import {
   CreateProject,
   ReviseTimelineEntry,
   UnpublishProject,
+  UploadMedia,
   VersionMismatchError,
 } from '@vfortin/content-application';
 import {
@@ -108,6 +111,8 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     reviseProfile: { execute: vi.fn<ReviseProfile['execute']>() },
     getLegal: { execute: vi.fn<GetAdminLegalDocument['execute']>() },
     reviseLegal: { execute: vi.fn<ReviseLegalDocument['execute']>() },
+    importMedia: { execute: vi.fn<ImportRemoteMedia['execute']>() },
+    uploadMedia: { execute: vi.fn<UploadMedia['execute']>() },
   } as const;
 
   const rpc = (method: string, params: unknown = {}, token: string = 'full'): request.Test =>
@@ -161,6 +166,8 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
         { provide: ReviseProfile, useValue: useCases.reviseProfile },
         { provide: GetAdminLegalDocument, useValue: useCases.getLegal },
         { provide: ReviseLegalDocument, useValue: useCases.reviseLegal },
+        { provide: ImportRemoteMedia, useValue: useCases.importMedia },
+        { provide: UploadMedia, useValue: useCases.uploadMedia },
         { provide: PROBLEM_MAPPER, useValue: contentProblemMapper },
         { provide: APP_FILTER, useClass: ProblemDetailsFilter },
       ],
@@ -294,7 +301,13 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
 
   it('advertises schemas, handles notifications and reports unknown methods and tools', async (): Promise<void> => {
     const listed: request.Response = await rpc('tools/list');
-    expect(listed.body.result.tools).toHaveLength(17);
+    expect(listed.body.result.tools).toHaveLength(18);
+    const revise: { inputSchema: unknown } = listed.body.result.tools.find(
+      (entry: { name: string }): boolean => entry.name === 'revise_project',
+    );
+    // The article is described by the Markdown guide, not by the 88 kB editor JSON Schema (D54).
+    expect(JSON.stringify(revise.inputSchema).length).toBeLessThan(20_000);
+    expect(JSON.stringify(revise.inputSchema)).toContain('media:<media id>');
     const unknownMethod: request.Response = await rpc('no-such-method');
     expect(unknownMethod.body.error.code).toBe(-32601);
     expect((await call('unknown')).body.error.code).toBe(-32602);
@@ -322,6 +335,159 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
         .send(body ?? 'null');
       expect([400, 202]).toContain(malformed.status);
     }
+  });
+
+  it('reads and writes rich documents as Markdown, and stores images by URL or bytes', async (): Promise<void> => {
+    const read: request.Response = await call('get_project', { id: FIXTURE.id });
+    const markdown: unknown = read.body.result.structuredContent.article.fr;
+    expect(typeof markdown).toBe('string');
+    expect(markdown).toContain('## Contexte');
+    expect(markdown).toContain('[le store](https://movah.app)');
+
+    const media: string = FIXTURE.media[1]?.id ?? '';
+    const article: string = `## Objectif
+
+Un site **rapide**.
+
+![Accueil](media:${media} "Page d'accueil")
+`;
+    const revised: request.Response = await call('revise_project', {
+      id: FIXTURE.id,
+      expectedVersion: 3,
+      revision: { ...FIXTURE, article: { fr: article, en: FIXTURE.article.en } },
+    });
+    expect(revised.body.result.isError).toBeUndefined();
+    expect(useCases.reviseProject.execute).toHaveBeenLastCalledWith(
+      FIXTURE.id,
+      3,
+      toProjectRevision(
+        ProjectRevisionRequestSchema.parse({
+          ...FIXTURE,
+          article: {
+            fr: {
+              type: 'doc',
+              content: [
+                {
+                  type: 'heading',
+                  attrs: { level: 2 },
+                  content: [{ type: 'text', text: 'Objectif' }],
+                },
+                {
+                  type: 'paragraph',
+                  content: [
+                    { type: 'text', text: 'Un site ' },
+                    { type: 'text', text: 'rapide', marks: [{ type: 'bold' }] },
+                    { type: 'text', text: '.' },
+                  ],
+                },
+                { type: 'figure', attrs: { media, alt: 'Accueil', caption: "Page d'accueil" } },
+              ],
+            },
+            en: FIXTURE.article.en,
+          },
+        }),
+      ),
+    );
+
+    const refused: request.Response = await call('revise_project', {
+      id: FIXTURE.id,
+      expectedVersion: 3,
+      revision: { ...FIXTURE, article: { fr: '# Titre', en: FIXTURE.article.en } },
+    });
+    expect(refused.body.error.code).toBe(-32602);
+    expect(refused.body.error.data.errors).toEqual([
+      {
+        field: 'revision.article.fr',
+        message: 'Headings are "## " (level 2) or "### " (level 3) (line 1)',
+      },
+    ]);
+
+    const record = {
+      id: '0b7c1d2e-3f40-4a51-8b62-7c83d94e0a15',
+      width: 1600,
+      height: 900,
+      bytes: 1234,
+      sha256: 'a'.repeat(64),
+      hasSmall: true,
+      createdAt: new Date('2026-11-06T00:00:00Z'),
+      unlinkedAt: new Date('2026-11-06T00:00:00Z'),
+    } as const;
+    useCases.importMedia.execute.mockResolvedValue(record);
+    useCases.uploadMedia.execute.mockResolvedValue(record);
+    const byUrl: request.Response = await call('upload_media', {
+      url: 'https://images.example/photo.png',
+    });
+    expect(byUrl.body.result.structuredContent).toEqual({
+      id: record.id,
+      src: `/media/${record.id}.webp`,
+      width: 1600,
+      height: 900,
+      figure: `![](media:${record.id})`,
+    });
+    expect(useCases.importMedia.execute).toHaveBeenCalledWith('https://images.example/photo.png');
+    await call('upload_media', { data: Buffer.from('image bytes').toString('base64') });
+    expect(Buffer.from(useCases.uploadMedia.execute.mock.calls.at(-1)?.[0] ?? []).toString()).toBe(
+      'image bytes',
+    );
+    expect(
+      (await call('upload_media', { url: 'http://images.example/x.png' })).body.error.code,
+    ).toBe(-32602);
+    expect((await call('upload_media', {})).body.error.code).toBe(-32602);
+
+    useCases.importMedia.execute.mockRejectedValueOnce(
+      new MediaUnreachableError('Refused response (404).'),
+    );
+    const unreachable: request.Response = await call('upload_media', {
+      url: 'https://images.example/missing.png',
+    });
+    expect(unreachable.body.result.isError).toBe(true);
+    expect(unreachable.body.result.structuredContent).toMatchObject({
+      status: 422,
+      code: 'content.media-unreachable',
+    });
+  });
+
+  it('writes legal documents and French-only drafts as Markdown, naming contract violations', async (): Promise<void> => {
+    const legal: request.Response = await call('revise_legal_document', {
+      kind: 'notice',
+      expectedVersion: 4,
+      body: { fr: 'Publisher', en: 'Publisher' },
+    });
+    expect(legal.body.result.isError).toBeUndefined();
+    expect(useCases.reviseLegal.execute).toHaveBeenLastCalledWith('notice', 4, {
+      fr: DOC,
+      en: DOC,
+    });
+    expect(typeof legal.body.result.structuredContent.body.fr).toBe('string');
+
+    // A heading inside a quote is valid Markdown but not in the editor: the contract names the path.
+    const quoted: request.Response = await call('revise_legal_document', {
+      kind: 'notice',
+      expectedVersion: 4,
+      body: { fr: '> ## Titre', en: 'Publisher' },
+    });
+    expect(quoted.body.error.code).toBe(-32602);
+    expect(quoted.body.error.data.errors[0].field).toMatch(/^body\.fr\.content\.0/);
+
+    const created: request.Response = await call('create_project', {
+      project: { ...FIXTURE, article: { fr: 'Texte du projet.' } },
+    });
+    expect(created.body.result.isError).toBeUndefined();
+    expect(useCases.createProject.execute).toHaveBeenLastCalledWith(
+      toProjectRevision(
+        ProjectRevisionRequestSchema.parse({
+          ...FIXTURE,
+          article: {
+            fr: {
+              type: 'doc',
+              content: [
+                { type: 'paragraph', content: [{ type: 'text', text: 'Texte du projet.' }] },
+              ],
+            },
+          },
+        }),
+      ),
+    );
   });
 
   it('exposes publication state without manual batch tools', async (): Promise<void> => {

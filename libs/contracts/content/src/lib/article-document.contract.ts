@@ -48,7 +48,18 @@ const InlineSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('text'),
     text: z.string().check(z.minLength(1), z.maxLength(ARTICLE_DOCUMENT_LIMITS.textNode)),
-    marks: z.optional(z.array(MarkSchema).check(z.maxLength(4))),
+    // Inline code carries no other mark: the editor's code mark excludes the others (Tiptap).
+    marks: z.optional(
+      z.array(MarkSchema).check(
+        z.maxLength(4),
+        z.refine(
+          (marks: readonly { type: string }[]): boolean =>
+            marks.length === 1 ||
+            marks.every((mark: { type: string }): boolean => mark.type !== 'code'),
+          { message: 'Inline code cannot also be bold, italic or a link.' },
+        ),
+      ),
+    ),
   }),
   z.object({ type: z.literal('hardBreak') }),
 ]);
@@ -70,9 +81,11 @@ const ParagraphSchema = z.object({
  * @description
  * Item of a third-level list: paragraphs only, so nesting stays bounded without a recursive schema.
  */
+// A list item is one paragraph, then nested lists only: the editor's `listItem` content
+// (`paragraph (bulletList | orderedList)*`), three list levels at most.
 const DeepListItemSchema = z.object({
   type: z.literal('listItem'),
-  content: z.array(ParagraphSchema).check(z.minLength(1)),
+  content: z.tuple([ParagraphSchema]),
 });
 
 /**
@@ -101,7 +114,7 @@ const DeepListSchema = z.discriminatedUnion('type', [
  */
 const NestedListItemSchema = z.object({
   type: z.literal('listItem'),
-  content: z.array(z.union([ParagraphSchema, DeepListSchema])).check(z.minLength(1)),
+  content: z.tuple([ParagraphSchema], DeepListSchema),
 });
 
 /**
@@ -130,7 +143,7 @@ const NestedListSchema = z.discriminatedUnion('type', [
  */
 const ListItemSchema = z.object({
   type: z.literal('listItem'),
-  content: z.array(z.union([ParagraphSchema, NestedListSchema])).check(z.minLength(1)),
+  content: z.tuple([ParagraphSchema], NestedListSchema),
 });
 
 /**

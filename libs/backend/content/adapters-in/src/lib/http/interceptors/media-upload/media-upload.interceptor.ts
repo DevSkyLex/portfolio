@@ -12,6 +12,17 @@ import { MEDIA_UPLOAD_LIMITS } from '@vfortin/content-contracts';
 import type { Observable } from 'rxjs';
 
 /**
+ * Constant MEDIA_MAX_BYTES
+ *
+ * @description
+ * Largest accepted image, uploaded or downloaded from a URL (`MEDIA_UPLOAD_LIMITS.bytes`), for the
+ * composition, which reads no contract.
+ *
+ * @type {number}
+ */
+export const MEDIA_MAX_BYTES: number = MEDIA_UPLOAD_LIMITS.bytes;
+
+/**
  * Class MediaUploadInterceptor
  * @class MediaUploadInterceptor
  *

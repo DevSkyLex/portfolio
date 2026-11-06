@@ -3,7 +3,7 @@
  * @interface TechDefinition
  *
  * @description
- * Display label and optional SVG icon for one technology tag.
+ * Display label of one technology tag; its logo, when an icon pack draws one, is in `TECH_LOGOS`.
  */
 export interface TechDefinition {
   // #region Properties
@@ -17,16 +17,5 @@ export interface TechDefinition {
    * @type {string}
    */
   readonly label: string;
-
-  /**
-   * Property icon
-   * @readonly
-   *
-   * @description
-   * SVG markup for the catalogue logo; undefined when no logo is registered.
-   *
-   * @type {string | undefined}
-   */
-  readonly icon?: string;
   // #endregion
 }

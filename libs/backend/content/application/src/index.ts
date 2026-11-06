@@ -3,6 +3,7 @@ export {
   MediaMissingError,
   MediaNotFoundError,
   MediaTooLargeError,
+  MediaUnreachableError,
   NotFoundError,
   UnsupportedMediaError,
   VersionMismatchError,
@@ -22,6 +23,7 @@ export type {
   MediaStorage,
   ProcessedImage,
   ProjectRepository,
+  RemoteImageSource,
   SiteBuildDispatcher,
   SiteBuildRequestRepository,
   TimelineEntryRepository,
@@ -53,6 +55,7 @@ export { CreateProject } from '@internal/content-application/lib/use-cases/creat
 export { ReviseProject } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
 export { UnpublishProject } from '@internal/content-application/lib/use-cases/unpublish-project/unpublish-project.use-case';
 export { UploadMedia } from '@internal/content-application/lib/use-cases/upload-media/upload-media.use-case';
+export { ImportRemoteMedia } from '@internal/content-application/lib/use-cases/import-remote-media/import-remote-media.use-case';
 export {
   CreateTimelineEntry,
   type TimelineEntryChangeResult,

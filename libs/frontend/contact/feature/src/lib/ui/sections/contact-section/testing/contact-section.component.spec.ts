@@ -4,7 +4,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { LOCALE_ID } from '@angular/core';
-import { type ComponentFixture, TestBed } from '@angular/core/testing';
+import { type ComponentFixture, DeferBlockState, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { ContactSectionComponent } from '@internal/contact-web-feature/lib/ui/sections/contact-section/contact-section.component';
@@ -94,6 +94,8 @@ describe('ContactSectionComponent', () => {
       { kind: 'malt', href: 'https://www.malt.fr/profile/x', label: 'Malt' },
     ]);
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     const links: HTMLAnchorElement[] = [
       ...root.querySelectorAll<HTMLAnchorElement>('ul[role="list"] a'),
     ];

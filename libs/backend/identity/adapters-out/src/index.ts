@@ -38,7 +38,7 @@ export {
   DrizzleOAuthTokenRepository,
   DrizzleOAuthUnitOfWork,
 } from '@internal/identity-adapters-out/lib/persistence/repositories/oauth/drizzle-oauth.repositories';
-export { isPublicAddress } from '@internal/identity-adapters-out/lib/oauth/address-policy/address-policy';
+export { isPublicAddress } from '@vfortin/backend-http';
 export {
   FETCH_TIMEOUT_MS,
   HttpsClientMetadataFetcher,

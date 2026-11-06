@@ -51,6 +51,9 @@ const ROUTES: Record<string, (response: ServerResponse) => void> = {
     response.writeHead(200, { 'content-type': 'text/html' });
     response.end('{}');
   },
+  '/untyped.json': (response: ServerResponse): void => {
+    response.writeHead(200).end('{}');
+  },
   '/broken.json': (response: ServerResponse): void => {
     response.writeHead(200, { 'content-type': 'application/json' });
     response.end('{');
@@ -159,6 +162,7 @@ describe('HttpsClientMetadataFetcher', (): void => {
 
   it.each([
     ['a non-JSON type', '/page.html'],
+    ['a document without type', '/untyped.json'],
     ['invalid JSON', '/broken.json'],
     ['a redirect, never followed', '/redirect.json'],
     ['a declared oversized body', '/declared-large.json'],
