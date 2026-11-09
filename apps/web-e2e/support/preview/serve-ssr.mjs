@@ -5,6 +5,13 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+const wideAndTallDiagram = [
+  'flowchart LR',
+  '  accDescr: A wide and tall validation pipeline.',
+  '  Start --> Queue --> Check --> Review --> Package --> Release --> Finish',
+  ...Array.from({ length: 12 }, (_, index) => `  Check --> Branch${index + 1}`),
+].join('\n');
+
 /** Starts a real built Angular handler against mutable, process-owned published fixtures. */
 export async function startSsrPreview(directory, port) {
   const snapshots = Object.fromEntries(
@@ -68,6 +75,11 @@ export async function startSsrPreview(directory, port) {
               type: 'codeBlock',
               attrs: { language: 'mermaid' },
               content: [{ type: 'text', text: 'Invalid diagram source' }],
+            },
+            {
+              type: 'codeBlock',
+              attrs: { language: 'mermaid' },
+              content: [{ type: 'text', text: wideAndTallDiagram }],
             },
           );
           snapshots[locale].projects.push(project);

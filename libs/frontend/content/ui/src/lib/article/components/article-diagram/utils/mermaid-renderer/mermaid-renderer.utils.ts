@@ -44,7 +44,7 @@ async function renderImage(
   const alternateSurface: string = token('--surface');
   const ink: string = token('--fg');
   const line: string = token('--fg-muted');
-  const border: string = token('--border-strong');
+  const border: string = token('--border');
   const cardRadius: string = token('--radius-xl');
   const labelRadius: string = token('--radius-xs');
   const fontFamily: string = token('--font-sans') || 'system-ui, sans-serif';
