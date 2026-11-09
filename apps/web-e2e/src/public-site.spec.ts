@@ -36,6 +36,7 @@ test.describe('public site', (): void => {
   }): Promise<void> => {
     // The contents column needs a 1024 px page; the mobile project would hide it.
     await page.setViewportSize({ width: 1280, height: 800 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/projects/library-trails');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Parcours de lecture');
     const sections: { id: string; title: string }[] = await page
@@ -67,14 +68,48 @@ test.describe('public site', (): void => {
 
     const first: { id: string; title: string } = sections[0] as { id: string; title: string };
     const last: { id: string; title: string } = sections.at(-1) as { id: string; title: string };
+    const lastSection: Locator = page.getByRole('region', { name: last.title, exact: true });
+    const banner: Locator = page.getByRole('banner');
+    const article: Locator = page.getByRole('article');
+    await expect(article).toHaveCSS('row-gap', '56px');
     // The link answers once the page is hydrated.
     await expect(async (): Promise<void> => {
       await contents.last().click();
       await expect(page).toHaveURL(new RegExp(`#${last.id}$`), { timeout: 1_000 });
     }).toPass();
+    await expect(contents.last()).toHaveAttribute('aria-current', 'true');
+    await expect(lastSection).toBeFocused();
+    const headerBottom: number = await banner.evaluate(
+      (element: HTMLElement): number => element.getBoundingClientRect().bottom,
+    );
+    await expect
+      .poll((): Promise<number> =>
+        lastSection.evaluate((element: HTMLElement): number => element.getBoundingClientRect().top),
+      )
+      .toBeGreaterThan(headerBottom);
     await expect(page.getByRole('heading', { level: 2, name: last.title })).toBeInViewport();
 
+    await contents.first().press('Enter');
+    await expect(page).toHaveURL(new RegExp(`#${first.id}$`));
+    await expect(contents.first()).toHaveAttribute('aria-current', 'true');
+    await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`#${last.id}$`));
+    await expect(contents.last()).toHaveAttribute('aria-current', 'true');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('about:blank');
     await page.goto(`/fr/projects/library-trails#${first.id}`);
+    await expect(article).toHaveCSS('row-gap', '40px');
+    const mobileHeaderBottom: number = await banner.evaluate(
+      (element: HTMLElement): number => element.getBoundingClientRect().bottom,
+    );
+    await expect
+      .poll((): Promise<number> =>
+        page
+          .getByRole('region', { name: first.title, exact: true })
+          .evaluate((element: HTMLElement): number => element.getBoundingClientRect().top),
+      )
+      .toBeGreaterThan(mobileHeaderBottom);
     await expect(page.getByRole('heading', { level: 2, name: first.title })).toBeInViewport();
   });
 

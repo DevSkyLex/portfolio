@@ -243,6 +243,27 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
 
     await chooseFooterOption(page, 'Thème', 'Sombre');
     await expect(diagram).toHaveAttribute('src', /%23131316/);
+
+    // A direct link opens before Mermaid expands the content above the destination.
+    const destination: Locator = page.getByRole('region', {
+      name: 'Résultat de démonstration',
+      exact: true,
+    });
+    const anchor: string = 'resultat-de-demonstration';
+    await expect(destination).toHaveAttribute('id', anchor);
+    await page.goto('about:blank');
+    await page.goto(`/fr/projects/runtime-publication#${anchor}`);
+    await expect(largeImage).toBeVisible();
+    await expect
+      .poll((): Promise<number> =>
+        destination.evaluate((section: HTMLElement): number =>
+          Math.abs(
+            section.getBoundingClientRect().top -
+              Number.parseFloat(getComputedStyle(section).scrollMarginTop),
+          ),
+        ),
+      )
+      .toBeLessThan(2);
   } finally {
     await request.post('/__e2e/snapshot');
   }

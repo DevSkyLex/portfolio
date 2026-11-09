@@ -1,4 +1,4 @@
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, ViewportScroller, isPlatformBrowser } from '@angular/common';
 import {
   type EnvironmentProviders,
   DestroyRef,
@@ -63,8 +63,18 @@ export function provideWebShell(options: WebShellOptions): EnvironmentProviders 
     },
     provideEnvironmentInitializer(() => {
       if (!isPlatformBrowser(inject<object>(PLATFORM_ID))) return;
-      const root: HTMLElement = inject<Document>(DOCUMENT).documentElement;
+      const document: Document = inject<Document>(DOCUMENT);
+      const root: HTMLElement = document.documentElement;
       const router: Router = inject<Router>(Router);
+      // Router anchor scrolling uses window coordinates and needs the same margin as native links.
+      inject<ViewportScroller>(ViewportScroller).setOffset((): [number, number] => {
+        const fragment: string | null = router.routerState.snapshot.root.fragment;
+        const anchor: HTMLElement | null = fragment ? document.getElementById(fragment) : null;
+        const margin: string | undefined = anchor
+          ? document.defaultView?.getComputedStyle(anchor).scrollMarginTop
+          : undefined;
+        return [0, Number.parseFloat(margin ?? '') || 0];
+      });
       const destroyRef: DestroyRef = inject<DestroyRef>(DestroyRef);
       router.events.pipe(takeUntilDestroyed(destroyRef)).subscribe((event): void => {
         if (event instanceof NavigationEnd) {

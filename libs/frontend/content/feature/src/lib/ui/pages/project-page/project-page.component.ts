@@ -10,11 +10,12 @@ import {
   inject,
   input,
   linkedSignal,
+  untracked,
   type InputSignal,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink, Scroll } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import { lucideArrowLeft, lucideArrowRight, lucideSquareArrowOutUpRight } from '@ng-icons/lucide';
 import { PageSeoService, SiteContentService } from '@vfortin/content-web-data-access';
@@ -26,7 +27,8 @@ import {
   imageSrcset,
   techDefinition,
 } from '@vfortin/content-web-ui';
-import { RevealDirective, ScrollProgressDirective } from '@vfortin/ui';
+import { RevealDirective, ScrollFrameService, ScrollProgressDirective } from '@vfortin/ui';
+import type { Subscription } from 'rxjs';
 import { PROJECT_ARROW_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-arrow-classes.constants';
 import { PROJECT_ENTER_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-enter-classes.constants';
 import { PROJECT_REVEAL_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-reveal-classes.constants';
@@ -244,12 +246,14 @@ export class ProjectPageComponent {
     inject<DestroyRef>(DestroyRef).onDestroy((): void => seo.clear());
 
     const document: Document = inject<Document>(DOCUMENT);
+    const frames: ScrollFrameService = inject<ScrollFrameService>(ScrollFrameService);
+    const router: Router = inject<Router>(Router);
     // Runs after the sections of the current article are in the DOM; the cleanup releases the
-    // observer of the previous article, and the last one on destruction.
+    // scroll task of the previous article, and the last one on destruction.
     afterRenderEffect((onCleanup: (cleanup: () => void) => void): void => {
       if (this.sections().length === 0) return;
       const window: (Window & typeof globalThis) | null = document.defaultView;
-      if (window) onCleanup(this.spy(window));
+      if (window) onCleanup(untracked(() => this.spy(window, frames, router)));
     });
   }
   // #endregion
@@ -292,28 +296,96 @@ export class ProjectPageComponent {
    * @method spy
    *
    * @description
-   * Observes article sections crossing the table-of-contents viewport band and returns cleanup for the observer; short pages skip active-section updates and unsupported browsers skip observation.
+   * Marks the last section to reach the reading line. While following a fragment, keeps its title
+   * in place if blocks above it change size after hydration.
    *
    * @param {Window} window - Window owning the rendered article document.
+   * @param {ScrollFrameService} frames - Shared scroll and resize scheduler.
+   * @param {Router} router - Source of fragment navigation and history restoration events.
    *
-   * @returns {() => void} Cleanup callback that disconnects the observer.
+   * @returns {() => void} Cleanup callback for the scroll task, observation and listeners.
    */
-  private spy(window: Window): () => void {
-    if (typeof IntersectionObserver === 'undefined') return (): undefined => undefined;
+  private spy(
+    window: Window & typeof globalThis,
+    frames: ScrollFrameService,
+    router: Router,
+  ): () => void {
+    const sections: HTMLElement[] = Array.from(
+      this.host.querySelectorAll<HTMLElement>('[data-spy]'),
+    ).reverse();
+    const first: HTMLElement | undefined = sections.at(-1);
+    if (!first) return (): void => undefined;
     const root: HTMLElement = window.document.documentElement;
-    const observer: IntersectionObserver = new IntersectionObserver(
-      (entries: IntersectionObserverEntry[]): void => {
-        if (root.scrollHeight <= window.innerHeight + 40) return;
-        for (const entry of entries) {
-          if (entry.isIntersecting) this.active.set(entry.target.id);
+    const target = (id: string | null): HTMLElement | undefined =>
+      sections.find((element: HTMLElement): boolean => element.id === id);
+    let anchored: HTMLElement | undefined = target(router.routerState.snapshot.root.fragment);
+    let previousTop: number | null = null;
+    let destination: number | null = null;
+    let next: string = first.id;
+    const remove: () => void = frames.add({
+      read: (): void => {
+        destination = null;
+        const scrollLimit: number = root.scrollHeight - window.innerHeight;
+        if (scrollLimit <= 0) {
+          next = first.id;
+          return;
         }
+        const offset: number =
+          Number.parseFloat(window.getComputedStyle(first).scrollMarginTop) || 0;
+        if (anchored) {
+          const scrollY: number = window.scrollY;
+          const top: number = anchored.getBoundingClientRect().top + scrollY;
+          const desired: number = Math.max(0, Math.min(top - offset, scrollLimit));
+          const moved: boolean = previousTop === null || top !== previousTop;
+          previousTop = top;
+          if (Math.abs(desired - scrollY) > 1) {
+            if (moved) {
+              destination = desired;
+              next = anchored.id;
+              return;
+            }
+            // A new scroll position with unchanged layout means the reader has moved on.
+            anchored = undefined;
+          }
+        }
+        // Fractional CSS positions can round to a neighbouring pixel when the browser scrolls.
+        const section: HTMLElement | undefined = sections.find(
+          (element: HTMLElement): boolean => element.getBoundingClientRect().top <= offset + 1,
+        );
+        next = section?.id ?? first.id;
       },
-      { rootMargin: '-40% 0px -55% 0px' },
-    );
-    this.host
-      .querySelectorAll('[data-spy]')
-      .forEach((section: Element): void => observer.observe(section));
-    return (): void => observer.disconnect();
+      write: (): boolean => {
+        if (destination !== null) window.scrollTo({ top: destination, behavior: 'instant' });
+        const changed: boolean = this.active() !== next;
+        if (changed) this.active.set(next);
+        return changed || destination !== null;
+      },
+    });
+    const navigation: Subscription = router.events.subscribe((event): void => {
+      if (!(event instanceof Scroll)) return;
+      anchored = event.position ? undefined : target(event.anchor);
+      previousTop = null;
+      frames.request();
+    });
+    const interactions: AbortController = new window.AbortController();
+    const release = (): void => {
+      anchored = undefined;
+    };
+    for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) {
+      window.addEventListener(event, release, { passive: true, signal: interactions.signal });
+    }
+    const observer: ResizeObserver | null =
+      typeof window.ResizeObserver === 'undefined'
+        ? null
+        : new window.ResizeObserver(frames.request);
+    for (const section of sections) observer?.observe(section);
+    observer?.observe(root);
+    return (): void => {
+      observer?.disconnect();
+      interactions.abort();
+      navigation.unsubscribe();
+      remove();
+    };
   }
   // #endregion
 }
