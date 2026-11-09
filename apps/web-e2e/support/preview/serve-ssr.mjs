@@ -43,6 +43,33 @@ export async function startSsrPreview(directory, port) {
           const project = structuredClone(snapshots[locale].projects[0]);
           project.slug = 'runtime-publication';
           project.title = 'Runtime publication';
+          project.article.content.unshift(
+            {
+              type: 'heading',
+              attrs: { level: 2 },
+              content: [
+                {
+                  type: 'text',
+                  text: 'Architecture and responsibilities of the published application',
+                },
+              ],
+            },
+            {
+              type: 'codeBlock',
+              attrs: { language: 'mermaid' },
+              content: [
+                {
+                  type: 'text',
+                  text: 'flowchart LR\n  accDescr: The browser sends a request to the API.\n  Browser --> API',
+                },
+              ],
+            },
+            {
+              type: 'codeBlock',
+              attrs: { language: 'mermaid' },
+              content: [{ type: 'text', text: 'Invalid diagram source' }],
+            },
+          );
           snapshots[locale].projects.push(project);
         }
       }

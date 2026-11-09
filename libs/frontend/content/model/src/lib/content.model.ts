@@ -143,10 +143,9 @@ export type LegalDocumentKind = 'notice' | 'privacy';
  * @type LegalBlock
  *
  * @description
- * Block of a legal document: an article block (D40) other than a figure, which legal documents never
- * hold.
+ * Block of a legal document (D40). Mermaid source is represented as code on legal pages.
  */
-export type LegalBlock = Exclude<ArticleBlock, { readonly kind: 'figure' }>;
+export type LegalBlock = Exclude<ArticleBlock, { readonly kind: 'figure' | 'diagram' }>;
 
 /**
  * Interface LegalSection
@@ -545,6 +544,7 @@ export type ArticleBlock =
   | { readonly kind: 'subheading'; readonly content: readonly ArticleInline[] }
   | { readonly kind: 'blockquote'; readonly blocks: readonly ArticleFlowBlock[] }
   | ArticleCode
+  | { readonly kind: 'diagram'; readonly source: string }
   | { readonly kind: 'rule' }
   | { readonly kind: 'figure'; readonly image: ProjectImage; readonly caption: string };
 

@@ -31,6 +31,21 @@ business store.
 - Geometry and timing calculations remain separate from canvas/WebGL effects.
 - Literal Tailwind classes use Orbite tokens; domain-agnostic controls belong to `ui`.
 
+## Authoring a Mermaid diagram
+
+In the project editor, insert a code block, select **Mermaid** in the language menu and paste the
+diagram source. In MCP Markdown, use a fenced code block:
+
+```mermaid
+flowchart LR
+  accDescr: The browser sends a request to the API, which reads from the database.
+  Browser --> API --> Database
+```
+
+Provide an `accDescr` in the language of the article. Published pages use the active Orbite palette
+and keep the source visible until the diagram renders. The source also stays visible if rendering
+fails or JavaScript is unavailable.
+
 ## Validation
 
 Run `npx nx run-many -t lint typecheck test -p content-web-ui`, then

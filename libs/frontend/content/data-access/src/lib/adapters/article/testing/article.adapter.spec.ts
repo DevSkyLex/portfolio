@@ -26,6 +26,21 @@ const h2 = (value: string): PublicArticleDocumentDto['content'][number] => ({
 });
 
 describe('toArticle', (): void => {
+  it('projects a Mermaid code block as a diagram without changing its source', (): void => {
+    const source: string = 'flowchart LR\n  A --> B';
+    const article: Pick<ProjectArticle, 'intro' | 'sections'> = toArticle({
+      type: 'doc',
+      content: [
+        {
+          type: 'codeBlock',
+          attrs: { language: 'mermaid' },
+          content: [{ type: 'text', text: source }],
+        },
+      ],
+    });
+    expect(article.intro).toEqual([{ kind: 'diagram', source }]);
+  });
+
   it('puts the blocks before the first level-2 heading in the introduction', (): void => {
     const article: Pick<ProjectArticle, 'intro' | 'sections'> = toArticle({
       type: 'doc',

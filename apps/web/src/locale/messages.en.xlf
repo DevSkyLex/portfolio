@@ -5196,6 +5196,10 @@
           <context context-type="linenumber">33,34</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="project.diagram.description" datatype="html">
+        <source>Diagramme Mermaid</source>
+        <target>Mermaid diagram</target>
+      </trans-unit>
       <trans-unit id="project.code.copyLabel" datatype="html">
         <source>Copier le code</source>
         <target>Copy the code</target>

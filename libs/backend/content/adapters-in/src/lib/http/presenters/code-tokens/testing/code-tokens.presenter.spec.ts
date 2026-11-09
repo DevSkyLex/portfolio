@@ -4,7 +4,7 @@ import {
   PublicArticleDocumentSchema,
   type PublicCodeBlockDto,
 } from '@vfortin/content-contracts';
-import { CODE_LANGUAGES, type CodeLanguage } from '@vfortin/content-domain';
+import { type ArticleCodeBlock, CODE_LANGUAGES, type CodeLanguage } from '@vfortin/content-domain';
 import {
   toCodeTokens,
   toPublicCodeBlock,
@@ -59,6 +59,7 @@ const SAMPLES: Readonly<Record<CodeLanguage, string>> = {
   rust: 'fn main() { println!("ok"); }',
   dockerfile: 'FROM node:24\nRUN npm ci',
   nginx: 'server { listen 80; }',
+  mermaid: 'flowchart LR\n  A --> B',
 };
 
 /**
@@ -156,7 +157,7 @@ describe('toCodeTokens', (): void => {
     expect(toCodeTokens('', 'bash')).toBeUndefined();
   });
 
-  it.each(CODE_LANGUAGES)(
+  it.each(CODE_LANGUAGES.filter((language: CodeLanguage): boolean => language !== 'mermaid'))(
     'highlights %s into runs spelling the code',
     (language: CodeLanguage): void => {
       const tokens: CodeTokenDto[] | undefined = toCodeTokens(SAMPLES[language], language);
@@ -175,6 +176,18 @@ describe('toCodeTokens', (): void => {
 });
 
 describe('toPublicCodeBlock', (): void => {
+  it('publishes Mermaid source without highlight tokens', (): void => {
+    const block: ArticleCodeBlock = {
+      type: 'codeBlock',
+      attrs: { language: 'mermaid' },
+      content: [{ type: 'text', text: SAMPLES.mermaid }],
+    };
+    expect(toPublicCodeBlock(block)).toEqual(block);
+    expect(PublicArticleDocumentSchema.safeParse({ type: 'doc', content: [block] }).success).toBe(
+      true,
+    );
+  });
+
   it('publishes the language, the text and the runs of a highlighted block', (): void => {
     const block: PublicCodeBlockDto = toPublicCodeBlock({
       type: 'codeBlock',

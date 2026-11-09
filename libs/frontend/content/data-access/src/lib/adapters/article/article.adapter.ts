@@ -193,19 +193,24 @@ function toFlowBlock(block: ArticleParagraphDto | ListNode): ArticleFlowBlock {
  * Function toCode
  *
  * @description
- * Maps a code block: its text, the display name of its language and the runs highlighted when the
- * snapshot was built. A block from a snapshot written before languages has no `attrs` nor runs and
- * reads as plain text.
+ * Projects Mermaid source as a diagram and other languages as code. A snapshot written before
+ * languages has no `attrs` or runs and reads as plain text.
  *
  * @param {PublicCodeBlockDto} block - Code block of the published document.
  *
- * @returns {ArticleCode} View-model code block.
+ * @returns {ArticleCode | Extract<ArticleBlock, { kind: 'diagram' }>} Display block.
  */
-function toCode(block: PublicCodeBlockDto): ArticleCode {
+function toCode(
+  block: PublicCodeBlockDto,
+): ArticleCode | Extract<ArticleBlock, { kind: 'diagram' }> {
   const language: CodeLanguageDto | null = block.attrs?.language ?? null;
+  const text: string = (block.content ?? [])
+    .map((node: { text: string }): string => node.text)
+    .join('');
+  if (language === 'mermaid') return { kind: 'diagram', source: text };
   return {
     kind: 'code',
-    text: (block.content ?? []).map((node: { text: string }): string => node.text).join(''),
+    text,
     language: language === null ? null : CODE_LANGUAGE_LABELS[language],
     tokens: (block.tokens ?? []).map((token: CodeTokenDto): ArticleCodeToken => ({
       text: token.text,

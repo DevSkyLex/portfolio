@@ -119,8 +119,11 @@
                     routerLink="."
                     [fragment]="section.id"
                     [attr.aria-current]="active() === section.id ? 'true' : null"
-                    >{{ section.label }}</a
                   >
+                    <span class="min-w-0 truncate" [title]="section.label">{{
+                      section.label
+                    }}</span>
+                  </a>
                 </li>
               }
             </ol>

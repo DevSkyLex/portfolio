@@ -16,6 +16,7 @@ export const ARTICLE_MARKDOWN_GUIDE: string = [
   'under the item text; blockquote "> " holding paragraphs and lists; fenced code block ```language',
   '(typescript, javascript, html, xml, css, scss, json, bash, python, php, sql, yaml, markdown, java, csharp,',
   'go, rust, dockerfile, nginx, or none); horizontal rule "---";',
+  'For a diagram in a project article, use a fenced code block with language mermaid and include accDescr.',
   'figure: a paragraph holding only ![alt text](media:<media id> "caption"), the id from upload_media or the',
   'media of the project (caption optional, alt text describes the image). Inline: **bold**, *italic*,',
   '`code` (never combined with bold, italic or a link), [text](https://… or mailto:…), hard line break',

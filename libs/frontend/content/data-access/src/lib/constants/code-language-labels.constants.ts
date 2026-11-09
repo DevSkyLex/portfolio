@@ -28,4 +28,5 @@ export const CODE_LANGUAGE_LABELS: Readonly<Record<CodeLanguageDto, string>> = {
   rust: 'Rust',
   dockerfile: 'Dockerfile',
   nginx: 'Nginx',
+  mermaid: 'Mermaid',
 };

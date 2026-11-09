@@ -136,6 +136,7 @@ export const CODE_LANGUAGES = [
   'rust',
   'dockerfile',
   'nginx',
+  'mermaid',
 ] as const;
 
 /**

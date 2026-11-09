@@ -85,6 +85,7 @@ describe('EditableArticleDocumentSchema', (): void => {
   it.each<[string, string | null, CodeLanguageDto | null]>([
     ['a listed language', 'typescript', 'typescript'],
     ['HTML, read with the XML grammar', 'html', 'html'],
+    ['a Mermaid diagram', ' Mermaid ', 'mermaid'],
     ['another name of a listed language', 'ts', 'typescript'],
     ['a VS Code mode id', 'shellscript', 'bash'],
     ['a name in another case, with spaces', ' TypeScript ', 'typescript'],
@@ -118,9 +119,11 @@ describe('EditableArticleDocumentSchema', (): void => {
     });
   });
 
-  it('names a highlight.js grammar for every listed language', (): void => {
+  it('names highlight.js grammars and keeps Mermaid source unhighlighted', (): void => {
     expect(CODE_BLOCK_LANGUAGES.html).toBe('xml');
-    for (const grammar of Object.values(CODE_BLOCK_LANGUAGES)) {
+    const { mermaid, ...highlighted } = CODE_BLOCK_LANGUAGES;
+    expect(mermaid).toBeNull();
+    for (const grammar of Object.values(highlighted)) {
       expect(grammar).toMatch(/^[a-z]+$/);
     }
   });
