@@ -25,7 +25,9 @@ type RenderedSource = { readonly source: string; readonly image: RenderedDiagram
   host: { class: 'block min-w-0' },
   template: `
     @if (diagram(); as image) {
-      <figure class="m-0 flex justify-center rounded-xl border border-border bg-surface-raised p-5">
+      <figure
+        class="m-0 flex w-fit max-w-full justify-center rounded-xl border border-border bg-surface-sunk p-4 sm:p-7"
+      >
         <img
           class="block h-auto max-w-full"
           [src]="image.url"

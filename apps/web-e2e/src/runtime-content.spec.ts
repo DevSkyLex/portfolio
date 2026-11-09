@@ -8,6 +8,60 @@ import {
 } from '@playwright/test';
 import { chooseFooterOption } from '@internal/web-e2e/support/site';
 
+interface FlowchartAppearance {
+  readonly raisedNodes: boolean;
+  readonly roundedNodes: boolean;
+  readonly shadowless: boolean;
+  readonly roundedConnectors: boolean;
+  readonly compactArrowheads: boolean;
+}
+
+/** Measures the generated SVG's styles in the browser without changing the displayed image. */
+function flowchartAppearance(diagram: Locator): Promise<FlowchartAppearance> {
+  return diagram.evaluate((image: HTMLImageElement): FlowchartAppearance => {
+    const markup: string = decodeURIComponent(image.src.slice(image.src.indexOf(',') + 1));
+    const parsed: Document = new DOMParser().parseFromString(markup, 'image/svg+xml');
+    const svg: Element = document.importNode(parsed.documentElement, true);
+    const probe: HTMLDivElement = document.createElement('div');
+    // SVG transforms need layout in Chromium and WebKit even when the probe is off-screen.
+    probe.style.cssText =
+      'position:fixed;left:-10000px;visibility:hidden;color:var(--surface-raised)';
+    probe.append(svg);
+    document.body.append(probe);
+    try {
+      const node: Element | null = svg.querySelector('.node rect.label-container');
+      const edge: Element | null = svg.querySelector('.flowchart-link');
+      const tip: Element | null = svg.querySelector('marker[id$="-pointEnd"] .arrowMarkerPath');
+      if (!node || !edge || !tip || !image.parentElement)
+        throw new Error('Missing flowchart shape');
+      const nodeStyle: CSSStyleDeclaration = getComputedStyle(node);
+      const radius: string = getComputedStyle(document.documentElement)
+        .getPropertyValue('--radius-xl')
+        .trim();
+      return {
+        raisedNodes: nodeStyle.fill === getComputedStyle(probe).color,
+        roundedNodes: nodeStyle.getPropertyValue('rx') === radius,
+        shadowless:
+          nodeStyle.filter === 'none' &&
+          getComputedStyle(node.parentElement ?? node).filter === 'none' &&
+          getComputedStyle(image.parentElement).boxShadow === 'none',
+        roundedConnectors: getComputedStyle(edge).strokeLinecap === 'round',
+        compactArrowheads: getComputedStyle(tip).transform !== 'none',
+      };
+    } finally {
+      probe.remove();
+    }
+  });
+}
+
+const ORBITE_FLOWCHART: FlowchartAppearance = {
+  raisedNodes: true,
+  roundedNodes: true,
+  shadowless: true,
+  roundedConnectors: true,
+  compactArrowheads: true,
+};
+
 test('serves and hydrates a fresh article without rebuilding the SSR application', async ({
   request,
   page,
@@ -57,10 +111,12 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
         ),
       )
       .toBe(true);
-    await expect(diagram).toHaveAttribute('src', /%239b6dff/);
+    await expect(diagram).toHaveAttribute('src', /%23131316/);
+    expect(await flowchartAppearance(diagram)).toEqual(ORBITE_FLOWCHART);
     await expect(page.getByText('Invalid diagram source', { exact: true })).toBeVisible();
     await chooseFooterOption(page, 'Thème', 'Clair');
-    await expect(diagram).toHaveAttribute('src', /%236a3fe6/);
+    await expect(diagram).toHaveAttribute('src', /%23f6f6f7/);
+    expect(await flowchartAppearance(diagram)).toEqual(ORBITE_FLOWCHART);
 
     const heading: string = 'Architecture and responsibilities of the published application';
     const toc: Locator = page.getByRole('navigation', { name: 'Sommaire' });
@@ -85,7 +141,7 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
       await diagram.evaluate((image: HTMLImageElement): number => image.clientWidth),
     ).toBeLessThan(390);
     await chooseFooterOption(page, 'Thème', 'Sombre');
-    await expect(diagram).toHaveAttribute('src', /%239b6dff/);
+    await expect(diagram).toHaveAttribute('src', /%23131316/);
   } finally {
     await request.post('/__e2e/snapshot');
   }
