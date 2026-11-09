@@ -1,8 +1,17 @@
 import { LOCALE_ID } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
-import { provideRouter, type Route } from '@angular/router';
+import {
+  NavigationEnd,
+  Router,
+  Scroll,
+  provideRouter,
+  type Event as RouterEvent,
+  type Route,
+} from '@angular/router';
 import { provideContentSnapshots, provideSiteOrigin } from '@vfortin/content-web-data-access';
+import { Subject } from 'rxjs';
+import type { MockInstance } from 'vitest';
 import { CONTENT_ROUTES } from '@internal/content-web-feature/lib/content.routes';
 import { ProjectPageComponent } from '@internal/content-web-feature/lib/ui/pages/project-page/project-page.component';
 import { ContentSectionsComponent } from '@internal/content-web-feature/lib/ui/sections/content-sections/content-sections.component';
@@ -370,20 +379,25 @@ describe('ProjectPageComponent', (): void => {
       vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
         this: HTMLElement,
       ): DOMRect {
-        return new DOMRect(0, tops[this.id] ?? 600, 100, 100);
+        return new DOMRect(0, (tops[this.id] ?? 600) - window.scrollY, 100, 100);
       });
     });
 
     afterEach((): void => {
+      vi.unstubAllGlobals();
       vi.restoreAllMocks();
     });
 
-    async function scroll(fixture: ComponentFixture<ProjectPageComponent>): Promise<void> {
-      window.dispatchEvent(new Event('scroll'));
+    async function nextFrame(fixture: ComponentFixture<ProjectPageComponent>): Promise<void> {
       await new Promise<void>((resolve): void => {
         window.requestAnimationFrame((): void => resolve());
       });
       await fixture.whenStable();
+    }
+
+    async function scroll(fixture: ComponentFixture<ProjectPageComponent>): Promise<void> {
+      window.dispatchEvent(new Event('scroll'));
+      await nextFrame(fixture);
     }
 
     it('keeps the last heading above the reading line current until the next one arrives', async (): Promise<void> => {
@@ -419,6 +433,76 @@ describe('ProjectPageComponent', (): void => {
       tops = { resultat: -60 };
       await scroll(fixture);
       expect(current(fixture.nativeElement)).toBe('/#contexte');
+    });
+
+    it('keeps the selected fragment aligned through a resize and releases it after reader scrolling', async (): Promise<void> => {
+      const events: Subject<RouterEvent> = new Subject<RouterEvent>();
+      vi.spyOn(TestBed.inject<Router>(Router), 'events', 'get').mockReturnValue(
+        events.asObservable(),
+      );
+      const scrollTo: MockInstance<Window['scrollTo']> = vi
+        .spyOn(window, 'scrollTo')
+        .mockImplementation((options?: ScrollToOptions | number, y?: number): void => {
+          vi.stubGlobal('scrollY', typeof options === 'number' ? (y ?? 0) : (options?.top ?? 0));
+        });
+      let resize: () => void = (): void => undefined;
+      vi.stubGlobal(
+        'ResizeObserver',
+        class implements ResizeObserver {
+          public readonly unobserve: ResizeObserver['unobserve'] = vi.fn();
+          public readonly disconnect: ResizeObserver['disconnect'] = vi.fn();
+
+          public constructor(private readonly callback: ResizeObserverCallback) {}
+
+          public observe(element: Element): void {
+            if (element === document.documentElement) resize = (): void => this.callback([], this);
+          }
+        },
+      );
+
+      tops = { contexte: 400, 'ce-que-j-ai-fait': 700, resultat: 1200, 'ce-que-je-retiens': 1600 };
+      const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
+      const root: HTMLElement = fixture.nativeElement;
+      const first: HTMLElement | null = root.querySelector('#contexte');
+      if (!first) throw new Error('Missing first article section');
+      first.style.scrollMarginTop = '80px';
+
+      const navigation: NavigationEnd = new NavigationEnd(1, '/#resultat', '/#resultat');
+      events.next(navigation);
+      events.next(new Scroll(navigation, null, 'resultat'));
+      await nextFrame(fixture);
+      expect(scrollTo).toHaveBeenLastCalledWith({ top: 1120, behavior: 'instant' });
+      expect(current(root)).toBe('/#resultat');
+
+      tops['resultat'] = 1370;
+      resize();
+      await nextFrame(fixture);
+      expect(scrollTo).toHaveBeenLastCalledWith({ top: 1290, behavior: 'instant' });
+
+      vi.stubGlobal('scrollY', 1150);
+      await scroll(fixture);
+      expect(current(root)).toBe('/#ce-que-j-ai-fait');
+      scrollTo.mockClear();
+      tops['resultat'] = 1450;
+      resize();
+      await nextFrame(fixture);
+      expect(scrollTo).not.toHaveBeenCalled();
+
+      events.next(new Scroll(navigation, null, 'resultat'));
+      await nextFrame(fixture);
+      expect(scrollTo).toHaveBeenLastCalledWith({ top: 1370, behavior: 'instant' });
+      window.dispatchEvent(new Event('wheel'));
+      scrollTo.mockClear();
+      tops['resultat'] = 1510;
+      resize();
+      await nextFrame(fixture);
+      expect(scrollTo).not.toHaveBeenCalled();
+
+      events.next(new Scroll(navigation, [0, 1150], 'resultat'));
+      vi.stubGlobal('scrollY', 1150);
+      await scroll(fixture);
+      expect(scrollTo).not.toHaveBeenCalled();
+      expect(current(root)).toBe('/#ce-que-j-ai-fait');
     });
   });
 });
