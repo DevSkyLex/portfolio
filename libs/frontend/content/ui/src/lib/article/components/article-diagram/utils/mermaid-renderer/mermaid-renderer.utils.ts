@@ -39,13 +39,14 @@ async function renderImage(
 ): Promise<RenderedDiagram | null> {
   const tokens: CSSStyleDeclaration = getComputedStyle(document.documentElement);
   const token = (name: string): string => tokens.getPropertyValue(name).trim();
-  const surface: string = token('--surface-raised');
-  const node: string = token('--surface');
+  const surface: string = token('--surface-sunk');
+  const node: string = token('--surface-raised');
+  const alternateSurface: string = token('--surface');
   const ink: string = token('--fg');
   const line: string = token('--fg-muted');
-  const violet: string = token('--aurora-violet');
-  const blue: string = token('--aurora-blue');
-  const pink: string = token('--aurora-pink');
+  const border: string = token('--border-strong');
+  const cardRadius: string = token('--radius-xl');
+  const labelRadius: string = token('--radius-xs');
   const fontFamily: string = token('--font-sans') || 'system-ui, sans-serif';
   mermaid.initialize({
     startOnLoad: false,
@@ -65,38 +66,76 @@ async function renderImage(
       'flowchart',
       'dompurifyConfig',
       'theme',
+      'look',
       'themeVariables',
       'themeCSS',
       'fontFamily',
       'altFontFamily',
     ],
     theme: 'base',
+    // The default Neo look adds gradient borders and shadow filters to rectangular nodes.
+    look: 'classic',
     fontFamily,
+    flowchart: {
+      curve: 'rounded',
+      minNodeWidth: 112,
+      nodeSpacing: 24,
+      padding: 9,
+      rankSpacing: 40,
+      wrappingWidth: 140,
+    },
     themeVariables: {
       darkMode: dark,
+      fontSize: token('--text-control') || '15px',
       background: surface,
       primaryColor: node,
-      primaryBorderColor: violet,
+      primaryBorderColor: border,
       primaryTextColor: ink,
-      secondaryColor: node,
-      secondaryBorderColor: blue,
+      secondaryColor: alternateSurface,
+      secondaryBorderColor: border,
       secondaryTextColor: ink,
       tertiaryColor: surface,
-      tertiaryBorderColor: pink,
+      tertiaryBorderColor: border,
       tertiaryTextColor: ink,
       textColor: ink,
       lineColor: line,
-      edgeLabelBackground: surface,
+      edgeLabelBackground: node,
       actorBkg: node,
-      actorBorder: violet,
+      actorBorder: border,
       actorTextColor: ink,
       actorLineColor: line,
       signalColor: line,
       signalTextColor: ink,
-      noteBkgColor: surface,
-      noteBorderColor: blue,
+      noteBkgColor: alternateSurface,
+      noteBorderColor: border,
       noteTextColor: ink,
     },
+    // Mermaid scopes this stylesheet inside the SVG, where page CSS variables do not resolve.
+    themeCSS: `
+      .node rect.label-container:not([rx]),
+      .node rect.label-container[rx="0"],
+      rect.actor {
+        rx: ${cardRadius};
+        ry: ${cardRadius};
+      }
+      .flowchart-link {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .flowchart-link.edge-thickness-normal {
+        stroke-width: 1.25px;
+      }
+      marker[id$="-pointEnd"] .arrowMarkerPath,
+      marker[id$="-pointStart"] .arrowMarkerPath {
+        stroke-width: 0 !important;
+        transform: translate(1px, 1px) scale(0.8);
+      }
+      .edgeLabel rect {
+        rx: ${labelRadius};
+        ry: ${labelRadius};
+        opacity: 1;
+      }
+    `,
   });
 
   // Mermaid measures SVG text during layout, so the temporary tree must be attached.
