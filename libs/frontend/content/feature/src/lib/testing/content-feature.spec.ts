@@ -298,7 +298,7 @@ describe('ProjectPageComponent', (): void => {
       expect(section.hasAttribute('data-spy')).toBe(true);
       const title: HTMLElement | null = section.querySelector(':scope > h2');
       expect(section.getAttribute('aria-labelledby')).toBe(title?.id);
-      expect(title?.id).toBe(`${section.id}-title`);
+      expect(title?.id).toBe(`article-heading_${section.id}`);
     }
     expect(sections[0]?.querySelector('h2')?.className).toContain('font-display');
     const links: HTMLAnchorElement[] = tocLinks(root);
@@ -362,118 +362,63 @@ describe('ProjectPageComponent', (): void => {
   });
 
   describe('scrollspy', (): void => {
-    let notify: IntersectionObserverCallback = (): undefined => undefined;
-    let observed: Element[] = [];
-    let stopped: Element[][] = [];
+    let tops: Record<string, number> = {};
 
     beforeEach((): void => {
-      notify = (): undefined => undefined;
-      observed = [];
-      stopped = [];
-      vi.stubGlobal(
-        'IntersectionObserver',
-        class {
-          private readonly watched: Element[] = [];
-          public constructor(private readonly callback: IntersectionObserverCallback) {}
-          public observe(element: Element): void {
-            if (!element.hasAttribute('data-spy')) return;
-            notify = this.callback;
-            this.watched.push(element);
-            observed.push(element);
-          }
-          public disconnect(): void {
-            if (this.watched.length > 0) stopped.push([...this.watched]);
-          }
-        },
-      );
+      tops = {};
+      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000);
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: HTMLElement,
+      ): DOMRect {
+        return new DOMRect(0, tops[this.id] ?? 600, 100, 100);
+      });
     });
 
     afterEach((): void => {
-      vi.unstubAllGlobals();
       vi.restoreAllMocks();
     });
 
-    /**
-     * Function section
-     *
-     * @description
-     * Finds an observed section by identifier.
-     */
-    const section = (id: string): Element =>
-      observed.find((element: Element): boolean => element.id === id) as Element;
-
-    /**
-     * Function deliver
-     *
-     * @description
-     * Delivers observer entries to the scrollspy, then lets the page render.
-     */
-    async function deliver(
-      fixture: ComponentFixture<ProjectPageComponent>,
-      entries: { isIntersecting: boolean; target: Element }[],
-    ): Promise<void> {
-      notify(entries as unknown as IntersectionObserverEntry[], {} as IntersectionObserver);
+    async function scroll(fixture: ComponentFixture<ProjectPageComponent>): Promise<void> {
+      window.dispatchEvent(new Event('scroll'));
+      await new Promise<void>((resolve): void => {
+        window.requestAnimationFrame((): void => resolve());
+      });
       await fixture.whenStable();
     }
 
-    it('makes the section crossing the reading band current once the page scrolls', async (): Promise<void> => {
-      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000);
+    it('keeps the last heading above the reading line current until the next one arrives', async (): Promise<void> => {
       const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
-      expect(observed.map((element: Element): string => element.id)).toEqual([
-        'contexte',
-        'ce-que-j-ai-fait',
-        'resultat',
-        'ce-que-je-retiens',
-      ]);
-      await deliver(fixture, [{ isIntersecting: true, target: section('resultat') }]);
+      tops = { contexte: -400, 'ce-que-j-ai-fait': -130, resultat: 10 };
+      await scroll(fixture);
+      expect(current(fixture.nativeElement)).toBe('/#ce-que-j-ai-fait');
+      tops['resultat'] = 0.5;
+      await scroll(fixture);
       expect(current(fixture.nativeElement)).toBe('/#resultat');
-      fixture.destroy();
-      expect(stopped).toHaveLength(1);
+      tops['resultat'] = 10;
+      await scroll(fixture);
+      expect(current(fixture.nativeElement)).toBe('/#ce-que-j-ai-fait');
     });
 
-    it('observes the sections of the next article after a navigation, from its first section', async (): Promise<void> => {
-      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000);
+    it('tracks only the sections of the next article after navigation', async (): Promise<void> => {
       const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
-      await deliver(fixture, [{ isIntersecting: true, target: section('resultat') }]);
-      observed = [];
+      tops = { resultat: -60 };
+      await scroll(fixture);
+      expect(current(fixture.nativeElement)).toBe('/#resultat');
       fixture.componentRef.setInput('slug', 'library-trails');
       await fixture.whenStable();
-      expect(stopped.map((elements: Element[]): string[] => elements.map((e) => e.id))).toEqual([
-        ['contexte', 'ce-que-j-ai-fait', 'resultat', 'ce-que-je-retiens'],
-      ]);
-      expect(observed.map((element: Element): string => element.id)).toEqual([
-        'genese',
-        'architecture',
-      ]);
       const root: HTMLElement = fixture.nativeElement;
-      expect(
-        tocLinks(root).map((link: HTMLAnchorElement): string | null => link.getAttribute('href')),
-      ).toEqual(['/#genese', '/#architecture']);
       expect(current(root)).toBe('/#genese');
-      await deliver(fixture, [{ isIntersecting: true, target: section('architecture') }]);
+      tops['architecture'] = -60;
+      await scroll(fixture);
       expect(current(root)).toBe('/#architecture');
     });
 
     it('keeps the first section current while the page does not scroll', async (): Promise<void> => {
       vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(window.innerHeight);
       const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
-      await deliver(fixture, [{ isIntersecting: true, target: section('resultat') }]);
+      tops = { resultat: -60 };
+      await scroll(fixture);
       expect(current(fixture.nativeElement)).toBe('/#contexte');
-    });
-
-    it('ignores the sections leaving the reading band', async (): Promise<void> => {
-      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000);
-      const fixture: ComponentFixture<ProjectPageComponent> = await renderPage('crm');
-      await deliver(fixture, [
-        { isIntersecting: false, target: section('resultat') },
-        { isIntersecting: true, target: section('ce-que-j-ai-fait') },
-      ]);
-      expect(current(fixture.nativeElement)).toBe('/#ce-que-j-ai-fait');
-    });
-
-    it('observes nothing for an article without sections', async (): Promise<void> => {
-      await renderPage('solo');
-      expect(observed).toEqual([]);
     });
   });
 });

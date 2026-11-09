@@ -130,7 +130,9 @@
           </nav>
         }
 
-        <article class="flex min-w-0 flex-col gap-24 @min-[1024px]/page:col-start-2">
+        <article
+          class="flex min-w-0 flex-col gap-10 @min-[768px]/page:gap-14 @min-[1024px]/page:col-start-2"
+        >
           @if (p.intro.length > 0) {
             <div class="flex flex-col gap-4">
               <content-article-blocks [blocks]="p.intro" [reveal]="reveal" />
@@ -138,12 +140,18 @@
           }
           @for (section of sections(); track section.id) {
             <section
-              class="flex scroll-mt-28 flex-col gap-4"
+              class="group/article-section flex scroll-mt-20 flex-col gap-4 focus-visible:outline-none"
               [id]="section.id"
               data-spy
-              [attr.aria-labelledby]="section.id + '-title'"
+              tabindex="-1"
+              [attr.aria-labelledby]="'article-heading_' + section.id"
             >
-              <h2 [class]="typography.h2 + ' ' + reveal" [id]="section.id + '-title'" uiReveal>
+              <h2
+                class="group-focus-visible/article-section:outline-2 group-focus-visible/article-section:outline-offset-3 group-focus-visible/article-section:outline-accent"
+                [class]="typography.h2 + ' ' + reveal"
+                [id]="'article-heading_' + section.id"
+                uiReveal
+              >
                 {{ section.label }}
               </h2>
               <content-article-blocks [blocks]="section.blocks" [reveal]="reveal" />
