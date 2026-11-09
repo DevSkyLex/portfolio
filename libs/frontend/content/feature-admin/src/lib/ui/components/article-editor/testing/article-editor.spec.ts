@@ -773,6 +773,7 @@ describe('ArticleEditorComponent', (): void => {
       'Rust',
       'Dockerfile',
       'Nginx',
+      'Mermaid',
     ]);
     expect(items()[0]?.getAttribute('aria-checked')).toBe('true');
     items()[1]?.click();
@@ -799,6 +800,9 @@ describe('ArticleEditorComponent', (): void => {
     expect(surface).toContain('.hljs-built\\_in)]:text-aurora-blue');
     expect(surface).toContain(':is(.hljs-comment,.hljs-quote)]:italic');
 
+    await choose('Mermaid');
+    expect(block()?.attrs).toEqual({ language: 'mermaid' });
+    expect(highlighted()).toEqual([]);
     await choose('Texte brut');
     expect(block()?.attrs).toEqual({ language: null });
     expect(highlighted()).toEqual([]);

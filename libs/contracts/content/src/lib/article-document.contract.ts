@@ -192,8 +192,8 @@ const BlockquoteSchema = z.object({
  *
  * @description
  * Closed list of the languages a code block may declare in `codeBlock.attrs.language`, each with the
- * name of the highlight.js grammar that tokenizes it when the snapshot is built (D40 code block
- * revision); `null` is plain text. HTML has no grammar of its own: highlight.js reads it as XML.
+ * name of its highlight.js grammar (D40 code block revision). HTML uses XML. Mermaid keeps its
+ * source without highlighting so the article can render it as a diagram.
  */
 export const CODE_BLOCK_LANGUAGES = {
   typescript: 'typescript',
@@ -215,6 +215,7 @@ export const CODE_BLOCK_LANGUAGES = {
   rust: 'rust',
   dockerfile: 'dockerfile',
   nginx: 'nginx',
+  mermaid: null,
 } as const;
 
 /**

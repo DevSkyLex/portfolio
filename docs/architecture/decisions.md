@@ -511,6 +511,12 @@ runs spell the text. The page renders the runs as `<span>`s coloured with text t
 status and a copy button that writes the text with the Clipboard API, in the browser only. The browser
 loads no highlighter.
 
+Mermaid uses the same code block with `attrs.language: "mermaid"` and carries its source without
+highlight tokens. On project pages, the browser loads the renderer only when a diagram is present.
+It resolves the active Orbite palette, renders in Mermaid's strict mode, and presents the SVG as an
+image with the diagram's accessible description. The server sends the source, which remains the
+fallback when rendering fails. The editor and legal pages display the source as code.
+
 ## D41 — Semantic colour roles
 
 The colour tokens had grown by accretion: surfaces, text and borders kept the mockup's metaphors (`void`,

@@ -202,7 +202,7 @@ export function isCodeLanguage(name: unknown): name is CodeLanguage {
  * Highlighter given to the editor's code blocks. It knows only the listed languages, so a block
  * pasted with another name or an alias (`ts`) stays plain until the service normalizes it on save,
  * like its picker shows it; it never guesses: a plain text block (`language: null`), for which the
- * extension asks `highlightAuto`, gets no colours; and its trees are flat (`flatten`).
+ * extension asks `highlightAuto`, gets no colours, like Mermaid source. Its trees are flat (`flatten`).
  */
 export const ARTICLE_LOWLIGHT: Pick<
   ReturnType<typeof createLowlight>,
@@ -217,6 +217,7 @@ export const ARTICLE_LOWLIGHT: Pick<
     children: [{ type: 'text', value }],
     data: { language: undefined, relevance: 0 },
   }),
-  listLanguages: (): string[] => Object.keys(CODE_LANGUAGE_LABELS),
-  registered: (name: string): boolean => isCodeLanguage(name),
+  listLanguages: (): string[] =>
+    Object.keys(CODE_LANGUAGE_LABELS).filter((name): boolean => name !== 'mermaid'),
+  registered: (name: string): boolean => isCodeLanguage(name) && name !== 'mermaid',
 };

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, type InputSignal } from '@an
 import type { ArticleBlock, ProjectImage } from '@vfortin/content-web-model';
 import { RevealDirective } from '@vfortin/ui';
 import { ArticleCodeComponent } from '@internal/content-web-ui/lib/article/components/article-code/article-code.component';
+import { ArticleDiagramComponent } from '@internal/content-web-ui/lib/article/components/article-diagram/article-diagram.component';
 import { ArticleInlineComponent } from '@internal/content-web-ui/lib/article/components/article-inline/article-inline.component';
 import { ArticleListComponent } from '@internal/content-web-ui/lib/article/components/article-list/article-list.component';
 import { ARTICLE_TYPOGRAPHY } from '@internal/content-web-ui/lib/article/constants/article-typography.constants';
@@ -18,7 +19,13 @@ import { imageSrcset } from '@internal/content-web-ui/lib/article/utils/image-sr
  */
 @Component({
   selector: 'content-article-blocks',
-  imports: [ArticleCodeComponent, ArticleInlineComponent, ArticleListComponent, RevealDirective],
+  imports: [
+    ArticleCodeComponent,
+    ArticleDiagramComponent,
+    ArticleInlineComponent,
+    ArticleListComponent,
+    RevealDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'contents' },
   template: `@for (block of blocks(); track $index) {
@@ -56,6 +63,9 @@ import { imageSrcset } from '@internal/content-web-ui/lib/article/utils/image-sr
           [code]="block"
           uiReveal
         />
+      }
+      @case ('diagram') {
+        <content-article-diagram [class]="reveal()" [source]="block.source" uiReveal />
       }
       @case ('rule') {
         <hr [class]="typography.horizontalRule + ' ' + reveal()" uiReveal />

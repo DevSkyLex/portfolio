@@ -210,16 +210,17 @@ function collect(
  *
  * @param {string} code - Text of the code block.
  * @param {CodeLanguageDto | null} language - Declared language, `null` for plain text.
- * @returns {CodeTokenDto[] | undefined} Runs in order; `undefined` for plain text or an empty block,
- * which the page shows as text.
+ * @returns {CodeTokenDto[] | undefined} Runs in order; `undefined` for empty or unhighlighted source.
  */
 export function toCodeTokens(
   code: string,
   language: CodeLanguageDto | null,
 ): CodeTokenDto[] | undefined {
   if (language === null || code === '') return undefined;
+  const grammar: string | null = CODE_BLOCK_LANGUAGES[language];
+  if (grammar === null) return undefined;
   const runs: CodeRun[] = [];
-  collect(lowlight.highlight(CODE_BLOCK_LANGUAGES[language], code).children, null, runs);
+  collect(lowlight.highlight(grammar, code).children, null, runs);
   return runs.map((run: CodeRun): CodeTokenDto => ({ text: run.text, kind: run.kind }));
 }
 

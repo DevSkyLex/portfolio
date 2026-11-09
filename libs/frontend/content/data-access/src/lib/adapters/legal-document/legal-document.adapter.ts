@@ -8,20 +8,28 @@ import type {
   ProjectArticle,
 } from '@vfortin/content-web-model';
 import { toArticle } from '@internal/content-web-data-access/lib/adapters/article/article.adapter';
+import { CODE_LANGUAGE_LABELS } from '@internal/content-web-data-access/lib/constants/code-language-labels.constants';
 
 /**
  * Function legalBlocks
  *
  * @description
- * Keeps the blocks a legal document can hold: its contract refuses figures, so none is dropped in
- * practice.
+ * Preserves Mermaid source as code on legal pages, whose renderer has no diagram block.
  *
  * @param {readonly ArticleBlock[]} blocks - Article blocks.
  *
  * @returns {LegalBlock[]} Legal blocks.
  */
 function legalBlocks(blocks: readonly ArticleBlock[]): LegalBlock[] {
-  return blocks.filter((block: ArticleBlock): block is LegalBlock => block.kind !== 'figure');
+  return blocks.flatMap((block: ArticleBlock): LegalBlock[] => {
+    if (block.kind === 'figure') return [];
+    if (block.kind === 'diagram') {
+      return [
+        { kind: 'code', language: CODE_LANGUAGE_LABELS.mermaid, text: block.source, tokens: [] },
+      ];
+    }
+    return [block];
+  });
 }
 
 /**
