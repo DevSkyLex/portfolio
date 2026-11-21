@@ -69,6 +69,7 @@ import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/u
   templateUrl: './admin-projects-page.component.html',
 })
 export class AdminProjectsPageComponent {
+  protected readonly collectionLabel: string = $localize`:@@admin.articles.title:Articles`;
   // #region Properties
   /**
    * Property store
@@ -303,7 +304,7 @@ export class AdminProjectsPageComponent {
     // The catalogue's localized « Annuler » cancels.
     const confirmed: boolean = await this.confirmations.confirm({
       title: $localize`:@@admin.projects.unpublish.confirmTitle:Dépublier « ${project.title.fr}:title: » ?`,
-      description: $localize`:@@admin.projects.unpublish.confirmDescription:Le projet repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).`,
+      description: $localize`:@@admin.projects.unpublish.confirmDescription:L’article repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).`,
       confirmLabel: $localize`:@@admin.projects.action.unpublish:Dépublier`,
       tone: 'danger',
       // The menu item that opened the dialog is gone: its row's menu button takes the focus back.
@@ -398,8 +399,8 @@ export class AdminProjectsPageComponent {
    */
   private skippedText(count: number): string {
     return count < 2
-      ? $localize`:@@admin.projects.bulk.skipped.one:${count}:count: projet sélectionné n'est pas concerné.`
-      : $localize`:@@admin.projects.bulk.skipped.other:${count}:count: projets sélectionnés ne sont pas concernés.`;
+      ? $localize`:@@admin.projects.bulk.skipped.one:${count}:count: article sélectionné n'est pas concerné.`
+      : $localize`:@@admin.projects.bulk.skipped.other:${count}:count: articles sélectionnés ne sont pas concernés.`;
   }
 
   /**
@@ -458,7 +459,7 @@ export class AdminProjectsPageComponent {
       return;
     }
     const reason: string = conflict
-      ? $localize`:@@admin.projects.bulk.conflict:Un projet a été modifié entre-temps : la liste a été rechargée, recommencez.`
+      ? $localize`:@@admin.projects.bulk.conflict:Un article a été modifié entre-temps : la liste a été rechargée, recommencez.`
       : (message ?? $localize`:@@admin.projects.bulk.failed:La requête a échoué.`);
     const description: string =
       failures < 2
@@ -467,8 +468,8 @@ export class AdminProjectsPageComponent {
     if (failures === total) {
       this.toasts.error(
         total < 2
-          ? $localize`:@@admin.projects.bulk.noneChanged.one:Aucun projet modifié sur ${total}:total:.`
-          : $localize`:@@admin.projects.bulk.noneChanged.other:Aucun projet modifié sur ${total}:total:.`,
+          ? $localize`:@@admin.projects.bulk.noneChanged.one:Aucun article modifié sur ${total}:total:.`
+          : $localize`:@@admin.projects.bulk.noneChanged.other:Aucun article modifié sur ${total}:total:.`,
         { description },
       );
     } else {
@@ -519,7 +520,7 @@ export class AdminProjectsPageComponent {
   private async reportFailure(): Promise<void> {
     if (this.store.conflict()) {
       this.toasts.warning(
-        $localize`:@@admin.projects.toast.conflict:Le projet a été modifié entre-temps : la liste a été rechargée, recommencez.`,
+        $localize`:@@admin.projects.toast.conflict:L’article a été modifié entre-temps : la liste a été rechargée, recommencez.`,
       );
       await this.load();
       return;

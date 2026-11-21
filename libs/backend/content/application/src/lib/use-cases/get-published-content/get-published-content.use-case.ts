@@ -4,7 +4,7 @@ import {
   type LegalDocumentKind,
   type MaintenanceMode,
   type Profile,
-  type Project,
+  type Article,
   type SkillGroup,
   TimelineEntry,
 } from '@vfortin/content-domain';
@@ -42,13 +42,13 @@ export interface PublishedContent {
   readonly profile: Profile;
 
   /**
-   * Property projects
+   * Property articles
    * @readonly
    *
    * @description
-   * Published projects ordered by their stored display position.
+   * Published articles ordered by their stored display position.
    */
-  readonly projects: readonly Project[];
+  readonly articles: readonly Article[];
 
   /**
    * Property timeline
@@ -162,24 +162,24 @@ export class GetPublishedContent {
         if (this.cached?.revision === revision) {
           return { ...this.cached, maintenance };
         }
-        const [profile, projects, timeline, skills, faq, legal] = await Promise.all([
+        const [profile, articles, timeline, skills, faq, legal] = await Promise.all([
           repository.loadProfile(),
-          repository.listProjects(),
+          repository.listArticles(),
           repository.listTimeline(),
           repository.listSkillGroups(),
           repository.listFaq(),
           repository.loadLegalDocuments(),
         ]);
-        const published: Project[] = projects
-          .filter((p: Project): boolean => p.isPublished())
-          .sort((a: Project, b: Project): number => a.position - b.position);
+        const published: Article[] = articles
+          .filter((p: Article): boolean => p.isPublished())
+          .sort((a: Article, b: Article): number => a.position - b.position);
         const media: MediaRecord[] = await repository.loadMedia([
-          ...new Set(published.flatMap((p: Project): string[] => p.mediaIds())),
+          ...new Set(published.flatMap((p: Article): string[] => p.mediaIds())),
         ]);
         return {
           revision,
           profile,
-          projects: published,
+          articles: published,
           timeline: [...timeline].sort(TimelineEntry.compare),
           skills: [...skills].sort(
             (a: SkillGroup, b: SkillGroup): number => a.position - b.position,

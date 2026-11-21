@@ -1,80 +1,55 @@
 @if (project(); as p) {
   <!-- Layouts follow the page width without the scrollbar, like the mockup container queries. -->
   <div class="@container/page">
-    <section class="relative pt-8 pb-16 shadow-[0_-1px_0_var(--surface)]">
-      <!-- Sky of the hero (mockup .ob-sky--case): runs 240px under the hero, fading out. -->
-      <div
-        class="pointer-events-auto absolute inset-x-0 top-0 -bottom-[240px] overflow-hidden mask-[linear-gradient(to_bottom,#000_calc(100%-240px),transparent)] opacity-90 [&_canvas]:mask-[linear-gradient(to_bottom,#000_40%,transparent_96%)]"
-        aria-hidden="true"
-      >
-        <content-ascii-planet forms="squares" [scale]="0.55" [lift]="0.08" [height]="640" />
-      </div>
-      <div class="relative z-1 wrap">
+    <content-page-hero
+      [title]="p.title"
+      backLink="/articles"
+      [backQueryParams]="backQueryParams()"
+      [backLabel]="backLabel()"
+    >
+      <p class="max-w-160 text-lead text-fg-muted @max-[768px]/page:text-lead-sm" [class]="enter">
+        {{ p.lead }}
+      </p>
+      @if (isProject()) {
+        <ul
+          class="flex flex-wrap gap-x-8 gap-y-1 text-[15px]/[22px] text-fg-muted [--rd:80ms]"
+          [class]="enter"
+          role="list"
+        >
+          <li>{{ p.periodLabel }}</li>
+          <li>{{ p.client }}</li>
+          <li>{{ p.role }}</li>
+          <li>{{ p.place }}</li>
+        </ul>
+      }
+      @if (!isProject()) {
+        <p class="text-sm text-fg-muted">{{ p.taxonomy.category.label }}</p>
+      }
+      @if (p.site; as site) {
         <a
-          class="inline-flex min-h-11 items-center gap-2 text-[15px]/5 font-medium text-fg-muted transition-colors hover:text-fg"
-          routerLink="/"
-          fragment="projects"
+          class="inline-flex min-h-9 items-center self-start text-[15px]/5 text-fg-muted transition-colors duration-(--dur-pop) ease-orbit [--rd:160ms] hover:text-fg focus-visible:text-fg"
+          [class]="enter"
+          [href]="site.url"
         >
-          <ng-icon [svg]="icons.back" size="16" strokeWidth="2.25" aria-hidden="true" />
-          <ng-container i18n="@@project.back">Tous les projets</ng-container>
+          <ng-icon
+            class="mr-2.5"
+            [svg]="icons.external"
+            size="16"
+            strokeWidth="2.25"
+            aria-hidden="true"
+          />
+          {{ site.label }}
         </a>
-
-        <header
-          class="mt-12 flex max-w-[980px] flex-col gap-6 @max-[768px]/page:mt-6 @max-[768px]/page:gap-4"
-        >
-          <h1
-            class="overflow-hidden pb-[0.08em] font-display text-[clamp(36px,7cqi,104px)] leading-none font-semibold tracking-[-0.04em] text-fg"
-          >
-            <span
-              class="inline-block transition-transform duration-(--dur-reveal) ease-orbit motion-reduce:transition-none starting:translate-y-[105%]"
-              >{{ p.title }}</span
-            >
-          </h1>
-          <p
-            class="max-w-160 text-lead text-fg-muted @max-[768px]/page:text-lead-sm"
-            [class]="enter"
-          >
-            {{ p.lead }}
-          </p>
-          <ul
-            class="flex flex-wrap gap-x-8 gap-y-1 text-[15px]/[22px] text-fg-muted [--rd:80ms]"
-            [class]="enter"
-            role="list"
-          >
-            <li>{{ p.periodLabel }}</li>
-            <li>{{ p.client }}</li>
-            <li>{{ p.role }}</li>
-            <li>{{ p.place }}</li>
-          </ul>
-          @if (p.site; as site) {
-            <a
-              class="inline-flex min-h-9 items-center self-start text-[15px]/5 text-fg-muted transition-colors duration-(--dur-pop) ease-orbit [--rd:160ms] hover:text-fg focus-visible:text-fg"
-              [class]="enter"
-              [href]="site.url"
-            >
-              <ng-icon
-                class="mr-2.5"
-                [svg]="icons.external"
-                size="16"
-                strokeWidth="2.25"
-                aria-hidden="true"
-              />
-              {{ site.label }}
-            </a>
-          }
-          <ul class="flex flex-wrap gap-2 [--rd:160ms]" [class]="enter" role="list">
-            @for (tech of p.techs; track tech) {
-              <li
-                class="inline-flex h-7 items-center gap-1.5 rounded-full border border-border pr-3 pl-2.5 font-mono text-xs text-fg-muted"
-              >
-                <content-tech-icon class="size-3.5" [tech]="tech" />
-                {{ techLabel(tech) }}
-              </li>
-            }
-          </ul>
-        </header>
-      </div>
-    </section>
+      }
+      @if (p.taxonomy.tags.length > 0 || p.techs.length > 0) {
+        <content-tech-tags
+          class="[--rd:160ms]"
+          [class]="enter"
+          [tags]="p.taxonomy.tags"
+          [techs]="p.techs"
+        />
+      }
+    </content-page-hero>
 
     <div class="wrap bg-surface shadow-[0_-1px_0_var(--surface)]">
       <figure class="m-0" [class]="reveal" uiReveal>
@@ -171,27 +146,25 @@
           <a
             class="group grid grid-cols-[auto_minmax(0,1fr)] items-center gap-6 rounded-xl bg-surface-raised px-12 py-8 transition-colors duration-(--dur-pop) ease-orbit hover:bg-surface-hover focus-visible:bg-surface-hover @max-[768px]/page:p-6"
             [class]="reveal"
-            [routerLink]="['/projects', around.previous.slug]"
+            [routerLink]="['/articles', around.previous.slug]"
             uiReveal
           >
             <span class="group-hover:-translate-x-1" [class]="arrow" aria-hidden="true">
               <ng-icon [svg]="icons.back" size="24" strokeWidth="1.875" />
             </span>
             <span class="flex flex-col gap-2">
-              <span class="text-sm/5 text-fg-muted" i18n="@@project.previous"
-                >Projet précédent</span
-              >
+              <span class="text-sm/5 text-fg-muted">{{ previousLabel() }}</span>
               <span class="block font-display text-d3 text-fg">{{ around.previous.title }}</span>
             </span>
           </a>
           <a
             class="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 rounded-xl bg-surface-raised px-12 py-8 transition-colors duration-(--dur-pop) ease-orbit [--rd:80ms] hover:bg-surface-hover focus-visible:bg-surface-hover @max-[768px]/page:p-6"
             [class]="reveal"
-            [routerLink]="['/projects', around.next.slug]"
+            [routerLink]="['/articles', around.next.slug]"
             uiReveal
           >
             <span class="flex flex-col gap-2">
-              <span class="text-sm/5 text-fg-muted" i18n="@@project.next">Projet suivant</span>
+              <span class="text-sm/5 text-fg-muted">{{ nextLabel() }}</span>
               <span class="block font-display text-d3 text-fg">{{ around.next.title }}</span>
             </span>
             <span class="group-hover:translate-x-1" [class]="arrow" aria-hidden="true">

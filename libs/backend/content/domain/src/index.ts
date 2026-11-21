@@ -27,12 +27,12 @@ export {
   PROJECT_SEO_KEYWORD_MAX_LENGTH,
   PROJECT_SEO_KEYWORD_MIN_LENGTH,
   PROJECT_SEO_TITLE_MAX_LENGTH,
-  ProjectSeo,
-  type LocalizedProjectSeo,
+  ArticleSeo,
+  type LocalizedArticleSeo,
   type OptionalLocalizedKeywordsProps,
   type OptionalLocalizedTextProps,
-  type ProjectSeoProps,
-} from '@internal/content-domain/lib/values/project-seo/project-seo';
+  type ArticleSeoProps,
+} from '@internal/content-domain/lib/values/article-seo/article-seo';
 export { Slug } from '@internal/content-domain/lib/values/slug/slug';
 export { Period, type YearMonth } from '@internal/content-domain/lib/values/period/period';
 export {
@@ -41,13 +41,18 @@ export {
   type ProjectPeriodProps,
 } from '@internal/content-domain/lib/values/project-period/project-period';
 export {
-  Project,
-  type ProjectArticle,
-  type ProjectCover,
-  type ProjectProps,
-  type ProjectRevision,
-  type ProjectStatus,
-} from '@internal/content-domain/lib/project/project';
+  Article,
+  type LocalizedArticleBody,
+  type ArticleCover,
+  type ArticleProps,
+  type ArticleRevision,
+  type ArticleStatus,
+  type PublicationKind,
+  type PublicationTaxon,
+  type PublicationTaxonomy,
+  PROJECTS_CATEGORY,
+  PUBLICATION_TAXONOMY_LIMITS,
+} from '@internal/content-domain/lib/article/article';
 export {
   assertSkillGroup,
   type Profile,
@@ -114,9 +119,9 @@ export {
   SEO_FALLBACK_DESCRIPTION_LENGTH,
   SEO_SITE_NAME,
   SEO_TITLE_MIN_LENGTH,
-  auditProjectSeo,
+  auditArticleSeo,
   fallbackDescription,
-  type ProjectSeoAudit,
+  type ArticleSeoAudit,
   type SeoAuditCode,
   type SeoAuditIssue,
   type SeoAuditSeverity,

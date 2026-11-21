@@ -11,7 +11,7 @@
     </div>
   }
 
-  @for (section of textSections; track section.key) {
+  @for (section of textSections(); track section.key) {
     @let headingId = 'edit-section-' + section.key;
     <section
       [class]="$first ? 'flex flex-col gap-6' : 'flex flex-col gap-6 border-t border-border pt-8'"
@@ -107,6 +107,269 @@
       </fieldset>
     </section>
   }
+
+  <section
+    class="flex flex-col gap-6 border-t border-border pt-8"
+    aria-labelledby="edit-section-taxonomy"
+  >
+    <header class="flex flex-col gap-1">
+      <h2
+        id="edit-section-taxonomy"
+        class="text-[14px]/5 font-semibold text-fg"
+        i18n="@@admin.article.taxonomy.title"
+      >
+        Catégorie et tags
+      </h2>
+      <p class="text-[13px]/5 text-fg-faint" i18n="@@admin.article.taxonomy.description">
+        Ils classent l’article dans la liste publique et ses filtres ; un tag de technologie affiche
+        son logo.
+      </p>
+    </header>
+
+    <!-- The category on one row: the shared list, then its label in each language. -->
+    <fieldset
+      uiFieldSet
+      [disabled]="pending()"
+      class="grid grid-cols-1 items-start gap-x-5 gap-y-4 @md/form:grid-cols-3"
+      aria-labelledby="edit-section-taxonomy"
+    >
+      <ui-field
+        size="sm"
+        controlId="article-category-choice"
+        label="Catégorie"
+        i18n-label="@@admin.article.taxonomy.categoryChoice"
+      >
+        <ui-select
+          size="sm"
+          triggerId="article-category-choice"
+          placeholder="Choisir une catégorie"
+          i18n-placeholder="@@admin.article.taxonomy.categoryPlaceholder"
+          [disabled]="pending()"
+          [value]="taxonomyValues().category.key || null"
+          (focusin)="taxonomyRequested.emit()"
+          (valueChange)="chooseCategory($event)"
+        >
+          @for (category of categoryChoices(); track category.key) {
+            <ui-select-option [value]="category.key">{{
+              taxonomyLabel(category)
+            }}</ui-select-option>
+          }
+          <ui-select-option value="" i18n="@@admin.article.taxonomy.newCategory"
+            >Nouvelle catégorie</ui-select-option
+          >
+        </ui-select>
+      </ui-field>
+      <ui-field
+        size="sm"
+        controlId="article-category-fr"
+        label="Libellé en français"
+        i18n-label="@@admin.article.taxonomy.categoryFr"
+        [required]="complete()"
+        [error]="taxonomyError(projectForm.taxonomy.category.label.fr())"
+      >
+        <input
+          uiInput
+          size="sm"
+          class="text-[14px]"
+          id="article-category-fr"
+          lang="fr"
+          [formField]="projectForm.taxonomy.category.label.fr"
+        />
+      </ui-field>
+      <ui-field
+        size="sm"
+        controlId="article-category-en"
+        label="Libellé en anglais"
+        i18n-label="@@admin.article.taxonomy.categoryEn"
+        [required]="complete()"
+        [error]="taxonomyError(projectForm.taxonomy.category.label.en())"
+      >
+        <input
+          uiInput
+          size="sm"
+          class="text-[14px]"
+          id="article-category-en"
+          lang="en"
+          [formField]="projectForm.taxonomy.category.label.en"
+        />
+      </ui-field>
+    </fieldset>
+
+    <div class="flex min-w-0 flex-col gap-3">
+      <!-- Search and « Ajouter un tag » share the row; the button lines up with the 36 px control. -->
+      <div class="flex flex-wrap items-end gap-2">
+        <ui-field
+          class="min-w-56 flex-1"
+          size="sm"
+          controlId="article-tag-choice"
+          label="Rechercher un tag"
+          i18n-label="@@admin.article.taxonomy.searchTag"
+        >
+          <ui-combobox
+            size="sm"
+            inputId="article-tag-choice"
+            placeholder="Technologie ou tag"
+            i18n-placeholder="@@admin.article.taxonomy.searchTagPlaceholder"
+            emptyText="Aucun tag trouvé"
+            i18n-emptyText="@@admin.article.taxonomy.searchTagEmpty"
+            [clearOnSelect]="true"
+            [disabled]="pending() || taxonomyValues().tags.length >= tagLimit"
+            (focusin)="taxonomyRequested.emit()"
+            (valueChange)="chooseTag($event)"
+          >
+            @for (tag of availableTags(); track tag.key) {
+              <ui-combobox-option
+                [value]="tag.key"
+                [keywords]="[tag.key, tag.label.fr, tag.label.en]"
+              >
+                <span class="inline-flex items-center gap-2">
+                  <content-tech-icon class="size-3.5" [tech]="tag.key" />
+                  {{ taxonomyLabel(tag) }}
+                </span>
+              </ui-combobox-option>
+            }
+          </ui-combobox>
+        </ui-field>
+        <button
+          uiBtn
+          type="button"
+          variant="secondary"
+          size="sm"
+          class="h-9"
+          [disabled]="pending() || taxonomyValues().tags.length >= tagLimit"
+          (click)="addTag()"
+        >
+          <ng-icon [svg]="icons.addTag" size="14" aria-hidden="true" />
+          <ng-container i18n="@@admin.article.taxonomy.addTag">Ajouter un tag</ng-container>
+        </button>
+      </div>
+
+      @if (taxonomyValues().tags.length) {
+        <div class="flex min-w-0 items-start gap-3">
+          <ul
+            class="flex min-w-0 flex-1 flex-wrap gap-1.5"
+            role="list"
+            aria-label="Tags sélectionnés"
+            i18n-aria-label="@@admin.article.taxonomy.selectedTags"
+          >
+            @for (tagField of projectForm.taxonomy.tags; track $index; let index = $index) {
+              @let term = tagField().value();
+              @let name = tagName(term);
+              @let tagError =
+                taxonomyError(tagField.label.fr()) || taxonomyError(tagField.label.en());
+              @let expanded = editingTag() === index || !!tagError;
+              <li
+                class="flex h-7 max-w-full min-w-0 items-center rounded-sm border ps-0.5 pe-0.5 text-[13px] transition-colors duration-(--dur-pop) ease-orbit"
+                [class]="
+                  tagError
+                    ? 'border-danger/60 bg-danger/10 text-danger-ink'
+                    : expanded
+                      ? 'border-border-hover bg-surface-selected text-fg'
+                      : 'border-border bg-surface text-fg'
+                "
+              >
+                <button
+                  type="button"
+                  class="inline-flex h-6 min-w-0 cursor-pointer items-center gap-1.5 rounded-xs px-1.5 outline-2 outline-offset-0 outline-transparent hover:bg-surface-hover focus-visible:outline-accent/55 disabled:cursor-not-allowed disabled:opacity-50"
+                  [id]="'article-tag-edit-' + index"
+                  [disabled]="pending()"
+                  [attr.aria-label]="editTagLabel(name)"
+                  [attr.aria-expanded]="expanded"
+                  [attr.aria-controls]="expanded ? 'article-tag-fields-' + index : null"
+                  [attr.title]="editTagLabel(name)"
+                  (click)="toggleTagEditor(index)"
+                >
+                  <content-tech-icon class="size-3.5 shrink-0" [tech]="term.key" />
+                  <span class="truncate">{{ name }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs text-fg-faint outline-2 outline-offset-0 outline-transparent hover:bg-surface-hover hover:text-fg focus-visible:outline-accent/55 disabled:cursor-not-allowed disabled:opacity-50"
+                  [disabled]="pending()"
+                  [attr.aria-label]="removeTagLabel(name)"
+                  [attr.title]="removeTagLabel(name)"
+                  (click)="removeTag(index)"
+                >
+                  <ng-icon [svg]="icons.removeTag" size="12" aria-hidden="true" />
+                </button>
+              </li>
+            }
+          </ul>
+          <span class="shrink-0 pt-1 text-[12px]/5 text-fg-faint tabular-nums" aria-hidden="true"
+            >{{ taxonomyValues().tags.length }}/{{ tagLimit }}</span
+          >
+        </div>
+      } @else {
+        <p class="text-[13px]/5 text-fg-faint" i18n="@@admin.article.taxonomy.noTag">
+          Aucun tag : recherchez une technologie ou ajoutez un tag.
+        </p>
+      }
+
+      @for (tagField of projectForm.taxonomy.tags; track $index; let index = $index) {
+        @let frError = taxonomyError(tagField.label.fr());
+        @let enError = taxonomyError(tagField.label.en());
+        @if (editingTag() === index || frError || enError) {
+          <fieldset
+            uiFieldSet
+            [id]="'article-tag-fields-' + index"
+            [disabled]="pending()"
+            class="grid grid-cols-1 items-end gap-x-5 gap-y-4 rounded-lg border border-border p-4 @md/form:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+          >
+            <ui-field
+              size="sm"
+              [controlId]="'article-tag-fr-' + index"
+              label="Tag en français"
+              i18n-label="@@admin.article.taxonomy.tagFr"
+              [required]="true"
+              [error]="frError"
+            >
+              <input
+                uiInput
+                size="sm"
+                class="text-[14px]"
+                lang="fr"
+                [id]="'article-tag-fr-' + index"
+                [formField]="tagField.label.fr"
+              />
+            </ui-field>
+            <ui-field
+              size="sm"
+              [controlId]="'article-tag-en-' + index"
+              label="Tag en anglais"
+              i18n-label="@@admin.article.taxonomy.tagEn"
+              [required]="complete()"
+              [error]="enError"
+            >
+              <input
+                uiInput
+                size="sm"
+                class="text-[14px]"
+                lang="en"
+                [id]="'article-tag-en-' + index"
+                [formField]="tagField.label.en"
+              />
+            </ui-field>
+            @if (editingTag() === index && !frError && !enError) {
+              <button
+                uiBtn
+                type="button"
+                variant="secondary"
+                size="sm"
+                class="h-9 justify-self-start"
+                (click)="toggleTagEditor(index)"
+                i18n="@@admin.article.taxonomy.finishTag"
+              >
+                Terminer
+              </button>
+            }
+          </fieldset>
+        }
+      }
+      @if (taxonomyError(projectForm.taxonomy.tags()); as error) {
+        <p class="text-[13px] text-danger-ink" role="alert">{{ error }}</p>
+      }
+    </div>
+  </section>
 
   @let articleLang = shown().article;
   <section
@@ -214,7 +477,7 @@
         Référencement
       </h2>
       <p class="text-[13px]/5 text-fg-faint" i18n="@@admin.project.form.seoSectionHint">
-        Facultatifs : vides, le titre, le résumé et les technos du projet sont repris.
+        Facultatifs : vides, le titre, le résumé et les tags de l’article sont repris.
       </p>
     </header>
     <fieldset uiFieldSet class="gap-6" aria-labelledby="edit-section-seo" [disabled]="pending()">
@@ -320,7 +583,7 @@
       </ui-field>
       <ui-field
         size="sm"
-        hint="Vides, les technos du projet sont reprises."
+        hint="Vides, les tags de l’article sont repris."
         i18n-hint="@@admin.project.form.keywordsHint"
         [label]="labels.keywords"
         [controlId]="seoKeywordsId"
@@ -337,7 +600,7 @@
             class="relative min-w-0 flex-1 rounded-e-none focus-within:z-10"
             [controlId]="seoKeywordsId"
             [ariaLabel]="localizedName(labels.keywords, seoKeywordsLang)"
-            [placeholder]="techsHint()"
+            [placeholder]="tagsHint()"
             [maxTags]="seoLimits.keywords"
             [maxTagLength]="seoLimits.keywordMaxLength"
             [normalize]="normalizeKeyword"
@@ -359,12 +622,12 @@
             size="xs"
             class="text-[12px]"
             type="button"
-            data-slot="seo-keywords-from-techs"
-            [disabled]="pending() || projectForm.techs().value().length === 0"
-            (click)="useTechs(seoKeywordsLang)"
+            data-slot="seo-keywords-from-tags"
+            [disabled]="pending() || tagKeys().length === 0"
+            (click)="useTags(seoKeywordsLang)"
           >
             <ng-icon [svg]="icons.copy" size="12" aria-hidden="true" />
-            <ng-container i18n="@@admin.project.form.useTechs">Reprendre les technos</ng-container>
+            <ng-container i18n="@@admin.project.form.useTags">Reprendre les tags</ng-container>
           </button>
           <span class="font-mono text-[12px]/5 text-fg-faint" [id]="seoKeywordsId + '-count'"
             >{{ seoKeywordCount }}/{{ seoLimits.keywords }}</span
@@ -669,7 +932,6 @@
 
     @let periodError = simpleError('period');
     @let siteError = simpleError('siteUrl');
-    @let techsError = simpleError('techs');
     <section
       class="flex flex-col gap-3 border-t border-border pt-6"
       aria-labelledby="edit-settings-label"
@@ -742,33 +1004,6 @@
             />
             @if (siteError) {
               <p uiFieldError id="edit-site-url-error" class="text-[12px]/4">{{ siteError }}</p>
-            }
-          </div>
-        </div>
-        <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
-          <label
-            class="pt-1.5 font-medium text-fg-muted"
-            for="edit-techs"
-            i18n="@@admin.project.form.techs"
-            >Technos</label
-          >
-          <div class="flex min-w-0 flex-col gap-1.5">
-            <ui-tags-input
-              size="sm"
-              mono
-              controlId="edit-techs"
-              form="edit-project-form"
-              placeholder="angular, typescript"
-              ariaLabel="Technos"
-              i18n-ariaLabel="@@admin.project.form.techs"
-              [maxTags]="techLimit"
-              [normalize]="normalizeTech"
-              [ariaDescribedby]="describedBy('edit-techs', techsError)"
-              [ariaInvalid]="!!techsError"
-              [formField]="projectForm.techs"
-            />
-            @if (techsError) {
-              <p uiFieldError id="edit-techs-error" class="text-[12px]/4">{{ techsError }}</p>
             }
           </div>
         </div>

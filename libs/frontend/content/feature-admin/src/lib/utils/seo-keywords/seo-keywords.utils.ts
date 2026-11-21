@@ -41,22 +41,22 @@ export function keywordsError(
  * Function mergeKeywords
  *
  * @description
- * « Reprendre les technos »: appends the technology keys missing from the keywords (compared regardless
+ * « Reprendre les tags »: appends the article tag keys missing from the keywords (compared regardless
  * of case), skipping keys shorter than a keyword may be, up to `PROJECT_SEO_LIMITS.keywords`; the
  * written keywords keep their order.
  *
  * @param {readonly string[]} keywords - Current keywords of one language.
- * @param {readonly string[]} techs - Technology keys of the project.
+ * @param {readonly string[]} tags - Tag keys of the article.
  *
  * @returns {string[]} The merged keywords.
  */
-export function mergeKeywords(keywords: readonly string[], techs: readonly string[]): string[] {
+export function mergeKeywords(keywords: readonly string[], tags: readonly string[]): string[] {
   const seen: Set<string> = new Set<string>(
     keywords.map((keyword: string): string => keyword.trim().toLocaleLowerCase()),
   );
   const merged: string[] = [...keywords];
-  for (const tech of techs) {
-    const key: string = tech.trim();
+  for (const tag of tags) {
+    const key: string = tag.trim();
     if (merged.length >= PROJECT_SEO_LIMITS.keywords) break;
     if (key.length < PROJECT_SEO_LIMITS.keywordMinLength || seen.has(key.toLocaleLowerCase()))
       continue;

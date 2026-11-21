@@ -80,6 +80,24 @@ describe('projectPageSeo', (): void => {
     expect(none.structuredData).not.toHaveProperty('keywords');
   });
 
+  it('uses article tags for search metadata and deduplicates legacy technologies', (): void => {
+    const seo: PageSeo = projectPageSeo(
+      article({
+        techs: ['flutter', 'supabase'],
+        taxonomy: {
+          category: { key: 'projects', label: 'Projets' },
+          tags: [
+            { key: 'architecture', label: 'Architecture' },
+            { key: 'flutter', label: 'Flutter' },
+          ],
+        },
+      }),
+      'fr',
+      ORIGIN,
+    );
+    expect(seo.keywords).toEqual(['architecture', 'flutter', 'supabase']);
+  });
+
   it('cuts a long summary near 160 characters', (): void => {
     const seo: PageSeo = projectPageSeo(article({ summary: 'mot '.repeat(60) }), 'fr', ORIGIN);
     expect(seo.description.length).toBeLessThanOrEqual(160);
@@ -88,11 +106,11 @@ describe('projectPageSeo', (): void => {
 
   it('builds the French canonical, alternates and Open Graph locales', (): void => {
     const seo: PageSeo = projectPageSeo(article(), 'fr', ORIGIN);
-    expect(seo.canonical).toBe('https://valentin-fortin.pro/fr/projects/library-trails');
+    expect(seo.canonical).toBe('https://valentin-fortin.pro/fr/articles/library-trails');
     expect(seo.alternates).toEqual([
-      { hreflang: 'fr', href: 'https://valentin-fortin.pro/fr/projects/library-trails' },
-      { hreflang: 'en', href: 'https://valentin-fortin.pro/en/projects/library-trails' },
-      { hreflang: 'x-default', href: 'https://valentin-fortin.pro/fr/projects/library-trails' },
+      { hreflang: 'fr', href: 'https://valentin-fortin.pro/fr/articles/library-trails' },
+      { hreflang: 'en', href: 'https://valentin-fortin.pro/en/articles/library-trails' },
+      { hreflang: 'x-default', href: 'https://valentin-fortin.pro/fr/articles/library-trails' },
     ]);
     expect([seo.locale, seo.alternateLocale]).toEqual(['fr_FR', 'en_GB']);
   });
@@ -112,7 +130,7 @@ describe('projectPageSeo', (): void => {
       'en',
       ORIGIN,
     );
-    expect(seo.canonical).toBe('https://valentin-fortin.pro/en/projects/library-trails');
+    expect(seo.canonical).toBe('https://valentin-fortin.pro/en/articles/library-trails');
     expect([seo.locale, seo.alternateLocale]).toEqual(['en_GB', 'fr_FR']);
     expect(seo.image).toEqual({
       url: 'https://valentin-fortin.pro/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
@@ -125,7 +143,7 @@ describe('projectPageSeo', (): void => {
       '@type': 'CreativeWork',
       headline: 'Library Trails',
       description: 'Une application mobile pour suivre ses séries.',
-      url: 'https://valentin-fortin.pro/en/projects/library-trails',
+      url: 'https://valentin-fortin.pro/en/articles/library-trails',
       inLanguage: 'en',
       keywords: 'flutter',
       image: 'https://valentin-fortin.pro/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',

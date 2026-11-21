@@ -1,8 +1,14 @@
-# Project administration feature
+# Content administration feature
 
 ## Purpose
 
-`content-web-feature-admin` owns the project list and bilingual editor under `/admin/projects`, and the
+`content-web-feature-admin` owns the article list and bilingual editor under `/admin/articles` with
+publication, media, SEO, category and tag controls. Editors can reuse existing classification terms,
+choose a technology from the tag selector or enter bilingual labels for a new tag. The `projects`
+category enables the case-study details.
+The shell redirects saved `/admin/projects` links to the article list or matching editor.
+
+The feature also owns the
 « Expériences » and « Formations » lists and editors under `/admin/experiences` and `/admin/education`, and
 the « Informations » (profile texts, facts, public links) and « Légal » (legal notice, privacy policy)
 pages under `/admin/information` and `/admin/legal` (D44), and the « Tableau de bord » SEO dashboard under
@@ -51,12 +57,12 @@ claiming that the rebuild or publication has completed.
   inline alert offering to reload, and field errors stay on their fields.
 - The editor shows one language per tab (presentation, information, article, search texts and
   keywords with a search result preview, a link card preview and the « Balises générées » list);
-  settings shared by both languages (cover, site, technologies, home-page feature) sit in the
+  settings shared by both languages (cover, site, home-page feature) sit in the
   properties panel, rendered from the form's `settings` template so that they stay fields of the same
   Signal Form.
 - Search texts and keywords are optional: an empty text falls back on the title or summary and is
-  omitted from the revision, empty keywords fall back on the technology keys (« Reprendre les
-  technos » appends them); `PROJECT_SEO_LIMITS` is the browser copy of the contract bounds (D10). The
+  omitted from the revision, empty keywords fall back on the tag keys (« Reprendre les tags » appends
+  them); `PROJECT_SEO_LIMITS` is the browser copy of the contract bounds (D10). The
   previews and the generated tags come from the public `projectPageSeo` and `pageSeoMetaTags`
   (`@vfortin/content-web-data-access/admin`), fed with the form values by `projectSeoSource`.
 - A published project stays complete in both languages: the form flags what the API would refuse
@@ -82,6 +88,10 @@ claiming that the rebuild or publication has completed.
   client-rendered (D18); the FR/EN content the owner types is data, not translated.
 
 ## Validation
+
+Public links and SEO previews for both editing collections use `/fr/articles/:slug` or
+`/en/articles/:slug`. Project case studies appear under the Projects category in the public article
+collection.
 
 Run `npx nx run-many -t lint typecheck test -p content-web-feature-admin`, then
 `npx nx run architecture:test`. Tests cover reused route IDs, out-of-order reads, accepted/declined leave

@@ -35,7 +35,7 @@ describe('AdminProjectNavigationPort', (): void => {
         id: 'p',
         label: 'Projet',
         keywords: ['project', 'Project'],
-        path: '/admin/projects/p',
+        path: '/admin/articles/p',
         status: 'draft',
       },
     ]);

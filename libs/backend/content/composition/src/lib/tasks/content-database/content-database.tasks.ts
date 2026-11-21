@@ -1,6 +1,6 @@
 import {
   type ContentDatabaseHandle,
-  DrizzleProjectRepository,
+  DrizzleArticleRepository,
   DrizzleSeoReportStore,
   FixtureAnalyticsReader,
   FixtureSearchConsoleReader,
@@ -106,7 +106,7 @@ export async function loadContentFixtures(
         analytics: { reader: new FixtureAnalyticsReader() },
         webVitals: { reader: new FixtureWebVitalsReader() },
       },
-      new DrizzleProjectRepository(database.db),
+      new DrizzleArticleRepository(database.db),
       new SystemClock(),
       { siteOrigin: options.siteOrigin, webVitalsUrls: [] },
     );

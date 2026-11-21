@@ -4,7 +4,7 @@
     headingId="audit-summary"
     heading="Synthèse de l’audit"
     i18n-heading="@@admin.dashboard.audit.summary"
-    description="Problèmes relevés sur les textes de recherche, les images et les traductions des projets publiés."
+    description="Problèmes relevés sur les textes de recherche, les images et les traductions des articles publiés."
     i18n-description="@@admin.dashboard.audit.summaryHint"
   />
   @if (strip()) {
@@ -28,13 +28,13 @@
         >
           <h3 id="audit-projects" class="text-[13px]/5 font-medium text-fg">
             <ng-container i18n="@@admin.dashboard.audit.byProject"
-              >Problèmes par projet</ng-container
+              >Problèmes par article</ng-container
             >
           </h3>
           <ui-stacked-bars
-            label="Problèmes par projet"
+            label="Problèmes par article"
             i18n-label="@@admin.dashboard.audit.byProject"
-            nameHeader="Projet"
+            nameHeader="Article"
             i18n-nameHeader="@@admin.dashboard.audit.project"
             scale="absolute"
             [rows]="byProject()"
@@ -64,7 +64,7 @@
     headingId="audit-issues"
     heading="Problèmes relevés"
     i18n-heading="@@admin.dashboard.audit.caption"
-    description="Un problème par ligne, le plus grave d’abord ; filtrez par gravité ou cherchez un projet."
+    description="Un problème par ligne, le plus grave d’abord ; filtrez par gravité ou cherchez un article."
     i18n-description="@@admin.dashboard.audit.issuesHint"
   />
   <ui-data-table
@@ -109,7 +109,7 @@
     <ng-template uiDataTableCell="projet" [uiDataTableCellRows]="rows()" let-row>
       <a
         class="block max-w-56 truncate font-medium whitespace-nowrap text-fg outline-2 outline-offset-2 outline-transparent hover:underline focus-visible:rounded-xs focus-visible:outline-accent/55"
-        [routerLink]="['/admin/projects', row.projectId]"
+        [routerLink]="['/admin/articles', row.projectId]"
         >{{ row.project }}</a
       >
     </ng-template>
@@ -129,13 +129,13 @@
           @if (audit().totals.published) {
             <p uiEmptyTitle i18n="@@admin.dashboard.audit.empty.title">Aucun problème relevé</p>
             <p uiEmptyDescription i18n="@@admin.dashboard.audit.empty.description">
-              Les textes de recherche, les images et les traductions des projets publiés sont
+              Les textes de recherche, les images et les traductions des articles publiés sont
               complets.
             </p>
           } @else {
-            <p uiEmptyTitle i18n="@@admin.dashboard.audit.none.title">Aucun projet publié</p>
+            <p uiEmptyTitle i18n="@@admin.dashboard.audit.none.title">Aucun article publié</p>
             <p uiEmptyDescription i18n="@@admin.dashboard.audit.none.description">
-              L’audit porte sur les projets publiés : publiez-en un pour l’analyser.
+              L’audit porte sur les articles publiés : publiez-en un pour l’analyser.
             </p>
           }
         </div>

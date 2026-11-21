@@ -4,7 +4,8 @@ import type {
   LegalDocumentKind,
   MaintenanceMode,
   Profile,
-  Project,
+  Article,
+  PublicationKind,
   SkillGroup,
   TimelineEntry,
   TimelineKind,
@@ -31,15 +32,15 @@ export interface ContentRepository {
   loadProfile(): Promise<Profile>;
 
   /**
-   * Method listProjects
-   * @method listProjects
+   * Method listArticles
+   * @method listArticles
    *
    * @description
    * Loads all project aggregates, including drafts.
    *
-   * @returns {Promise<Project[]>} Stored projects.
+   * @returns {Promise<Article[]>} Stored projects.
    */
-  listProjects(): Promise<Project[]>;
+  listArticles(): Promise<Article[]>;
 
   /**
    * Method listTimeline
@@ -149,24 +150,25 @@ export interface ContentSnapshotReader {
 }
 
 /**
- * Interface ProjectRepository
- * @interface ProjectRepository
+ * Interface ArticleRepository
+ * @interface ArticleRepository
  *
  * @description
  * Provides project reads and optimistic-locking writes for administration use cases.
  */
-export interface ProjectRepository {
+export interface ArticleRepository {
   // #region Methods
   /**
    * Method list
    * @method list
    *
    * @description
-   * Loads projects including drafts for the administration list.
+   * Loads drafts and published entries, optionally restricted to one collection.
    *
-   * @returns {Promise<Project[]>} All stored projects.
+   * @param {PublicationKind} kind - Collection filter, omitted to include both projects and articles.
+   * @returns {Promise<Article[]>} Matching stored publications.
    */
-  list(): Promise<Project[]>;
+  list(kind?: PublicationKind): Promise<Article[]>;
 
   /**
    * Method get
@@ -175,10 +177,10 @@ export interface ProjectRepository {
    * @description
    * Loads one project by identifier.
    *
-   * @param {string} id - Project identifier.
-   * @returns {Promise<Project | null>} Aggregate, or `null` when the identifier is absent.
+   * @param {string} id - Article identifier.
+   * @returns {Promise<Article | null>} Aggregate, or `null` when the identifier is absent.
    */
-  get(id: string): Promise<Project | null>;
+  get(id: string): Promise<Article | null>;
 
   /**
    * Method save
@@ -187,11 +189,11 @@ export interface ProjectRepository {
    * @description
    * Persists the aggregate only if its stored version matches the expected value.
    *
-   * @param {Project} project - Aggregate to save.
+   * @param {Article} project - Aggregate to save.
    * @param {number} expectedVersion - Version observed before editing.
    * @returns {Promise<number>} New stored version.
    */
-  save(project: Project, expectedVersion: number): Promise<number>;
+  save(project: Article, expectedVersion: number): Promise<number>;
 
   /**
    * Method insert
@@ -200,10 +202,10 @@ export interface ProjectRepository {
    * @description
    * Stores a new project at version 1; a slug already used fails with the store's unique violation.
    *
-   * @param {Project} project - New aggregate.
+   * @param {Article} project - New aggregate.
    * @returns {Promise<void>} Completion after the insert.
    */
-  insert(project: Project): Promise<void>;
+  insert(project: Article): Promise<void>;
   // #endregion
 }
 
@@ -277,7 +279,7 @@ export interface SiteBuildRequestRepository {
  * @interface ContentRepositories
  *
  * @description
- * Project and content-revision repositories exposed inside one content write transaction.
+ * Article and content-revision repositories exposed inside one content write transaction.
  */
 export interface ContentRepositories {
   // #region Properties
@@ -288,7 +290,7 @@ export interface ContentRepositories {
    * @description
    * Optimistic-locking repository for project aggregates.
    */
-  readonly projects: ProjectRepository;
+  readonly projects: ArticleRepository;
 
   /**
    * Property buildRequests

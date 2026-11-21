@@ -1,5 +1,5 @@
 import type { MediaRecord } from '@vfortin/content-application';
-import { ArticleDocument, type Project } from '@vfortin/content-domain';
+import { ArticleDocument, type Article } from '@vfortin/content-domain';
 import { fileURLToPath } from 'node:url';
 import { seedContent } from '@internal/content-adapters-out/lib/seed/content.seed';
 import {
@@ -9,7 +9,7 @@ import {
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
 import {
   DrizzleContentUnitOfWork,
-  DrizzleProjectRepository,
+  DrizzleArticleRepository,
 } from '@internal/content-adapters-out/lib/persistence/repositories/content-admin/drizzle-content-admin.repositories';
 import { DrizzleContentRepository } from '@internal/content-adapters-out/lib/persistence/repositories/content/drizzle-content.repositories';
 import { DrizzleMediaRepository } from '@internal/content-adapters-out/lib/persistence/repositories/media/drizzle-media.repository';
@@ -145,7 +145,7 @@ describe('DrizzleMediaRepository (Postgres via PGlite)', (): void => {
   it('purges only unreferenced media unlinked before the limit', async (): Promise<void> => {
     const uow: DrizzleContentUnitOfWork = new DrizzleContentUnitOfWork(handle.db);
     await uow.run(async ({ projects }): Promise<void> => {
-      const project: Project | null = await projects.get('project-library-trails');
+      const project: Article | null = await projects.get('project-library-trails');
       if (!project) throw new Error('project missing');
       project.revise(
         {
@@ -157,7 +157,7 @@ describe('DrizzleMediaRepository (Postgres via PGlite)', (): void => {
       );
       await projects.save(project, 1);
     });
-    const saved: Project | null = await new DrizzleProjectRepository(handle.db).get(
+    const saved: Article | null = await new DrizzleArticleRepository(handle.db).get(
       'project-library-trails',
     );
     expect(saved?.mediaIds()).toEqual([IDS[0], IDS[1], IDS[2]]);
@@ -175,7 +175,7 @@ describe('DrizzleMediaRepository (Postgres via PGlite)', (): void => {
     // Relinked rows are no longer stale, even unreferenced.
     await repository.relink([IDS[0]]);
     await uow.run(async ({ projects }): Promise<void> => {
-      const project: Project | null = await projects.get('project-library-trails');
+      const project: Article | null = await projects.get('project-library-trails');
       if (!project) throw new Error('project missing');
       project.revise({ ...project.snapshot(), cover: null }, ['fr', 'en']);
       await projects.save(project, 2);

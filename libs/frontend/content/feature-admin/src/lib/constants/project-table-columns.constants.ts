@@ -28,7 +28,7 @@ import type { DataTableColumn } from '@vfortin/ui';
 export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
   {
     id: 'titre',
-    header: $localize`:@@admin.projects.heading.project:Projet`,
+    header: $localize`:@@admin.projects.heading.project:Article`,
     icon: lucideFolder,
     sortable: true,
     hideable: false,
@@ -76,7 +76,7 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
   },
   {
     id: 'technos',
-    header: $localize`:@@admin.projects.heading.techs:Technos`,
+    header: $localize`:@@admin.projects.heading.tags:Tags`,
     icon: lucideLayers,
     class: '@max-[1024px]:hidden',
     width: 224,

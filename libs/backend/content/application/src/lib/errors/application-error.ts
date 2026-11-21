@@ -213,7 +213,7 @@ export class MediaNotFoundError extends ApplicationError {
    * @param {readonly string[]} details - Identifiers of the unknown media.
    */
   public constructor(public readonly details: readonly string[]) {
-    super('content.media-not-found', 'The project references unknown media.');
+    super('content.media-not-found', 'The article references unknown media.');
     this.name = 'MediaNotFoundError';
   }
   // #endregion

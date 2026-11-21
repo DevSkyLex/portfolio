@@ -277,7 +277,7 @@ async function open(url: string, providers: Provider[] = []): Promise<OpenedProj
       provideHttpClient(),
       provideHttpClientTesting(),
       provideRouter(
-        [{ path: 'admin/projects', children: ADMIN_CONTENT_ROUTES }],
+        [{ path: 'admin/articles', children: ADMIN_CONTENT_ROUTES }],
         withComponentInputBinding(),
       ),
     ],
@@ -301,10 +301,10 @@ async function open(url: string, providers: Provider[] = []): Promise<OpenedProj
  * @returns {Promise<EditorHarness>} Harness, rendered root, and editor interaction helpers.
  */
 const edit = async (current: AdminProject, providers: Provider[] = []): Promise<EditorHarness> => {
-  const opened: OpenedProjectHarness = await open(`/admin/projects/${current.id}`, providers);
+  const opened: OpenedProjectHarness = await open(`/admin/articles/${current.id}`, providers);
   await opened.navigation;
   await flush();
-  opened.backend.expectOne(`/api/content/admin/projects/${current.id}`).flush(current);
+  opened.backend.expectOne(`/api/content/admin/articles/${current.id}`).flush(current);
   await flush();
   await opened.harness.fixture.whenStable();
   const root: HTMLElement = opened.harness.routeNativeElement as HTMLElement;
@@ -407,12 +407,12 @@ const edit = async (current: AdminProject, providers: Provider[] = []): Promise<
 const list = async (
   projects: AdminProject[],
   providers: Provider[] = [],
-  url: string = '/admin/projects',
+  url: string = '/admin/articles',
 ): Promise<ListHarness> => {
   const opened: OpenedProjectHarness = await open(url, providers);
   await opened.navigation;
   opened.backend
-    .expectOne('/api/content/admin/projects')
+    .expectOne('/api/content/admin/articles')
     .flush({ member: projects, totalItems: projects.length });
   await flush();
   await opened.harness.fixture.whenStable();
@@ -617,8 +617,8 @@ describe('projects admin (front end)', (): void => {
     const handles: (string | null)[] = [...root.querySelectorAll('thead [role="separator"]')].map(
       (handle: Element): string | null => handle.getAttribute('aria-label'),
     );
-    expect(handles).not.toContain('Redimensionner la colonne Projet');
-    expect(handles).toContain('Redimensionner la colonne Technos');
+    expect(handles).not.toContain('Redimensionner la colonne Article');
+    expect(handles).toContain('Redimensionner la colonne Tags');
     expect(handles).toContain('Redimensionner la colonne Version');
     expect(handles).not.toContain('Redimensionner la colonne Actions');
     expect(root.querySelector('tbody td a')?.parentElement?.className).toContain('w-0 min-w-full');
@@ -637,21 +637,25 @@ describe('projects admin (front end)', (): void => {
     await showLanguage('Article', 'en');
     await type('edit-title-fr', 'Nouveau titre');
     await submit();
-    const call: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const call: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     expect(call.request.method).toBe('PUT');
     expect(call.request.headers.get('if-match')).toBe('"4"');
     expect(call.request.body.title).toEqual({ fr: 'Nouveau titre', en: 'Title a' });
     await harness.fixture.whenStable();
     const fieldsets: HTMLFieldSetElement[] = [...root.querySelectorAll('fieldset')];
-    // Presentation, information and search texts, then the shared settings.
-    expect(fieldsets).toHaveLength(4);
+    // Presentation, information, category and search texts, then the shared settings.
+    expect(fieldsets).toHaveLength(5);
     expect(fieldsets.every((fieldset: HTMLFieldSetElement): boolean => fieldset.disabled)).toBe(
       true,
     );
+    expect(root.querySelector<HTMLInputElement>('#article-tag-choice')?.disabled).toBe(true);
+    expect(
+      root.querySelector<HTMLButtonElement>('button[aria-label="Retirer Angular"]')?.disabled,
+    ).toBe(true);
     expect(editorOf(root, 'fr').isEditable).toBe(false);
     expect(button(root, 'Partir du français').disabled).toBe(true);
     root.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     call.flush(
       { code: 'content.version-mismatch' },
       { status: 412, statusText: 'Precondition Failed' },
@@ -665,7 +669,7 @@ describe('projects admin (front end)', (): void => {
     button(root, 'Recharger').click();
     await settle();
     backend
-      .expectOne('/api/content/admin/projects/a')
+      .expectOne('/api/content/admin/articles/a')
       .flush({ ...project('a', 'draft'), version: 6 });
     await settle();
     expect(root.textContent).not.toContain('modifié ailleurs');
@@ -676,10 +680,10 @@ describe('projects admin (front end)', (): void => {
 
   it('saves a draft and toasts it, keeping the form and the document title in step with the answer', async (): Promise<void> => {
     const { backend, root, type, submit, settle } = await edit(project('a', 'draft'));
-    expect(TestBed.inject<Title>(Title).getTitle()).toBe('Titre a — Projets — Administration');
+    expect(TestBed.inject<Title>(Title).getTitle()).toBe('Titre a — Articles — Administration');
     await type('edit-title-fr', 'Nouveau titre');
     await submit();
-    backend.expectOne('/api/content/admin/projects/a').flush({
+    backend.expectOne('/api/content/admin/articles/a').flush({
       ...project('a', 'draft'),
       version: 5,
       title: { fr: 'Nouveau titre', en: 'Title a' },
@@ -689,7 +693,7 @@ describe('projects admin (front end)', (): void => {
     expect(descriptions()).toEqual([undefined]);
     expect(root.querySelector('h1')?.textContent).toContain('Nouveau titre');
     expect(TestBed.inject<Title>(Title).getTitle()).toBe(
-      'Nouveau titre — Projets — Administration',
+      'Nouveau titre — Articles — Administration',
     );
   });
 
@@ -705,11 +709,11 @@ describe('projects admin (front end)', (): void => {
       return event;
     };
     expect(press().defaultPrevented).toBe(true);
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     await type('edit-title-fr', 'Titre au clavier');
     expect(press().defaultPrevented).toBe(true);
     await flush();
-    const call: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const call: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     expect(call.request.method).toBe('PUT');
     expect(call.request.body.title).toEqual({ fr: 'Titre au clavier', en: 'Title a' });
   });
@@ -754,13 +758,13 @@ describe('projects admin (front end)', (): void => {
     await submit();
     expect(shownLanguage(root, 'Titre')).toBe('Français');
     expect(root.querySelector('#edit-title-fr')?.getAttribute('aria-invalid')).toBe('true');
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
   });
 
   it('publishes a complete draft, then toasts it', async (): Promise<void> => {
     const { backend, root, settle } = await edit(project('a', 'draft'));
     button(root, 'Publier').click();
-    const call: TestRequest = backend.expectOne('/api/content/admin/projects/a/publish');
+    const call: TestRequest = backend.expectOne('/api/content/admin/articles/a/publish');
     expect(call.request.headers.get('if-match')).toBe('"4"');
     call.flush({ ...project('a', 'published'), version: 5 });
     await settle();
@@ -782,7 +786,7 @@ describe('projects admin (front end)', (): void => {
     );
     answer('Annuler');
     await flush();
-    backend.expectNone('/api/content/admin/projects/a/unpublish');
+    backend.expectNone('/api/content/admin/articles/a/unpublish');
     // Back on the row's menu button rather than on the page body.
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Actions pour « Titre a »');
     (await action(0, 'Dépublier')).click();
@@ -790,21 +794,165 @@ describe('projects admin (front end)', (): void => {
     answer('Dépublier');
     await flush();
     backend
-      .expectOne('/api/content/admin/projects/a/unpublish')
+      .expectOne('/api/content/admin/articles/a/unpublish')
       .flush(
         { code: 'content.version-mismatch' },
         { status: 412, statusText: 'Precondition Failed' },
       );
     await flush();
-    backend.expectOne('/api/content/admin/projects').flush({ member: [], totalItems: 0 });
+    backend.expectOne('/api/content/admin/articles').flush({ member: [], totalItems: 0 });
     await flush();
     expect(toasts()).toEqual([
-      ['warning', 'Le projet a été modifié entre-temps : la liste a été rechargée, recommencez.'],
+      ['warning', 'L’article a été modifié entre-temps : la liste a été rechargée, recommencez.'],
     ]);
   });
 });
 
 describe('ProjectFormComponent', (): void => {
+  it('searches reusable tags, edits their labels and saves their stable keys', async (): Promise<void> => {
+    const { backend, root, submit, settle, type } = await edit(project('a', 'draft'), [
+      FRENCH_BUILD,
+    ]);
+    const categoryChoice: HTMLButtonElement | null = root.querySelector('#article-category-choice');
+    const tagChoice: HTMLInputElement | null = root.querySelector('#article-tag-choice');
+    if (!categoryChoice || !tagChoice) throw new Error('Taxonomy choices were not rendered.');
+    expect(tagChoice.getAttribute('aria-autocomplete')).toBe('list');
+    categoryChoice.focus();
+    backend.expectOne('/api/content/admin/articles').flush({
+      member: [
+        {
+          ...project('reference', 'draft'),
+          taxonomy: {
+            category: { key: 'existing-category', label: { fr: 'Technique', en: 'Technical' } },
+            tags: [{ key: 'existing-tag', label: { fr: 'Web', en: 'Web' } }],
+          },
+        },
+      ],
+      totalItems: 1,
+    });
+    await settle();
+    categoryChoice.click();
+    await settle();
+    [...document.body.querySelectorAll<HTMLElement>('ui-select-option')]
+      .find((option) => option.textContent?.trim() === 'Technique')
+      ?.click();
+    await settle();
+    const matchingTags = (): HTMLElement[] =>
+      Array.from(document.querySelectorAll<HTMLElement>('[role="option"]:not([hidden])'));
+    await type('article-tag-choice', 'web');
+    expect(matchingTags().map((option) => option.textContent?.trim())).toContain('Web');
+    expect(matchingTags().map((option) => option.textContent?.trim())).not.toContain('Node.js');
+    matchingTags()
+      .find((option) => option.textContent?.trim() === 'Web')
+      ?.click();
+    await settle();
+
+    expect(root.querySelector<HTMLInputElement>('#article-category-en')?.value).toBe('Technical');
+    expect(root.querySelector('button[aria-label="Modifier Angular"]')).not.toBeNull();
+    expect(root.querySelector('#article-tag-fr-0')).toBeNull();
+    root.querySelector<HTMLButtonElement>('button[aria-label="Modifier Web"]')?.click();
+    await settle();
+    expect(root.querySelector<HTMLInputElement>('#article-tag-fr-1')?.value).toBe('Web');
+    await type('article-tag-en-1', 'Web resources');
+
+    await type('article-tag-choice', 'Node.js');
+    matchingTags()
+      .find((option) => option.textContent?.trim() === 'Node.js')
+      ?.click();
+    await settle();
+    root.querySelector<HTMLButtonElement>('button[aria-label="Retirer Node.js"]')?.click();
+    await settle();
+    expect(root.querySelector('button[aria-label="Modifier Node.js"]')).toBeNull();
+    await type('article-tag-choice', 'Node.js');
+    matchingTags()
+      .find((option) => option.textContent?.trim() === 'Node.js')
+      ?.click();
+    await settle();
+    await submit();
+    const request: TestRequest = backend.expectOne('/api/content/admin/articles/a');
+    expect(request.request.body.taxonomy).toEqual({
+      category: { key: 'existing-category', label: { fr: 'Technique', en: 'Technical' } },
+      tags: [
+        { key: 'angular', label: { fr: 'Angular', en: 'Angular' } },
+        { key: 'existing-tag', label: { fr: 'Web', en: 'Web resources' } },
+        { key: 'nodejs', label: { fr: 'Node.js', en: 'Node.js' } },
+      ],
+    });
+    expect(request.request.body.techs).toEqual([]);
+    request.flush({
+      ...project('a', 'draft'),
+      techs: [],
+      kind: 'project',
+      taxonomy: request.request.body.taxonomy,
+    });
+    await settle();
+    expect(root.querySelector<HTMLInputElement>('#article-category-en')?.value).toBe('Technical');
+  });
+
+  it('edits an article and saves an unclassified draft', async (): Promise<void> => {
+    const { backend, harness, navigation } = await open('/admin/articles/a');
+    await navigation;
+    await flush();
+    const article: AdminProject = {
+      ...project('a', 'draft'),
+      kind: 'article',
+      techs: [],
+      taxonomy: { category: null, tags: [] },
+      missing: ['taxonomy.category'],
+    };
+    backend.expectOne('/api/content/admin/articles/a').flush(article);
+    await flush();
+    await harness.fixture.whenStable();
+    const root: HTMLElement = harness.routeNativeElement as HTMLElement;
+    expect(root.querySelector('#article-category-fr')).not.toBeNull();
+    expect(root.querySelector('#edit-client-fr')).toBeNull();
+    const input: HTMLInputElement | null = root.querySelector('#edit-title-fr');
+    if (!input) throw new Error('Article title control was not rendered.');
+    input.value = 'Article draft';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await flush();
+    root.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+    await flush();
+    const request: TestRequest = backend.expectOne('/api/content/admin/articles/a');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body.taxonomy).toEqual({ category: null, tags: [] });
+    request.flush(article);
+    await flush();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const addTag: HTMLButtonElement | undefined = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('button'),
+    ).find((button) => button.textContent?.trim() === 'Ajouter un tag');
+    if (!addTag) throw new Error('Add tag action was not rendered.');
+    expect(addTag.disabled).toBe(false);
+    addTag.click();
+    await flush();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    const labels: readonly (readonly [string, string])[] = [
+      ['article-category-fr', 'Architecture'],
+      ['article-category-en', 'Architecture'],
+      ['article-tag-fr-0', 'État applicatif'],
+      ['article-tag-en-0', 'Application state'],
+    ];
+    for (const [id, value] of labels) {
+      const field: HTMLInputElement | null = root.querySelector(`#${id}`);
+      if (!field) throw new Error(`Missing taxonomy control ${id}.`);
+      field.value = value;
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    await flush();
+    root.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+    await flush();
+    const classified: TestRequest = backend.expectOne('/api/content/admin/articles/a');
+    expect(classified.request.body.taxonomy).toEqual({
+      category: { key: 'architecture', label: { fr: 'Architecture', en: 'Architecture' } },
+      tags: [{ key: 'etat-applicatif', label: { fr: 'État applicatif', en: 'Application state' } }],
+    });
+    classified.flush(article);
+    await flush();
+  });
+
   it('edits one language at a time per field, the shared settings in the properties panel', async (): Promise<void> => {
     const { root, showLanguage } = await edit(complete('a', 'draft'));
     const form: HTMLFormElement | null = root.querySelector('form');
@@ -819,13 +967,13 @@ describe('ProjectFormComponent', (): void => {
     // Both article editors stay alive, the English one hidden.
     expect(root.querySelector('#edit-article-fr')?.closest('[hidden]')).toBeNull();
     expect(root.querySelector('#edit-article-en')?.closest('[hidden]')).not.toBeNull();
-    for (const id of ['edit-site-url', 'edit-techs', 'edit-featured', 'edit-cover-alt-fr']) {
+    for (const id of ['edit-site-url', 'edit-featured', 'edit-cover-alt-fr']) {
       expect(form?.querySelector(`#${id}`)).toBeNull();
       expect(aside?.querySelector(`#${id}`)).not.toBeNull();
     }
     // Outside the form element, the text inputs name it so that Enter still submits it.
     expect(root.querySelector('#edit-site-url')?.getAttribute('form')).toBe('edit-project-form');
-    expect(root.querySelector('#edit-techs')?.getAttribute('form')).toBe('edit-project-form');
+    expect(root.querySelector('#edit-techs')).toBeNull();
     expect(root.querySelector('#edit-cover-alt-fr')?.getAttribute('form')).toBe(
       'edit-project-form',
     );
@@ -863,7 +1011,7 @@ describe('ProjectFormComponent', (): void => {
       [...(form?.querySelectorAll('h2') ?? [])].map(
         (heading: HTMLHeadingElement): string => heading.firstChild?.textContent?.trim() ?? '',
       ),
-    ).toEqual(['Présentation', 'Informations', 'Article', 'Référencement']);
+    ).toEqual(['Présentation', 'Informations', 'Catégorie et tags', 'Article', 'Référencement']);
     expect(form?.querySelector('section p')?.textContent).toContain(
       'Le sélecteur accolé à chaque champ change sa langue.',
     );
@@ -879,7 +1027,7 @@ describe('ProjectFormComponent', (): void => {
       [...(form?.querySelectorAll('section') ?? [])].map((section: HTMLElement): boolean =>
         section.classList.contains('border-t'),
       ),
-    ).toEqual([false, true, true, true]);
+    ).toEqual([false, true, true, true, true]);
     expect(form?.querySelector('legend')).toBeNull();
     expect(
       [...(form?.querySelectorAll('header, h2') ?? [])].some(
@@ -946,9 +1094,9 @@ describe('ProjectFormComponent', (): void => {
     expect(shownLanguage(root, 'Aperçus')).toBe('Français');
     expect(preview('title')).toBe('Titre library-trails — Valentin Fortin');
     expect(preview('description')).toBe('Résumé');
-    expect(preview('url')).toBe('valentin-fortin.pro › fr › projects › library-trails');
+    expect(preview('url')).toBe('valentin-fortin.pro › fr › articles › library-trails');
     await showLanguage('Aperçus', 'en');
-    expect(preview('url')).toBe('valentin-fortin.pro › en › projects › library-trails');
+    expect(preview('url')).toBe('valentin-fortin.pro › en › articles › library-trails');
     expect(preview('title')).toBe('Title library-trails — Valentin Fortin');
     expect(root.querySelector('[data-slot="seo-preview-title"]')?.getAttribute('lang')).toBe('en');
     await showLanguage('Aperçus', 'fr');
@@ -972,7 +1120,7 @@ describe('ProjectFormComponent', (): void => {
     // Shown in English, the field in error comes back to French on the refused submission.
     await showLanguage('Titre de recherche', 'en');
     await submit();
-    backend.expectNone('/api/content/admin/projects/library-trails');
+    backend.expectNone('/api/content/admin/articles/library-trails');
     expect(shownLanguage(root, 'Titre de recherche')).toBe('Français');
     expect(root.querySelector('#edit-seo-title-fr-error')?.textContent).toContain(
       '70 caractères maximum.',
@@ -987,7 +1135,7 @@ describe('ProjectFormComponent', (): void => {
     await type('edit-seo-description-en', 'Local carpooling app.');
     await submit();
     expect(
-      backend.expectOne('/api/content/admin/projects/library-trails').request.body.seo,
+      backend.expectOne('/api/content/admin/articles/library-trails').request.body.seo,
     ).toEqual({
       title: { fr: 'Library Trails' },
       description: { en: 'Local carpooling app.' },
@@ -995,7 +1143,7 @@ describe('ProjectFormComponent', (): void => {
     });
   });
 
-  it('edits the keywords per language, prefills them from the technologies and lists the generated tags', async (): Promise<void> => {
+  it('edits the keywords per language, prefills them from the tags and lists the generated tags', async (): Promise<void> => {
     const { backend, root, showLanguage, submit, settle } = await edit({
       ...project('library-trails', 'draft'),
       techs: ['flutter', 'supabase'],
@@ -1034,9 +1182,9 @@ describe('ProjectFormComponent', (): void => {
         ),
       );
     };
-    const fromTechs = async (lang: 'fr' | 'en'): Promise<void> => {
+    const fromTags = async (lang: 'fr' | 'en'): Promise<void> => {
       await showLanguage('Mots clés', lang);
-      section().querySelector<HTMLButtonElement>('[data-slot="seo-keywords-from-techs"]')?.click();
+      section().querySelector<HTMLButtonElement>('[data-slot="seo-keywords-from-tags"]')?.click();
       await settle();
     };
 
@@ -1061,9 +1209,9 @@ describe('ProjectFormComponent', (): void => {
     const french: Record<string, string> = await generated('fr');
     expect(french['title']).toBe('Titre library-trails — Valentin Fortin');
     expect(french['keywords']).toBe('covoiturage');
-    expect(french['canonical']).toBe('https://valentin-fortin.pro/fr/projects/library-trails');
+    expect(french['canonical']).toBe('https://valentin-fortin.pro/fr/articles/library-trails');
     expect(french['hreflang x-default']).toBe(
-      'https://valentin-fortin.pro/fr/projects/library-trails',
+      'https://valentin-fortin.pro/fr/articles/library-trails',
     );
     expect(french['og:image']).toBe(`https://valentin-fortin.pro${MEDIA.src}`);
     expect(french['og:image:alt']).toBe('Accueil');
@@ -1096,8 +1244,8 @@ describe('ProjectFormComponent', (): void => {
     expect(english['og:locale']).toBe('en_GB');
     expect(english['og:image:alt']).toBe('Home');
 
-    await fromTechs('en');
-    await fromTechs('fr');
+    await fromTags('en');
+    await fromTags('fr');
     expect(tags('fr')).toEqual(['covoiturage', 'flutter', 'supabase']);
     expect(root.querySelector('#edit-seo-keywords-fr-count')?.textContent?.trim()).toBe('3/10');
     await showLanguage('Mots clés', 'en');
@@ -1105,7 +1253,7 @@ describe('ProjectFormComponent', (): void => {
 
     await submit();
     expect(
-      backend.expectOne('/api/content/admin/projects/library-trails').request.body.seo,
+      backend.expectOne('/api/content/admin/articles/library-trails').request.body.seo,
     ).toEqual({
       title: {},
       description: {},
@@ -1119,7 +1267,7 @@ describe('ProjectFormComponent', (): void => {
       seo: { title: {}, description: {}, keywords: { fr: ['x'], en: [] } },
     });
     await submit();
-    backend.expectNone('/api/content/admin/projects/library-trails');
+    backend.expectNone('/api/content/admin/articles/library-trails');
     expect(root.querySelector('#edit-seo-keywords-fr-error')?.textContent).toContain(
       'Chaque mot clé compte de 2 à 40 caractères.',
     );
@@ -1225,7 +1373,7 @@ describe('ProjectFormComponent', (): void => {
     await settle();
     expect(editorOf(root, 'en').getText()).toBe('Un.\n\nDeux.');
     await submit();
-    expect(backend.expectOne('/api/content/admin/projects/a').request.body.article).toEqual({
+    expect(backend.expectOne('/api/content/admin/articles/a').request.body.article).toEqual({
       fr: doc('Un.', 'Deux.'),
       en: doc('Un.', 'Deux.'),
     });
@@ -1282,18 +1430,18 @@ describe('AdminProjectEditPageComponent', (): void => {
     expect(handle?.className).toContain('focus-visible:outline-accent/55');
   });
 
-  it('falls back to 320 px for a percentage layout stored before or an out-of-bounds width', async (): Promise<void> => {
+  it('falls back to 352 px for a percentage layout stored before or an out-of-bounds width', async (): Promise<void> => {
     localStorage.setItem('portfolio.admin.layout.project-editor', '[95,5]');
     const { root } = await edit(project('a', 'draft'));
     // Not measured (jsdom): the default lays out as a fixed basis.
     expect(root.querySelector<HTMLElement>('aside[uiResizablePanel]')?.style.flex).toBe(
-      '0 0 320px',
+      '0 0 352px',
     );
     TestBed.resetTestingModule();
     localStorage.setItem('portfolio.admin.layout.project-editor', '200');
     const again: Awaited<ReturnType<typeof edit>> = await edit(project('a', 'draft'));
     expect(again.root.querySelector<HTMLElement>('aside[uiResizablePanel]')?.style.flex).toBe(
-      '0 0 320px',
+      '0 0 352px',
     );
   });
 
@@ -1309,11 +1457,11 @@ describe('AdminProjectEditPageComponent', (): void => {
     handle?.dispatchEvent(event);
     await settle();
     expect(event.defaultPrevented).toBe(true);
-    expect(localStorage.getItem('portfolio.admin.layout.project-editor')).toBe('336');
+    expect(localStorage.getItem('portfolio.admin.layout.project-editor')).toBe('368');
 
     handle?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
     await settle();
-    expect(localStorage.getItem('portfolio.admin.layout.project-editor')).toBe('320');
+    expect(localStorage.getItem('portfolio.admin.layout.project-editor')).toBe('352');
   });
 
   it('renders no separator where the properties move to the sheet', async (): Promise<void> => {
@@ -1361,7 +1509,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     french.chain().setNodeSelection(end).updateAttributes('figure', { alt: 'Écran' }).run();
     await settle();
     await submit();
-    const save: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const save: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     expect(save.request.body.article.fr.content.at(-1)).toEqual({
       type: 'figure',
       attrs: { media: MEDIA.id, alt: 'Écran', caption: '' },
@@ -1434,7 +1582,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     await type('edit-cover-alt-fr', 'Couverture');
     expect(shownLanguage(root, 'Texte alternatif')).toBe('Français');
     await submit();
-    const save: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const save: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     expect(save.request.body.cover).toEqual({ media: MEDIA.id, alt: { fr: 'Couverture' } });
     save.flush({
       ...project('a', 'draft'),
@@ -1448,7 +1596,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     await settle();
     expect(root.querySelector('#edit-cover-alt-fr')).toBeNull();
     await submit();
-    expect(backend.expectOne('/api/content/admin/projects/a').request.body.cover).toBeNull();
+    expect(backend.expectOne('/api/content/admin/articles/a').request.body.cover).toBeNull();
   });
 
   it('lists the missing fields of the properties with readable names', async (): Promise<void> => {
@@ -1466,7 +1614,7 @@ describe('AdminProjectEditPageComponent', (): void => {
   });
 
   it('words the properties like the list and keeps one label column for every row', async (): Promise<void> => {
-    const { root, settle } = await edit({
+    const { root } = await edit({
       ...project('a', 'draft'),
       techs: ['angular', 'typescript', 'nestjs', 'postgresql', 'docker'],
     });
@@ -1483,35 +1631,27 @@ describe('AdminProjectEditPageComponent', (): void => {
     expect(aside?.textContent).not.toContain('Complètes');
     // One 88 px label column for the properties and the settings alike, whatever the panel width.
     const rows: HTMLElement[] = [...(aside?.querySelectorAll<HTMLElement>('.grid') ?? [])];
-    expect(rows.length).toBeGreaterThanOrEqual(7);
+    expect(rows.length).toBeGreaterThanOrEqual(6);
     for (const row of rows) {
       expect(row.className).toBe('grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3');
     }
     expect(root.querySelector('#edit-site-url')?.classList).toContain('rounded-sm');
-    // The technologies are tags inside the field itself, in the same 32 px box.
-    const box: HTMLElement | null =
-      root.querySelector('#edit-techs')?.closest('ui-tags-input') ?? null;
-    expect(box?.classList).toContain('rounded-sm');
-    expect(box?.classList).toContain('min-h-8');
-    expect(aside?.querySelector('[data-slot="tech-keys"]')).toBeNull();
-    expect(box?.querySelector('[role="list"]')?.getAttribute('aria-label')).toBe('Technos');
-    const keys = (): string[] =>
-      [...(box?.querySelectorAll('[data-slot="tags-input-tag"]') ?? [])].map(
-        (chip: Element): string => chip.textContent?.trim() ?? '',
-      );
-    expect(keys()).toEqual(['angular', 'typescript', 'nestjs', 'postgresql', 'docker']);
-    expect(box?.querySelector('[data-slot="tags-input-tag"]')?.classList).toContain('font-mono');
-    expect(box?.querySelector('[data-slot="tags-input-remove"]')?.getAttribute('aria-label')).toBe(
-      'Retirer angular',
+    expect(aside?.querySelector('#edit-techs')).toBeNull();
+    const taxonomy: HTMLElement | null = root.querySelector(
+      'section[aria-labelledby="edit-section-taxonomy"]',
     );
-    const techs: HTMLInputElement | null = root.querySelector<HTMLInputElement>('#edit-techs');
-    if (!techs) throw new Error('techs missing');
-    // Lowercased, the duplicate and the empty segment refused.
-    techs.value = 'Angular, , RxJS,';
-    techs.dispatchEvent(new Event('input'));
-    await settle();
-    expect(keys()).toEqual(['angular', 'typescript', 'nestjs', 'postgresql', 'docker', 'rxjs']);
-    expect(techs.value).toBe('');
+    expect(
+      [...(taxonomy?.querySelectorAll('button[aria-label^="Modifier "]') ?? [])].map((button) =>
+        button.getAttribute('aria-label'),
+      ),
+    ).toEqual([
+      'Modifier Angular',
+      'Modifier TypeScript',
+      'Modifier NestJS',
+      'Modifier PostgreSQL',
+      'Modifier Docker',
+    ]);
+    expect(root.querySelector('[id^="article-tag-fr-"]')).toBeNull();
     expect(
       root.querySelector('[role="group"][aria-labelledby="edit-featured-label"]'),
     ).not.toBeNull();
@@ -1533,11 +1673,11 @@ describe('AdminProjectEditPageComponent', (): void => {
     editorOf(root, 'en').commands.clearContent(true);
     await settle();
     await submit();
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     expect(shownLanguage(root, 'Article')).toBe('English');
     expect(root.querySelector('#edit-article-en')?.closest('[hidden]')).toBeNull();
     expect(root.querySelector('#edit-article-en-error')?.textContent).toContain(
-      'Obligatoire tant que le projet est publié.',
+      'Obligatoire tant que l’article est publié.',
     );
     // Required in both languages once published: the heading keeps its marker in English.
     expect(root.querySelector('#edit-section-article')?.textContent).toContain('*');
@@ -1564,7 +1704,7 @@ describe('AdminProjectEditPageComponent', (): void => {
 
     await type('edit-title-fr', 'Titre revu');
     await submit();
-    const call: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const call: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     expect(call.request.body.period).toEqual({
       start: { year: 2023, month: 3 },
       end: { year: 2023, month: 4 },
@@ -1591,7 +1731,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     if (!featured) throw new Error('featured checkbox missing');
     featured.click();
     await submit();
-    const call: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const call: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     expect(call.request.method).toBe('PUT');
     expect(call.request.body.featured).toBe(true);
   });
@@ -1610,14 +1750,14 @@ describe('AdminProjectEditPageComponent', (): void => {
     );
     answer('Continuer la modification');
     await settle();
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     expect(root.querySelector<HTMLInputElement>('#edit-title-fr')?.value).toBe('Brouillon jeté');
     discard.click();
     await settle();
     answer('Abandonner');
     await settle();
     expect(root.querySelector<HTMLInputElement>('#edit-title-fr')?.value).toBe('Titre a');
-    backend.expectOne('/api/content/admin/projects/a').flush(project('a', 'draft'));
+    backend.expectOne('/api/content/admin/articles/a').flush(project('a', 'draft'));
     await settle();
     expect(root.querySelector<HTMLInputElement>('#edit-title-fr')?.value).toBe('Titre a');
     expect(root.textContent).toContain('Tout est enregistré');
@@ -1637,14 +1777,14 @@ describe('AdminProjectEditPageComponent', (): void => {
   });
 
   it('opens an empty draft editor on /new without loading anything, and sends nothing incomplete', async (): Promise<void> => {
-    const { backend, harness, navigation } = await open('/admin/projects/new');
+    const { backend, harness, navigation } = await open('/admin/articles/new');
     await navigation;
     await flush();
     await harness.fixture.whenStable();
-    backend.expectNone('/api/content/admin/projects/new');
+    backend.expectNone('/api/content/admin/articles/new');
     const root: HTMLElement = harness.routeNativeElement as HTMLElement;
-    expect(root.querySelector('ui-page-header h1')?.textContent?.trim()).toBe('Nouveau projet');
-    expect(root.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('Nouveau projet');
+    expect(root.querySelector('ui-page-header h1')?.textContent?.trim()).toBe('Nouvel article');
+    expect(root.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('Nouvel article');
     expect(root.querySelector<HTMLInputElement>('#edit-title-fr')?.value).toBe('');
     // A draft yet to exist: no publication, no status rows, the shared settings only.
     expect(root.textContent).not.toContain('Publier');
@@ -1652,44 +1792,44 @@ describe('AdminProjectEditPageComponent', (): void => {
     expect(aside?.querySelector('dl')).toBeNull();
     expect(aside?.querySelector('#edit-period')).not.toBeNull();
     expect(TestBed.inject<Title>(Title).getTitle()).toBe(
-      'Nouveau projet — Projets — Administration',
+      'Nouvel article — Articles — Administration',
     );
     root.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
     await flush();
     await harness.fixture.whenStable();
-    backend.expectNone('/api/content/admin/projects');
+    backend.expectNone('/api/content/admin/articles');
   });
 
   it('says the project cannot be found when it does not load', async (): Promise<void> => {
-    const { backend, harness, navigation } = await open('/admin/projects/ghost');
+    const { backend, harness, navigation } = await open('/admin/articles/ghost');
     await navigation;
     await flush();
     backend
-      .expectOne('/api/content/admin/projects/ghost')
+      .expectOne('/api/content/admin/articles/ghost')
       .flush({ code: 'content.not-found' }, { status: 404, statusText: 'Not Found' });
     await flush();
     await harness.fixture.whenStable();
     const root: HTMLElement = harness.routeNativeElement as HTMLElement;
     expect(
       root.querySelector('[role="alert"] [data-slot="alert-title"]')?.textContent?.trim(),
-    ).toBe('Projet introuvable');
+    ).toBe('Article introuvable');
     expect(
-      root.querySelector('[role="alert"] a[href="/admin/projects"]')?.textContent?.trim(),
-    ).toBe('Tous les projets');
+      root.querySelector('[role="alert"] a[href="/admin/articles"]')?.textContent?.trim(),
+    ).toBe('Tous les articles');
     expect(root.querySelector('form')).toBeNull();
     expect(TestBed.inject<Title>(Title).getTitle()).toBe(
-      'Projet introuvable — Projets — Administration',
+      'Article introuvable — Articles — Administration',
     );
   });
 
   it('keeps the header and first fields in place while loading, and offers to retry a failed load', async (): Promise<void> => {
-    const { backend, harness, navigation } = await open('/admin/projects/a');
+    const { backend, harness, navigation } = await open('/admin/articles/a');
     await navigation;
     await flush();
     await harness.fixture.whenStable();
     const root: HTMLElement = harness.routeNativeElement as HTMLElement;
     expect(root.querySelector('[role="status"]')?.textContent?.trim()).toBe(
-      'Chargement du projet…',
+      'Chargement de l’article…',
     );
     const skeleton: HTMLElement | null = root.querySelector('ui-page-header');
     expect(skeleton?.getAttribute('aria-hidden')).toBe('true');
@@ -1698,30 +1838,30 @@ describe('AdminProjectEditPageComponent', (): void => {
     expect(skeleton?.querySelector('[data-slot="page-header-tabs"]')).toBeNull();
     expect(root.querySelectorAll('[data-slot="skeleton"].h-9')).toHaveLength(2);
     backend
-      .expectOne('/api/content/admin/projects/a')
+      .expectOne('/api/content/admin/articles/a')
       .flush(null, { status: 503, statusText: 'Service Unavailable' });
     await flush();
     await harness.fixture.whenStable();
     expect(
       root.querySelector('[role="alert"] [data-slot="alert-title"]')?.textContent?.trim(),
-    ).toBe('Impossible de charger le projet');
+    ).toBe('Impossible de charger l’article');
     expect(root.querySelector('[role="alert"]')?.textContent).toContain(
       'Le service ne répond pas. Réessayez dans un moment.',
     );
     button(root, 'Réessayer').click();
     await flush();
-    backend.expectOne('/api/content/admin/projects/a').flush(project('a', 'draft'));
+    backend.expectOne('/api/content/admin/articles/a').flush(project('a', 'draft'));
     await flush();
     await harness.fixture.whenStable();
     expect(root.querySelector('h1')?.textContent?.trim()).toBe('Titre a');
-    expect(TestBed.inject<Title>(Title).getTitle()).toBe('Titre a — Projets — Administration');
+    expect(TestBed.inject<Title>(Title).getTitle()).toBe('Titre a — Articles — Administration');
   });
 
   it('announces the public rebuild after saving a published project', async (): Promise<void> => {
     const { backend, type, submit, settle } = await edit(complete('a', 'published'));
     await type('edit-title-fr', 'Titre revu');
     await submit();
-    backend.expectOne('/api/content/admin/projects/a').flush({
+    backend.expectOne('/api/content/admin/articles/a').flush({
       ...complete('a', 'published'),
       version: 5,
       title: { fr: 'Titre revu', en: 'Title a' },
@@ -1742,14 +1882,14 @@ describe('AdminProjectEditPageComponent', (): void => {
     expect(languageStates(root, 'Titre')).toEqual(['Français', 'English, à compléter']);
     await showLanguage('Titre', 'fr');
     await submit();
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     expect(shownLanguage(root, 'Titre')).toBe('English');
     expect(languageStates(root, 'Titre')).toEqual(['Français', 'English, à corriger']);
     expect(root.querySelector('#edit-title-en-error')?.textContent).toContain(
-      'Obligatoire tant que le projet est publié.',
+      'Obligatoire tant que l’article est publié.',
     );
     expect(root.querySelector('form [data-slot="alert"]')?.textContent).toContain(
-      'Un projet publié doit rester complet en français et en anglais',
+      'Un article publié doit rester complet en français et en anglais',
     );
     expect(toasts()).toEqual([]);
   });
@@ -1758,7 +1898,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     const { backend, type, submit } = await edit(complete('a', 'draft'));
     await type('edit-title-en', '');
     await submit();
-    expect(backend.expectOne('/api/content/admin/projects/a').request.body.title).toEqual({
+    expect(backend.expectOne('/api/content/admin/articles/a').request.body.title).toEqual({
       fr: 'Titre a',
     });
   });
@@ -1768,20 +1908,20 @@ describe('AdminProjectEditPageComponent', (): void => {
     await type('edit-title-fr', 'Titre revu');
     await submit();
     backend
-      .expectOne('/api/content/admin/projects/a')
+      .expectOne('/api/content/admin/articles/a')
       .flush(
         { code: 'content.project-incomplete', details: ['title.en'] },
         { status: 422, statusText: 'Unprocessable Entity' },
       );
     await settle();
-    expect(toasts()).toEqual([['error', 'Un projet publié doit rester complet.']]);
+    expect(toasts()).toEqual([['error', 'Un article publié doit rester complet.']]);
   });
 
   it('toasts a refused save while its field errors stay on their fields', async (): Promise<void> => {
     const { backend, root, type, submit, settle } = await edit(project('a', 'draft'));
     await type('edit-title-fr', 'Titre pris');
     await submit();
-    backend.expectOne('/api/content/admin/projects/a').flush(
+    backend.expectOne('/api/content/admin/articles/a').flush(
       {
         detail: 'Révision refusée',
         errors: [{ field: 'title.fr', message: 'Titre déjà utilisé.' }],
@@ -1797,10 +1937,10 @@ describe('AdminProjectEditPageComponent', (): void => {
 
   it('unpublishes a published project, then toasts its removal', async (): Promise<void> => {
     const { backend, root, settle } = await edit(project('a', 'published'), [FRENCH_BUILD]);
-    expect(root.querySelector('ui-page-header a[href="/fr/projects/a"]')?.textContent).toContain(
+    expect(root.querySelector('ui-page-header a[href="/fr/articles/a"]')?.textContent).toContain(
       'Voir la page',
     );
-    expect(root.querySelector('aside dd.font-mono')?.textContent?.trim()).toBe('/fr/projects/a');
+    expect(root.querySelector('aside dd.font-mono')?.textContent?.trim()).toBe('/fr/articles/a');
     button(root, 'Dépublier').click();
     await settle();
     expect(document.querySelector('[data-slot="alert-dialog-content"]')?.textContent).toContain(
@@ -1808,7 +1948,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     );
     answer('Dépublier');
     await flush();
-    const call: TestRequest = backend.expectOne('/api/content/admin/projects/a/unpublish');
+    const call: TestRequest = backend.expectOne('/api/content/admin/articles/a/unpublish');
     expect(call.request.headers.get('if-match')).toBe('"4"');
     call.flush({ ...project('a', 'draft'), version: 5 });
     await settle();
@@ -1824,9 +1964,9 @@ describe('AdminProjectEditPageComponent', (): void => {
       { provide: LOCALE_ID, useValue: 'en' },
     ]);
     expect(root.querySelector('ui-page-header a[target="_blank"]')?.getAttribute('href')).toBe(
-      '/en/projects/a',
+      '/en/articles/a',
     );
-    expect(root.querySelector('aside dd.font-mono')?.textContent?.trim()).toBe('/en/projects/a');
+    expect(root.querySelector('aside dd.font-mono')?.textContent?.trim()).toBe('/en/articles/a');
   });
 
   it('keeps the project published when the unpublication is declined', async (): Promise<void> => {
@@ -1838,7 +1978,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     ]);
     button(root, 'Dépublier').click();
     await settle();
-    backend.expectNone('/api/content/admin/projects/a/unpublish');
+    backend.expectNone('/api/content/admin/articles/a/unpublish');
     expect(toasts()).toEqual([]);
   });
 
@@ -1846,7 +1986,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     const { backend, root, settle } = await edit(project('a', 'draft'));
     button(root, 'Publier').click();
     backend
-      .expectOne('/api/content/admin/projects/a/publish')
+      .expectOne('/api/content/admin/articles/a/publish')
       .flush(null, { status: 503, statusText: 'Service Unavailable' });
     await settle();
     expect(toasts()).toEqual([['error', 'Le service ne répond pas. Réessayez dans un moment.']]);
@@ -1861,7 +2001,7 @@ describe('AdminProjectEditPageComponent', (): void => {
   it('keeps the navigation bar to the breadcrumb and gives the page header the title and actions, without language tabs', async (): Promise<void> => {
     const { root } = await edit(project('a', 'published'));
     const bar: HTMLElement | null = root.querySelector('header');
-    expect(bar?.querySelector('a[href]')?.textContent?.trim()).toBe('Tous les projets');
+    expect(bar?.querySelector('a[href]')?.textContent?.trim()).toBe('Tous les articles');
     // The bar starts with the layout's sidebar toggle, which renders nothing outside the layout.
     expect(bar?.firstElementChild?.tagName).toBe('UI-SIDEBAR-TRIGGER');
     expect(bar?.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('Titre a');
@@ -1885,7 +2025,7 @@ describe('AdminProjectEditPageComponent', (): void => {
       FRENCH_BUILD,
     ]);
     expect(root.querySelector('aside[aria-label="Propriétés"]')?.textContent).toContain(
-      '/projects/a',
+      '/articles/a',
     );
     const trigger: HTMLButtonElement = button(root, 'Propriétés');
     expect(trigger.getAttribute('aria-haspopup')).toBe('dialog');
@@ -1907,7 +2047,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     expect(sheet?.querySelector('[data-slot="cover-placeholder"]')?.className).toContain(
       'bg-surface-sunk',
     );
-    expect(sheet?.textContent).toContain('/fr/projects/a');
+    expect(sheet?.textContent).toContain('/fr/articles/a');
     // The shared settings travel with the properties, still bound to the form.
     expect(sheet?.querySelector<HTMLInputElement>('[id="edit-featured"]')?.checked).toBe(true);
     expect(sheet?.querySelector('[id="edit-site-url"]')).not.toBeNull();
@@ -1922,16 +2062,16 @@ describe('AdminProjectEditPageComponent', (): void => {
 describe('AdminProjectsPageComponent', (): void => {
   it('names the section in the navigation bar and titles the page with its count', async (): Promise<void> => {
     const { root } = await list([project('a', 'draft'), project('b', 'published')]);
-    expect(root.querySelector('header')?.textContent?.trim()).toBe('Projets');
+    expect(root.querySelector('header')?.textContent?.trim()).toBe('Articles');
     expect(root.querySelector('header h1')).toBeNull();
     // The bar starts with the layout's sidebar toggle, which renders nothing outside the layout.
     expect(root.querySelector('header')?.firstElementChild?.tagName).toBe('UI-SIDEBAR-TRIGGER');
     const title: HTMLElement | null = root.querySelector('ui-page-header h1');
-    expect(title?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Projets 2 projets');
+    expect(title?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Articles 2 articles');
     // No rebuild note under the title: the header carries the title and its count only.
     expect(root.querySelector('[data-slot="page-header-meta"]')).toBeNull();
-    expect(root.querySelector('a[href="/admin/projects/new"]')?.textContent?.trim()).toBe(
-      'Nouveau projet',
+    expect(root.querySelector('a[href="/admin/articles/new"]')?.textContent?.trim()).toBe(
+      'Nouvel article',
     );
   });
 
@@ -1939,30 +2079,30 @@ describe('AdminProjectsPageComponent', (): void => {
     const { root, settle } = await list(
       [project('a', 'draft'), project('b', 'published'), project('c', 'published')],
       [],
-      '/admin/projects?statut=publie',
+      '/admin/articles?statut=publie',
     );
-    expect(projectCount(root)).toBe('2 sur 3 projets');
+    expect(projectCount(root)).toBe('2 sur 3 articles');
     const field: HTMLInputElement | null =
       root.querySelector<HTMLInputElement>('input[type="search"]');
     if (!field) throw new Error('search missing');
     field.value = 'zzz';
     field.dispatchEvent(new Event('input'));
     await settle();
-    expect(projectCount(root)).toBe('0 sur 3 projets');
+    expect(projectCount(root)).toBe('0 sur 3 articles');
     expect(root.querySelector('[data-slot="project-count"] .sr-only')?.textContent?.trim()).toBe(
-      'projets',
+      'articles',
     );
   });
 
   it('publishes a complete draft from the row menu without reloading the list', async (): Promise<void> => {
     const { backend, root, settle, action } = await list([project('b', 'draft')]);
-    expect(projectCount(root)).toBe('1 projet');
+    expect(projectCount(root)).toBe('1 article');
     (await action(0, 'Publier')).click();
-    const call: TestRequest = backend.expectOne('/api/content/admin/projects/b/publish');
+    const call: TestRequest = backend.expectOne('/api/content/admin/articles/b/publish');
     expect(call.request.headers.get('if-match')).toBe('"4"');
     call.flush({ ...project('b', 'published'), version: 5 });
     await settle();
-    backend.expectNone('/api/content/admin/projects');
+    backend.expectNone('/api/content/admin/articles');
     expect(root.querySelector('tbody tr')?.textContent).toContain('Publié');
     expect(toasts()).toEqual([['success', '« Titre b » publié.']]);
     expect(descriptions()).toEqual([
@@ -1976,7 +2116,7 @@ describe('AdminProjectsPageComponent', (): void => {
       [project('a', 'published'), project('b', 'draft')],
       [FRENCH_BUILD],
     );
-    expect(root.querySelector('tbody tr a[href="/admin/projects/a"]')?.textContent?.trim()).toBe(
+    expect(root.querySelector('tbody tr a[href="/admin/articles/a"]')?.textContent?.trim()).toBe(
       'Titre a',
     );
     await action(0, 'Modifier');
@@ -1985,8 +2125,8 @@ describe('AdminProjectsPageComponent', (): void => {
       'Voir la page',
       'Dépublier',
     ]);
-    expect(menuItems()[0]?.getAttribute('href')).toBe('/admin/projects/a');
-    expect(menuItems()[1]?.getAttribute('href')).toBe('/fr/projects/a');
+    expect(menuItems()[0]?.getAttribute('href')).toBe('/admin/articles/a');
+    expect(menuItems()[1]?.getAttribute('href')).toBe('/fr/articles/a');
     expect(menuItems()[1]?.getAttribute('target')).toBe('_blank');
     root.querySelectorAll('tbody tr')[0]?.querySelector<HTMLButtonElement>('button')?.click();
     await settle();
@@ -2003,7 +2143,7 @@ describe('AdminProjectsPageComponent', (): void => {
       [{ provide: LOCALE_ID, useValue: 'en' }],
     );
     // No translations are loaded here: the build locale only changes the public page opened.
-    expect((await action(0, 'Voir la page')).getAttribute('href')).toBe('/en/projects/a');
+    expect((await action(0, 'Voir la page')).getAttribute('href')).toBe('/en/articles/a');
   });
 
   it('names the icon-only row menu button and explains it in a tooltip', async (): Promise<void> => {
@@ -2021,19 +2161,19 @@ describe('AdminProjectsPageComponent', (): void => {
     const { backend, root, settle, action } = await list([project('b', 'draft')]);
     (await action(0, 'Publier')).click();
     backend
-      .expectOne('/api/content/admin/projects/b/publish')
+      .expectOne('/api/content/admin/articles/b/publish')
       .flush(
         { code: 'content.version-mismatch' },
         { status: 412, statusText: 'Precondition Failed' },
       );
     await settle();
-    backend.expectOne('/api/content/admin/projects').flush({
+    backend.expectOne('/api/content/admin/articles').flush({
       member: [{ ...project('b', 'published'), version: 6 }],
       totalItems: 1,
     });
     await settle();
     expect(toasts()).toEqual([
-      ['warning', 'Le projet a été modifié entre-temps : la liste a été rechargée, recommencez.'],
+      ['warning', 'L’article a été modifié entre-temps : la liste a été rechargée, recommencez.'],
     ]);
     expect(root.querySelector('[role="alert"]')).toBeNull();
     expect(root.querySelector('tbody tr')?.textContent).toContain('Publié');
@@ -2043,18 +2183,18 @@ describe('AdminProjectsPageComponent', (): void => {
     const { backend, settle, action } = await list([project('b', 'draft')]);
     (await action(0, 'Publier')).click();
     backend
-      .expectOne('/api/content/admin/projects/b/publish')
+      .expectOne('/api/content/admin/articles/b/publish')
       .flush(null, { status: 500, statusText: 'Internal Server Error' });
     await settle();
-    backend.expectNone('/api/content/admin/projects');
+    backend.expectNone('/api/content/admin/articles');
     expect(toasts()).toEqual([['error', 'Le service ne répond pas. Réessayez dans un moment.']]);
   });
 
   it('toasts the error when the list does not load', async (): Promise<void> => {
-    const { backend, harness, navigation } = await open('/admin/projects');
+    const { backend, harness, navigation } = await open('/admin/articles');
     await navigation;
     backend
-      .expectOne('/api/content/admin/projects')
+      .expectOne('/api/content/admin/articles')
       .flush(null, { status: 503, statusText: 'Service Unavailable' });
     await flush();
     await harness.fixture.whenStable();
@@ -2068,10 +2208,10 @@ describe('AdminProjectsPageComponent', (): void => {
     answer('Dépublier');
     await flush();
     backend
-      .expectOne('/api/content/admin/projects/a/unpublish')
+      .expectOne('/api/content/admin/articles/a/unpublish')
       .flush({ ...project('a', 'draft'), version: 5 });
     await settle();
-    backend.expectNone('/api/content/admin/projects');
+    backend.expectNone('/api/content/admin/articles');
     expect(root.querySelector('tbody tr')?.textContent).toContain('Brouillon');
     expect(toasts()).toEqual([['success', '« Titre a » retiré du site public.']]);
     expect(descriptions()).toEqual([
@@ -2101,7 +2241,7 @@ describe('AdminProjectsPageComponent', (): void => {
         tone: 'danger',
       }),
     ]);
-    backend.expectNone('/api/content/admin/projects/a/unpublish');
+    backend.expectNone('/api/content/admin/articles/a/unpublish');
     expect(root.querySelector('tbody tr')?.textContent).toContain('Publié');
     // The menu item that opened the dialog is gone: the row's menu button takes the focus back.
     expect(asked[0]?.restoreFocus?.getAttribute('aria-label')).toBe('Actions pour « Titre a »');
@@ -2133,7 +2273,7 @@ describe('AdminProjectsPageComponent', (): void => {
       ['outline', '/a'],
       ['success', 'Publié'],
       ['success', 'Complet'],
-      ['outline', 'angular'],
+      ['outline', 'Angular'],
     ]);
     // Under the "Mis en avant" header, a star and « Oui »; a project not featured shows the dash.
     const featured: Element | null | undefined = published?.querySelector(
@@ -2149,7 +2289,7 @@ describe('AdminProjectsPageComponent', (): void => {
       ['outline', '/b'],
       ['outline', 'Brouillon'],
       ['warning', '2 à compléter'],
-      ['outline', 'angular'],
+      ['outline', 'Angular'],
     ]);
     expect(published?.textContent).toContain('v4');
     const incomplete: HTMLElement | null | undefined = draft?.querySelector<HTMLElement>(
@@ -2162,7 +2302,7 @@ describe('AdminProjectsPageComponent', (): void => {
     );
   });
 
-  it('orders the rows like the public site, sorts by a column and shows the technologies', async (): Promise<void> => {
+  it('orders the rows like the public site, sorts by a column and shows the tags', async (): Promise<void> => {
     const { root, settle } = await list([
       { ...project('c', 'draft'), position: 2, version: 9 },
       { ...project('b', 'draft'), position: 1, techs: ['angular', 'nestjs', 'postgres', 'docker'] },
@@ -2171,7 +2311,8 @@ describe('AdminProjectsPageComponent', (): void => {
     const titles = (): string[] =>
       [...root.querySelectorAll('tbody tr a')].map((a: Element): string => a.textContent ?? '');
     expect(titles()).toEqual(['Titre a', 'Titre b', 'Titre c']);
-    expect(root.querySelectorAll('tbody tr')[1]?.textContent).toContain('+1');
+    // Two badges, then the count of the other two.
+    expect(root.querySelectorAll('tbody tr')[1]?.textContent).toContain('+2');
     const version: HTMLButtonElement | undefined = [...root.querySelectorAll('th button')].find(
       (b: Element): b is HTMLButtonElement => b.textContent?.trim() === 'Version',
     );
@@ -2181,7 +2322,7 @@ describe('AdminProjectsPageComponent', (): void => {
     await settle();
     expect(titles()[0]).toBe('Titre c');
     expect(version?.closest('th')?.getAttribute('aria-sort')).toBe('descending');
-    expect(TestBed.inject(Router).url).toBe('/admin/projects?tri=version&ordre=desc');
+    expect(TestBed.inject(Router).url).toBe('/admin/articles?tri=version&ordre=desc');
   });
 
   it('filters by status from a facet, keeps it in the URL and removes it from its chip', async (): Promise<void> => {
@@ -2202,13 +2343,13 @@ describe('AdminProjectsPageComponent', (): void => {
     await settle();
     expect(root.querySelectorAll('tbody tr')).toHaveLength(1);
     expect(root.querySelector('tbody tr')?.textContent).toContain('Titre b');
-    expect(TestBed.inject(Router).url).toBe('/admin/projects?statut=brouillon');
+    expect(TestBed.inject(Router).url).toBe('/admin/articles?statut=brouillon');
     root
       .querySelector<HTMLButtonElement>('button[aria-label="Retirer le filtre Statut : Brouillon"]')
       ?.click();
     await settle();
     expect(root.querySelectorAll('tbody tr')).toHaveLength(2);
-    expect(TestBed.inject(Router).url).toBe('/admin/projects');
+    expect(TestBed.inject(Router).url).toBe('/admin/articles');
     expect(root.textContent).not.toContain('Tous');
   });
 
@@ -2220,7 +2361,7 @@ describe('AdminProjectsPageComponent', (): void => {
         project('c', 'draft'),
       ],
       [],
-      '/admin/projects?q=titre&statut=publie,inconnu&accueil=oui&tri=titre&ordre=desc&page=1',
+      '/admin/articles?q=titre&statut=publie,inconnu&accueil=oui&tri=titre&ordre=desc&page=1',
     );
     expect(root.querySelector<HTMLInputElement>('input[type="search"]')?.value).toBe('titre');
     expect(
@@ -2232,26 +2373,26 @@ describe('AdminProjectsPageComponent', (): void => {
       [...root.querySelectorAll('tbody tr a')].map((a: Element): string => a.textContent ?? ''),
     ).toEqual(['Titre b', 'Titre a']);
     // Back and forward replay another query: the table follows it.
-    await harness.navigateByUrl('/admin/projects?completude=a-completer');
+    await harness.navigateByUrl('/admin/articles?completude=a-completer');
     await settle();
     expect(root.querySelector('[data-slot="data-table-no-results"]')?.textContent).toContain(
-      'Aucun projet ne correspond',
+      'Aucun article ne correspond',
     );
   });
 
   it('opens the editor from the title link, the keyboard way in, but not from the row menu', async (): Promise<void> => {
     const { backend, root, settle, action } = await list([project('a', 'draft')]);
     const link: HTMLAnchorElement | null = root.querySelector<HTMLAnchorElement>(
-      'tbody tr a[href="/admin/projects/a"]',
+      'tbody tr a[href="/admin/articles/a"]',
     );
     expect(link?.tabIndex).toBe(0);
     await action(0, 'Modifier');
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     link?.click();
     await settle();
-    expect(TestBed.inject(Router).url).toBe('/admin/projects/a');
-    backend.expectOne('/api/content/admin/projects/a').flush(project('a', 'draft'));
+    expect(TestBed.inject(Router).url).toBe('/admin/articles/a');
+    backend.expectOne('/api/content/admin/articles/a').flush(project('a', 'draft'));
     await settle();
   });
 
@@ -2259,13 +2400,13 @@ describe('AdminProjectsPageComponent', (): void => {
     const { backend, root, settle } = await list([project('a', 'draft')]);
     root.querySelectorAll<HTMLElement>('tbody tr td')[1]?.click();
     await settle();
-    expect(TestBed.inject(Router).url).toBe('/admin/projects/a');
-    backend.expectOne('/api/content/admin/projects/a').flush(project('a', 'draft'));
+    expect(TestBed.inject(Router).url).toBe('/admin/articles/a');
+    backend.expectOne('/api/content/admin/articles/a').flush(project('a', 'draft'));
     await settle();
   });
 
   it('shows skeleton rows while the list loads', async (): Promise<void> => {
-    const { backend, harness, navigation } = await open('/admin/projects');
+    const { backend, harness, navigation } = await open('/admin/articles');
     await navigation;
     await harness.fixture.whenStable();
     const root: HTMLElement = harness.routeNativeElement as HTMLElement;
@@ -2273,7 +2414,7 @@ describe('AdminProjectsPageComponent', (): void => {
       0,
     );
     expect(root.querySelector('table')?.getAttribute('aria-busy')).toBe('true');
-    backend.expectOne('/api/content/admin/projects').flush({ member: [], totalItems: 0 });
+    backend.expectOne('/api/content/admin/articles').flush({ member: [], totalItems: 0 });
     await flush();
     await harness.fixture.whenStable();
     expect(root.querySelector('[data-slot="data-table-skeleton-row"]')).toBeNull();
@@ -2282,12 +2423,12 @@ describe('AdminProjectsPageComponent', (): void => {
   it('says when there is no project at all', async (): Promise<void> => {
     const { root } = await list([]);
     expect(root.querySelector('[data-slot="empty-title"]')?.textContent?.trim()).toBe(
-      'Aucun projet',
+      'Aucun article',
     );
     // Nothing follows the table on the page (no pagination without rows): the fill layout.
     expect(root.querySelector<HTMLElement>('[data-slot="empty"]')?.dataset['layout']).toBe('fill');
     // French takes the singular for zero and one.
-    expect(projectCount(root)).toBe('0 projet');
+    expect(projectCount(root)).toBe('0 article');
   });
 
   it('narrows the list to the projects matching every searched word, ignoring accents', async (): Promise<void> => {
@@ -2304,7 +2445,7 @@ describe('AdminProjectsPageComponent', (): void => {
       [...root.querySelectorAll('tbody tr')].map((row: Element): string => row.textContent ?? '');
     await search('TÎTRE b');
     expect(rows()).toEqual([expect.stringContaining('Titre b')]);
-    expect(TestBed.inject(Router).url).toBe('/admin/projects?q=T%C3%8ETRE%20b');
+    expect(TestBed.inject(Router).url).toBe('/admin/articles?q=T%C3%8ETRE%20b');
     await search('angular');
     expect(rows()).toHaveLength(2);
     await search('title b');
@@ -2314,8 +2455,8 @@ describe('AdminProjectsPageComponent', (): void => {
       root
         .querySelector('[data-slot="data-table-no-results"] [data-slot="empty-title"]')
         ?.textContent?.trim(),
-    ).toBe('Aucun projet trouvé');
-    expect(root.textContent).toContain('Aucun projet ne correspond');
+    ).toBe('Aucun article trouvé');
+    expect(root.textContent).toContain('Aucun article ne correspond');
     [...root.querySelectorAll('button')]
       .find(
         (b: HTMLButtonElement): boolean =>
@@ -2324,7 +2465,7 @@ describe('AdminProjectsPageComponent', (): void => {
       ?.click();
     await settle();
     expect(rows()).toHaveLength(2);
-    expect(TestBed.inject(Router).url).toBe('/admin/projects');
+    expect(TestBed.inject(Router).url).toBe('/admin/articles');
   });
   it('selects rows with checkboxes and shows the selection bar, cleared by Escape', async (): Promise<void> => {
     const { root, settle } = await list([project('a', 'published'), project('b', 'draft')]);
@@ -2373,22 +2514,22 @@ describe('AdminProjectsPageComponent', (): void => {
     root.querySelector<HTMLButtonElement>('[data-bulk-action="publish"]')?.click();
     await settle();
     const dialog: Element | null = document.querySelector('[data-slot="alert-dialog-content"]');
-    expect(dialog?.textContent).toContain('Publier 2 projets ?');
-    expect(dialog?.textContent).toContain("1 projet sélectionné n'est pas concerné.");
+    expect(dialog?.textContent).toContain('Publier 2 articles ?');
+    expect(dialog?.textContent).toContain("1 article sélectionné n'est pas concerné.");
     answer('Publier');
     await settle();
-    const first: TestRequest = backend.expectOne('/api/content/admin/projects/a/publish');
+    const first: TestRequest = backend.expectOne('/api/content/admin/articles/a/publish');
     expect(first.request.headers.get('if-match')).toBe('"4"');
     // Sequential: the second request waits for the first answer.
-    backend.expectNone('/api/content/admin/projects/b/publish');
+    backend.expectNone('/api/content/admin/articles/b/publish');
     first.flush({ ...project('a', 'published'), version: 5 });
     await settle();
-    const second: TestRequest = backend.expectOne('/api/content/admin/projects/b/publish');
+    const second: TestRequest = backend.expectOne('/api/content/admin/articles/b/publish');
     expect(second.request.headers.get('if-match')).toBe('"7"');
     second.flush({ ...project('b', 'published'), version: 8 });
     await settle();
-    backend.expectNone('/api/content/admin/projects/c/publish');
-    expect(toasts()).toEqual([['success', '2 projets publiés.']]);
+    backend.expectNone('/api/content/admin/articles/c/publish');
+    expect(toasts()).toEqual([['success', '2 articles publiés.']]);
     expect(descriptions()).toEqual([
       'Le site sera mis à jour automatiquement après les modifications.',
     ]);
@@ -2406,20 +2547,20 @@ describe('AdminProjectsPageComponent', (): void => {
     root.querySelector<HTMLButtonElement>('[data-bulk-action="unpublish"]')?.click();
     await settle();
     expect(document.querySelector('[data-slot="alert-dialog-content"]')?.textContent).toContain(
-      'Dépublier 2 projets ?',
+      'Dépublier 2 articles ?',
     );
     answer('Dépublier');
     await settle();
     backend
-      .expectOne('/api/content/admin/projects/a/unpublish')
+      .expectOne('/api/content/admin/articles/a/unpublish')
       .flush({ ...project('a', 'draft'), version: 5 });
     await settle();
     backend
-      .expectOne('/api/content/admin/projects/b/unpublish')
+      .expectOne('/api/content/admin/articles/b/unpublish')
       .flush(null, { status: 500, statusText: 'Internal Server Error' });
     await settle();
-    backend.expectNone('/api/content/admin/projects');
-    expect(toasts()).toEqual([['warning', '1 projet dépublié sur 2.']]);
+    backend.expectNone('/api/content/admin/articles');
+    expect(toasts()).toEqual([['warning', '1 article dépublié sur 2.']]);
     expect(TestBed.inject<ToastService>(ToastService).toasts()[0]?.description).toBe(
       '1 échec : Le service ne répond pas. Réessayez dans un moment. Le site sera mis à jour automatiquement après les modifications.',
     );
@@ -2436,17 +2577,17 @@ describe('AdminProjectsPageComponent', (): void => {
     root.querySelector<HTMLButtonElement>('[data-bulk-action="feature"]')?.click();
     await settle();
     expect(document.querySelector('[data-slot="alert-dialog-content"]')).toBeNull();
-    const first: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const first: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     expect(first.request.method).toBe('PUT');
     expect(first.request.headers.get('if-match')).toBe('"4"');
     expect(first.request.body.featured).toBe(true);
     first.flush({ ...project('a', 'draft'), featured: true, version: 5 });
     await settle();
     backend
-      .expectOne('/api/content/admin/projects/b')
+      .expectOne('/api/content/admin/articles/b')
       .flush({ ...project('b', 'draft'), featured: true, version: 5 });
     await settle();
-    expect(toasts()).toEqual([['success', '2 projets mis en avant.']]);
+    expect(toasts()).toEqual([['success', '2 articles mis en avant.']]);
     // A draft is not on the public site: no rebuild announced.
     expect(TestBed.inject<ToastService>(ToastService).toasts()[0]?.description).toBeUndefined();
     expect(root.querySelectorAll('[data-slot="project-featured"]')).toHaveLength(2);
@@ -2466,20 +2607,20 @@ describe('AdminProjectsPageComponent', (): void => {
     answer("Retirer de l'accueil");
     await settle();
     backend
-      .expectOne('/api/content/admin/projects/a')
+      .expectOne('/api/content/admin/articles/a')
       .flush(
         { code: 'content.version-mismatch' },
         { status: 412, statusText: 'Precondition Failed' },
       );
     await settle();
-    backend.expectOne('/api/content/admin/projects').flush({
+    backend.expectOne('/api/content/admin/articles').flush({
       member: [{ ...project('a', 'published'), featured: true, version: 6 }],
       totalItems: 1,
     });
     await settle();
-    expect(toasts()).toEqual([['error', 'Aucun projet modifié sur 1.']]);
+    expect(toasts()).toEqual([['error', 'Aucun article modifié sur 1.']]);
     expect(descriptions()).toEqual([
-      '1 échec : Un projet a été modifié entre-temps : la liste a été rechargée, recommencez.',
+      '1 échec : Un article a été modifié entre-temps : la liste a été rechargée, recommencez.',
     ]);
     // The failed project stays selected, in its reloaded version.
     expect(root.querySelector('[data-slot="selection-bar-count"]')?.textContent?.trim()).toBe(
@@ -2503,16 +2644,16 @@ describe('ADMIN_CONTENT_ROUTES', (): void => {
     ]);
     await type('edit-title-fr', 'Draft');
     const navigation: ReturnType<RouterTestingHarness['navigateByUrl']> =
-      harness.navigateByUrl('/admin/projects/b');
+      harness.navigateByUrl('/admin/articles/b');
     await flush();
     window.dispatchEvent(
       new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true }),
     );
     await flush();
-    const write: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const write: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     approve(true);
     await navigation;
-    backend.expectNone('/api/content/admin/projects/b');
+    backend.expectNone('/api/content/admin/articles/b');
     write.flush({ ...project('a', 'draft'), title: { fr: 'Draft' } });
     await settle();
   });
@@ -2521,7 +2662,7 @@ describe('ADMIN_CONTENT_ROUTES', (): void => {
     const { backend, type, submit } = await edit(project('a', 'draft'));
     await type('edit-title-en', ' ' + 'x'.repeat(4000) + ' ');
     await submit();
-    const write: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const write: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     expect(write.request.body.title.en).toHaveLength(4000);
     write.flush(project('a', 'draft'));
   });
@@ -2536,11 +2677,11 @@ describe('ADMIN_CONTENT_ROUTES', (): void => {
     const { backend, harness } = await edit(project('a', 'draft'));
     const instance: AdminProjectEditPageComponent | undefined =
       harness.routeDebugElement?.componentInstance;
-    await harness.navigateByUrl('/admin/projects/b');
+    await harness.navigateByUrl('/admin/articles/b');
     await flush();
     expect(harness.routeDebugElement?.componentInstance).toBe(instance);
     expect(harness.routeNativeElement?.textContent).not.toContain('Titre a');
-    backend.expectOne('/api/content/admin/projects/b').flush(project('b', 'draft'));
+    backend.expectOne('/api/content/admin/articles/b').flush(project('b', 'draft'));
     await flush();
     await harness.fixture.whenStable();
     expect(
@@ -2561,55 +2702,37 @@ describe('ADMIN_CONTENT_ROUTES', (): void => {
     window.dispatchEvent(exit);
     expect(exit.defaultPrevented).toBe(true);
     const declined: ReturnType<RouterTestingHarness['navigateByUrl']> =
-      harness.navigateByUrl('/admin/projects/b');
+      harness.navigateByUrl('/admin/articles/b');
     await declined;
     expect(confirm).toHaveBeenCalledTimes(1);
-    backend.expectNone('/api/content/admin/projects/b');
+    backend.expectNone('/api/content/admin/articles/b');
     await submit();
-    const write: TestRequest = backend.expectOne('/api/content/admin/projects/a');
+    const write: TestRequest = backend.expectOne('/api/content/admin/articles/a');
     const cancel: HTMLButtonElement = button(root, 'Abandonner');
     expect(cancel.disabled).toBe(true);
     cancel.click();
     cancel.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await flush();
-    backend.expectNone('/api/content/admin/projects/a');
-    await harness.navigateByUrl('/admin/projects/b');
-    backend.expectNone('/api/content/admin/projects/b');
+    backend.expectNone('/api/content/admin/articles/a');
+    await harness.navigateByUrl('/admin/articles/b');
+    backend.expectNone('/api/content/admin/articles/b');
     write.flush({ ...project('a', 'draft'), title: { fr: 'Brouillon' } });
     await settle();
     await type('edit-title-fr', 'Autre brouillon');
     const accepted: ReturnType<RouterTestingHarness['navigateByUrl']> =
-      harness.navigateByUrl('/admin/projects/b');
+      harness.navigateByUrl('/admin/articles/b');
     await accepted;
     expect(confirm).toHaveBeenCalledTimes(2);
     await flush();
-    backend.expectOne('/api/content/admin/projects/b').flush(project('b', 'draft'));
+    backend.expectOne('/api/content/admin/articles/b').flush(project('b', 'draft'));
     await settle();
   });
 
-  it('blocks URL, technology, text and article bounds and maps server field errors until editing', async (): Promise<void> => {
+  it('blocks URL, tag, text and article bounds and maps server field errors until editing', async (): Promise<void> => {
     const { backend, root, type, submit, settle } = await edit(project('a', 'draft'));
-    /**
-     * Function techs
-     *
-     * @description
-     * Replaces the technology tags: removes every tag, then types the keys, each followed by a comma.
-     *
-     * @param {string[]} keys - Keys typed.
-     *
-     * @returns {Promise<void>} Completion once the form holds them.
-     */
-    const techs = async (keys: string[]): Promise<void> => {
-      let remove: HTMLButtonElement | null;
-      while ((remove = root.querySelector('[data-slot="tags-input-remove"]'))) {
-        remove.click();
-        await settle();
-      }
-      await type('edit-techs', keys.map((key: string): string => `${key},`).join(''));
-    };
     await type('edit-site-url', 'http://example.test');
     await submit();
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     expect(root.querySelector('#edit-site-url-error')?.textContent).toContain('URL HTTPS');
     expect(root.querySelector('#edit-site-url')?.getAttribute('aria-describedby')).toBe(
       'edit-site-url-error',
@@ -2619,22 +2742,21 @@ describe('ADMIN_CONTENT_ROUTES', (): void => {
       'Corrigez les champs signalés dans le panneau Propriétés.',
     );
     await type('edit-site-url', 'https://example.test');
-    await techs(['Invalid_Key']);
+    [...root.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.trim() === 'Ajouter un tag')
+      ?.click();
+    await settle();
+    await type('article-tag-fr-1', 'Angular');
     await submit();
-    backend.expectNone('/api/content/admin/projects/a');
-    expect(root.querySelector('#edit-techs-error')?.textContent).toContain('12 clés maximum');
-    expect(root.querySelector('#edit-techs')?.getAttribute('aria-invalid')).toBe('true');
-    expect(root.querySelector('#edit-techs')?.getAttribute('aria-describedby')).toBe(
-      'edit-techs-error',
-    );
-    // The thirteenth key is refused by the field itself (the contract's limit).
-    await techs(Array.from({ length: 13 }, (_: unknown, i: number): string => `tech-${i}`));
-    expect(root.querySelectorAll('[data-slot="tags-input-tag"]')).toHaveLength(12);
-    expect(root.querySelector('#edit-techs-error')).toBeNull();
-    await techs(['angular']);
+    backend.expectNone('/api/content/admin/articles/a');
+    expect(root.textContent).toContain('Choisissez jusqu’à 24 tags distincts');
+    [...root.querySelectorAll<HTMLButtonElement>('button[aria-label="Retirer Angular"]')]
+      .at(-1)
+      ?.click();
+    await settle();
     await type('edit-title-en', 'x'.repeat(4001));
     await submit();
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     await type('edit-title-en', 'English');
     const french: Editor = editorOf(root, 'fr');
     french.commands.insertContentAt(
@@ -2643,19 +2765,19 @@ describe('ADMIN_CONTENT_ROUTES', (): void => {
     );
     await settle();
     await submit();
-    backend.expectNone('/api/content/admin/projects/a');
+    backend.expectNone('/api/content/admin/articles/a');
     expect(root.querySelector('#edit-article-fr-error')?.textContent).toContain('40 images');
     french.commands.undo();
     await settle();
     await submit();
-    backend.expectOne('/api/content/admin/projects/a').flush(
+    backend.expectOne('/api/content/admin/articles/a').flush(
       {
         detail: 'Révision refusée',
         errors: [
           { field: 'title.fr', message: 'Titre déjà utilisé.' },
           { field: 'summary.en', message: 'Résumé anglais refusé.' },
           { field: 'article.en.content.0.content.0.text', message: 'Traduction refusée.' },
-          { field: 'techs.0', message: 'Technologie refusée.' },
+          { field: 'taxonomy.tags.0.label.fr', message: 'Tag refusé.' },
         ],
       },
       { status: 422, statusText: 'Unprocessable Entity' },
@@ -2678,22 +2800,21 @@ describe('ADMIN_CONTENT_ROUTES', (): void => {
     await type('edit-title-fr', 'Autre titre');
     expect(root.textContent).not.toContain('Titre déjà utilisé.');
     expect(root.textContent).toContain('Traduction refusée.');
-    expect(root.textContent).toContain('Technologie refusée.');
+    expect(root.textContent).toContain('Tag refusé.');
     editorOf(root, 'en').commands.insertContent('Another paragraph.');
     await settle();
     expect(root.textContent).not.toContain('Traduction refusée.');
-    expect(root.querySelector('#edit-techs')?.getAttribute('aria-invalid')).toBe('true');
-    await type('edit-techs', 'typescript,');
-    expect(root.textContent).not.toContain('Technologie refusée.');
+    await type('article-tag-fr-0', 'Autre tag');
+    expect(root.textContent).not.toContain('Tag refusé.');
   });
   it('keeps the destination projection when the previous routed read completes later', async (): Promise<void> => {
-    const { backend, harness, navigation } = await open('/admin/projects/a');
+    const { backend, harness, navigation } = await open('/admin/articles/a');
     await navigation;
     await flush();
-    const previous: TestRequest = backend.expectOne('/api/content/admin/projects/a');
-    await harness.navigateByUrl('/admin/projects/b');
+    const previous: TestRequest = backend.expectOne('/api/content/admin/articles/a');
+    await harness.navigateByUrl('/admin/articles/b');
     await flush();
-    backend.expectOne('/api/content/admin/projects/b').flush(project('b', 'draft'));
+    backend.expectOne('/api/content/admin/articles/b').flush(project('b', 'draft'));
     previous.flush(project('a', 'draft'));
     await flush();
     await harness.fixture.whenStable();

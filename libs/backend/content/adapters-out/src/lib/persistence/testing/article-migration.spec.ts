@@ -1,4 +1,4 @@
-import type { Project } from '@vfortin/content-domain';
+import type { Article } from '@vfortin/content-domain';
 import { sql } from 'drizzle-orm';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -9,7 +9,7 @@ import {
   migrateContentDatabase,
   openContentDatabase,
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
-import { DrizzleProjectRepository } from '@internal/content-adapters-out/lib/persistence/repositories/content-admin/drizzle-content-admin.repositories';
+import { DrizzleArticleRepository } from '@internal/content-adapters-out/lib/persistence/repositories/content-admin/drizzle-content-admin.repositories';
 import { projects } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
 
 /**
@@ -63,7 +63,7 @@ function migrationsBefore(root: string): string {
  * Inserts a project row in the format stored before D40.
  *
  * @param {ContentDatabaseHandle} handle - Database handle.
- * @param {string} id - Project identifier and slug.
+ * @param {string} id - Article identifier and slug.
  * @param {Record<string, unknown>} article - Seven-section article.
  * @returns {Promise<void>} Completion after the insert.
  */
@@ -178,6 +178,16 @@ describe(`${CONVERSION} migration (Postgres via PGlite)`, (): void => {
         ),
       );
     const converted: Record<string, unknown> = await articles();
+    const taxonomyRows: { taxonomy: unknown }[] = await handle.db
+      .select({ taxonomy: projects.taxonomy })
+      .from(projects);
+    expect(taxonomyRows).toHaveLength(4);
+    for (const row of taxonomyRows) {
+      expect(row.taxonomy).toEqual({
+        category: { key: 'projects', label: { fr: 'Projets', en: 'Projects' } },
+        tags: [],
+      });
+    }
     const list = (...items: string[]): object => ({
       type: 'bulletList',
       content: items.map((item: string): object => ({
@@ -265,10 +275,10 @@ describe(`${CONVERSION} migration (Postgres via PGlite)`, (): void => {
     expect(await articles()).toEqual(converted);
 
     // The converted rows rehydrate into the aggregate, without cover.
-    const project: Project | null = await new DrizzleProjectRepository(handle.db).get('partial');
+    const project: Article | null = await new DrizzleArticleRepository(handle.db).get('partial');
     expect(project?.missingFor(['fr', 'en'])).toEqual([]);
     expect(project?.snapshot().cover).toBeNull();
-    const french: Project | null = await new DrizzleProjectRepository(handle.db).get('french');
+    const french: Article | null = await new DrizzleArticleRepository(handle.db).get('french');
     expect(french?.missingFor(['fr', 'en'])).toEqual(['article.en']);
   });
 });

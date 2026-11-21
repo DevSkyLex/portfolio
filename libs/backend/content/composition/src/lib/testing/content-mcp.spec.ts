@@ -10,7 +10,7 @@ import {
   migrateContentDatabase,
   seedContent,
 } from '@vfortin/content-adapters-out';
-import { GetAdminProject, PublishProject, ReviseProject } from '@vfortin/content-application';
+import { GetAdminArticle, PublishArticle, ReviseArticle } from '@vfortin/content-application';
 import { type JWK, SignJWT, exportJWK, generateKeyPair } from 'jose';
 import { mkdtempSync, rmSync } from 'node:fs';
 import type { Server } from 'node:http';
@@ -189,35 +189,35 @@ describe('ContentModule', (): void => {
     const tools: { name: string; inputSchema: { required?: string[] } }[] =
       listed.body.result.tools;
     expect(tools.map((tool): string => tool.name).sort()).toEqual([
+      'create_article',
       'create_faq_entry',
-      'create_project',
       'create_timeline_entry',
       'delete_faq_entry',
       'delete_timeline_entry',
+      'get_article',
       'get_faq_entry',
       'get_legal_document',
       'get_maintenance',
       'get_profile',
-      'get_project',
       'get_publication_status',
       'get_timeline_entry',
+      'list_articles',
       'list_faq',
-      'list_projects',
       'list_timeline',
-      'publish_project',
+      'publish_article',
       'reorder_faq',
       'reorder_timeline',
+      'revise_article',
       'revise_faq_entry',
       'revise_legal_document',
       'revise_profile',
-      'revise_project',
       'revise_timeline_entry',
       'set_maintenance',
-      'unpublish_project',
+      'unpublish_article',
       'upload_media',
     ]);
     expect(
-      tools.find((tool): boolean => tool.name === 'revise_project')?.inputSchema.required,
+      tools.find((tool): boolean => tool.name === 'revise_article')?.inputSchema.required,
     ).toEqual(expect.arrayContaining(['id', 'expectedVersion', 'revision']));
   });
 
@@ -270,7 +270,7 @@ describe('ContentModule', (): void => {
       await client.connect(transport);
       expect((await client.listTools()).tools).toHaveLength(26);
       const result: Awaited<ReturnType<Client['callTool']>> = await client.callTool({
-        name: 'get_project',
+        name: 'get_article',
         arguments: { id: 'project-neighborhood-atlas' },
       });
       expect(result.structuredContent).toMatchObject({ id: 'project-neighborhood-atlas' });
@@ -292,7 +292,7 @@ describe('ContentModule', (): void => {
     expect(denied.headers['www-authenticate']).toContain('error="insufficient_scope"');
     expect(denied.headers['www-authenticate']).toContain('content:write');
     const publishedEditDenied: request.Response = await call(
-      'revise_project',
+      'revise_article',
       {
         id: original.id,
         expectedVersion: original.version,
@@ -353,6 +353,66 @@ describe('ContentModule', (): void => {
     expect(data<ProjectResponse>(await call('get_project', { id: created.id })).version).toBe(1);
   });
 
+  it('uses the article tools without a kind and requires publish consent for edits', async (): Promise<void> => {
+    const source: ProjectResponse = data(
+      await call('get_article', { id: 'project-neighborhood-atlas' }),
+    );
+    const kind = 'article' as const;
+    const taxonomy = {
+      category: { key: 'architecture', label: { fr: 'Architecture', en: 'Architecture' } },
+      tags: [{ key: 'ssr', label: { fr: 'Rendu serveur', en: 'Server rendering' } }],
+    } as const;
+    const draft: ProjectResponse = data(
+      await call(
+        'create_article',
+        { article: { ...source, techs: undefined, taxonomy } },
+        writeToken,
+      ),
+    );
+    expect(draft).toMatchObject({ kind, taxonomy, techs: [], status: 'draft' });
+    expect(data(await call('get_project', { id: draft.id }))).toMatchObject({ status: 404 });
+    expect(data(await call('list_articles'))).toMatchObject({
+      member: expect.arrayContaining([
+        expect.objectContaining({ id: source.id }),
+        expect.objectContaining({ id: draft.id }),
+      ]),
+    });
+    const classified = {
+      ...taxonomy,
+      tags: [
+        ...taxonomy.tags,
+        { key: 'typescript', label: { fr: 'TypeScript', en: 'TypeScript' } },
+      ],
+    } as const;
+    const revised: ProjectResponse = data(
+      await call(
+        'revise_article',
+        {
+          id: draft.id,
+          expectedVersion: draft.version,
+          revision: { ...draft, techs: undefined, taxonomy: classified },
+        },
+        writeToken,
+      ),
+    );
+    expect(revised).toMatchObject({ kind, taxonomy: classified, techs: [], status: 'draft' });
+    const published: ProjectResponse = data(
+      await call(
+        'publish_article',
+        { id: draft.id, expectedVersion: revised.version },
+        publishToken,
+      ),
+    );
+    expect(published).toMatchObject({ kind, taxonomy: classified, status: 'published' });
+    const denied: request.Response = await call(
+      'revise_article',
+      { id: draft.id, expectedVersion: published.version, revision: published },
+      writeToken,
+    );
+    expect(denied.status).toBe(403);
+    expect(denied.headers['www-authenticate']).toContain('content:publish');
+  });
+
   it('publishes and unpublishes using the current project version', async (): Promise<void> => {
     const original: ProjectResponse = data(
       await call('get_project', { id: 'project-neighborhood-atlas' }),
@@ -405,13 +465,13 @@ describe('ContentModule', (): void => {
         publishToken,
       ),
     );
-    const revise: ReviseProject = app.get<ReviseProject>(ReviseProject);
-    const originalExecute: ReviseProject['execute'] = revise.execute.bind(revise);
-    const publish: PublishProject = app.get<PublishProject>(PublishProject);
+    const revise: ReviseArticle = app.get<ReviseArticle>(ReviseArticle);
+    const originalExecute: ReviseArticle['execute'] = revise.execute.bind(revise);
+    const publish: PublishArticle = app.get<PublishArticle>(PublishArticle);
     const spy: ReturnType<typeof vi.spyOn> = vi
       .spyOn(revise, 'execute')
       .mockImplementationOnce(
-        async (id, expectedVersion, revision): ReturnType<ReviseProject['execute']> => {
+        async (id, expectedVersion, revision): ReturnType<ReviseArticle['execute']> => {
           // An edit permitted against a guessed version must not race this real publication.
           await publish.execute(id, draft.version);
           return originalExecute(id, expectedVersion, revision);
@@ -457,13 +517,13 @@ describe('ContentModule', (): void => {
         publishToken,
       ),
     );
-    const revise: ReviseProject = app.get<ReviseProject>(ReviseProject);
-    const originalExecute: ReviseProject['execute'] = revise.execute.bind(revise);
-    const publish: PublishProject = app.get<PublishProject>(PublishProject);
+    const revise: ReviseArticle = app.get<ReviseArticle>(ReviseArticle);
+    const originalExecute: ReviseArticle['execute'] = revise.execute.bind(revise);
+    const publish: PublishArticle = app.get<PublishArticle>(PublishArticle);
     const spy: ReturnType<typeof vi.spyOn> = vi
       .spyOn(revise, 'execute')
       .mockImplementationOnce(
-        async (id, expectedVersion, revision): ReturnType<ReviseProject['execute']> => {
+        async (id, expectedVersion, revision): ReturnType<ReviseArticle['execute']> => {
           await publish.execute(id, draft.version);
           return originalExecute(id, expectedVersion, revision);
         },
@@ -658,7 +718,7 @@ describe('ContentModule', (): void => {
     expect(missing.body.result.isError).toBe(true);
     expect(data(missing)).toMatchObject({ status: 404, code: 'content.not-found' });
     const spy: ReturnType<typeof vi.spyOn> = vi
-      .spyOn(app.get<GetAdminProject>(GetAdminProject), 'execute')
+      .spyOn(app.get<GetAdminArticle>(GetAdminArticle), 'execute')
       .mockRejectedValueOnce(new Error('database-password-sensitive-stack'));
     try {
       const failed: request.Response = await call('get_project', {
@@ -676,7 +736,7 @@ describe('ContentModule', (): void => {
       await call('get_project', { id: 'project-neighborhood-atlas' }),
     );
     const spy: ReturnType<typeof vi.spyOn> = vi
-      .spyOn(app.get<GetAdminProject>(GetAdminProject), 'execute')
+      .spyOn(app.get<GetAdminArticle>(GetAdminArticle), 'execute')
       .mockRejectedValueOnce(new Error('unavailable status lookup'));
     try {
       const denied: request.Response = await call(

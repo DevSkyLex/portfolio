@@ -9,7 +9,7 @@ import type {
   LegalDocumentKind,
   MaintenanceMode,
   Profile,
-  Project,
+  Article,
   SkillGroup,
   TimelineEntry,
 } from '@vfortin/content-domain';
@@ -23,7 +23,7 @@ import {
   toLegalDocument,
   toMediaRecord,
   toProfile,
-  toProject,
+  toArticle,
   toSkillGroup,
   toTimelineEntry,
 } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
@@ -135,18 +135,18 @@ export class DrizzleContentRepository implements ContentRepository {
   }
 
   /**
-   * Method listProjects
-   * @method listProjects
+   * Method listArticles
+   * @method listArticles
    *
    * @description
    * Loads every project row, including drafts, and rehydrates each aggregate.
    *
-   * @returns {Promise<Project[]>} Persisted project aggregates.
+   * @returns {Promise<Article[]>} Persisted project aggregates.
    */
-  public async listProjects(): Promise<Project[]> {
+  public async listArticles(): Promise<Article[]> {
     const rows: (typeof projects.$inferSelect)[] =
       this.frozen?.projects ?? (await this.db.select().from(projects));
-    return rows.map(toProject);
+    return rows.map(toArticle);
   }
 
   /**

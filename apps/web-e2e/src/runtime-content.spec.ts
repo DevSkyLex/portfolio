@@ -65,7 +65,7 @@ const ORBITE_FLOWCHART: FlowchartAppearance = {
   compactArrowheads: true,
 };
 
-test('serves and hydrates a fresh article without rebuilding the SSR application', async ({
+test('serves fresh collections and hydrates project diagrams without rebuilding', async ({
   request,
   page,
 }: {
@@ -78,29 +78,121 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
   );
   await request.post('/__e2e/snapshot');
   try {
-    const missing: APIResponse = await request.get('/fr/projects/runtime-publication');
+    const missing: APIResponse = await request.get('/fr/articles/runtime-publication');
     expect(missing.status()).toBe(404);
     expect(await (await request.get('/sitemap.xml')).text()).not.toContain(
-      '/projects/runtime-publication',
+      '/articles/runtime-publication',
     );
     await request.post('/__e2e/snapshot?changed=1');
     for (const locale of ['fr', 'en']) {
-      const response: APIResponse = await request.get(`/${locale}/projects/runtime-publication`);
+      const response: APIResponse = await request.get(`/${locale}/articles/runtime-publication`);
       expect(response.status()).toBe(200);
       const html: string = await response.text();
       expect(html).toContain('Runtime publication');
       expect(html).toContain('flowchart LR');
       expect(html).toMatch(/<title>[^<]+<\/title>/);
-      expect(html).toContain(`https://valentin-fortin.pro/${locale}/projects/runtime-publication`);
+      expect(html).toContain(`https://valentin-fortin.pro/${locale}/articles/runtime-publication`);
       expect(html).toMatch(/rel="canonical"/);
       expect(html).toMatch(/hreflang="fr"/);
       expect(html).toMatch(/hreflang="en"/);
     }
     expect(await (await request.get('/sitemap.xml')).text()).toContain(
-      '/fr/projects/runtime-publication',
+      '/fr/articles/runtime-publication',
     );
+    const sitemap: string = await (await request.get('/sitemap.xml')).text();
+    expect(sitemap).toContain('/fr/articles/sample-article-5');
+    expect(sitemap).toContain('/en/articles/sample-article-5');
+    expect((await request.get('/fr/articles/missing-article')).status()).toBe(404);
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/fr/');
+    await expect(page.locator('#projects content-project-card')).toHaveCount(4);
+    await expect(page.locator('#articles')).toHaveCount(0);
+    await page.getByRole('link', { name: 'Tous les projets', exact: true }).click();
+    await expect(page).toHaveURL(/\/fr\/articles\?category=projects$/);
+    await expect(page.locator('content-project-card')).toHaveCount(8);
+    await expect(page.getByRole('link', { name: /Sample project 3/ })).toBeVisible();
+    await page.getByRole('button', { name: 'Retirer le filtre Catégorie : Projets' }).click();
+    await expect(page).toHaveURL(/\/fr\/articles$/);
+    await expect(page.locator('content-project-card')).toHaveCount(13);
+    await expect(page.getByRole('link', { name: /Sample article 5/ })).toBeVisible();
+    const category: Locator = page.getByRole('button', { name: 'Catégorie', exact: true });
+    await category.click();
+    const categories: Locator = page.getByRole('dialog', { name: 'Filtrer par Catégorie' });
+    await categories.getByRole('checkbox', { name: /^Ingénierie\b/ }).check();
+    await expect(page.locator('content-project-card')).toHaveCount(3);
+    await categories.getByRole('checkbox', { name: /^Design\b/ }).check();
+    await expect(page.locator('content-project-card')).toHaveCount(5);
+    await page.keyboard.press('Escape');
+    await expect(category).toBeFocused();
+    const tag: Locator = page.getByRole('button', { name: 'Tag', exact: true });
+    await tag.press('Enter');
+    await page
+      .getByRole('dialog', { name: 'Filtrer par Tag' })
+      .getByRole('checkbox', { name: /^Web\b/ })
+      .check();
+    await expect(page.locator('content-project-card')).toHaveCount(3);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Retirer le filtre Catégorie : Design' }).click();
+    await expect(page.locator('content-project-card')).toHaveCount(2);
+    const search: Locator = page.getByRole('searchbox', { name: 'Rechercher des articles' });
+    await search.fill('Sample article 3');
+    await expect(page.locator('content-project-card')).toHaveCount(1);
+    await expect
+      .poll((): string | null => new URL(page.url()).searchParams.get('q'))
+      .toBe('Sample article 3');
+    expect(new URL(page.url()).searchParams.getAll('category')).toEqual(['engineering']);
+    expect(new URL(page.url()).searchParams.getAll('tag')).toEqual(['web']);
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-app', '');
+    await expect(search).toHaveValue('Sample article 3');
+    await expect(page.locator('content-project-card')).toHaveCount(1);
+    await expect(
+      page.getByRole('button', { name: 'Retirer le filtre Catégorie : Ingénierie' }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Retirer le filtre Tag : Web' })).toBeVisible();
+    await search.fill('missing-article-query');
+    await expect(page.locator('content-project-card')).toHaveCount(0);
+    const empty: Locator = page.locator('#article-results [data-slot="empty"]');
+    await expect(empty.getByRole('heading', { name: 'Aucun résultat.' })).toBeVisible();
+    await expect(empty.getByText('Modifiez la recherche ou retirez des filtres.')).toBeVisible();
+    await page.getByRole('button', { name: 'Réinitialiser', exact: true }).click();
+    await expect(search).toHaveValue('');
+    await expect(page.locator('content-project-card')).toHaveCount(13);
+    await expect(empty).toHaveCount(0);
+    await page.getByRole('link', { name: /Sample article 3/ }).click();
+    await expect(page).toHaveURL(/\/fr\/articles\/sample-article-3$/);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      'https://valentin-fortin.pro/fr/articles/sample-article-3',
+    );
+
     const admin: string = await (await request.get('/fr/admin/login')).text();
     expect(admin).not.toContain('Runtime publication');
+
+    await page.goto('/en/articles?category=projects');
+    await expect(page.locator('content-project-card')).toHaveCount(8);
+    await expect(
+      page.getByRole('button', { name: 'Remove the filter Category: Projects', exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: /Sample article 1/ })).toHaveCount(0);
+
+    await page.goto('/fr/articles?category=projects&tag=architecture');
+    await expect(page.locator('#article-results content-project-card')).toHaveCount(1);
+    const taggedProject: Locator = page.getByRole('link', { name: /Runtime publication/ });
+    await expect(taggedProject).toBeVisible();
+    await expect(
+      taggedProject.getByText('Architecture', { exact: true }).locator('content-tech-icon'),
+    ).toHaveCSS('display', 'none');
+    await expect(
+      taggedProject.getByText('Vue.js', { exact: true }).locator('content-tech-icon svg'),
+    ).toBeVisible();
+
+    await page.goto('/fr/articles?category=engineering&tag=vue');
+    await expect(page.locator('#article-results content-project-card')).toHaveCount(3);
+    await expect(
+      page.getByRole('button', { name: 'Retirer le filtre Tag : Vue.js' }),
+    ).toBeVisible();
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -114,7 +206,7 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
         },
       });
     });
-    await page.goto('/fr/projects/runtime-publication');
+    await page.goto('/fr/articles/runtime-publication');
     const diagram: Locator = page.getByRole('img', {
       name: 'The browser sends a request to the API.',
     });
@@ -252,7 +344,7 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
     const anchor: string = 'resultat-de-demonstration';
     await expect(destination).toHaveAttribute('id', anchor);
     await page.goto('about:blank');
-    await page.goto(`/fr/projects/runtime-publication#${anchor}`);
+    await page.goto(`/fr/articles/runtime-publication#${anchor}`);
     await expect(largeImage).toBeVisible();
     await expect
       .poll((): Promise<number> =>

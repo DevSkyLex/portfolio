@@ -5,7 +5,8 @@ import type {
   MaintenanceMessage,
   ProfileLinkKind,
   ProjectPeriodProps,
-  ProjectSeoProps,
+  PublicationKind,
+  ArticleSeoProps,
 } from '@vfortin/content-domain';
 import {
   type PgSchema,
@@ -104,7 +105,7 @@ export interface CoverColumn {
  * JSON representation of the search title and description of a project (D42); the keywords have their
  * own column, so the rows written before them need no rewrite.
  */
-export type SeoTextsColumn = Pick<ProjectSeoProps, 'title' | 'description'>;
+export type SeoTextsColumn = Pick<ArticleSeoProps, 'title' | 'description'>;
 
 /**
  * Type SeoKeywordsColumn
@@ -113,7 +114,7 @@ export type SeoTextsColumn = Pick<ProjectSeoProps, 'title' | 'description'>;
  * @description
  * JSON representation of the search keywords of a project per language, empty lists left out.
  */
-export type SeoKeywordsColumn = ProjectSeoProps['keywords'];
+export type SeoKeywordsColumn = ArticleSeoProps['keywords'];
 
 /**
  * Constant EMPTY_SEO
@@ -140,6 +141,14 @@ const EMPTY_SEO_KEYWORDS: SeoKeywordsColumn = {};
  */
 export const projects = contentSchema.table('projects', {
   id: text('id').primaryKey(),
+  kind: text('kind', { enum: ['project', 'article'] })
+    .$type<PublicationKind>()
+    .notNull()
+    .default('project'),
+  taxonomy: jsonb('taxonomy').$type<{
+    category: { key: string; label: LocalizedTextProps } | null;
+    tags: { key: string; label: LocalizedTextProps }[];
+  }>(),
   slug: text('slug').notNull().unique(),
   title: jsonb('title').$type<Text>().notNull(),
   summary: jsonb('summary').$type<Text>().notNull(),

@@ -1,6 +1,6 @@
 import { GetPublishedContent, type PublishedContent } from '@vfortin/content-application';
 import { sql } from 'drizzle-orm';
-import type { Project } from '@vfortin/content-domain';
+import { LocalizedText, Article, Slug } from '@vfortin/content-domain';
 import { fileURLToPath } from 'node:url';
 import { seedContent } from '@internal/content-adapters-out/lib/seed/content.seed';
 import {
@@ -77,6 +77,46 @@ describe.each(TARGETS)('Content workers in parallel (%s)', (_target, url): void 
     await handle.close();
   });
 
+  it('persists article classification and keeps kind-filtered collections isolated', async (): Promise<void> => {
+    const uow: DrizzleContentUnitOfWork = new DrizzleContentUnitOfWork(handle.db);
+    await uow.run(async ({ projects }): Promise<void> => {
+      const source: Article | null = await projects.get('project-library-trails');
+      if (source === null) throw new Error('Fixture project missing');
+      const article: Article = Article.create(
+        { id: 'article-architecture', slug: Slug.of('architecture'), position: 0, kind: 'article' },
+        {
+          ...source.snapshot(),
+          taxonomy: {
+            category: {
+              key: 'engineering',
+              label: LocalizedText.of('taxonomy.category.label', {
+                fr: 'Architecture',
+                en: 'Engineering',
+              }),
+            },
+            tags: [
+              {
+                key: 'angular',
+                label: LocalizedText.of('taxonomy.tags.label', { fr: 'Angular', en: 'Angular' }),
+              },
+            ],
+          },
+        },
+      );
+      await projects.insert(article);
+      const restored: Article | null = await projects.get(article.id);
+      expect(restored?.kind).toBe('article');
+      expect(restored?.taxonomy.category?.label.in('en')).toBe('Engineering');
+      expect(restored?.taxonomy.tags[0]?.key).toBe('angular');
+      expect(
+        (await projects.list('project')).some((entry: Article): boolean => entry.id === article.id),
+      ).toBe(false);
+      expect((await projects.list('article')).map((entry: Article): string => entry.id)).toEqual([
+        article.id,
+      ]);
+    });
+  });
+
   it('keeps simultaneous content revision increments distinct', async (): Promise<void> => {
     const requests: DrizzleSiteBuildRequestRepository = new DrizzleSiteBuildRequestRepository(
       handle.db,
@@ -91,7 +131,7 @@ describe.each(TARGETS)('Content workers in parallel (%s)', (_target, url): void 
     const reads: [PublishedContent, void, PublishedContent] = await Promise.all([
       new GetPublishedContent(reader).execute(),
       uow.run(async ({ projects, buildRequests }): Promise<void> => {
-        const project: Project | null = await projects.get('project-library-trails');
+        const project: Article | null = await projects.get('project-library-trails');
         if (!project) throw new Error('project missing');
         project.unpublish();
         await projects.save(project, 1);
@@ -100,7 +140,7 @@ describe.each(TARGETS)('Content workers in parallel (%s)', (_target, url): void 
       new GetPublishedContent(reader).execute(),
     ]);
     for (const content of [reads[0], reads[2]]) {
-      const hasLibraryTrails: boolean = content.projects.some(
+      const hasLibraryTrails: boolean = content.articles.some(
         (p): boolean => p.slug.value === 'library-trails',
       );
       expect(hasLibraryTrails).toBe(content.revision === 1);

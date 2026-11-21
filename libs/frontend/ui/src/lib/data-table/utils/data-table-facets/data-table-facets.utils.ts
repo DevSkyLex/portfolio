@@ -1,5 +1,6 @@
 import type { DataTableFacet } from '@internal/ui/lib/data-table/models/data-table/data-table-facet.interface';
 import type { DataTableFacetOption } from '@internal/ui/lib/data-table/models/data-table/data-table-facet-option.interface';
+import type { DataTableFacetView } from '@internal/ui/lib/data-table/models/data-table/data-table-facet-view.interface';
 
 /**
  * Function facetValues
@@ -67,6 +68,34 @@ export function facetOptions<T>(
   return [...values]
     .sort((a, b) => collator.compare(a, b))
     .map((value) => ({ value, label: value }));
+}
+
+/** Counts each option within the search and every other selected facet. */
+export function buildFacetViews<T>(
+  facets: readonly DataTableFacet<T>[],
+  rows: readonly T[],
+  searched: readonly T[],
+  selected: Readonly<Record<string, readonly string[]>>,
+  collator: Intl.Collator,
+): DataTableFacetView[] {
+  return facets
+    .map((facet) => {
+      const pool: readonly T[] = searched.filter((row) =>
+        matchesFacets(row, facets, selected, facet.id),
+      );
+      const checked: readonly string[] = selected[facet.id] ?? [];
+      return {
+        id: facet.id,
+        label: facet.label,
+        ...(facet.icon ? { icon: facet.icon } : {}),
+        options: facetOptions(facet, rows, collator).map((option) => ({
+          ...option,
+          count: pool.filter((row) => facetValues(facet, row).includes(option.value)).length,
+          selected: checked.includes(option.value),
+        })),
+      };
+    })
+    .filter((facet) => facet.options.length > 0);
 }
 
 /**

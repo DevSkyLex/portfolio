@@ -5,11 +5,13 @@ import type {
   ProjectSeoDto,
 } from '@vfortin/content-contracts';
 import { SHORT_FIELDS } from '@internal/content-web-data-access/lib/admin/constants/short-fields.constants';
+import { PROJECT_ARTICLE_CATEGORY } from '@internal/content-web-data-access/lib/admin/constants/project-article-category.constants';
 import type { AdminProject } from '@internal/content-web-data-access/lib/admin/models/admin-project/admin-project.type';
 import type { BilingualText } from '@internal/content-web-data-access/lib/admin/models/bilingual-text/bilingual-text.interface';
 import type { ProjectCoverDraft } from '@internal/content-web-data-access/lib/admin/models/project-cover/project-cover-draft.interface';
 import type { ProjectPeriod } from '@internal/content-web-data-access/lib/admin/models/project-period/project-period.interface';
 import type { ProjectDraft } from '@internal/content-web-data-access/lib/admin/models/project-draft/project-draft.interface';
+import type { PublicationTaxonomyDraft } from '@internal/content-web-data-access/lib/admin/models/publication-taxonomy/publication-taxonomy-draft.interface';
 import {
   emptyArticleDocument,
   isArticleEmpty,
@@ -141,7 +143,16 @@ const coverOf: (cover: ProjectCoverDraft) => ProjectCoverDto | null = (
  * @returns {ProjectDraft} Independent form values.
  */
 export function toProjectDraft(project: AdminProject): ProjectDraft {
+  const category: NonNullable<AdminProject['taxonomy']>['category'] =
+    project.taxonomy?.category ??
+    (project.taxonomy === undefined && project.kind !== 'article'
+      ? PROJECT_ARTICLE_CATEGORY
+      : null);
   return {
+    taxonomy: {
+      category: { key: category?.key ?? '', label: flat(category?.label ?? { fr: '' }) },
+      tags: articleTags(project).map((tag) => ({ key: tag.key, label: flat(tag.label) })),
+    },
     title: flat(project.title),
     summary: flat(project.summary),
     lead: flat(project.lead),
@@ -150,7 +161,6 @@ export function toProjectDraft(project: AdminProject): ProjectDraft {
     role: flat(project.role),
     place: flat(project.place),
     siteUrl: project.siteUrl ?? '',
-    techs: [...project.techs],
     featured: project.featured,
     article: {
       fr: withFigureSources(project.article.fr, project.media),
@@ -169,12 +179,47 @@ export function toProjectDraft(project: AdminProject): ProjectDraft {
   };
 }
 
+/** Longest taxonomy key and label the article contract accepts (D58). */
+const TAXONOMY_KEY_MAX: number = 80;
+
+/**
+ * Bounded tag key of a legacy technology, the browser copy of the domain's `technologyTagKey`: a key
+ * within 80 characters is kept, a longer one becomes its stem and a 64-bit FNV-1a suffix. The article
+ * API exposes such a technology under the bounded key, so merging by this key never duplicates it.
+ */
+export function technologyTagKey(tech: string): string {
+  if (tech.length <= TAXONOMY_KEY_MAX) return tech;
+  let hash: bigint = 0xcbf29ce484222325n;
+  for (const character of tech) {
+    hash = BigInt.asUintN(64, (hash ^ BigInt(character.charCodeAt(0))) * 0x100000001b3n);
+  }
+  const suffix: string = hash.toString(16);
+  const stem: string = tech.slice(0, TAXONOMY_KEY_MAX - suffix.length - 1).replace(/-$/, '');
+  return `${stem}-${suffix}`;
+}
+
+/** Keeps legacy technology keys available as tags until their next canonical article save. */
+export function articleTags(
+  article: Pick<AdminProject, 'taxonomy' | 'techs'>,
+): NonNullable<AdminProject['taxonomy']>['tags'] {
+  const tags: Map<string, NonNullable<AdminProject['taxonomy']>['tags'][number]> = new Map(
+    (article.taxonomy?.tags ?? []).map((tag) => [tag.key, tag]),
+  );
+  for (const tech of article.techs) {
+    // The bounded key matches the tag the API already projected; the label stays within the limit.
+    const key: string = technologyTagKey(tech);
+    const label: string = tech.slice(0, TAXONOMY_KEY_MAX);
+    if (!tags.has(key)) tags.set(key, { key, label: { fr: label, en: label } });
+  }
+  return [...tags.values()];
+}
+
 /**
  * Function toRevisionRequest
  *
  * @description
- * Serializes editor values into the revision contract: trimmed texts, the period, normalized
- * technology keys, the article documents without display attributes (an empty English document is
+ * Serializes editor values into the revision contract: trimmed texts, the period, tags,
+ * the article documents without display attributes (an empty English document is
  * omitted), the cover, the search texts without their blank languages and the trimmed keywords (an
  * empty English list omitted).
  *
@@ -193,13 +238,24 @@ export function toRevisionRequest(draft: ProjectDraft): ProjectRevisionRequest {
     ),
   ) as Pick<ProjectRevisionRequest, (typeof SHORT_FIELDS)[number]>;
   if (draft.period === null) throw new Error('A project period is required.');
+  const taxonomy: PublicationTaxonomyDraft = draft.taxonomy;
   return {
     ...short,
+    taxonomy: {
+      category: taxonomy.category.label.fr.trim()
+        ? {
+            key: taxonomy.category.key || publicationCategoryKey(taxonomy.category.label.fr),
+            label: localized(taxonomy.category.label),
+          }
+        : null,
+      tags: taxonomy.tags.map((tag) => ({
+        key: tag.key || publicationTagKey(tag.label.fr),
+        label: localized(tag.label),
+      })),
+    },
     period: periodOf(draft.period),
     siteUrl: draft.siteUrl.trim() || null,
-    techs: draft.techs
-      .map((tech: string): string => tech.trim())
-      .filter((tech: string): boolean => tech !== ''),
+    techs: [],
     featured: draft.featured,
     article: isArticleEmpty(draft.article.en)
       ? { fr: withoutFigureSources(draft.article.fr) }
@@ -214,4 +270,22 @@ export function toRevisionRequest(draft: ProjectDraft): ProjectRevisionRequest {
       keywords: keywordsOf(draft.seo.keywords),
     },
   };
+}
+
+/** Derives a stable lowercase taxonomy key from a French label. */
+export function publicationTagKey(label: string): string {
+  return label
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80)
+    .replace(/-$/, '');
+}
+
+/** The built-in case-study category retains its key in both languages. */
+export function publicationCategoryKey(label: string): string {
+  const key: string = publicationTagKey(label);
+  return key === 'projets' ? PROJECT_ARTICLE_CATEGORY.key : key;
 }

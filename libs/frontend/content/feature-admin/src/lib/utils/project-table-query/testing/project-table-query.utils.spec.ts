@@ -16,6 +16,7 @@ describe('projectTableState', (): void => {
           statut: 'publie,brouillon,publie,autre',
           accueil: 'oui',
           completude: '',
+          tag: 'architecture,typescript,Invalid Tag,architecture',
           tri: 'version',
           ordre: 'desc',
           page: '3',
@@ -25,7 +26,11 @@ describe('projectTableState', (): void => {
     ).toEqual({
       ...base,
       search: 'médecin',
-      facets: { statut: ['publie', 'brouillon'], accueil: ['oui'] },
+      facets: {
+        statut: ['publie', 'brouillon'],
+        accueil: ['oui'],
+        tag: ['architecture', 'typescript'],
+      },
       sort: [{ column: 'version', direction: 'desc' }],
       page: 2,
     });
@@ -50,7 +55,11 @@ describe('projectTableQuery', (): void => {
     const state: DataTableState = {
       ...DATA_TABLE_INITIAL_STATE,
       search: 'angular',
-      facets: { completude: ['a-completer'], statut: ['publie', 'brouillon'] },
+      facets: {
+        completude: ['a-completer'],
+        statut: ['publie', 'brouillon'],
+        tag: ['architecture'],
+      },
       sort: [
         { column: 'titre', direction: 'asc' },
         { column: 'version', direction: 'desc' },
@@ -66,6 +75,7 @@ describe('projectTableQuery', (): void => {
       statut: 'publie,brouillon',
       accueil: null,
       completude: 'a-completer',
+      tag: 'architecture',
     });
     expect(
       projectTableState(
@@ -78,7 +88,7 @@ describe('projectTableQuery', (): void => {
       ),
     ).toEqual({ ...state, sort: [{ column: 'titre', direction: 'asc' }] });
     expect(Object.values(projectTableQuery({ ...DATA_TABLE_INITIAL_STATE, search: '  ' }))).toEqual(
-      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
     );
   });
 });

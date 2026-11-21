@@ -40,10 +40,10 @@ export const ADMIN_SHORTCUT_GROUPS: readonly AdminShortcutGroup[] = [
   },
   {
     id: 'projects',
-    label: $localize`:@@admin.shell.shortcuts.group.projects:Projets`,
+    label: $localize`:@@admin.shell.shortcuts.group.projects:Articles`,
     shortcuts: [
       {
-        label: $localize`:@@admin.shell.shortcuts.save:Enregistrer un projet`,
+        label: $localize`:@@admin.shell.shortcuts.save:Enregistrer un article`,
         combos: [[ADMIN_MODIFIER, 'S']],
         spoken: `${ADMIN_MODIFIER} S`,
       },

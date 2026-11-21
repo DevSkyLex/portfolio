@@ -15,7 +15,7 @@ import { TechLogoComponent } from '@internal/content-web-ui/lib/tech/components/
   selector: 'content-tech-icon',
   imports: [TechLogoComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'inline-flex shrink-0', 'aria-hidden': 'true' },
+  host: { class: 'inline-flex shrink-0 [&:not(:has(svg))]:hidden', 'aria-hidden': 'true' },
   template: `
     @defer (on immediate; hydrate never) {
       <content-tech-logo [tech]="tech()" />

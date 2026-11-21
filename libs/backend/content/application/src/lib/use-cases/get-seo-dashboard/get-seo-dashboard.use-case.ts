@@ -1,15 +1,15 @@
 import {
   LOCALES,
-  type Project,
-  type ProjectSeoAudit,
+  type Article,
+  type ArticleSeoAudit,
   type SeoAuditIssue,
   type SeoAuditSeverity,
   type SeoRange,
-  auditProjectSeo,
+  auditArticleSeo,
 } from '@vfortin/content-domain';
 import type {
   Clock,
-  ProjectRepository,
+  ArticleRepository,
 } from '@internal/content-application/lib/ports/content/content.ports';
 import type {
   AnalyticsData,
@@ -30,10 +30,9 @@ import { SEO_REFRESH_INTERVAL_MS } from '@internal/content-application/lib/use-c
  * Constant STATIC_PAGES
  *
  * @description
- * Pages of the sitemap that exist in every locale whatever the content (home, legal notice, privacy
- * policy), as `apps/web/scripts/generate-seo-files.mjs` lists them.
+ * Sitemap pages present in every locale: home, articles, legal notice and privacy.
  */
-const STATIC_PAGES: number = 3;
+const STATIC_PAGES: number = 4;
 
 /**
  * Type SeoSectionView
@@ -130,7 +129,7 @@ export interface SeoAuditView {
    * @description
    * Audit of each published project, in display order.
    */
-  readonly projects: readonly ProjectSeoAudit[];
+  readonly projects: readonly ArticleSeoAudit[];
 
   /**
    * Property sitemap
@@ -293,18 +292,18 @@ function refreshOf(state: SeoRefreshState, now: Date): SeoRefreshView {
  * @description
  * Audits the published projects in display order and counts the sitemap the next build writes.
  *
- * @param {readonly Project[]} projects - Stored projects, drafts included.
+ * @param {readonly Article[]} projects - Stored projects, drafts included.
  * @param {Date} now - Audit time.
  * @returns {SeoAuditView} Audit.
  */
-function auditOf(projects: readonly Project[], now: Date): SeoAuditView {
-  const published: Project[] = projects
-    .filter((project: Project): boolean => project.isPublished())
-    .sort((a: Project, b: Project): number => a.position - b.position);
-  const audits: ProjectSeoAudit[] = published.map(auditProjectSeo);
+function auditOf(projects: readonly Article[], now: Date): SeoAuditView {
+  const published: Article[] = projects
+    .filter((project: Article): boolean => project.isPublished())
+    .sort((a: Article, b: Article): number => a.position - b.position);
+  const audits: ArticleSeoAudit[] = published.map(auditArticleSeo);
   const issues: Record<SeoAuditSeverity, number> = { error: 0, warning: 0, info: 0 };
   for (const issue of audits.flatMap(
-    (audit: ProjectSeoAudit): readonly SeoAuditIssue[] => audit.issues,
+    (audit: ArticleSeoAudit): readonly SeoAuditIssue[] => audit.issues,
   )) {
     issues[issue.severity] += 1;
   }
@@ -338,13 +337,13 @@ export class GetSeoDashboard {
    *
    * @param {SeoReportStore} store - Report cache.
    * @param {SeoSources} sources - Google sources, for their configuration state.
-   * @param {ProjectRepository} projects - Projects audited.
+   * @param {ArticleRepository} projects - Projects audited.
    * @param {Clock} clock - Time source.
    */
   public constructor(
     private readonly store: SeoReportStore,
     private readonly sources: SeoSources,
-    private readonly projects: ProjectRepository,
+    private readonly projects: ArticleRepository,
     private readonly clock: Clock,
   ) {}
   // #endregion
@@ -361,7 +360,7 @@ export class GetSeoDashboard {
    * @returns {Promise<SeoDashboardView>} Dashboard.
    */
   public async execute(range: SeoRange): Promise<SeoDashboardView> {
-    const [cache, projects]: [SeoDashboardCache, Project[]] = await Promise.all([
+    const [cache, projects]: [SeoDashboardCache, Article[]] = await Promise.all([
       this.store.load(range),
       this.projects.list(),
     ]);

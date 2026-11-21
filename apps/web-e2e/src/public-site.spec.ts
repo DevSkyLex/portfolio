@@ -28,8 +28,39 @@ test.describe('public site', (): void => {
       .getByRole('link', { name: /Carnet d’accessibilité/ })
       .first()
       .click();
-    await expect(page).toHaveURL(/\/projects\/accessibility-notebook$/);
+    await expect(page).toHaveURL(/\/articles\/accessibility-notebook$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Carnet d’accessibilité');
+  });
+
+  test('opens the project category from the home action and main navigation', async ({
+    page,
+  }: {
+    page: Page;
+  }): Promise<void> => {
+    await page.goto('/fr/');
+    await expect(page.getByRole('link', { name: 'Voir les projets', exact: true })).toHaveAttribute(
+      'href',
+      '/fr/articles?category=projects',
+    );
+    await page.getByRole('link', { name: 'Voir les projets', exact: true }).click();
+    await expect(page).toHaveURL(/\/fr\/articles\?category=projects$/);
+    await expect(
+      page.getByRole('button', { name: 'Retirer le filtre Catégorie : Projets', exact: true }),
+    ).toBeVisible();
+    await page.goto('/fr/');
+    await page.setViewportSize({ width: 1280, height: 800 });
+    // « Projets » is the home section; « Articles » opens the whole catalogue.
+    const banner: Locator = page.getByRole('banner');
+    await expect(banner.getByRole('link', { name: 'Projets', exact: true })).toHaveAttribute(
+      'href',
+      '/fr/#projects',
+    );
+    await banner.getByRole('link', { name: 'Articles', exact: true }).click();
+    await expect(page).toHaveURL(/\/fr\/articles$/);
+    await expect(banner.getByRole('link', { name: 'Articles', exact: true })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
   });
 
   test('lists the level-2 headings of a case study in its contents and reaches them by fragment', async ({
@@ -40,7 +71,7 @@ test.describe('public site', (): void => {
     // The contents column needs a 1024 px page; the mobile project would hide it.
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/projects/library-trails');
+    await page.goto('/articles/library-trails');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Parcours de lecture');
     const sections: { id: string; title: string }[] = await page
       .locator('article > section')
@@ -62,7 +93,7 @@ test.describe('public site', (): void => {
     expect(entries).toEqual(
       sections.map(
         (section: { id: string; title: string }): { href: string | null; label: string } => ({
-          href: `/fr/projects/library-trails#${section.id}`,
+          href: `/fr/articles/library-trails#${section.id}`,
           label: section.title,
         }),
       ),
@@ -101,7 +132,7 @@ test.describe('public site', (): void => {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('about:blank');
-    await page.goto(`/fr/projects/library-trails#${first.id}`);
+    await page.goto(`/fr/articles/library-trails#${first.id}`);
     await expect(article).toHaveCSS('row-gap', '40px');
     const mobileHeaderBottom: number = await banner.evaluate(
       (element: HTMLElement): number => element.getBoundingClientRect().bottom,
@@ -185,14 +216,14 @@ test.describe('admin', (): void => {
   }: {
     page: Page;
   }): Promise<void> => {
-    await page.goto('/admin/projects');
-    await expect(page).toHaveURL(/\/admin\/login\?redirect=%2Fadmin%2Fprojects$/);
+    await page.goto('/admin/articles');
+    await expect(page).toHaveURL(/\/admin\/login\?redirect=%2Fadmin%2Farticles$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Administration');
   });
 });
 
 test.describe('accessibility (axe)', (): void => {
-  for (const path of ['/', '/projects/library-trails', '/en/', '/privacy', '/error/404']) {
+  for (const path of ['/', '/articles/library-trails', '/en/', '/privacy', '/error/404']) {
     test(`no serious violation on ${path}`, async ({ page }: { page: Page }): Promise<void> => {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

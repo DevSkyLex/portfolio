@@ -54,6 +54,9 @@ export class ComboboxComponent<T = unknown>
    */
   public readonly value: ModelSignal<T | null> = model<T | null>(null);
 
+  /** Clears the selection after emitting it, for pickers that add items to a separate list. */
+  public readonly clearOnSelect: InputSignal<boolean> = input<boolean>(false);
+
   /**
    * Property emptyText
    *
@@ -210,6 +213,10 @@ export class ComboboxComponent<T = unknown>
    */
   protected commit(option: ComboboxOptionComponent): void {
     this.value.set(option.value() as T);
+    if (this.clearOnSelect()) {
+      this.clear();
+      return;
+    }
     this.write(option.text());
     this.query.set('');
   }

@@ -86,7 +86,7 @@ export class AdminProjectNavigationService implements AdminProjectNavigationPort
             id: project.id,
             label: project.title.fr,
             keywords: [project.slug, project.title.en ?? ''],
-            path: '/admin/projects/' + encodeURIComponent(project.id),
+            path: '/admin/articles/' + encodeURIComponent(project.id),
             status: project.status,
           }),
         ),

@@ -145,6 +145,50 @@ describe('runtimeSitemap', (): void => {
     expect(xml).toContain('hreflang="x-default"');
   });
 
+  it('includes both publication sources under article URLs and omits legacy project addresses', async (): Promise<void> => {
+    const project: ContentSnapshot['projects'][number] = {
+      slug: 'sample-project',
+      title: 'Project',
+      summary: 'Summary',
+      lead: 'Lead',
+      periodLabel: '2026',
+      client: 'Personal',
+      role: 'Development',
+      place: 'Web',
+      siteUrl: null,
+      techs: [],
+      featured: false,
+      article: { type: 'doc', content: [{ type: 'paragraph' }] },
+      cover: null,
+      seo: { title: null, description: null, keywords: [] },
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>(async (input): Promise<Response> => {
+        const locale: 'fr' | 'en' = String(input).endsWith('locale=en') ? 'en' : 'fr';
+        return Response.json({
+          ...snapshot,
+          locale,
+          projects: [project],
+          articles: [
+            {
+              ...project,
+              slug: 'sample-article',
+              taxonomy: { category: { key: 'engineering', label: 'Engineering' }, tags: [] },
+            },
+          ],
+        });
+      }),
+    );
+    const xml: string = await runtimeSitemap('https://portfolio.test', 'http://content');
+    for (const locale of ['fr', 'en']) {
+      expect(xml).toContain(`<loc>https://portfolio.test/${locale}/articles</loc>`);
+      expect(xml).toContain(`<loc>https://portfolio.test/${locale}/articles/sample-project</loc>`);
+      expect(xml).toContain(`<loc>https://portfolio.test/${locale}/articles/sample-article</loc>`);
+    }
+    expect(xml).not.toContain('/projects');
+  });
+
   it('refuses permanently mixed revisions', async (): Promise<void> => {
     vi.stubGlobal(
       'fetch',

@@ -18,7 +18,7 @@ import type {
   SeoSourceErrorDto,
   WebVitalsDataDto,
 } from '@vfortin/content-contracts';
-import type { ProjectSeoAudit, SeoAuditIssue } from '@vfortin/content-domain';
+import type { ArticleSeoAudit, SeoAuditIssue } from '@vfortin/content-domain';
 
 /**
  * Type SectionDto
@@ -178,7 +178,7 @@ export function toSeoDashboardDto(view: SeoDashboardView): SeoDashboardDto {
   const audit: SeoAuditDto = {
     generatedAt: view.audit.generatedAt.toISOString(),
     projects: view.audit.projects.map(
-      (project: ProjectSeoAudit): SeoAuditDto['projects'][number] => ({
+      (project: ArticleSeoAudit): SeoAuditDto['projects'][number] => ({
         id: project.projectId,
         slug: project.slug,
         title: project.title,

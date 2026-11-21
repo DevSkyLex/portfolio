@@ -18,13 +18,13 @@ export function seoAuditMessage(issue: SeoAuditIssue): string {
   const count: number = issue.count ?? 0;
   switch (issue.code) {
     case 'search-title-missing':
-      return $localize`:@@admin.dashboard.audit.issue.searchTitleMissing:Titre de recherche non renseigné : le titre du projet est utilisé.`;
+      return $localize`:@@admin.dashboard.audit.issue.searchTitleMissing:Titre de recherche non renseigné : le titre de l’article est utilisé.`;
     case 'search-title-too-short':
       return $localize`:@@admin.dashboard.audit.issue.searchTitleTooShort:Titre de recherche trop court : ${length}:length: caractères, ${limit}:limit: au minimum.`;
     case 'search-title-too-long':
       return $localize`:@@admin.dashboard.audit.issue.searchTitleTooLong:Titre de recherche trop long : ${length}:length: caractères, ${limit}:limit: au maximum.`;
     case 'search-description-missing':
-      return $localize`:@@admin.dashboard.audit.issue.searchDescriptionMissing:Description de recherche non renseignée : le résumé du projet est utilisé.`;
+      return $localize`:@@admin.dashboard.audit.issue.searchDescriptionMissing:Description de recherche non renseignée : le résumé de l’article est utilisé.`;
     case 'search-description-too-short':
       return $localize`:@@admin.dashboard.audit.issue.searchDescriptionTooShort:Description de recherche trop courte : ${length}:length: caractères, ${limit}:limit: au minimum.`;
     case 'search-description-too-long':

@@ -1,0 +1,78 @@
+<div data-slot="data-table-toolbar" [class]="toolbarClasses()">
+  @if (searchable()) {
+    <div uiInputGroup size="sm" [class]="searchClasses()">
+      <div uiInputGroupAddon>
+        <ng-icon [svg]="icons.search" [size]="size() === 'lg' ? '16' : '14'" aria-hidden="true" />
+      </div>
+      <input
+        uiInputGroupInput
+        [class]="size() === 'lg' ? 'text-[15px]' : 'text-[13px]'"
+        type="search"
+        [value]="state().search"
+        [placeholder]="labels().searchPlaceholder"
+        [attr.aria-label]="labels().searchLabel"
+        [attr.aria-controls]="controls() ?? null"
+        (input)="onSearch($event)"
+      />
+    </div>
+  }
+  @for (facet of facetViews(); track facet.id) {
+    <ui-data-table-facet-filter
+      [facet]="facet"
+      [labels]="labels()"
+      [size]="size()"
+      (valuesChanged)="facetChanged.emit({ id: facet.id, values: $event })"
+    />
+  }
+  <div class="ms-auto flex items-center gap-2"><ng-content /></div>
+</div>
+<!--
+    Active filters, in their own bar under the toolbar. It opens and closes like an accordion: the
+    grid row animates from 0fr to 1fr with its hairline on the moving edge, and the closed bar is inert, so it is neither seen, focused nor
+    read.
+  -->
+<div
+  data-slot="data-table-filters"
+  [class]="filterBarFrameClasses()"
+  [attr.data-open]="filtersActive() ? '' : null"
+  [inert]="!filtersActive()"
+>
+  <div class="min-h-0 overflow-hidden">
+    <div [class]="filterBarClasses()">
+      @for (filter of activeFilters(); track filter.facet + ':' + filter.value) {
+        <span [class]="chipClasses()" data-slot="data-table-filter-chip">
+          <span class="text-fg-faint" i18n="@@ui.data-table.filter-label"
+            >{{ filter.facetLabel }} :</span
+          >
+          {{ filter.label }}
+          <!-- A 20 px button whose ::after widens the pointer target to 24 px (WCAG 2.5.8). -->
+          <button
+            type="button"
+            class="relative inline-flex size-5 cursor-pointer items-center justify-center rounded-2xs text-fg-faint outline-2 outline-transparent transition-colors duration-(--dur-pop) ease-orbit after:absolute after:-inset-0.5 hover:bg-surface-hover hover:text-fg focus-visible:outline-accent/55 motion-reduce:transition-none"
+            [attr.aria-label]="labels().removeFilter(filter.facetLabel, filter.label)"
+            (click)="removeFilter(filter)"
+          >
+            <ng-icon [svg]="icons.remove" size="12" aria-hidden="true" />
+          </button>
+        </span>
+      }
+      @if (filtersActive()) {
+        <button
+          uiBtn
+          variant="ghost"
+          size="sm"
+          type="button"
+          [class]="
+            size() === 'lg'
+              ? 'h-9 rounded-md px-3 text-[14px]'
+              : 'h-8 rounded-sm px-2.5 text-[13px]'
+          "
+          data-slot="data-table-reset"
+          (click)="resetRequested.emit()"
+        >
+          {{ labels().reset }}
+        </button>
+      }
+    </div>
+  </div>
+</div>

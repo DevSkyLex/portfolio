@@ -47,10 +47,10 @@ or rendered configuration. A diagnostic logging failure preserves the original s
 still proceeds with owned cleanup.
 
 `@stack` journeys cover the password-only login, one-time code enrollment, the two-step login once it
-is enabled, cookie refresh, project navigation and dirty
-draft decisions, real form saves, visible optimistic revision conflicts and reload, UI publication,
+is enabled, cookie refresh, article navigation and dirty
+draft decisions, real form saves with taxonomy, visible optimistic revision conflicts and reload, UI publication,
 public form submission and notification delivery, UI inbox transitions with immediate sidebar counts,
-and failed logout followed by retry. Axe checks include login, project list/editor and inbox, rejecting
+and failed logout followed by retry. Axe checks include login, article list/editor and inbox, rejecting
 serious or critical WCAG A/AA violations without excluding controls. Trace recording is disabled for these tests
 so authentication bodies are not retained in trace artifacts. Normal public runs skip stack tests.
 

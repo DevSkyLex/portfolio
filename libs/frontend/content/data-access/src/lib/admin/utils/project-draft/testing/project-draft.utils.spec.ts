@@ -4,6 +4,7 @@ import type { AdminProject } from '@internal/content-web-data-access/lib/admin/m
 import type { ArticleDocumentDraft } from '@internal/content-web-data-access/lib/admin/models/article-document/article-document-draft.interface';
 import type { ProjectDraft } from '@internal/content-web-data-access/lib/admin/models/project-draft/project-draft.interface';
 import {
+  technologyTagKey,
   toProjectDraft,
   toRevisionRequest,
 } from '@internal/content-web-data-access/lib/admin/utils/project-draft/project-draft.utils';
@@ -83,6 +84,60 @@ const project: AdminProject = {
 };
 
 describe('toProjectDraft', (): void => {
+  it('round-trips article taxonomy while preserving existing keys and normalizing new tags', (): void => {
+    const draft: ProjectDraft = toProjectDraft({
+      ...project,
+      kind: 'article',
+      taxonomy: {
+        category: { key: 'architecture', label: { fr: 'Architecture', en: 'Architecture' } },
+        tags: [],
+      },
+    });
+    expect(draft.taxonomy).toBeDefined();
+    draft.taxonomy.tags.push({
+      key: '',
+      label: { fr: 'État applicatif', en: 'Application state' },
+    });
+    expect(toRevisionRequest(draft).taxonomy).toEqual({
+      category: { key: 'architecture', label: { fr: 'Architecture', en: 'Architecture' } },
+      tags: [
+        { key: 'flutter', label: { fr: 'flutter', en: 'flutter' } },
+        { key: 'dart', label: { fr: 'dart', en: 'dart' } },
+        { key: 'etat-applicatif', label: { fr: 'État applicatif', en: 'Application state' } },
+      ],
+    });
+    expect(toRevisionRequest(toProjectDraft(project)).taxonomy).toEqual({
+      category: { key: 'projects', label: { fr: 'Projets', en: 'Projects' } },
+      tags: [
+        { key: 'flutter', label: { fr: 'flutter', en: 'flutter' } },
+        { key: 'dart', label: { fr: 'dart', en: 'dart' } },
+      ],
+    });
+  });
+
+  it('keeps one bounded tag for an overlong legacy technology the API already projected', (): void => {
+    const tech: string = 'long-technology-key-'.repeat(7) + 'name';
+    // The key the domain's technologyTagKey gives the same technology (64-bit FNV-1a suffix).
+    const bounded: string =
+      'long-technology-key-long-technology-key-long-technology-key-lon-4fbe57d615fb77ca';
+    expect(technologyTagKey(tech)).toBe(bounded);
+    expect(technologyTagKey('angular')).toBe('angular');
+    const label: string = tech.slice(0, 80);
+    const draft: ProjectDraft = toProjectDraft({
+      ...project,
+      techs: [tech],
+      taxonomy: {
+        category: { key: 'projects', label: { fr: 'Projets', en: 'Projects' } },
+        tags: [{ key: bounded, label: { fr: label, en: label } }],
+      },
+    });
+    expect(draft.taxonomy.tags).toEqual([{ key: bounded, label: { fr: label, en: label } }]);
+    // Without the projected tag (legacy API), the technology still becomes one valid tag.
+    expect(toProjectDraft({ ...project, techs: [tech] }).taxonomy.tags).toEqual([
+      { key: bounded, label: { fr: label, en: label } },
+    ]);
+  });
+
   it('resolves the figure URLs for display and opens an unwritten English article empty', (): void => {
     const draft: ProjectDraft = toProjectDraft(project);
     expect(draft.article.fr.content[2]).toEqual({
@@ -121,7 +176,7 @@ describe('toRevisionRequest', (): void => {
     expect(request.article).toEqual({ fr: FRENCH });
     expect(request.cover).toEqual({ media: MEDIA, alt: { fr: 'Couverture' } });
     expect(request.lead).toEqual({ fr: 'Chapô' });
-    expect(request.techs).toEqual(['flutter', 'dart']);
+    expect(request.techs).toEqual([]);
     expect(request.seo).toEqual({
       title: { fr: 'Library Trails, app de covoiturage' },
       description: {},

@@ -1,8 +1,8 @@
 import {
   LocalizedText,
-  Project,
+  Article,
   ProjectPeriod,
-  ProjectSeo,
+  ArticleSeo,
   type ReportWindow,
   Slug,
   reportWindow,
@@ -11,7 +11,7 @@ import {
   SeoRefreshTooSoonError,
   SeoSourceError,
 } from '@internal/content-application/lib/errors/application-error';
-import type { ProjectRepository } from '@internal/content-application/lib/ports/content/content.ports';
+import type { ArticleRepository } from '@internal/content-application/lib/ports/content/content.ports';
 import type {
   AnalyticsReader,
   AnalyticsReport,
@@ -69,13 +69,13 @@ const text = (value: string): LocalizedText => LocalizedText.of('t', { fr: value
  *
  * @param {string} slug - Slug and identifier.
  * @param {{ position: number; published: boolean; featured?: boolean }} options - Order and state.
- * @returns {Project} Project.
+ * @returns {Article} Article.
  */
 function project(
   slug: string,
   options: { position: number; published: boolean; featured?: boolean },
-): Project {
-  return Project.rehydrate({
+): Article {
+  return Article.rehydrate({
     id: slug,
     slug: Slug.of(slug),
     title: text(slug),
@@ -93,7 +93,7 @@ function project(
     version: 1,
     article: { fr: articleDoc('Texte'), en: articleDoc('Text') },
     cover: null,
-    seo: ProjectSeo.empty(),
+    seo: ArticleSeo.empty(),
   });
 }
 
@@ -103,7 +103,7 @@ function project(
  * @description
  * Two published projects (the featured one later in the list) and a draft.
  */
-const PROJECTS: readonly Project[] = [
+const PROJECTS: readonly Article[] = [
   project('neighborhood-atlas', { position: 0, published: true }),
   project('library-trails', { position: 1, published: true, featured: true }),
   project('brouillon', { position: 2, published: false, featured: true }),
@@ -115,9 +115,9 @@ const PROJECTS: readonly Project[] = [
  * @description
  * Read-only project repository over `PROJECTS`.
  */
-const repository: ProjectRepository = {
-  list: async (): Promise<Project[]> => [...PROJECTS],
-  get: async (): Promise<Project | null> => null,
+const repository: ArticleRepository = {
+  list: async (): Promise<Article[]> => [...PROJECTS],
+  get: async (): Promise<Article | null> => null,
   save: async (): Promise<number> => 1,
   insert: async (): Promise<void> => undefined,
 };
@@ -245,8 +245,8 @@ describe('RefreshSeoDashboard', (): void => {
       `desktop ${ORIGIN}/fr/`,
       `mobile ${ORIGIN}/en/`,
       `desktop ${ORIGIN}/en/`,
-      `mobile ${ORIGIN}/fr/projects/library-trails`,
-      `desktop ${ORIGIN}/fr/projects/library-trails`,
+      `mobile ${ORIGIN}/fr/articles/library-trails`,
+      `desktop ${ORIGIN}/fr/articles/library-trails`,
     ]);
     expect(store.entries.get('search-console:28d')).toMatchObject({
       failure: null,
@@ -328,7 +328,7 @@ describe('RefreshSeoDashboard', (): void => {
   });
 
   it('keeps failed runs in the Web Vitals report unless every run failed', async (): Promise<void> => {
-    const urls: string[] = [`${ORIGIN}/projects/library-trails`];
+    const urls: string[] = [`${ORIGIN}/fr/articles/library-trails`];
     webVitals.measure.mockImplementation(
       async (_url: string, strategy: PageSpeedStrategy): Promise<WebVitalsMeasure> => {
         if (strategy === 'desktop')
@@ -366,7 +366,7 @@ describe('RefreshSeoDashboard', (): void => {
 
 describe('defaultWebVitalsUrls', (): void => {
   it('measures the home pages alone without a published project', (): void => {
-    expect(defaultWebVitalsUrls(ORIGIN, [PROJECTS[2] as Project])).toEqual([
+    expect(defaultWebVitalsUrls(ORIGIN, [PROJECTS[2] as Article])).toEqual([
       `${ORIGIN}/fr/`,
       `${ORIGIN}/en/`,
     ]);
@@ -375,10 +375,10 @@ describe('defaultWebVitalsUrls', (): void => {
   it('prefers the first project by position among equally featured ones', (): void => {
     expect(
       defaultWebVitalsUrls(ORIGIN, [
-        PROJECTS[0] as Project,
+        PROJECTS[0] as Article,
         project('iot', { position: 0, published: true }),
       ]),
-    ).toEqual([`${ORIGIN}/fr/`, `${ORIGIN}/en/`, `${ORIGIN}/fr/projects/neighborhood-atlas`]);
+    ).toEqual([`${ORIGIN}/fr/`, `${ORIGIN}/en/`, `${ORIGIN}/fr/articles/neighborhood-atlas`]);
   });
 });
 
@@ -458,7 +458,7 @@ describe('GetSeoDashboard', (): void => {
       'neighborhood-atlas',
       'library-trails',
     ]);
-    expect(view.audit.sitemap).toEqual({ pages: 5, urls: 10 });
+    expect(view.audit.sitemap).toEqual({ pages: 6, urls: 12 });
     expect(view.audit.totals.published).toBe(2);
     expect(view.audit.totals.drafts).toBe(1);
     expect(view.audit.totals.issues.warning).toBeGreaterThan(0);

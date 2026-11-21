@@ -12,7 +12,7 @@ import { seoDescription } from '@internal/content-web-data-access/lib/utils/seo-
  * @description
  * Head metadata of a case study (D42): the administrator's search title or `<title> — Valentin Fortin`,
  * the search description or the summary cut near 160 characters, the administrator's keywords or,
- * without any, the project's technology keys, the cover as share image and a schema.org
+ * without any, the article's tag keys, the cover as share image and a schema.org
  * `CreativeWork` carrying the keywords joined with commas. The snapshot carries no publication date,
  * so none is written.
  *
@@ -27,11 +27,13 @@ export function projectPageSeo(
   locale: SiteLocale,
   origin: string,
 ): PageSeo {
-  const path: string = `/projects/${encodeURIComponent(project.slug)}`;
+  const path: string = `/articles/${encodeURIComponent(project.slug)}`;
   const title: string = project.seo.title ?? `${project.title} — ${SITE_IDENTITY.name}`;
   const description: string = project.seo.description ?? seoDescription(project.summary);
   const keywords: readonly string[] =
-    project.seo.keywords.length > 0 ? project.seo.keywords : project.techs;
+    project.seo.keywords.length > 0
+      ? project.seo.keywords
+      : [...new Set([...(project.taxonomy?.tags.map((tag) => tag.key) ?? []), ...project.techs])];
   const url: string = localizedUrl(origin, locale, path);
   return pageSeo(
     {

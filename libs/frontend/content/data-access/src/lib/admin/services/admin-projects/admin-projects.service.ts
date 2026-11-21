@@ -2,9 +2,9 @@ import { toAdminProject } from '@internal/content-web-data-access/lib/admin/adap
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type {
-  AdminProjectDto,
-  AdminProjectList,
-  ProjectRevisionRequest,
+  AdminArticleDto,
+  AdminArticleList,
+  ArticleRevisionRequest,
 } from '@vfortin/content-contracts';
 import { type Observable, map } from 'rxjs';
 import { ADMIN_PROJECTS_ENDPOINT } from '@internal/content-web-data-access/lib/admin/constants/admin-projects-endpoint.constants';
@@ -16,7 +16,7 @@ import { ifMatch } from '@internal/content-web-data-access/lib/admin/utils/if-ma
  * @class AdminProjectsApiService
  *
  * @description
- * Calls the same-origin administrator project API; the identity interceptor supplies the access token.
+ * Calls the same-origin administrator article API; the identity interceptor supplies the access token.
  */
 @Injectable({ providedIn: 'root' })
 export class AdminProjectsApiService {
@@ -26,7 +26,7 @@ export class AdminProjectsApiService {
    * @readonly
    *
    * @description
-   * Angular HTTP client used for administrator project requests.
+   * Angular HTTP client used for administrator article requests.
    *
    * @type {HttpClient}
    */
@@ -39,13 +39,13 @@ export class AdminProjectsApiService {
    * @method list
    *
    * @description
-   * Loads the administrator project collection and exposes its `member` array.
+   * Loads the administrator article collection and exposes its `member` array.
    *
    * @returns {Observable<AdminProject[]>} Project list response, or an observable error from the HTTP request.
    */
   public list(): Observable<AdminProject[]> {
     return this.http
-      .get<AdminProjectList>(ADMIN_PROJECTS_ENDPOINT)
+      .get<AdminArticleList>(ADMIN_PROJECTS_ENDPOINT)
       .pipe(map((list): AdminProject[] => list.member.map(toAdminProject)));
   }
 
@@ -62,7 +62,7 @@ export class AdminProjectsApiService {
    */
   public get(id: string): Observable<AdminProject> {
     return this.http
-      .get<AdminProjectDto>(`${ADMIN_PROJECTS_ENDPOINT}/${encodeURIComponent(id)}`)
+      .get<AdminArticleDto>(`${ADMIN_PROJECTS_ENDPOINT}/${encodeURIComponent(id)}`)
       .pipe(map(toAdminProject));
   }
 
@@ -73,11 +73,11 @@ export class AdminProjectsApiService {
    * @description
    * Adds a draft project; the server derives its slug from the French title.
    *
-   * @param {ProjectRevisionRequest} body - Content of the new project.
+   * @param {ArticleRevisionRequest} body - Content of the new project.
    * @returns {Observable<AdminProject>} Created project at version 1.
    */
-  public create(body: ProjectRevisionRequest): Observable<AdminProject> {
-    return this.http.post<AdminProjectDto>(ADMIN_PROJECTS_ENDPOINT, body).pipe(map(toAdminProject));
+  public create(body: ArticleRevisionRequest): Observable<AdminProject> {
+    return this.http.post<AdminArticleDto>(ADMIN_PROJECTS_ENDPOINT, body).pipe(map(toAdminProject));
   }
 
   /**
@@ -89,17 +89,17 @@ export class AdminProjectsApiService {
    *
    * @param {string} id - Project identifier to revise.
    * @param {number} version - Version supplied in the `If-Match` header.
-   * @param {ProjectRevisionRequest} body - Validated revision request to persist.
+   * @param {ArticleRevisionRequest} body - Validated revision request to persist.
    *
    * @returns {Observable<AdminProject>} Updated project response, or an observable conflict/transport error.
    */
   public revise(
     id: string,
     version: number,
-    body: ProjectRevisionRequest,
+    body: ArticleRevisionRequest,
   ): Observable<AdminProject> {
     return this.http
-      .put<AdminProjectDto>(`${ADMIN_PROJECTS_ENDPOINT}/${encodeURIComponent(id)}`, body, {
+      .put<AdminArticleDto>(`${ADMIN_PROJECTS_ENDPOINT}/${encodeURIComponent(id)}`, body, {
         headers: ifMatch(version),
       })
       .pipe(map(toAdminProject));
@@ -119,7 +119,7 @@ export class AdminProjectsApiService {
    */
   public publish(id: string, version: number): Observable<AdminProject> {
     return this.http
-      .post<AdminProjectDto>(`${ADMIN_PROJECTS_ENDPOINT}/${encodeURIComponent(id)}/publish`, null, {
+      .post<AdminArticleDto>(`${ADMIN_PROJECTS_ENDPOINT}/${encodeURIComponent(id)}/publish`, null, {
         headers: ifMatch(version),
       })
       .pipe(map(toAdminProject));
@@ -139,7 +139,7 @@ export class AdminProjectsApiService {
    */
   public unpublish(id: string, version: number): Observable<AdminProject> {
     return this.http
-      .post<AdminProjectDto>(
+      .post<AdminArticleDto>(
         `${ADMIN_PROJECTS_ENDPOINT}/${encodeURIComponent(id)}/unpublish`,
         null,
         {

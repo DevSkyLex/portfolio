@@ -215,7 +215,7 @@ export function auditFigures(audit: SeoAudit, format: SeoFormatter): SeoFigure[]
     },
     {
       id: 'published',
-      label: $localize`:@@admin.dashboard.audit.totals.published:Projets publiés`,
+      label: $localize`:@@admin.dashboard.audit.totals.published:Articles publiés`,
       value: format.count(totals.published),
       delta: null,
     },

@@ -1,8 +1,8 @@
 import type {
-  Project,
-  ProjectCover,
-  ProjectProps,
-} from '@internal/content-domain/lib/project/project';
+  Article,
+  ArticleCover,
+  ArticleProps,
+} from '@internal/content-domain/lib/article/article';
 import type { ArticleDocument } from '@internal/content-domain/lib/values/article-document/article-document';
 import {
   LOCALES,
@@ -11,8 +11,8 @@ import {
 import {
   PROJECT_SEO_DESCRIPTION_MAX_LENGTH,
   PROJECT_SEO_TITLE_MAX_LENGTH,
-  type LocalizedProjectSeo,
-} from '@internal/content-domain/lib/values/project-seo/project-seo';
+  type LocalizedArticleSeo,
+} from '@internal/content-domain/lib/values/article-seo/article-seo';
 
 /**
  * Constant SEO_TITLE_MIN_LENGTH
@@ -159,7 +159,7 @@ export interface SeoAuditIssue {
  * @type SeoKeywordsSource
  *
  * @description
- * Origin of the keywords a page writes (D42): the administrator's, the technologies, or none.
+ * Origin of the keywords a page writes (D42): custom values, tags (legacy wire key `techs`), or none.
  */
 export type SeoKeywordsSource = 'custom' | 'techs' | 'none';
 
@@ -177,7 +177,7 @@ export interface SeoPageAudit {
    * @readonly
    *
    * @description
-   * Path of the page on the site (`/fr/projects/<slug>` or `/en/projects/<slug>`).
+   * Path of the page on the site (`/fr/articles/<slug>` or `/en/articles/<slug>`).
    */
   readonly path: string;
 
@@ -220,20 +220,20 @@ export interface SeoPageAudit {
 }
 
 /**
- * Interface ProjectSeoAudit
- * @interface ProjectSeoAudit
+ * Interface ArticleSeoAudit
+ * @interface ArticleSeoAudit
  *
  * @description
  * Audit of one published project: what each page emits and the findings.
  */
-export interface ProjectSeoAudit {
+export interface ArticleSeoAudit {
   // #region Properties
   /**
    * Property projectId
    * @readonly
    *
    * @description
-   * Project identifier.
+   * Article identifier.
    */
   readonly projectId: string;
 
@@ -354,21 +354,22 @@ function lengthIssues(
  * Computes the search texts of one page and its findings: text lengths, keywords, alternative texts
  * of the cover and of the article figures and, for English, untranslated fields.
  *
- * @param {Project} project - Published project.
+ * @param {Article} project - Published project.
  * @param {Locale} locale - Page language.
  * @returns {{ page: SeoPageAudit; issues: SeoAuditIssue[] }} Page texts and findings.
  */
 function auditPage(
-  project: Project,
+  project: Article,
   locale: Locale,
 ): { page: SeoPageAudit; issues: SeoAuditIssue[] } {
-  const props: ProjectProps = project.snapshot();
-  const seo: LocalizedProjectSeo = props.seo.in(locale);
+  const props: ArticleProps = project.snapshot();
+  const seo: LocalizedArticleSeo = props.seo.in(locale);
   const title: string = seo.title ?? `${props.title.in(locale)} — ${SEO_SITE_NAME}`;
   const description: string = seo.description ?? fallbackDescription(props.summary.in(locale));
+  const tags: string[] = project.taxonomy.tags.map((tag) => tag.key);
   const keywordsSource: SeoKeywordsSource =
-    seo.keywords.length > 0 ? 'custom' : props.techs.length > 0 ? 'techs' : 'none';
-  const keywords: readonly string[] = keywordsSource === 'custom' ? seo.keywords : props.techs;
+    seo.keywords.length > 0 ? 'custom' : tags.length > 0 ? 'techs' : 'none';
+  const keywords: readonly string[] = keywordsSource === 'custom' ? seo.keywords : tags;
   const issues: SeoAuditIssue[] = [
     ...lengthIssues(
       'search-title',
@@ -394,7 +395,7 @@ function auditPage(
       locale,
     });
   }
-  const cover: ProjectCover | null = props.cover;
+  const cover: ArticleCover | null = props.cover;
   if (cover !== null && (cover.alt[locale] ?? '').trim() === '') {
     issues.push({ code: 'cover-alt-missing', severity: 'error', locale });
   }
@@ -414,22 +415,22 @@ function auditPage(
       issues.push({ code: 'translation-missing', severity: 'error', locale, fields });
     }
   }
-  const path: string = `/${locale}/projects/${encodeURIComponent(props.slug.value)}`;
+  const path: string = `/${locale}/articles/${encodeURIComponent(props.slug.value)}`;
   return { page: { path, title, description, keywords: [...keywords], keywordsSource }, issues };
 }
 
 /**
- * Function auditProjectSeo
+ * Function auditArticleSeo
  *
  * @description
  * Audits the search and sharing metadata a published project's pages emit (D42, D47), from the
  * project alone: the same fallbacks as the public page, so the findings describe what crawlers read.
  *
- * @param {Project} project - Published project.
- * @returns {ProjectSeoAudit} Page texts and findings.
+ * @param {Article} project - Published project.
+ * @returns {ArticleSeoAudit} Page texts and findings.
  */
-export function auditProjectSeo(project: Project): ProjectSeoAudit {
-  const props: ProjectProps = project.snapshot();
+export function auditArticleSeo(project: Article): ArticleSeoAudit {
+  const props: ArticleProps = project.snapshot();
   const issues: SeoAuditIssue[] = [];
   if (props.cover === null) {
     // Without a cover the pages share no image (no og:image, a `summary` Twitter card).

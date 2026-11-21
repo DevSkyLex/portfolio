@@ -79,6 +79,6 @@ export function changesPublicSite(
  */
 export function projectCount(count: number): string {
   return count < 2
-    ? $localize`:@@admin.projects.count.one:${count}:count: projet`
-    : $localize`:@@admin.projects.count.other:${count}:count: projets`;
+    ? $localize`:@@admin.projects.count.one:${count}:count: article`
+    : $localize`:@@admin.projects.count.other:${count}:count: articles`;
 }

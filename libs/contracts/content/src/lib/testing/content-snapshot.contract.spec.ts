@@ -9,6 +9,21 @@ describe('ContentSnapshotSchema', (): void => {
     expect(ContentSnapshotSchema.parse(snapshot).projects[0]?.slug).toBe('library-trails');
   });
 
+  it('reads articles with locale-independent taxonomy keys and localized labels', (): void => {
+    const article = {
+      ...snapshot.projects[0],
+      slug: 'server-rendering',
+      taxonomy: {
+        category: { key: 'architecture', label: 'Architecture' },
+        tags: [{ key: 'ssr', label: 'Rendu côté serveur' }],
+      },
+    } as const;
+    expect(ContentSnapshotSchema.parse({ ...snapshot, articles: [article] }).articles).toEqual([
+      article,
+    ]);
+    expect(ContentSnapshotSchema.parse(snapshot).articles).toBeUndefined();
+  });
+
   it('rejects a malformed tech key', (): void => {
     const broken: typeof snapshot = structuredClone<typeof snapshot>(snapshot);
     broken.projects = broken.projects.map((project) => ({ ...project, techs: ['Vue.js'] }));

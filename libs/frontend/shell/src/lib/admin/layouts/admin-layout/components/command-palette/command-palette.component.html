@@ -2,7 +2,7 @@
   <ui-command class="rounded-none border-0 bg-transparent focus-within:outline-transparent">
     <ui-command-input
       class="min-h-13"
-      placeholder="Rechercher une page, un projet ou une action…"
+      placeholder="Rechercher une page, un article ou une action…"
       i18n-placeholder="@@admin.shell.palette.placeholder"
     />
     <div uiCommandList class="max-h-[min(32rem,60dvh)]">
@@ -15,7 +15,7 @@
             </div>
             <p uiEmptyTitle i18n="@@admin.shell.palette.empty">Aucun résultat</p>
             <p uiEmptyDescription i18n="@@admin.shell.palette.emptyHint">
-              Cherchez une section, le titre d’un projet ou une action, comme «&nbsp;Voir le
+              Cherchez une section, le titre d’un article ou une action, comme «&nbsp;Voir le
               site&nbsp;».
             </p>
           </div>
@@ -31,7 +31,7 @@
       </ui-command-group>
       @if (projects().length > 0) {
         <ui-command-group
-          heading="Ouvrir un projet"
+          heading="Ouvrir un article"
           i18n-heading="@@admin.shell.palette.openProject"
         >
           @for (project of projects(); track project.id) {

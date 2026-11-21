@@ -1,6 +1,5 @@
 <ui-data-table
-  caption="Projets"
-  i18n-caption="@@admin.projects.title"
+  [caption]="collectionLabel"
   density="compact"
   activatable
   selectable
@@ -8,10 +7,10 @@
   stickyHeader
   emptyLayout="fill"
   class="[--data-table-sticky-top:3rem]"
-  columnWidthsKey="portfolio.admin.table.projects.v2"
+  [columnWidthsKey]="'portfolio.admin.table.articles.v1'"
   [data]="rows()"
   [columns]="columns"
-  [facets]="facets"
+  [facets]="facets()"
   [rowKey]="key"
   [rowLabel]="name"
   [searchPredicate]="search"
@@ -88,18 +87,26 @@
   </ng-template>
 
   <ng-template uiDataTableCell="technos" [uiDataTableCellRows]="rows()" let-project>
+    @let tags = tagsFor(project);
+    <!-- Two badges and the count of the others fit the column; a long label ends in an ellipsis. -->
     <div class="flex w-0 min-w-full items-center gap-1 overflow-hidden">
-      @if (!project.techs.length) {
+      @if (!tags.length) {
         <ui-data-table-empty-cell />
       }
-      @for (tech of project.techs.slice(0, 3); track tech) {
-        <span uiBadge variant="outline" class="h-5 px-1.5 font-mono text-[11px] font-normal">{{
-          tech
-        }}</span>
+      @for (tag of tags.slice(0, 2); track tag.key) {
+        <span
+          uiBadge
+          variant="outline"
+          class="h-5 min-w-0 shrink px-1.5 font-mono text-[11px] font-normal"
+          [title]="tag.label"
+        >
+          <content-tech-icon class="size-3 shrink-0" [tech]="tag.key" />
+          <span class="truncate">{{ tag.label }}</span>
+        </span>
       }
-      @if (project.techs.length > 3) {
-        <span class="text-[12px] text-fg-faint" [title]="project.techs.slice(3).join(', ')"
-          >+{{ project.techs.length - 3 }}</span
+      @if (tags.length > 2) {
+        <span class="shrink-0 text-[12px] text-fg-faint" [title]="additionalTagLabels(tags)"
+          >+{{ tags.length - 2 }}</span
         >
       }
     </div>
@@ -167,9 +174,9 @@
         <div uiEmptyMedia variant="icon">
           <ng-icon [svg]="icons.empty" size="16" />
         </div>
-        <p uiEmptyTitle i18n="@@admin.projects.empty.title">Aucun projet</p>
-        <p uiEmptyDescription i18n="@@admin.projects.empty.description">
-          Les projets du service de contenu apparaissent ici, publiés ou en brouillon.
+        <p uiEmptyTitle i18n="@@admin.articles.empty.title">Aucun article</p>
+        <p uiEmptyDescription i18n="@@admin.articles.empty.description">
+          Créez un article, classez-le dans une catégorie et publiez-le quand il est prêt.
         </p>
       </div>
     </div>

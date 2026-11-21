@@ -108,7 +108,7 @@ describe('FixtureWebVitalsReader', (): void => {
     const reader: FixtureWebVitalsReader = new FixtureWebVitalsReader();
     const samples: WebVitalsMeasure[] = await Promise.all(
       Array.from({ length: 50 }, (_, index: number) =>
-        reader.measure(`http://localhost:8080/projects/${index}`, 'mobile'),
+        reader.measure(`http://localhost:8080/fr/articles/${index}`, 'mobile'),
       ),
     );
     expect(new Set(samples.map((sample) => sample.field?.scope))).toEqual(
@@ -124,7 +124,7 @@ describe('FixtureWebVitalsReader', (): void => {
     const reader: FixtureWebVitalsReader = new FixtureWebVitalsReader();
     const urls: string[] = [
       'http://localhost:8080/',
-      'http://localhost:8080/projects/library-trails',
+      'http://localhost:8080/fr/articles/library-trails',
     ];
     const measures: WebVitalsMeasure[] = [];
     for (const url of urls)

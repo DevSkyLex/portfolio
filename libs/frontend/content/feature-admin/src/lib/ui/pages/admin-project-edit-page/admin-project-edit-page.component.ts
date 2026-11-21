@@ -16,6 +16,7 @@ import {
   type Signal,
   type TemplateRef,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
@@ -33,10 +34,15 @@ import {
   type AdminMedia,
   type AdminProject,
   type ProjectDraft,
+  type PublicationTaxonomyDraft,
   AdminMediaApiService,
+  AdminProjectsApiService,
   AdminProjectsStore,
+  PROJECT_ARTICLE_CATEGORY,
+  articleTags,
   toProjectDraft,
 } from '@vfortin/content-web-data-access/admin';
+import { TECHS } from '@vfortin/content-web-ui';
 import { firstValueFrom } from 'rxjs';
 import {
   AlertDescriptionDirective,
@@ -69,6 +75,7 @@ import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/
 import type { ArticleImageUpload } from '@internal/content-web-feature-admin/lib/ui/components/article-editor/models/article-image-upload.type';
 import { projectPublicPath } from '@internal/content-web-feature-admin/lib/utils/project-public-path/project-public-path.utils';
 import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/utils/site-rebuild/site-rebuild.utils';
+import { editableArticleTags } from '@internal/content-web-feature-admin/lib/utils/article-tags/article-tags.utils';
 
 /**
  * Component AdminProjectEditPageComponent
@@ -117,6 +124,7 @@ import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/u
   templateUrl: './admin-project-edit-page.component.html',
 })
 export class AdminProjectEditPageComponent {
+  protected readonly collectionLabel: string = $localize`:@@admin.article.back:Tous les articles`;
   // #region Properties
   /**
    * Property id
@@ -200,7 +208,7 @@ export class AdminProjectEditPageComponent {
    *
    * @type {string}
    */
-  protected readonly createLabel: string = $localize`:@@admin.project.create.title:Nouveau projet`;
+  protected readonly createLabel: string = $localize`:@@admin.article.create.title:Nouvel article`;
 
   protected readonly saveFirst: string = $localize`:@@admin.project.publish.saveFirst:Enregistrez d’abord les modifications.`;
 
@@ -215,6 +223,17 @@ export class AdminProjectEditPageComponent {
    */
   private readonly mediaApi: AdminMediaApiService =
     inject<AdminMediaApiService>(AdminMediaApiService);
+
+  private readonly articleApi: AdminProjectsApiService =
+    inject<AdminProjectsApiService>(AdminProjectsApiService);
+  private readonly destroyRef: DestroyRef = inject<DestroyRef>(DestroyRef);
+  private readonly taxonomySource: WritableSignal<readonly AdminProject[]> = signal([]);
+  private taxonomyRequested: boolean = false;
+  protected readonly categoryChoices: Signal<readonly PublicationTaxonomyDraft['category'][]> =
+    computed(() => this.taxonomyChoices('category'));
+  protected readonly tagChoices: Signal<readonly PublicationTaxonomyDraft['category'][]> = computed(
+    () => this.taxonomyChoices('tags'),
+  );
 
   /**
    * Property uploaded
@@ -294,8 +313,22 @@ export class AdminProjectEditPageComponent {
   protected readonly values: Signal<ProjectFormValues | null> = computed<ProjectDraft | null>(
     (): ProjectDraft | null => {
       const project: AdminProject | null = this.project();
-      if (project) return toProjectDraft(project);
-      return this.creating() ? EMPTY_PROJECT_DRAFT : null;
+      if (project) {
+        const draft: ProjectDraft = toProjectDraft(project);
+        return {
+          ...draft,
+          taxonomy: { ...draft.taxonomy, tags: editableArticleTags(draft.taxonomy.tags) },
+        };
+      }
+      return this.creating()
+        ? {
+            ...EMPTY_PROJECT_DRAFT,
+            period: { start: { year: new Date().getFullYear(), month: null }, end: null },
+            client: { fr: 'Publication personnelle', en: 'Personal publication' },
+            role: { fr: 'Auteur', en: 'Author' },
+            place: { fr: 'En ligne', en: 'Online' },
+          }
+        : null;
     },
   );
 
@@ -350,7 +383,7 @@ export class AdminProjectEditPageComponent {
    *
    * @description
    * Last properties panel width in pixels, read from storage before the first render so the panel
-   * starts at its remembered width (320 px by default, or after a percentage layout stored before),
+   * starts at its remembered width (352 px by default, or after a percentage layout stored before),
    * and kept in step with each save so the panels created again for another project reuse it.
    *
    * @type {WritableSignal<number>}
@@ -525,6 +558,51 @@ export class AdminProjectEditPageComponent {
   }
   // #endregion
 
+  /** Loads available classification terms when an editor first opens a taxonomy selector. */
+  protected loadTaxonomyChoices(): void {
+    if (this.taxonomyRequested) return;
+    this.taxonomyRequested = true;
+    this.articleApi
+      .list()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (articles: AdminProject[]): void => this.taxonomySource.set(articles),
+        error: (): void => {
+          this.taxonomyRequested = false;
+        },
+      });
+  }
+
+  private taxonomyChoices(kind: 'category' | 'tags'): PublicationTaxonomyDraft['category'][] {
+    const choices: Map<string, PublicationTaxonomyDraft['category']> = new Map();
+    if (kind === 'category') choices.set(PROJECT_ARTICLE_CATEGORY.key, PROJECT_ARTICLE_CATEGORY);
+    const current: AdminProject | null = this.project();
+    const articles: readonly AdminProject[] = current
+      ? [current, ...this.taxonomySource()]
+      : this.taxonomySource();
+    for (const article of articles) {
+      const taxonomy: AdminProject['taxonomy'] = article.taxonomy;
+      const terms: readonly (NonNullable<AdminProject['taxonomy']>['category'] | undefined)[] =
+        kind === 'category' ? [taxonomy?.category] : editableArticleTags(articleTags(article));
+      for (const term of terms) {
+        if (term && !choices.has(term.key)) {
+          choices.set(term.key, {
+            key: term.key,
+            label: { fr: term.label.fr, en: term.label.en ?? '' },
+          });
+        }
+      }
+    }
+    if (kind === 'tags') {
+      for (const [key, { label }] of Object.entries(TECHS)) {
+        if (!choices.has(key)) choices.set(key, { key, label: { fr: label, en: label } });
+      }
+    }
+    return [...choices.values()].sort((left, right) =>
+      left.label.fr.localeCompare(right.label.fr, 'fr'),
+    );
+  }
+
   // #region Methods
   /**
    * Method publicPath
@@ -587,7 +665,7 @@ export class AdminProjectEditPageComponent {
    * @method resetSplit
    *
    * @description
-   * Restores the default panel width (320 px) on a double click of the separator, then saves it.
+   * Restores the default panel width (352 px) on a double click of the separator, then saves it.
    *
    * @param {ResizablePanelGroupDirective} group - Group of the form and the properties panel.
    * @param {ResizableHandleComponent} handle - Separator between them.
@@ -616,7 +694,7 @@ export class AdminProjectEditPageComponent {
     if (!this.dirty()) return true;
     const accepted: boolean = await this.confirmations.confirm({
       title: $localize`:@@admin.project.leave.confirmTitle:Quitter sans enregistrer ?`,
-      description: $localize`:@@admin.project.unsaved.lost:Les modifications de ce projet seront perdues.`,
+      description: $localize`:@@admin.project.unsaved.lost:Les modifications de cet article seront perdues.`,
       confirmLabel: $localize`:@@admin.project.leave.confirmLabel:Quitter`,
       cancelLabel: $localize`:@@admin.project.unsaved.keepEditing:Continuer la modification`,
       tone: 'danger',
@@ -772,7 +850,7 @@ export class AdminProjectEditPageComponent {
       project.status === 'published' &&
       !(await this.confirmations.confirm({
         title: $localize`:@@admin.projects.unpublish.confirmTitle:Dépublier « ${project.title.fr}:title: » ?`,
-        description: $localize`:@@admin.projects.unpublish.confirmDescription:Le projet repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).`,
+        description: $localize`:@@admin.projects.unpublish.confirmDescription:L’article repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).`,
         confirmLabel: $localize`:@@admin.projects.action.unpublish:Dépublier`,
         tone: 'danger',
       }))
@@ -839,9 +917,9 @@ export class AdminProjectEditPageComponent {
     // CONTENT_ADMIN_ERROR_CODES.incomplete: the browser imports no value from the contracts (D10).
     if (error.code === 'content.project-incomplete') {
       this.toasts.error(
-        $localize`:@@admin.project.toast.incomplete:Un projet publié doit rester complet.`,
+        $localize`:@@admin.project.toast.incomplete:Un article publié doit rester complet.`,
         {
-          description: $localize`:@@admin.project.toast.incompleteHint:Complétez les deux langues ou dépubliez le projet avant de retirer un texte.`,
+          description: $localize`:@@admin.project.toast.incompleteHint:Complétez les deux langues ou dépubliez l’article avant de retirer un texte.`,
         },
       );
       return;
@@ -865,7 +943,7 @@ export class AdminProjectEditPageComponent {
       const current: AdminProject | null = this.project();
       if (this.creating()) {
         title.setTitle(
-          $localize`:@@admin.project.create.documentTitle:Nouveau projet — Projets — Administration`,
+          $localize`:@@admin.article.create.documentTitle:Nouvel article — Articles — Administration`,
         );
         return;
       }
@@ -873,8 +951,8 @@ export class AdminProjectEditPageComponent {
       if (current || missing) {
         title.setTitle(
           current
-            ? $localize`:@@admin.project.documentTitle:${current.title.fr}:project: — Projets — Administration`
-            : $localize`:@@admin.project.notFound.documentTitle:Projet introuvable — Projets — Administration`,
+            ? $localize`:@@admin.article.documentTitle:${current.title.fr}:article: — Articles — Administration`
+            : $localize`:@@admin.article.notFound.documentTitle:Article introuvable — Articles — Administration`,
         );
       }
     });

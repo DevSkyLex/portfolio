@@ -1,6 +1,7 @@
 import type { AdminProject } from '@vfortin/content-web-data-access/admin';
-import { lucideCircleCheck, lucideCircleDashed, lucideStar } from '@ng-icons/lucide';
+import { lucideCircleCheck, lucideCircleDashed, lucideStar, lucideTag } from '@ng-icons/lucide';
 import type { DataTableFacet } from '@vfortin/ui';
+import { localizedArticleTags } from '@internal/content-web-feature-admin/lib/utils/article-tags/article-tags.utils';
 
 /**
  * Constant PROJECT_TABLE_FACETS
@@ -46,5 +47,12 @@ export const PROJECT_TABLE_FACETS: readonly DataTableFacet<AdminProject>[] = [
         label: $localize`:@@admin.projects.completeness.incomplete:À compléter`,
       },
     ],
+  },
+  {
+    id: 'tag',
+    label: $localize`:@@admin.projects.heading.tags:Tags`,
+    icon: lucideTag,
+    value: (project: AdminProject): string[] =>
+      localizedArticleTags(project, 'fr').map(({ key }) => key),
   },
 ];

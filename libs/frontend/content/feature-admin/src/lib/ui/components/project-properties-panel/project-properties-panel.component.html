@@ -32,7 +32,12 @@
     </div>
     <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
       <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.address">Adresse</dt>
-      <dd class="font-mono text-[12px]/5 break-all text-fg-muted">{{ path() }}</dd>
+      <!-- One item per segment: the address wraps before a slash, never inside a segment. -->
+      <dd class="flex min-w-0 flex-wrap font-mono text-[12px]/5 text-fg-muted">
+        @for (segment of pathSegments(); track $index) {
+          <span>{{ segment }}</span>
+        }
+      </dd>
     </div>
     <div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3">
       <dt class="font-medium text-fg-muted" i18n="@@admin.project.properties.completeness">

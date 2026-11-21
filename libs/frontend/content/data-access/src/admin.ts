@@ -213,3 +213,11 @@ export {
   AdminMaintenanceStore,
   type AdminMaintenanceStoreType,
 } from '@internal/content-web-data-access/lib/admin/state/admin-maintenance/admin-maintenance.store';
+
+export type { PublicationTaxonomyDraft } from '@internal/content-web-data-access/lib/admin/models/publication-taxonomy/publication-taxonomy-draft.interface';
+export { PROJECT_ARTICLE_CATEGORY } from '@internal/content-web-data-access/lib/admin/constants/project-article-category.constants';
+export {
+  articleTags,
+  publicationCategoryKey,
+  publicationTagKey,
+} from '@internal/content-web-data-access/lib/admin/utils/project-draft/project-draft.utils';

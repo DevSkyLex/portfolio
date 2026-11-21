@@ -20,12 +20,12 @@ export const PROJECT_BULK_TEXTS: Readonly<Record<ProjectBulkAction, ProjectBulkT
     tone: 'default',
     done: (count: number): string =>
       count < 2
-        ? $localize`:@@admin.projects.bulk.publish.done.one:${count}:count: projet publié`
-        : $localize`:@@admin.projects.bulk.publish.done.other:${count}:count: projets publiés`,
+        ? $localize`:@@admin.projects.bulk.publish.done.one:${count}:count: article publié`
+        : $localize`:@@admin.projects.bulk.publish.done.other:${count}:count: articles publiés`,
     partial: (count: number, total: number): string =>
       count < 2
-        ? $localize`:@@admin.projects.bulk.publish.partial.one:${count}:count: projet publié sur ${total}:total:`
-        : $localize`:@@admin.projects.bulk.publish.partial.other:${count}:count: projets publiés sur ${total}:total:`,
+        ? $localize`:@@admin.projects.bulk.publish.partial.one:${count}:count: article publié sur ${total}:total:`
+        : $localize`:@@admin.projects.bulk.publish.partial.other:${count}:count: articles publiés sur ${total}:total:`,
   },
   unpublish: {
     confirmTitle: (subject: string): string =>
@@ -35,12 +35,12 @@ export const PROJECT_BULK_TEXTS: Readonly<Record<ProjectBulkAction, ProjectBulkT
     tone: 'danger',
     done: (count: number): string =>
       count < 2
-        ? $localize`:@@admin.projects.bulk.unpublish.done.one:${count}:count: projet dépublié`
-        : $localize`:@@admin.projects.bulk.unpublish.done.other:${count}:count: projets dépubliés`,
+        ? $localize`:@@admin.projects.bulk.unpublish.done.one:${count}:count: article dépublié`
+        : $localize`:@@admin.projects.bulk.unpublish.done.other:${count}:count: articles dépubliés`,
     partial: (count: number, total: number): string =>
       count < 2
-        ? $localize`:@@admin.projects.bulk.unpublish.partial.one:${count}:count: projet dépublié sur ${total}:total:`
-        : $localize`:@@admin.projects.bulk.unpublish.partial.other:${count}:count: projets dépubliés sur ${total}:total:`,
+        ? $localize`:@@admin.projects.bulk.unpublish.partial.one:${count}:count: article dépublié sur ${total}:total:`
+        : $localize`:@@admin.projects.bulk.unpublish.partial.other:${count}:count: articles dépubliés sur ${total}:total:`,
   },
   feature: {
     confirmTitle: (subject: string): string =>
@@ -50,12 +50,12 @@ export const PROJECT_BULK_TEXTS: Readonly<Record<ProjectBulkAction, ProjectBulkT
     tone: 'default',
     done: (count: number): string =>
       count < 2
-        ? $localize`:@@admin.projects.bulk.feature.done.one:${count}:count: projet mis en avant`
-        : $localize`:@@admin.projects.bulk.feature.done.other:${count}:count: projets mis en avant`,
+        ? $localize`:@@admin.projects.bulk.feature.done.one:${count}:count: article mis en avant`
+        : $localize`:@@admin.projects.bulk.feature.done.other:${count}:count: articles mis en avant`,
     partial: (count: number, total: number): string =>
       count < 2
-        ? $localize`:@@admin.projects.bulk.feature.partial.one:${count}:count: projet mis en avant sur ${total}:total:`
-        : $localize`:@@admin.projects.bulk.feature.partial.other:${count}:count: projets mis en avant sur ${total}:total:`,
+        ? $localize`:@@admin.projects.bulk.feature.partial.one:${count}:count: article mis en avant sur ${total}:total:`
+        : $localize`:@@admin.projects.bulk.feature.partial.other:${count}:count: articles mis en avant sur ${total}:total:`,
   },
   unfeature: {
     confirmTitle: (subject: string): string =>
@@ -65,11 +65,11 @@ export const PROJECT_BULK_TEXTS: Readonly<Record<ProjectBulkAction, ProjectBulkT
     tone: 'default',
     done: (count: number): string =>
       count < 2
-        ? $localize`:@@admin.projects.bulk.unfeature.done.one:${count}:count: projet retiré de l'accueil`
-        : $localize`:@@admin.projects.bulk.unfeature.done.other:${count}:count: projets retirés de l'accueil`,
+        ? $localize`:@@admin.projects.bulk.unfeature.done.one:${count}:count: article retiré de l'accueil`
+        : $localize`:@@admin.projects.bulk.unfeature.done.other:${count}:count: articles retirés de l'accueil`,
     partial: (count: number, total: number): string =>
       count < 2
-        ? $localize`:@@admin.projects.bulk.unfeature.partial.one:${count}:count: projet retiré de l'accueil sur ${total}:total:`
-        : $localize`:@@admin.projects.bulk.unfeature.partial.other:${count}:count: projets retirés de l'accueil sur ${total}:total:`,
+        ? $localize`:@@admin.projects.bulk.unfeature.partial.one:${count}:count: article retiré de l'accueil sur ${total}:total:`
+        : $localize`:@@admin.projects.bulk.unfeature.partial.other:${count}:count: articles retirés de l'accueil sur ${total}:total:`,
   },
 };

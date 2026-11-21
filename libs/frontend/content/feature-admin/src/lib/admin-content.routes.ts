@@ -14,7 +14,7 @@ export const ADMIN_CONTENT_ROUTES: Routes = [
       import('@internal/content-web-feature-admin/lib/ui/pages/admin-projects-page/admin-projects-page.component').then(
         (m) => m.AdminProjectsPageComponent,
       ),
-    title: $localize`:@@admin.projects.routeTitle:Projets — Administration`,
+    title: $localize`:@@admin.articles.routeTitle:Articles — Administration`,
   },
   {
     path: 'new',
@@ -23,7 +23,7 @@ export const ADMIN_CONTENT_ROUTES: Routes = [
         (m) => m.AdminProjectEditPageComponent,
       ),
     canDeactivate: [leaveProjectEditor],
-    title: $localize`:@@admin.project.create.documentTitle:Nouveau projet — Projets — Administration`,
+    title: $localize`:@@admin.article.create.documentTitle:Nouvel article — Articles — Administration`,
   },
   {
     path: ':id',
@@ -32,6 +32,6 @@ export const ADMIN_CONTENT_ROUTES: Routes = [
         (m) => m.AdminProjectEditPageComponent,
       ),
     canDeactivate: [leaveProjectEditor],
-    title: $localize`:@@admin.project.routeTitle:Projet — Administration`,
+    title: $localize`:@@admin.article.routeTitle:Article — Administration`,
   },
 ];

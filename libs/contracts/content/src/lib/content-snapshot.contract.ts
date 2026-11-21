@@ -4,6 +4,10 @@ import {
   PublicImageSchema,
 } from '@internal/content-contracts/lib/article-document.contract';
 import { ProfileLinkDtoSchema } from '@internal/content-contracts/lib/admin-profile.contract';
+import {
+  PUBLICATION_TAXONOMY_LIMITS,
+  PublicationTaxonKeySchema,
+} from '@internal/content-contracts/lib/admin-project.contract';
 import { LegalDocumentsSchema } from '@internal/content-contracts/lib/legal-document.contract';
 import { PublicProjectSeoSchema } from '@internal/content-contracts/lib/project-seo.contract';
 
@@ -68,6 +72,16 @@ const YearMonthSchema = z.object({
   month: z.int().check(z.minimum(1), z.maximum(12)),
 });
 
+const PublicTaxonSchema = z.object({
+  key: PublicationTaxonKeySchema,
+  label: Text.check(z.maxLength(PUBLICATION_TAXONOMY_LIMITS.label)),
+});
+
+const PublicTaxonomySchema = z.object({
+  category: PublicTaxonSchema,
+  tags: z.array(PublicTaxonSchema).check(z.maxLength(PUBLICATION_TAXONOMY_LIMITS.tags)),
+});
+
 /**
  * Constant ProjectDtoSchema
  *
@@ -89,6 +103,7 @@ export const ProjectDtoSchema = z.object({
   article: PublicArticleDocumentSchema,
   cover: z.nullable(z.extend(PublicImageSchema, { alt: z.string() })),
   seo: PublicProjectSeoSchema,
+  taxonomy: z.optional(PublicTaxonomySchema),
 });
 
 /**
@@ -99,6 +114,12 @@ export const ProjectDtoSchema = z.object({
  * Localized project representation included in a public content snapshot.
  */
 export type ProjectDto = z.infer<typeof ProjectDtoSchema>;
+
+/** Published articles use the same rich content and SEO contract as project case studies. */
+export const ArticleDtoSchema = z.extend(ProjectDtoSchema, {
+  taxonomy: PublicTaxonomySchema,
+});
+export type ArticleDto = z.infer<typeof ArticleDtoSchema>;
 
 /**
  * Constant TimelineEntryDtoSchema
@@ -232,6 +253,7 @@ export const ContentSnapshotSchema = z.object({
   revision: z.int().check(z.nonnegative()),
   profile: ProfileDtoSchema,
   projects: z.array(ProjectDtoSchema),
+  articles: z.optional(z.array(ArticleDtoSchema)),
   timeline: z.array(TimelineEntryDtoSchema),
   skills: z.array(SkillGroupDtoSchema),
   faq: z._default(z.array(FaqEntryDtoSchema), []),

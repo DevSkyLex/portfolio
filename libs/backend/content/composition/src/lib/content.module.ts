@@ -37,7 +37,7 @@ import {
   DrizzleLegalDocumentRepository,
   DrizzleMediaRepository,
   DrizzleProfileRepository,
-  DrizzleProjectRepository,
+  DrizzleArticleRepository,
   DrizzleSeoReportStore,
   DrizzleSiteTextsUnitOfWork,
   DrizzleTimelineEntryRepository,
@@ -65,7 +65,7 @@ import {
   GetAdminMaintenance,
   GetAdminLegalDocument,
   GetAdminProfile,
-  GetAdminProject,
+  GetAdminArticle,
   GetAdminTimelineEntry,
   GetPublishedContent,
   ManagePublication,
@@ -73,10 +73,10 @@ import {
   type ImageProcessor,
   type RemoteImageSource,
   ListAdminFaq,
-  ListAdminProjects,
+  ListAdminArticles,
   ListAdminTimeline,
   type MediaStorage,
-  PublishProject,
+  PublishArticle,
   PurgeMedia,
   RefreshSeoDashboard,
   ReorderFaq,
@@ -85,15 +85,15 @@ import {
   ReviseMaintenance,
   ReviseLegalDocument,
   ReviseProfile,
-  ReviseProject,
-  CreateProject,
+  ReviseArticle,
+  CreateArticle,
   ReviseTimelineEntry,
   type AnalyticsReader,
   type SearchConsoleReader,
   type SeoSourceSetup,
   type SeoSources,
   type WebVitalsReader,
-  UnpublishProject,
+  UnpublishArticle,
   ImportRemoteMedia,
   UploadMedia,
 } from '@vfortin/content-application';
@@ -465,46 +465,46 @@ export class ContentModule implements OnApplicationShutdown {
             new GetPublishedContent(new DrizzleContentSnapshotReader(database.db)),
         },
         {
-          provide: ListAdminProjects,
+          provide: ListAdminArticles,
           inject: [CONTENT_DATABASE],
-          useFactory: (database: ContentDatabaseHandle): ListAdminProjects =>
-            new ListAdminProjects(
-              new DrizzleProjectRepository(database.db),
+          useFactory: (database: ContentDatabaseHandle): ListAdminArticles =>
+            new ListAdminArticles(
+              new DrizzleArticleRepository(database.db),
               new DrizzleMediaRepository(database.db),
             ),
         },
         {
-          provide: GetAdminProject,
+          provide: GetAdminArticle,
           inject: [CONTENT_DATABASE],
-          useFactory: (database: ContentDatabaseHandle): GetAdminProject =>
-            new GetAdminProject(
-              new DrizzleProjectRepository(database.db),
+          useFactory: (database: ContentDatabaseHandle): GetAdminArticle =>
+            new GetAdminArticle(
+              new DrizzleArticleRepository(database.db),
               new DrizzleMediaRepository(database.db),
             ),
         },
         {
-          provide: CreateProject,
+          provide: CreateArticle,
           inject: [CONTENT_DATABASE],
-          useFactory: (database: ContentDatabaseHandle): CreateProject =>
-            new CreateProject(unitOfWork(database), new RandomIdGenerator()),
+          useFactory: (database: ContentDatabaseHandle): CreateArticle =>
+            new CreateArticle(unitOfWork(database), new RandomIdGenerator()),
         },
         {
-          provide: ReviseProject,
+          provide: ReviseArticle,
           inject: [CONTENT_DATABASE, CLOCK],
-          useFactory: (database: ContentDatabaseHandle, clock: Clock): ReviseProject =>
-            new ReviseProject(unitOfWork(database), clock),
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): ReviseArticle =>
+            new ReviseArticle(unitOfWork(database), clock),
         },
         {
-          provide: PublishProject,
+          provide: PublishArticle,
           inject: [CONTENT_DATABASE, CLOCK],
-          useFactory: (database: ContentDatabaseHandle, clock: Clock): PublishProject =>
-            new PublishProject(unitOfWork(database), clock),
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): PublishArticle =>
+            new PublishArticle(unitOfWork(database), clock),
         },
         {
-          provide: UnpublishProject,
+          provide: UnpublishArticle,
           inject: [CONTENT_DATABASE, CLOCK],
-          useFactory: (database: ContentDatabaseHandle, clock: Clock): UnpublishProject =>
-            new UnpublishProject(unitOfWork(database), clock),
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): UnpublishArticle =>
+            new UnpublishArticle(unitOfWork(database), clock),
         },
         {
           provide: ListAdminTimeline,
@@ -676,7 +676,7 @@ export class ContentModule implements OnApplicationShutdown {
             new GetSeoDashboard(
               new DrizzleSeoReportStore(database.db),
               sources,
-              new DrizzleProjectRepository(database.db),
+              new DrizzleArticleRepository(database.db),
               clock,
             ),
         },
@@ -691,7 +691,7 @@ export class ContentModule implements OnApplicationShutdown {
             new RefreshSeoDashboard(
               new DrizzleSeoReportStore(database.db),
               sources,
-              new DrizzleProjectRepository(database.db),
+              new DrizzleArticleRepository(database.db),
               clock,
               { siteOrigin: seo.siteOrigin, webVitalsUrls: seo.webVitalsUrls },
             ),

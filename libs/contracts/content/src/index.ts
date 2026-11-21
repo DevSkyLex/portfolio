@@ -5,6 +5,7 @@
  * Exposes locale query validation and the localized published-content snapshot contract and DTO types.
  */
 export {
+  ArticleDtoSchema,
   ContentLocaleSchema,
   ContentSnapshotQuerySchema,
   ContentSnapshotSchema,
@@ -14,6 +15,7 @@ export {
   ProjectDtoSchema,
   SkillGroupDtoSchema,
   TimelineEntryDtoSchema,
+  type ArticleDto,
   type ContentLocale,
   type ContentSnapshot,
   type ContentSnapshotQuery,
@@ -32,17 +34,30 @@ export {
  * Exposes project revision, administrator DTO and list schemas with stable content error codes.
  */
 export {
+  AdminArticleDtoSchema,
+  AdminArticleListSchema,
   AdminProjectDtoSchema,
   AdminProjectListSchema,
   CONTENT_ADMIN_ERROR_CODES,
   LocalizedTextDtoSchema,
+  PUBLICATION_TAXONOMY_LIMITS,
   ProjectCoverDtoSchema,
   ProjectRevisionRequestSchema,
+  ArticleRevisionRequestSchema,
+  PublicationKindQuerySchema,
+  PublicationKindSchema,
+  PublicationTaxonomySchema,
+  type AdminArticleDto,
+  type AdminArticleList,
   type AdminProjectDto,
   type AdminProjectList,
   type LocalizedTextDto,
   type ProjectCoverDto,
   type ProjectRevisionRequest,
+  type ArticleRevisionRequest,
+  type PublicationKindDto,
+  type PublicationKindQuery,
+  type PublicationTaxonomyDto,
 } from '@internal/content-contracts/lib/admin-project.contract';
 
 /**

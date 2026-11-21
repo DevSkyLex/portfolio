@@ -1,3 +1,4 @@
+import type { PublicationTaxonomyDraft } from '@internal/content-web-data-access/lib/admin/models/publication-taxonomy/publication-taxonomy-draft.interface';
 import type { ArticleDocumentDraft } from '@internal/content-web-data-access/lib/admin/models/article-document/article-document-draft.interface';
 import type { BilingualText } from '@internal/content-web-data-access/lib/admin/models/bilingual-text/bilingual-text.interface';
 import type { ProjectPeriod } from '@internal/content-web-data-access/lib/admin/models/project-period/project-period.interface';
@@ -12,6 +13,9 @@ import type { ProjectSeoDraft } from '@internal/content-web-data-access/lib/admi
  * Editable administrator form values before conversion to the API revision contract.
  */
 export interface ProjectDraft {
+  /** Category and tags edited alongside the article body. */
+  taxonomy: PublicationTaxonomyDraft;
+
   // #region Properties
   /**
    * Property title
@@ -92,16 +96,6 @@ export interface ProjectDraft {
    * @type {string}
    */
   siteUrl: string;
-
-  /**
-   * Property techs
-   *
-   * @description
-   * Technology catalogue keys, one tag each in the editor.
-   *
-   * @type {string[]}
-   */
-  techs: string[];
 
   /**
    * Property featured

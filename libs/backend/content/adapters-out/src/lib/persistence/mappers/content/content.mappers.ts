@@ -6,9 +6,9 @@ import {
   LocalizedText,
   Period,
   type Profile,
-  Project,
+  Article,
   ProjectPeriod,
-  ProjectSeo,
+  ArticleSeo,
   type SkillGroup,
   Slug,
   TimelineEntry,
@@ -27,13 +27,13 @@ import type {
 } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
 
 /**
- * Type ProjectRow
- * @type ProjectRow
+ * Type ArticleRow
+ * @type ArticleRow
  *
  * @description
  * Drizzle select shape for the persisted projects table.
  */
-type ProjectRow = typeof projects.$inferSelect;
+type ArticleRow = typeof projects.$inferSelect;
 
 /**
  * Type TimelineRow
@@ -89,18 +89,35 @@ export type MediaRow = typeof media.$inferSelect;
 const text: typeof LocalizedText.of = LocalizedText.of;
 
 /**
- * Function toProject
+ * Function toArticle
  *
  * @description
  * Rehydrates a project row into domain values, validating the slug, localized fields, period, article
  * documents, cover and search texts before exposing it to application code.
  *
- * @param {ProjectRow} row - Database row selected from the projects table.
- * @returns {Project} Validated project aggregate.
+ * @param {ArticleRow} row - Database row selected from the projects table.
+ * @returns {Article} Validated project aggregate.
  */
-export function toProject(row: ProjectRow): Project {
-  return Project.rehydrate({
+export function toArticle(row: ArticleRow): Article {
+  return Article.rehydrate({
     id: row.id,
+    kind: row.kind,
+    taxonomy:
+      row.taxonomy == null
+        ? undefined
+        : {
+            category:
+              row.taxonomy.category === null
+                ? null
+                : {
+                    key: row.taxonomy.category.key,
+                    label: text('taxonomy.category.label', row.taxonomy.category.label),
+                  },
+            tags: row.taxonomy.tags.map((tag) => ({
+              key: tag.key,
+              label: text('taxonomy.tags.label', tag.label),
+            })),
+          },
     slug: Slug.of(row.slug),
     title: text('title', row.title),
     summary: text('summary', row.summary),
@@ -123,7 +140,7 @@ export function toProject(row: ProjectRow): Project {
             en: ArticleDocument.of('article.en', row.article.en),
           },
     cover: row.cover,
-    seo: ProjectSeo.of({ ...row.seo, keywords: row.seoKeywords }),
+    seo: ArticleSeo.of({ ...row.seo, keywords: row.seoKeywords }),
   });
 }
 

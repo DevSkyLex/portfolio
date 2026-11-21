@@ -50,8 +50,8 @@ describe('project bulk utils', (): void => {
   });
 
   it('writes a French count with a real plural', (): void => {
-    expect(projectCount(0)).toBe('0 projet');
-    expect(projectCount(1)).toBe('1 projet');
-    expect(projectCount(3)).toBe('3 projets');
+    expect(projectCount(0)).toBe('0 article');
+    expect(projectCount(1)).toBe('1 article');
+    expect(projectCount(3)).toBe('3 articles');
   });
 });

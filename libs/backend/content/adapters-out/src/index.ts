@@ -6,7 +6,7 @@ export {
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
 export {
   DrizzleContentUnitOfWork,
-  DrizzleProjectRepository,
+  DrizzleArticleRepository,
   DrizzleSiteBuildRequestRepository,
 } from '@internal/content-adapters-out/lib/persistence/repositories/content-admin/drizzle-content-admin.repositories';
 export {

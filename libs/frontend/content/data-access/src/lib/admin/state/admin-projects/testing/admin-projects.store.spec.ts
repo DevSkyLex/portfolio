@@ -82,7 +82,7 @@ const project: (id: string, version?: number, status?: AdminProject['status']) =
  *
  * @type {string}
  */
-const BASE: string = '/api/content/admin/projects';
+const BASE: string = '/api/content/admin/articles';
 
 /**
  * Function setup

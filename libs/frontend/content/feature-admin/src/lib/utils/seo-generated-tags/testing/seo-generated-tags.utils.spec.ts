@@ -39,7 +39,7 @@ describe('seoGeneratedTags', (): void => {
       'flutter, supabase',
     );
     expect(rows.find((tag: SeoGeneratedTag): boolean => tag.name === 'hreflang en')?.value).toBe(
-      'https://valentin-fortin.pro/en/projects/library-trails',
+      'https://valentin-fortin.pro/en/articles/library-trails',
     );
     const jsonLd: SeoGeneratedTag | undefined = rows.at(-1);
     expect(jsonLd?.value).toBe(

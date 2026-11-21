@@ -164,7 +164,7 @@ async function open(url: string, providers: Provider[] = []): Promise<Opened> {
       provideRouter([
         { path: 'admin/information', children: ADMIN_INFORMATION_ROUTES },
         { path: 'admin/legal', children: ADMIN_LEGAL_ROUTES },
-        { path: 'admin/projects', children: [] },
+        { path: 'admin/articles', children: [] },
       ]),
     ],
   });
@@ -517,7 +517,7 @@ describe('AdminInformationPageComponent', (): void => {
       { provide: ConfirmDialogService, useValue: { confirm } },
     ]);
     await type(opened, 'edit-profile-heroIntro-fr', 'Autre');
-    await TestBed.inject(Router).navigateByUrl('/admin/projects');
+    await TestBed.inject(Router).navigateByUrl('/admin/articles');
     await opened.settle();
     expect(confirm).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Quitter sans enregistrer ?' }),

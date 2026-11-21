@@ -51,8 +51,9 @@ export class TechLogoComponent {
    *
    * @type {Signal<string | undefined>}
    */
-  protected readonly logo: Signal<string | undefined> = computed<string | undefined>(
-    (): string | undefined => TECH_LOGOS[techKey(this.tech())],
-  );
+  protected readonly logo: Signal<string | undefined> = computed(() => {
+    const key: string = techKey(this.tech());
+    return Object.hasOwn(TECH_LOGOS, key) ? TECH_LOGOS[key] : undefined;
+  });
   // #endregion
 }

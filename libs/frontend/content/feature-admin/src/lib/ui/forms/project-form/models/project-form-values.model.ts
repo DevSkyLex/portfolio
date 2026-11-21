@@ -1,4 +1,8 @@
-import type { ArticleDocumentDraft, ProjectPeriod } from '@vfortin/content-web-data-access/admin';
+import type {
+  ArticleDocumentDraft,
+  ProjectPeriod,
+  PublicationTaxonomyDraft,
+} from '@vfortin/content-web-data-access/admin';
 import type { BilingualText } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/bilingual-text.interface';
 import type { ProjectCoverFormValues } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/project-cover-form-values.interface';
 import type { ProjectSeoFormValues } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/project-seo-form-values.interface';
@@ -11,6 +15,9 @@ import type { ProjectSeoFormValues } from '@internal/content-web-feature-admin/l
  * Editable administrator form values before conversion to the API revision contract.
  */
 export interface ProjectFormValues {
+  /** Category and tags edited alongside the article body. */
+  taxonomy: PublicationTaxonomyDraft;
+
   // #region Properties
   /**
    * Property title
@@ -91,16 +98,6 @@ export interface ProjectFormValues {
    * @type {string}
    */
   siteUrl: string;
-
-  /**
-   * Property techs
-   *
-   * @description
-   * Technology catalogue keys, one tag each in the editor.
-   *
-   * @type {string[]}
-   */
-  techs: string[];
 
   /**
    * Property featured

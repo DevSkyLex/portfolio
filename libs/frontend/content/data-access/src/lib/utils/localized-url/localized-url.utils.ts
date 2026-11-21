@@ -8,7 +8,7 @@ import type { SiteLocale } from '@vfortin/content-web-model';
  *
  * @param {string} origin - Site origin without a trailing slash.
  * @param {SiteLocale} locale - Locale of the page.
- * @param {string} path - Locale-independent path starting with `/`, such as `/projects/movah`.
+ * @param {string} path - Locale-independent path starting with `/`, such as `/articles/movah`.
  *
  * @returns {string} Absolute address, with a trailing slash for the home page.
  */

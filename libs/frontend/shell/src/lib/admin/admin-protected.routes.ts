@@ -1,8 +1,16 @@
-import type { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, type RedirectFunction, type Routes } from '@angular/router';
 import { provideAdminInboxSummary } from '@vfortin/contact-web-data-access/summary';
 import { provideAdminProjectNavigation } from '@vfortin/content-web-data-access/navigation';
 import { provideAdminSession } from '@vfortin/identity-web-data-access/session';
 import { IDENTITY_SECURITY_ROUTES } from '@vfortin/identity-web-feature';
+
+/** Preserves saved editor links, filters and fragments from the former project section. */
+const redirectProjectRoute: RedirectFunction = ({ params, queryParams, fragment }) =>
+  inject<Router>(Router).createUrlTree(
+    params['id'] ? ['/admin/articles', params['id']] : ['/admin/articles'],
+    { queryParams, ...(fragment === null ? {} : { fragment }) },
+  );
 
 /**
  * Constant ADMIN_PROTECTED_ROUTES
@@ -25,8 +33,10 @@ export const ADMIN_PROTECTED_ROUTES: Routes = [
         loadChildren: () =>
           import('@vfortin/content-web-feature-admin').then((m) => m.ADMIN_DASHBOARD_ROUTES),
       },
+      { path: 'projects', pathMatch: 'full', redirectTo: redirectProjectRoute },
+      { path: 'projects/:id', pathMatch: 'full', redirectTo: redirectProjectRoute },
       {
-        path: 'projects',
+        path: 'articles',
         loadChildren: () =>
           import('@vfortin/content-web-feature-admin').then((m) => m.ADMIN_CONTENT_ROUTES),
       },

@@ -1,9 +1,11 @@
 import { Injectable, LOCALE_ID, computed, inject, type Signal } from '@angular/core';
 import type { ContentSnapshot } from '@vfortin/content-contracts';
 import type {
+  ArticleTerm,
   LegalDocument,
   LegalDocumentKind,
   ProjectArticle,
+  EditorialArticle,
   SiteContent,
   SiteMaintenance,
 } from '@vfortin/content-web-model';
@@ -16,6 +18,8 @@ import { CONTENT_SNAPSHOT_VALIDATOR } from '@internal/content-web-data-access/li
 import { CONTENT_SNAPSHOTS } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshots.token';
 import { articleOrder } from '@internal/content-web-data-access/lib/utils/article-order/article-order.utils';
 import { localeOf } from '@internal/content-web-data-access/lib/utils/site-locale/site-locale.utils';
+
+type Publication = EditorialArticle & { readonly kind: 'project' | 'article' };
 
 /**
  * Service SiteContentService
@@ -90,18 +94,50 @@ export class SiteContentService {
     () => this.content.profile,
   );
 
-  /**
-   * Property projects
-   * @readonly
-   *
-   * @description
-   * Computed view of all project articles in the active locale.
-   *
-   * @type {Signal<readonly ProjectArticle[]>}
-   */
+  /** Published editorial content in snapshot order. */
+  public readonly editorialArticles: Signal<readonly EditorialArticle[]> = computed(
+    () => this.content.articles ?? [],
+  );
+
+  /** Finds editorial content by its stable public slug. */
+  public article(slug: string): EditorialArticle | null {
+    return this.editorialArticles().find((article) => article.slug === slug) ?? null;
+  }
+
   public readonly projects: Signal<readonly ProjectArticle[]> = computed<readonly ProjectArticle[]>(
     (): readonly ProjectArticle[] => this.content.projects,
   );
+
+  /** The public category for case studies, independent of editorial taxonomy. */
+  public readonly projectCategory: ArticleTerm = {
+    key: 'projects',
+    label: $localize`:@@section.projects:Projets`,
+  };
+
+  /** Editorial articles and case studies share one public collection. */
+  public readonly publications: Signal<readonly Publication[]> = computed(() => [
+    ...this.editorialArticles().map((article): Publication => ({
+      ...article,
+      kind: 'article',
+      taxonomy: {
+        ...article.taxonomy,
+        category:
+          article.taxonomy.category.key === this.projectCategory.key
+            ? this.projectCategory
+            : article.taxonomy.category,
+      },
+    })),
+    ...this.projects().map((project): Publication => ({
+      ...project,
+      kind: 'project',
+      taxonomy: { category: this.projectCategory, tags: project.taxonomy?.tags ?? [] },
+    })),
+  ]);
+
+  /** Resolves a canonical detail URL across both publication kinds. */
+  public publication(slug: string): Publication | null {
+    return this.publications().find((publication) => publication.slug === slug) ?? null;
+  }
 
   /**
    * Property featuredProject
@@ -128,7 +164,9 @@ export class SiteContentService {
    */
   public readonly otherProjects: Signal<ProjectArticle[]> = computed<ProjectArticle[]>(
     (): ProjectArticle[] =>
-      this.content.projects.filter((p: ProjectArticle): boolean => !p.featured),
+      this.content.projects.filter(
+        (p: ProjectArticle): boolean => p.slug !== this.featuredProject()?.slug,
+      ),
   );
 
   /**
@@ -239,8 +277,12 @@ export class SiteContentService {
    *
    * @returns {ProjectNeighbours | null} Adjacent articles when navigation is possible.
    */
-  public neighbours(slug: string): ProjectNeighbours | null {
-    const list: readonly ProjectArticle[] = this.articles;
+  public neighbours(
+    slug: string,
+    collection: 'projects' | 'articles' = 'projects',
+  ): ProjectNeighbours | null {
+    const list: readonly ProjectArticle[] =
+      collection === 'articles' ? this.editorialArticles() : this.articles;
     const index: number = list.findIndex((p: ProjectArticle): boolean => p.slug === slug);
     if (index < 0 || list.length < 2) {
       return null;

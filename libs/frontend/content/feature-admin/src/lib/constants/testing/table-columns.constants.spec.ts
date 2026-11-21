@@ -20,6 +20,7 @@ function project(fields: Partial<AdminProject>): AdminProject {
     status: 'draft',
     featured: false,
     missing: [],
+    techs: [],
     version: 3,
     ...fields,
   } as unknown as AdminProject;
@@ -80,21 +81,26 @@ describe('PROJECT_TABLE_COLUMNS', (): void => {
 });
 
 describe('PROJECT_TABLE_FACETS', (): void => {
-  it('files a project under its status, its home feature and its completeness', (): void => {
+  it('files an article under its status, feature flag, completeness and tags', (): void => {
     const value = (row: AdminProject): string[] =>
       PROJECT_TABLE_FACETS.map((facet: DataTableFacet<AdminProject>): string =>
         String(facet.value(row)),
       );
-    expect(value(project({}))).toEqual(['brouillon', 'non', 'complet']);
+    expect(value(project({}))).toEqual(['brouillon', 'non', 'complet', '']);
     expect(
       value(
         project({
           status: 'published',
           featured: true,
           missing: ['cover'] as unknown as AdminProject['missing'],
+          techs: ['postgres'],
+          taxonomy: {
+            category: null,
+            tags: [{ key: 'architecture', label: { fr: 'Architecture', en: 'Architecture' } }],
+          },
         }),
       ),
-    ).toEqual(['publie', 'oui', 'a-completer']);
+    ).toEqual(['publie', 'oui', 'a-completer', 'architecture,postgresql']);
   });
 });
 

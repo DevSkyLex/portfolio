@@ -13,6 +13,11 @@ import type { ProjectSeo } from '@internal/content-web-data-access/lib/admin/mod
  * declarations; the API adapter owns incoming projection.
  */
 export type AdminProject = {
+  readonly kind?: 'project' | 'article';
+  readonly taxonomy?: {
+    category: { key: string; label: { fr: string; en?: string | undefined } } | null;
+    tags: { key: string; label: { fr: string; en?: string | undefined } }[];
+  };
   readonly id: string;
   readonly slug: string;
   readonly status: 'draft' | 'published';

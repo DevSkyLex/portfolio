@@ -1,7 +1,7 @@
 import {
   lucideBriefcase,
+  lucideBookOpen,
   lucideConstruction,
-  lucideFolderKanban,
   lucideGraduationCap,
   lucideInbox,
   lucideInfo,
@@ -28,9 +28,9 @@ export const ADMIN_LINKS: readonly AdminLink[] = [
     icon: lucideLayoutDashboard,
   },
   {
-    path: '/admin/projects',
-    label: $localize`:@@admin.shell.nav.projects:Projets`,
-    icon: lucideFolderKanban,
+    path: '/admin/articles',
+    label: $localize`:@@admin.shell.nav.articles:Articles`,
+    icon: lucideBookOpen,
   },
   {
     path: '/admin/experiences',

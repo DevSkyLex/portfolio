@@ -27,7 +27,10 @@ const VALUES: ProjectFormValues = {
   ...EMPTY_PROJECT_DRAFT,
   title: { fr: ' Library Trails ', en: 'Library Trails EN' },
   summary: { fr: ' Covoiturage local. ', en: 'Local carpooling.' },
-  techs: ['flutter'],
+  taxonomy: {
+    ...EMPTY_PROJECT_DRAFT.taxonomy,
+    tags: [{ key: 'flutter', label: { fr: 'Flutter', en: 'Flutter' } }],
+  },
   cover: { media: MEDIA.id, alt: { fr: ' Accueil ', en: '' } },
   seo: {
     title: { fr: '  ', en: ' Library Trails in short ' },
@@ -43,7 +46,8 @@ describe('projectSeoSource', (): void => {
       slug: 'library-trails',
       title: 'Library Trails',
       summary: 'Covoiturage local.',
-      techs: ['flutter'],
+      techs: [],
+      taxonomy: { tags: [{ key: 'flutter', label: 'Flutter' }] },
       cover: { src: MEDIA.src, small: null, width: 2400, height: 1350, alt: 'Accueil' },
       seo: { title: null, description: 'Une app.', keywords: ['Flutter'] },
     });
