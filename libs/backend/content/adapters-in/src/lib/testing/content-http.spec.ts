@@ -37,9 +37,11 @@ import {
 import {
   ArticleDocument,
   DomainError,
+  FaqEntry,
   LegalDocument,
   type LegalDocumentKind,
   LocalizedText,
+  MaintenanceMode,
   Period,
   Project,
   type ProjectRevision,
@@ -223,8 +225,18 @@ const published = (media: readonly MediaRecord[] = [COVER, FIGURE]): PublishedCo
       position: 0,
     },
   ],
+  faq: [
+    FaqEntry.rehydrate({
+      id: 'remote-work',
+      question: t('Travailles-tu à distance ?', 'Do you work remotely?'),
+      answer: t('Oui.\nAussi sur site.'),
+      position: 0,
+      version: 1,
+    }),
+  ],
   media: new Map(media.map((record: MediaRecord): [string, MediaRecord] => [record.id, record])),
   legal: { notice: legal('notice'), privacy: legal('privacy') },
+  maintenance: MaintenanceMode.initial(),
 });
 
 describe('ContentController, AdminContentController and AdminMediaController', (): void => {
@@ -296,6 +308,27 @@ describe('ContentController, AdminContentController and AdminMediaController', (
     call.set('authorization', `Bearer ${token}`);
 
   describe('public snapshot', (): void => {
+    it('serves the maintenance state per locale, English falling back on French', async (): Promise<void> => {
+      useCases.published.execute.mockResolvedValue({
+        ...published(),
+        maintenance: MaintenanceMode.rehydrate({
+          enabled: true,
+          message: { fr: 'Retour à 14 h.' },
+          version: 2,
+        }),
+      });
+      for (const locale of ['fr', 'en'] as const) {
+        const response: request.Response = await server().get(`/content/snapshot?locale=${locale}`);
+        expect(ContentSnapshotSchema.parse(response.body).maintenance).toEqual({
+          enabled: true,
+          message: 'Retour à 14 h.',
+        });
+      }
+      useCases.published.execute.mockResolvedValue(published());
+      const off: request.Response = await server().get('/content/snapshot?locale=fr');
+      expect(off.body.maintenance).toEqual({ enabled: false, message: '' });
+    });
+
     it('serves the content in the requested locale, matching the contract', async (): Promise<void> => {
       useCases.published.execute.mockResolvedValue(published());
       const response: request.Response = await server().get('/content/snapshot?locale=en');
@@ -308,6 +341,9 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       // Untranslated text falls back to French.
       expect(snapshot.profile.facts[0]).toEqual({ label: 'Based in', value: 'Example Town' });
       expect(snapshot.timeline[0]).toMatchObject({ start: { year: 2021, month: 9 } });
+      expect(snapshot.faq).toEqual([
+        { id: 'remote-work', question: 'Do you work remotely?', answer: 'Oui.\nAussi sur site.' },
+      ]);
       expect(snapshot.profile.links).toEqual([
         { kind: 'email', url: 'mailto:morgan@example.com', label: null },
         { kind: 'website', url: 'https://blog.example', label: 'Blog' },

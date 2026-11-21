@@ -189,22 +189,30 @@ describe('ContentModule', (): void => {
     const tools: { name: string; inputSchema: { required?: string[] } }[] =
       listed.body.result.tools;
     expect(tools.map((tool): string => tool.name).sort()).toEqual([
+      'create_faq_entry',
       'create_project',
       'create_timeline_entry',
+      'delete_faq_entry',
       'delete_timeline_entry',
+      'get_faq_entry',
       'get_legal_document',
+      'get_maintenance',
       'get_profile',
       'get_project',
       'get_publication_status',
       'get_timeline_entry',
+      'list_faq',
       'list_projects',
       'list_timeline',
       'publish_project',
+      'reorder_faq',
       'reorder_timeline',
+      'revise_faq_entry',
       'revise_legal_document',
       'revise_profile',
       'revise_project',
       'revise_timeline_entry',
+      'set_maintenance',
       'unpublish_project',
       'upload_media',
     ]);
@@ -260,7 +268,7 @@ describe('ContentModule', (): void => {
     );
     try {
       await client.connect(transport);
-      expect((await client.listTools()).tools).toHaveLength(18);
+      expect((await client.listTools()).tools).toHaveLength(26);
       const result: Awaited<ReturnType<Client['callTool']>> = await client.callTool({
         name: 'get_project',
         arguments: { id: 'project-neighborhood-atlas' },
@@ -482,6 +490,54 @@ describe('ContentModule', (): void => {
       version: draft.version + 1,
       title: draft.title,
     });
+  });
+
+  it('creates, reads, revises, reorders and deletes a FAQ question', async (): Promise<void> => {
+    const entry: Record<string, unknown> = {
+      question: { fr: 'Proposes-tu de la maintenance ?', en: 'Do you offer maintenance?' },
+      answer: { fr: 'Oui.', en: 'Yes.' },
+    };
+    const saved: VersionedResponse & { id: string } = data(
+      await call('create_faq_entry', { entry }, fullToken),
+    );
+    expect(saved).toMatchObject({ position: 6, version: 1 });
+    expect(data(await call('get_faq_entry', { id: saved.id }))).toMatchObject({
+      question: entry['question'],
+    });
+    const revised: request.Response = await call(
+      'revise_faq_entry',
+      {
+        id: saved.id,
+        expectedVersion: saved.version,
+        entry: { ...entry, answer: { fr: 'Non.', en: 'No.' } },
+      },
+      fullToken,
+    );
+    expect(data<VersionedResponse>(revised).version).toBe(2);
+    const list: VersionedResponse & { member: { id: string }[] } = data(await call('list_faq'));
+    const reordered: request.Response = await call(
+      'reorder_faq',
+      {
+        expectedVersion: list.version,
+        ids: list.member.map((item): string => item.id).reverse(),
+      },
+      fullToken,
+    );
+    expect(data<{ member: { id: string }[] }>(reordered).member[0]?.id).toBe(saved.id);
+    expect(
+      (await call('delete_faq_entry', { id: saved.id, expectedVersion: 2 }, publishToken)).status,
+    ).toBe(403);
+    const removed: request.Response = await call(
+      'delete_faq_entry',
+      { id: saved.id, expectedVersion: 2 },
+      fullToken,
+    );
+    expect(removed.body.result.isError).not.toBe(true);
+    expect(
+      data<{ member: { id: string }[] }>(removed).member.some(
+        (item): boolean => item.id === saved.id,
+      ),
+    ).toBe(false);
   });
 
   it('creates, reads, revises, reorders and deletes a timeline entry', async (): Promise<void> => {

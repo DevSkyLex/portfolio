@@ -6,8 +6,15 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { MCP_TOKEN_VERIFIER, McpAuthModule, type McpPrincipal } from '@vfortin/backend-auth';
 import { PROBLEM_MAPPER, ProblemDetailsFilter } from '@vfortin/backend-http';
 import {
+  CreateFaqEntry,
   CreateTimelineEntry,
+  DeleteFaqEntry,
   DeleteTimelineEntry,
+  GetAdminFaqEntry,
+  GetAdminMaintenance,
+  ListAdminFaq,
+  ReorderFaq,
+  ReviseFaqEntry,
   GetAdminLegalDocument,
   GetAdminProfile,
   GetAdminProject,
@@ -21,6 +28,7 @@ import {
   PublishProject,
   ReorderTimeline,
   ReviseLegalDocument,
+  ReviseMaintenance,
   ReviseProfile,
   ReviseProject,
   CreateProject,
@@ -33,11 +41,14 @@ import {
   type AdminProjectDto,
   type ProfileRevisionRequest,
   ProjectRevisionRequestSchema,
+  type FaqEntryRequest,
   type TimelineEntryRequest,
 } from '@vfortin/content-contracts';
 import {
   type ArticleDocumentProps,
+  FaqEntry,
   LegalDocument,
+  MaintenanceMode,
   Project,
   Slug,
   TimelineEntry,
@@ -75,6 +86,10 @@ const ENTRY: TimelineEntryRequest = {
   end: null,
   techs: ['angular'],
 };
+const QUESTION: FaqEntryRequest = {
+  question: { fr: 'Travailles-tu à distance ?', en: 'Do you work remotely?' },
+  answer: { fr: 'Oui.', en: 'Yes.' },
+};
 const DOC: ArticleDocumentProps = {
   type: 'doc',
   content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Publisher' }] }],
@@ -107,6 +122,14 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     reviseEntry: { execute: vi.fn<ReviseTimelineEntry['execute']>() },
     reorder: { execute: vi.fn<ReorderTimeline['execute']>() },
     deleteEntry: { execute: vi.fn<DeleteTimelineEntry['execute']>() },
+    listFaq: { execute: vi.fn<ListAdminFaq['execute']>() },
+    getFaqEntry: { execute: vi.fn<GetAdminFaqEntry['execute']>() },
+    createFaqEntry: { execute: vi.fn<CreateFaqEntry['execute']>() },
+    reviseFaqEntry: { execute: vi.fn<ReviseFaqEntry['execute']>() },
+    reorderFaq: { execute: vi.fn<ReorderFaq['execute']>() },
+    deleteFaqEntry: { execute: vi.fn<DeleteFaqEntry['execute']>() },
+    getMaintenance: { execute: vi.fn<GetAdminMaintenance['execute']>() },
+    reviseMaintenance: { execute: vi.fn<ReviseMaintenance['execute']>() },
     getProfile: { execute: vi.fn<GetAdminProfile['execute']>() },
     reviseProfile: { execute: vi.fn<ReviseProfile['execute']>() },
     getLegal: { execute: vi.fn<GetAdminLegalDocument['execute']>() },
@@ -162,6 +185,14 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
         { provide: ReviseTimelineEntry, useValue: useCases.reviseEntry },
         { provide: ReorderTimeline, useValue: useCases.reorder },
         { provide: DeleteTimelineEntry, useValue: useCases.deleteEntry },
+        { provide: ListAdminFaq, useValue: useCases.listFaq },
+        { provide: GetAdminFaqEntry, useValue: useCases.getFaqEntry },
+        { provide: CreateFaqEntry, useValue: useCases.createFaqEntry },
+        { provide: ReviseFaqEntry, useValue: useCases.reviseFaqEntry },
+        { provide: ReorderFaq, useValue: useCases.reorderFaq },
+        { provide: DeleteFaqEntry, useValue: useCases.deleteFaqEntry },
+        { provide: GetAdminMaintenance, useValue: useCases.getMaintenance },
+        { provide: ReviseMaintenance, useValue: useCases.reviseMaintenance },
         { provide: GetAdminProfile, useValue: useCases.getProfile },
         { provide: ReviseProfile, useValue: useCases.reviseProfile },
         { provide: GetAdminLegalDocument, useValue: useCases.getLegal },
@@ -229,8 +260,23 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
         revision: 10,
       });
     useCases.getEntry.execute.mockResolvedValue(entry);
+    const question: FaqEntry = FaqEntry.rehydrate({
+      ...FaqEntry.revisionOf(QUESTION),
+      id: 'remote-work',
+      position: 0,
+      version: 2,
+    });
+    for (const mock of [useCases.listFaq, useCases.reorderFaq, useCases.deleteFaqEntry])
+      mock.execute.mockResolvedValue({ version: 8, entries: [question], revision: 10 });
+    useCases.getFaqEntry.execute.mockResolvedValue(question);
+    for (const mock of [useCases.createFaqEntry, useCases.reviseFaqEntry])
+      mock.execute.mockResolvedValue({ entry: question, version: 3, revision: 10 });
     for (const mock of [useCases.createEntry, useCases.reviseEntry])
       mock.execute.mockResolvedValue({ entry, version: 6, revision: 10 });
+    useCases.getMaintenance.execute.mockResolvedValue(MaintenanceMode.initial());
+    useCases.reviseMaintenance.execute.mockResolvedValue(
+      MaintenanceMode.rehydrate({ enabled: true, message: { fr: 'Retour à 14 h.' }, version: 2 }),
+    );
     useCases.getProfile.execute.mockResolvedValue(reviseProfile(PROFILE, 3));
     useCases.reviseProfile.execute.mockResolvedValue({
       profile: reviseProfile(PROFILE, 4),
@@ -266,6 +312,22 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
         { kind: 'experience', id: 'entry', expectedVersion: 2 },
         { version: 7 },
       ],
+      ['list_faq', {}, { version: 8, totalItems: 1 }],
+      ['get_faq_entry', { id: 'remote-work' }, { id: 'remote-work', version: 2 }],
+      ['create_faq_entry', { entry: QUESTION }, { version: 3 }],
+      [
+        'revise_faq_entry',
+        { id: 'remote-work', expectedVersion: 2, entry: QUESTION },
+        { version: 3, answer: { fr: 'Oui.', en: 'Yes.' } },
+      ],
+      ['reorder_faq', { expectedVersion: 8, ids: ['remote-work'] }, { version: 8 }],
+      ['delete_faq_entry', { id: 'remote-work', expectedVersion: 2 }, { version: 8 }],
+      ['get_maintenance', {}, { enabled: false, message: { fr: '' }, version: 1 }],
+      [
+        'set_maintenance',
+        { expectedVersion: 1, maintenance: { enabled: true, message: { fr: 'Retour à 14 h.' } } },
+        { enabled: true, message: { fr: 'Retour à 14 h.' }, version: 2 },
+      ],
       ['get_profile', {}, { version: 3 }],
       ['revise_profile', { expectedVersion: 3, profile: PROFILE }, { version: 4 }],
       ['get_legal_document', { kind: 'notice' }, { version: 4 }],
@@ -295,13 +357,17 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     expect(useCases.reviseEntry.execute).toHaveBeenCalledWith('experience', 'entry', 2, ENTRY);
     expect(useCases.reorder.execute).toHaveBeenCalledWith('experience', 7, ['entry']);
     expect(useCases.deleteEntry.execute).toHaveBeenCalledWith('experience', 'entry', 2);
+    expect(useCases.createFaqEntry.execute).toHaveBeenCalledWith(QUESTION);
+    expect(useCases.reviseFaqEntry.execute).toHaveBeenCalledWith('remote-work', 2, QUESTION);
+    expect(useCases.reorderFaq.execute).toHaveBeenCalledWith(8, ['remote-work']);
+    expect(useCases.deleteFaqEntry.execute).toHaveBeenCalledWith('remote-work', 2);
     expect(useCases.reviseProfile.execute).toHaveBeenCalledWith(3, PROFILE);
     expect(useCases.reviseLegal.execute).toHaveBeenCalledWith('notice', 4, { fr: DOC, en: DOC });
   });
 
   it('advertises schemas, handles notifications and reports unknown methods and tools', async (): Promise<void> => {
     const listed: request.Response = await rpc('tools/list');
-    expect(listed.body.result.tools).toHaveLength(18);
+    expect(listed.body.result.tools).toHaveLength(26);
     const revise: { inputSchema: unknown } = listed.body.result.tools.find(
       (entry: { name: string }): boolean => entry.name === 'revise_project',
     );

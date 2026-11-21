@@ -8,6 +8,8 @@ export {
   ContentLocaleSchema,
   ContentSnapshotQuerySchema,
   ContentSnapshotSchema,
+  FaqEntryDtoSchema,
+  MaintenanceDtoSchema,
   ProfileDtoSchema,
   ProjectDtoSchema,
   SkillGroupDtoSchema,
@@ -15,6 +17,8 @@ export {
   type ContentLocale,
   type ContentSnapshot,
   type ContentSnapshotQuery,
+  type FaqEntryDto,
+  type MaintenanceDto,
   type ProfileDto,
   type ProjectDto,
   type SkillGroupDto,
@@ -124,6 +128,41 @@ export {
   type TimelineOrderRequest,
   type YearMonthDto,
 } from '@internal/content-contracts/lib/admin-timeline.contract';
+
+/**
+ * FAQ administration exports
+ *
+ * @description
+ * Exposes the question and answer request, administrator DTO, list and reorder schemas, their limits
+ * and problem codes.
+ */
+export {
+  AdminFaqEntryDtoSchema,
+  AdminFaqListSchema,
+  FAQ_ENTRY_LIMITS,
+  FAQ_ERROR_CODES,
+  FaqEntryRequestSchema,
+  FaqOrderRequestSchema,
+  type AdminFaqEntryDto,
+  type AdminFaqList,
+  type FaqEntryRequest,
+  type FaqOrderRequest,
+} from '@internal/content-contracts/lib/admin-faq.contract';
+
+/**
+ * Maintenance administration exports
+ *
+ * @description
+ * Exposes the maintenance revision request, administrator DTO, message limit and problem codes.
+ */
+export {
+  AdminMaintenanceDtoSchema,
+  MAINTENANCE_ERROR_CODES,
+  MAINTENANCE_LIMITS,
+  MaintenanceRequestSchema,
+  type AdminMaintenanceDto,
+  type MaintenanceRequest,
+} from '@internal/content-contracts/lib/admin-maintenance.contract';
 
 /**
  * Profile administration exports

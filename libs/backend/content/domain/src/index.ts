@@ -65,6 +65,21 @@ export {
   type TimelineKind,
 } from '@internal/content-domain/lib/timeline/timeline-entry';
 export {
+  FAQ_ENTRY_LIMITS,
+  FaqEntry,
+  type FaqEntryDraft,
+  type FaqEntryProps,
+  type FaqEntryRevision,
+} from '@internal/content-domain/lib/faq/faq-entry';
+export {
+  MAINTENANCE_LIMITS,
+  MaintenanceMode,
+  type MaintenanceMessage,
+  type MaintenanceModeDraft,
+  type MaintenanceModeProps,
+  type MaintenanceRevision,
+} from '@internal/content-domain/lib/maintenance/maintenance-mode';
+export {
   PROFILE_LIMITS,
   profileLinks,
   reviseProfile,

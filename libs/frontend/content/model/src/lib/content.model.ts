@@ -947,6 +947,84 @@ export interface TimelineStep {
 }
 
 /**
+ * Interface SiteMaintenance
+ * @interface SiteMaintenance
+ *
+ * @description
+ * Maintenance state of the public site in the selected locale: while enabled, every public route shows
+ * the maintenance screen instead of the site layout.
+ */
+export interface SiteMaintenance {
+  // #region Properties
+  /**
+   * Property enabled
+   * @readonly
+   *
+   * @description
+   * Whether the maintenance screen replaces the public pages.
+   *
+   * @type {boolean}
+   */
+  readonly enabled: boolean;
+
+  /**
+   * Property message
+   * @readonly
+   *
+   * @description
+   * Owner's message, English falling back on French; empty for the screen's default line.
+   *
+   * @type {string}
+   */
+  readonly message: string;
+  // #endregion
+}
+
+/**
+ * Interface FaqEntry
+ * @interface FaqEntry
+ *
+ * @description
+ * Localized question of the public FAQ and its plain-text answer.
+ */
+export interface FaqEntry {
+  // #region Properties
+  /**
+   * Property id
+   * @readonly
+   *
+   * @description
+   * Stable identifier used to track the question.
+   *
+   * @type {string}
+   */
+  readonly id: string;
+
+  /**
+   * Property question
+   * @readonly
+   *
+   * @description
+   * Localized question.
+   *
+   * @type {string}
+   */
+  readonly question: string;
+
+  /**
+   * Property answer
+   * @readonly
+   *
+   * @description
+   * Localized plain-text answer; its line breaks are meaningful.
+   *
+   * @type {string}
+   */
+  readonly answer: string;
+  // #endregion
+}
+
+/**
  * Interface SkillColumn
  * @interface SkillColumn
  *
@@ -1077,6 +1155,17 @@ export interface SiteContent {
   readonly skills: readonly SkillColumn[];
 
   /**
+   * Property faq
+   * @readonly
+   *
+   * @description
+   * Questions for the selected locale in editorial order; empty when the owner has written none.
+   *
+   * @type {readonly FaqEntry[]}
+   */
+  readonly faq: readonly FaqEntry[];
+
+  /**
    * Property legal
    * @readonly
    *
@@ -1086,5 +1175,16 @@ export interface SiteContent {
    * @type {Readonly<Record<LegalDocumentKind, LegalDocument>>}
    */
   readonly legal: Readonly<Record<LegalDocumentKind, LegalDocument>>;
+
+  /**
+   * Property maintenance
+   * @readonly
+   *
+   * @description
+   * Maintenance state, read live by the content service on every request.
+   *
+   * @type {SiteMaintenance}
+   */
+  readonly maintenance: SiteMaintenance;
   // #endregion
 }

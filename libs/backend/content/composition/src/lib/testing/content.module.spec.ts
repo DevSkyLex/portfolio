@@ -674,6 +674,149 @@ describe('ContentModule', (): void => {
       });
     });
 
+    describe('faq', (): void => {
+      const base: string = '/api/content/admin/faq';
+      const body: Record<string, unknown> = {
+        question: { fr: 'Proposes-tu de la maintenance ?', en: 'Do you offer maintenance?' },
+        answer: { fr: 'Oui, sur devis.', en: 'Yes, on quotation.' },
+      };
+      const seeded: readonly string[] = [
+        'availability',
+        'employment-status',
+        'technologies',
+        'remote-work',
+        'project-duration',
+        'contact',
+      ];
+
+      it('refuses an anonymous call before its body (401)', async (): Promise<void> => {
+        expect((await admin().post(`${base}/entries`).send({ question: 1 })).status).toBe(401);
+        expect((await admin().get(`${base}/entries`)).status).toBe(401);
+      });
+
+      it('creates, edits, moves and deletes a question, the snapshot following its order', async (): Promise<void> => {
+        const list: request.Response = await admin().get(`${base}/entries`).set(auth);
+        expect(list.status).toBe(200);
+        expect(list.body.member.map((e: { id: string }): string => e.id)).toEqual(seeded);
+        expect(list.body.member[0].answer).toEqual({
+          fr: '[À COMPLÉTER]',
+          en: '[TO BE COMPLETED]',
+        });
+        const listVersion: string = list.headers['etag'] as string;
+
+        const created: request.Response = await admin()
+          .post(`${base}/entries`)
+          .set(auth)
+          .send(body);
+        expect(created.status).toBe(201);
+        expect(created.headers['etag']).toBe('"1"');
+        expect(created.body).toMatchObject({ position: 6, version: 1 });
+        const id: string = created.body.id;
+
+        // The creation changed the list: the version read before it is stale.
+        const stale: request.Response = await admin()
+          .put(`${base}/order`)
+          .set(auth)
+          .set('if-match', listVersion)
+          .send({ ids: [id, ...seeded] });
+        expect(stale.status).toBe(412);
+
+        const revised: request.Response = await admin()
+          .put(`${base}/entries/${id}`)
+          .set(auth)
+          .set('if-match', '"1"')
+          .send({ ...body, answer: { fr: 'Non.', en: 'No.' } });
+        expect(revised.status).toBe(200);
+        expect(revised.headers['etag']).toBe('"2"');
+
+        const current: request.Response = await admin().get(`${base}/entries`).set(auth);
+        const moved: request.Response = await admin()
+          .put(`${base}/order`)
+          .set(auth)
+          .set('if-match', current.headers['etag'] as string)
+          .send({ ids: [id, ...seeded] });
+        expect(moved.status).toBe(200);
+        expect(moved.body.member[0]).toMatchObject({ id, position: 0, version: 2 });
+
+        const snapshot: request.Response = await admin().get('/api/content/snapshot?locale=en');
+        expect(snapshot.body.faq[0]).toEqual({
+          id,
+          question: 'Do you offer maintenance?',
+          answer: 'No.',
+        });
+        expect(snapshot.body.faq.map((e: { id: string }): string => e.id).slice(1)).toEqual(seeded);
+
+        expect(
+          (await admin().delete(`${base}/entries/${id}`).set(auth).set('if-match', '"1"')).status,
+        ).toBe(412);
+        const deleted: request.Response = await admin()
+          .delete(`${base}/entries/${id}`)
+          .set(auth)
+          .set('if-match', '"2"');
+        expect(deleted.status).toBe(200);
+        expect(deleted.body.member.map((e: { id: string }): string => e.id)).toEqual(seeded);
+        expect(deleted.body.member.map((e: { position: number }): number => e.position)).toEqual([
+          0, 1, 2, 3, 4, 5,
+        ]);
+        expect((await admin().get(`${base}/entries/${id}`).set(auth)).status).toBe(404);
+      });
+
+      it('refuses a question without English (422) with its field', async (): Promise<void> => {
+        const incomplete: request.Response = await admin()
+          .post(`${base}/entries`)
+          .set(auth)
+          .send({ ...body, question: { fr: 'Question ?' } });
+        expect(incomplete.status).toBe(422);
+        expect(incomplete.body).toMatchObject({
+          code: 'content.faq-entry-incomplete',
+          errors: [{ field: 'question.en', message: expect.any(String) }],
+        });
+      });
+    });
+
+    describe('maintenance', (): void => {
+      const base: string = '/api/content/admin/maintenance';
+
+      it('refuses an anonymous call before its body (401)', async (): Promise<void> => {
+        expect((await admin().get(base)).status).toBe(401);
+        expect((await admin().put(base).send({ enabled: 1 })).status).toBe(401);
+      });
+
+      it('switches the public snapshot at once, then back off, without a content revision', async (): Promise<void> => {
+        const read: request.Response = await admin().get(base).set(auth);
+        expect(read.status).toBe(200);
+        expect(read.body).toMatchObject({ enabled: false, message: { fr: '' } });
+        const before: request.Response = await admin().get('/api/content/snapshot?locale=en');
+        expect(before.body.maintenance).toEqual({ enabled: false, message: '' });
+        expect((await admin().put(base).set(auth).send({ enabled: true })).status).toBe(428);
+        const on: request.Response = await admin()
+          .put(base)
+          .set(auth)
+          .set('if-match', read.headers['etag'] as string)
+          .send({ enabled: true, message: { fr: 'Retour à 14 h.' } });
+        expect(on.status).toBe(200);
+        expect(on.body).toMatchObject({ enabled: true, version: read.body.version + 1 });
+        const during: request.Response = await admin().get('/api/content/snapshot?locale=en');
+        expect(during.body.maintenance).toEqual({ enabled: true, message: 'Retour à 14 h.' });
+        expect(during.body.revision).toBe(before.body.revision);
+        const stale: request.Response = await admin()
+          .put(base)
+          .set(auth)
+          .set('if-match', read.headers['etag'] as string)
+          .send({ enabled: false });
+        expect(stale.status).toBe(412);
+        const off: request.Response = await admin()
+          .put(base)
+          .set(auth)
+          .set('if-match', on.headers['etag'] as string)
+          .send({ enabled: false });
+        expect(off.status).toBe(200);
+        expect(
+          (await admin().get('/api/content/snapshot?locale=fr')).body.maintenance.enabled,
+        ).toBe(false);
+      });
+    });
+
     describe('site texts', (): void => {
       it('refuses an anonymous call before its body (401)', async (): Promise<void> => {
         expect((await admin().put('/api/content/admin/profile').send({ facts: 1 })).status).toBe(

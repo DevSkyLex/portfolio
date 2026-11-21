@@ -1,10 +1,12 @@
 import {
   lucideBriefcase,
+  lucideConstruction,
   lucideFolderKanban,
   lucideGraduationCap,
   lucideInbox,
   lucideInfo,
   lucideLayoutDashboard,
+  lucideMessageCircleQuestionMark,
   lucideScale,
   lucideShield,
 } from '@ng-icons/lucide';
@@ -41,11 +43,21 @@ export const ADMIN_LINKS: readonly AdminLink[] = [
     icon: lucideGraduationCap,
   },
   {
+    path: '/admin/faq',
+    label: $localize`:@@admin.shell.nav.faq:FAQ`,
+    icon: lucideMessageCircleQuestionMark,
+  },
+  {
     path: '/admin/information',
     label: $localize`:@@admin.shell.nav.information:Informations`,
     icon: lucideInfo,
   },
   { path: '/admin/legal', label: $localize`:@@admin.shell.nav.legal:Légal`, icon: lucideScale },
+  {
+    path: '/admin/maintenance',
+    label: $localize`:@@admin.shell.nav.maintenance:Maintenance`,
+    icon: lucideConstruction,
+  },
   {
     path: '/admin/messages',
     label: $localize`:@@admin.shell.nav.messages:Messages`,

@@ -113,6 +113,20 @@
       "when": 1793889258801,
       "tag": "0015_freezing_joystick",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1795187642072,
+      "tag": "0016_faq_admin",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1795211862647,
+      "tag": "0017_maintenance_mode",
+      "breakpoints": true
     }
   ]
 }

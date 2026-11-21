@@ -173,3 +173,43 @@ export {
   AdminSeoDashboardStore,
   type AdminSeoDashboardStoreType,
 } from '@internal/content-web-data-access/lib/admin/state/admin-seo-dashboard/admin-seo-dashboard.store';
+
+/**
+ * Export FAQ administration
+ *
+ * @description
+ * « FAQ » view models, form draft conversion, API service and `AdminFaqStore` (ordered list, entry
+ * writes and reorders); models are type-only exports (D10).
+ */
+export type { AdminFaqEntry } from '@internal/content-web-data-access/lib/admin/models/admin-faq-entry/admin-faq-entry.interface';
+export type { AdminFaqList } from '@internal/content-web-data-access/lib/admin/models/admin-faq-list/admin-faq-list.interface';
+export type { FaqEntryDraft } from '@internal/content-web-data-access/lib/admin/models/faq-entry-draft/faq-entry-draft.interface';
+export {
+  emptyFaqEntryDraft,
+  toFaqEntryDraft,
+  toFaqEntryRequest,
+} from '@internal/content-web-data-access/lib/admin/utils/faq-entry-draft/faq-entry-draft.utils';
+export { AdminFaqApiService } from '@internal/content-web-data-access/lib/admin/services/admin-faq/admin-faq.service';
+export {
+  AdminFaqStore,
+  type AdminFaqStoreType,
+} from '@internal/content-web-data-access/lib/admin/state/admin-faq/admin-faq.store';
+
+/**
+ * Export maintenance administration
+ *
+ * @description
+ * « Maintenance » view model, form draft conversion, API service and `AdminMaintenanceStore`; models
+ * are type-only exports (D10).
+ */
+export type { AdminMaintenance } from '@internal/content-web-data-access/lib/admin/models/admin-maintenance/admin-maintenance.interface';
+export type { MaintenanceDraft } from '@internal/content-web-data-access/lib/admin/models/maintenance-draft/maintenance-draft.interface';
+export {
+  toMaintenanceDraft,
+  toMaintenanceRequest,
+} from '@internal/content-web-data-access/lib/admin/utils/maintenance-draft/maintenance-draft.utils';
+export { AdminMaintenanceApiService } from '@internal/content-web-data-access/lib/admin/services/admin-maintenance/admin-maintenance.service';
+export {
+  AdminMaintenanceStore,
+  type AdminMaintenanceStoreType,
+} from '@internal/content-web-data-access/lib/admin/state/admin-maintenance/admin-maintenance.store';

@@ -7,6 +7,8 @@ import { READINESS_CHECKS, type ReadinessCheck } from '@vfortin/backend-observab
 import { databaseReadinessCheck } from '@vfortin/backend-persistence';
 import {
   AdminContentController,
+  AdminFaqController,
+  AdminMaintenanceController,
   AdminPublicationController,
   AdminLegalController,
   AdminMediaController,
@@ -27,6 +29,10 @@ import {
   DrizzleContentSnapshotReader,
   DrizzlePublicationRepository,
   DrizzleContentUnitOfWork,
+  DrizzleFaqEntryRepository,
+  DrizzleFaqListRepository,
+  DrizzleFaqUnitOfWork,
+  DrizzleMaintenanceRepository,
   DrizzleLegalDocumentRepository,
   DrizzleMediaRepository,
   DrizzleProfileRepository,
@@ -36,9 +42,6 @@ import {
   DrizzleTimelineEntryRepository,
   DrizzleTimelineListRepository,
   DrizzleTimelineUnitOfWork,
-  DemoAnalyticsReader,
-  DemoSearchConsoleReader,
-  DemoWebVitalsReader,
   GoogleAnalyticsReader,
   type GoogleAccessTokens,
   GoogleSearchConsoleReader,
@@ -52,8 +55,12 @@ import {
 } from '@vfortin/content-adapters-out';
 import {
   type Clock,
+  CreateFaqEntry,
   CreateTimelineEntry,
+  DeleteFaqEntry,
   DeleteTimelineEntry,
+  GetAdminFaqEntry,
+  GetAdminMaintenance,
   GetAdminLegalDocument,
   GetAdminProfile,
   GetAdminProject,
@@ -63,13 +70,17 @@ import {
   GetSeoDashboard,
   type ImageProcessor,
   type RemoteImageSource,
+  ListAdminFaq,
   ListAdminProjects,
   ListAdminTimeline,
   type MediaStorage,
   PublishProject,
   PurgeMedia,
   RefreshSeoDashboard,
+  ReorderFaq,
   ReorderTimeline,
+  ReviseFaqEntry,
+  ReviseMaintenance,
   ReviseLegalDocument,
   ReviseProfile,
   ReviseProject,
@@ -197,14 +208,14 @@ export interface ContentSeoOptions {
   readonly webVitalsUrls: readonly string[];
 
   /**
-   * Property demoData
+   * Property fixtureData
    * @readonly
    *
    * @description
-   * Replaces each unconfigured Google source by demonstration figures (D52), for local development
-   * only; the dashboard announces them.
+   * Serves each unconfigured Google source from the fixtures loaded in the report cache
+   * (`loadContentFixtures`, D55), for local development only: no reader, so a refresh keeps them.
    */
-  readonly demoData?: boolean;
+  readonly fixtureData?: boolean;
 
   /**
    * Property sources
@@ -250,28 +261,24 @@ export function seoSources(seo: ContentSeoOptions): SeoSources {
     const names: string[] = tokens === null ? [SEO_SETTINGS.credentials] : [];
     return value === null ? [...names, name] : names;
   };
-  // An unconfigured source falls back on demonstration figures when they are enabled (D52).
-  const demo = <R>(missing: readonly string[], reader: () => R): SeoSourceSetup<R> =>
-    seo.demoData === true ? { reader: reader(), demo: true } : { missing };
+  // An unconfigured source reads the fixtures of the cache when they are enabled (D55).
+  const unconfigured = <R>(missing: readonly string[]): SeoSourceSetup<R> =>
+    seo.fixtureData === true ? { fixtures: true } : { missing };
   return {
     searchConsole:
       tokens !== null && seo.searchConsoleProperty !== null
         ? { reader: new GoogleSearchConsoleReader({ property: seo.searchConsoleProperty, tokens }) }
-        : demo(
+        : unconfigured<SearchConsoleReader>(
             missing(seo.searchConsoleProperty, SEO_SETTINGS.searchConsole),
-            (): SearchConsoleReader => new DemoSearchConsoleReader(seo.siteOrigin),
           ),
     analytics:
       tokens !== null && seo.analyticsPropertyId !== null
         ? { reader: new GoogleAnalyticsReader({ propertyId: seo.analyticsPropertyId, tokens }) }
-        : demo(
-            missing(seo.analyticsPropertyId, SEO_SETTINGS.analytics),
-            (): AnalyticsReader => new DemoAnalyticsReader(),
-          ),
+        : unconfigured<AnalyticsReader>(missing(seo.analyticsPropertyId, SEO_SETTINGS.analytics)),
     webVitals:
       seo.pageSpeedApiKey !== null
         ? { reader: new PageSpeedWebVitalsReader({ apiKey: seo.pageSpeedApiKey }) }
-        : demo([SEO_SETTINGS.pageSpeed], (): WebVitalsReader => new DemoWebVitalsReader()),
+        : unconfigured<WebVitalsReader>([SEO_SETTINGS.pageSpeed]),
   };
 }
 
@@ -365,7 +372,7 @@ export interface ContentModuleOptions {
  * @class ContentModule
  *
  * @description
- * Wires content persistence, public queries, project, timeline, profile, legal and media
+ * Wires content persistence, public queries, project, timeline, FAQ, profile, legal and media
  * administration, the media purge and the SEO dashboard into Nest.
  */
 @Module({})
@@ -413,6 +420,8 @@ export class ContentModule implements OnApplicationShutdown {
         AdminContentController,
         AdminPublicationController,
         AdminTimelineController,
+        AdminFaqController,
+        AdminMaintenanceController,
         AdminProfileController,
         AdminLegalController,
         AdminMediaController,
@@ -537,6 +546,61 @@ export class ContentModule implements OnApplicationShutdown {
           inject: [CONTENT_DATABASE, CLOCK],
           useFactory: (database: ContentDatabaseHandle, clock: Clock): ReorderTimeline =>
             new ReorderTimeline(new DrizzleTimelineUnitOfWork(database.db), clock),
+        },
+        {
+          provide: GetAdminMaintenance,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): GetAdminMaintenance =>
+            new GetAdminMaintenance(new DrizzleMaintenanceRepository(database.db)),
+        },
+        {
+          provide: ReviseMaintenance,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): ReviseMaintenance =>
+            new ReviseMaintenance(new DrizzleMaintenanceRepository(database.db)),
+        },
+        {
+          provide: ListAdminFaq,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): ListAdminFaq =>
+            new ListAdminFaq(
+              new DrizzleFaqEntryRepository(database.db),
+              new DrizzleFaqListRepository(database.db),
+            ),
+        },
+        {
+          provide: GetAdminFaqEntry,
+          inject: [CONTENT_DATABASE],
+          useFactory: (database: ContentDatabaseHandle): GetAdminFaqEntry =>
+            new GetAdminFaqEntry(new DrizzleFaqEntryRepository(database.db)),
+        },
+        {
+          provide: CreateFaqEntry,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): CreateFaqEntry =>
+            new CreateFaqEntry(
+              new DrizzleFaqUnitOfWork(database.db),
+              new RandomIdGenerator(),
+              clock,
+            ),
+        },
+        {
+          provide: ReviseFaqEntry,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): ReviseFaqEntry =>
+            new ReviseFaqEntry(new DrizzleFaqUnitOfWork(database.db), clock),
+        },
+        {
+          provide: DeleteFaqEntry,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): DeleteFaqEntry =>
+            new DeleteFaqEntry(new DrizzleFaqUnitOfWork(database.db), clock),
+        },
+        {
+          provide: ReorderFaq,
+          inject: [CONTENT_DATABASE, CLOCK],
+          useFactory: (database: ContentDatabaseHandle, clock: Clock): ReorderFaq =>
+            new ReorderFaq(new DrizzleFaqUnitOfWork(database.db), clock),
         },
         {
           provide: GetAdminProfile,

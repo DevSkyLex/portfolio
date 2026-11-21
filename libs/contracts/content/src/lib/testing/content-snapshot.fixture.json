@@ -190,6 +190,19 @@
       "usage": "Interfaces de supervision."
     }
   ],
+  "faq": [
+    {
+      "id": "availability",
+      "question": "Es-tu disponible pour de nouveaux projets ?",
+      "answer": "[À COMPLÉTER]"
+    },
+    {
+      "id": "contact",
+      "question": "Comment te contacter ?",
+      "answer": "[À COMPLÉTER]"
+    }
+  ],
+  "maintenance": { "enabled": false, "message": "" },
   "legal": {
     "notice": {
       "updatedOn": "2025-01-15",

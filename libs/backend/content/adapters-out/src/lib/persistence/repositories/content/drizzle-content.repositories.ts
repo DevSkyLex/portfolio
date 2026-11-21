@@ -4,8 +4,10 @@ import type {
   MediaRecord,
 } from '@vfortin/content-application';
 import type {
+  FaqEntry,
   LegalDocument,
   LegalDocumentKind,
+  MaintenanceMode,
   Profile,
   Project,
   SkillGroup,
@@ -17,6 +19,7 @@ import type {
   ContentTransaction,
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
 import {
+  toFaqEntry,
   toLegalDocument,
   toMediaRecord,
   toProfile,
@@ -24,8 +27,10 @@ import {
   toSkillGroup,
   toTimelineEntry,
 } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
+import { loadMaintenance } from '@internal/content-adapters-out/lib/persistence/repositories/maintenance/drizzle-maintenance.repository';
 import {
   contentRevision,
+  faqEntries,
   publicationState,
   type FrozenContentRows,
   legalDocuments,
@@ -160,6 +165,22 @@ export class DrizzleContentRepository implements ContentRepository {
   }
 
   /**
+   * Method listFaq
+   * @method listFaq
+   *
+   * @description
+   * Loads and maps all FAQ entry rows; a batch frozen before the FAQ existed has none, so the live rows
+   * are read instead.
+   *
+   * @returns {Promise<FaqEntry[]>} Domain FAQ entries.
+   */
+  public async listFaq(): Promise<FaqEntry[]> {
+    const rows: (typeof faqEntries.$inferSelect)[] =
+      this.frozen?.faq ?? (await this.db.select().from(faqEntries));
+    return rows.map(toFaqEntry);
+  }
+
+  /**
    * Method listSkillGroups
    * @method listSkillGroups
    *
@@ -245,6 +266,19 @@ export class DrizzleContentRepository implements ContentRepository {
     if (this.frozen !== null) return this.frozenRevision;
     const [row] = await this.db.select().from(contentRevision).where(eq(contentRevision.id, 1));
     return row?.revision ?? 0;
+  }
+
+  /**
+   * Method loadMaintenance
+   * @method loadMaintenance
+   *
+   * @description
+   * Reads the live maintenance row, also while a publication batch is frozen.
+   *
+   * @returns {Promise<MaintenanceMode>} Current maintenance setting.
+   */
+  public loadMaintenance(): Promise<MaintenanceMode> {
+    return loadMaintenance(this.db);
   }
   // #endregion
 }

@@ -13,10 +13,12 @@ import type { ContentSnapshotLoader } from '@internal/content-web-data-access/li
 const snapshot: ContentSnapshot = {
   locale: 'fr',
   revision: 1,
+  maintenance: { enabled: false, message: '' },
   profile: { heroIntro: 'Intro', aboutStatement: 'About', aboutLead: 'Lead', facts: [], links: [] },
   projects: [],
   timeline: [],
   skills: [],
+  faq: [],
   legal: {
     notice: {
       updatedOn: '2026-11-05',

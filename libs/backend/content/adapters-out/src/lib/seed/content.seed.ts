@@ -12,6 +12,9 @@ import type {
 import {
   type ProfileLinksColumn,
   contentRevision,
+  faqEntries,
+  faqList,
+  maintenance,
   legalDocuments,
   profile,
   projects,
@@ -46,6 +49,15 @@ type ProjectRow = typeof projects.$inferInsert;
  * Insert shape inferred from the timeline entries table.
  */
 type TimelineRow = typeof timelineEntries.$inferInsert;
+
+/**
+ * Type FaqRow
+ * @type FaqRow
+ *
+ * @description
+ * Insert shape inferred from the FAQ entries table.
+ */
+type FaqRow = typeof faqEntries.$inferInsert;
 
 /**
  * Type SkillRow
@@ -522,6 +534,63 @@ export const SEED_LEGAL_DOCUMENTS: (typeof legalDocuments.$inferInsert)[] = [
   { kind: 'privacy', body: SEED_PRIVACY_POLICY, updatedAt: SEED_LEGAL_UPDATED_AT, version: 1 },
 ];
 
+/**
+ * Constant FAQ_PLACEHOLDER
+ *
+ * @description
+ * Answer left for the owner to write in the admin.
+ */
+const FAQ_PLACEHOLDER: FaqRow['answer'] = { fr: '[À COMPLÉTER]', en: '[TO BE COMPLETED]' };
+
+/** Initial FAQ questions in display order, their answers left to the owner. */
+export const SEED_FAQ: FaqRow[] = [
+  {
+    id: 'availability',
+    position: 0,
+    question: {
+      fr: 'Es-tu disponible pour de nouveaux projets ?',
+      en: 'Are you available for new projects?',
+    },
+    answer: FAQ_PLACEHOLDER,
+  },
+  {
+    id: 'employment-status',
+    position: 1,
+    question: {
+      fr: 'Travailles-tu en freelance ou en salariat ?',
+      en: 'Do you work as a freelancer or as an employee?',
+    },
+    answer: FAQ_PLACEHOLDER,
+  },
+  {
+    id: 'technologies',
+    position: 2,
+    question: {
+      fr: 'Avec quelles technologies travailles-tu ?',
+      en: 'Which technologies do you work with?',
+    },
+    answer: FAQ_PLACEHOLDER,
+  },
+  {
+    id: 'remote-work',
+    position: 3,
+    question: { fr: 'Travailles-tu à distance ?', en: 'Do you work remotely?' },
+    answer: FAQ_PLACEHOLDER,
+  },
+  {
+    id: 'project-duration',
+    position: 4,
+    question: { fr: 'Combien de temps prend un projet ?', en: 'How long does a project take?' },
+    answer: FAQ_PLACEHOLDER,
+  },
+  {
+    id: 'contact',
+    position: 5,
+    question: { fr: 'Comment te contacter ?', en: 'How can I contact you?' },
+    answer: FAQ_PLACEHOLDER,
+  },
+];
+
 /** Clearly fictional singleton profile for development and acceptance. */
 export const SEED_PROFILE: ProfileRow = {
   id: 1,
@@ -561,8 +630,9 @@ export const SEED_PROFILE: ProfileRow = {
  * Function seedContent
  *
  * @description
- * Replaces profile, legal documents and collection contents with the initial seed in one database
- * transaction. The first run creates revision 1; replaying the seed increments the existing revision.
+ * Replaces profile, legal documents and collection contents with the initial seed, and switches the
+ * maintenance mode off, in one database transaction. The first run creates revision 1; replaying the
+ * seed increments the existing revision.
  *
  * @param {ContentDatabase} db - Database handle used for the seed transaction.
  * @returns {Promise<void>} Completion after all seed rows are written.
@@ -571,6 +641,7 @@ export async function seedContent(db: ContentDatabase): Promise<void> {
   await db.transaction(async (tx: ContentTransaction): Promise<void> => {
     await tx.delete(projects);
     await tx.delete(timelineEntries);
+    await tx.delete(faqEntries);
     await tx.delete(skillGroups);
     await tx.delete(profile);
     await tx.delete(legalDocuments);
@@ -586,6 +657,23 @@ export async function seedContent(db: ContentDatabase): Promise<void> {
           set: { version: sql`${timelineLists.version} + 1` },
         });
     }
+    await tx.insert(faqEntries).values(SEED_FAQ);
+    // The list was replaced too.
+    await tx
+      .insert(faqList)
+      .values({ id: 1, version: 1 })
+      .onConflictDoUpdate({
+        target: faqList.id,
+        set: { version: sql`${faqList.version} + 1` },
+      });
+    // The seeded site is online; the version still moves, so a form read before the seed fails.
+    await tx
+      .insert(maintenance)
+      .values({ id: 1, enabled: false, message: { fr: '' }, version: 1 })
+      .onConflictDoUpdate({
+        target: maintenance.id,
+        set: { enabled: false, message: { fr: '' }, version: sql`${maintenance.version} + 1` },
+      });
     await tx.insert(skillGroups).values(SEED_SKILLS);
     await tx.insert(profile).values(SEED_PROFILE);
     await tx.insert(legalDocuments).values(SEED_LEGAL_DOCUMENTS);

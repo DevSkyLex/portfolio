@@ -8,6 +8,7 @@ import { provideContentSnapshotValidation } from '@internal/content-web-data-acc
 import { provideContentSnapshots } from '@internal/content-web-data-access/lib/providers/content-snapshots/content-snapshots.provider';
 import { SiteContentService } from '@internal/content-web-data-access/lib/services/site-content/site-content.service';
 import { SiteLinksService } from '@internal/content-web-data-access/lib/services/site-links/site-links.service';
+import { SiteSectionsService } from '@internal/content-web-data-access/lib/services/site-sections/site-sections.service';
 import { loadSiteContent } from '@internal/content-web-data-access/lib/providers/content-snapshot-loader/load-site-content';
 import { contentSnapshotStateKey } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshot-state-key';
 
@@ -21,6 +22,7 @@ import { contentSnapshotStateKey } from '@internal/content-web-data-access/lib/t
  */
 const base: Omit<ContentSnapshot, 'locale' | 'projects'> = {
   revision: 3,
+  maintenance: { enabled: false, message: '' },
   profile: {
     heroIntro: 'Intro',
     aboutStatement: 'Phrase',
@@ -72,6 +74,7 @@ const base: Omit<ContentSnapshot, 'locale' | 'projects'> = {
     },
   ],
   skills: [],
+  faq: [],
 };
 
 /**
@@ -180,6 +183,29 @@ describe('SiteContentService', (): void => {
       label: 'morgan@example.com',
     });
     expect(links.profiles()).toEqual([]);
+  });
+
+  it('serves the questions and publishes the FAQ section only while it has one', (): void => {
+    const faq: ContentSnapshot['faq'] = [
+      { id: 'availability', question: 'Êtes-vous disponible ?', answer: 'Oui.' },
+    ];
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: LOCALE_ID, useValue: 'fr' },
+        provideContentSnapshotValidation(),
+        provideContentSnapshots({
+          fr: { ...base, locale: 'fr', projects: HOME, faq },
+          en: { ...base, locale: 'en', projects: [] },
+        }),
+      ],
+    });
+    expect(TestBed.inject<SiteContentService>(SiteContentService).faq()).toEqual(faq);
+    expect(TestBed.inject<SiteSectionsService>(SiteSectionsService).optional()).toEqual(['faq']);
+  });
+
+  it('publishes no optional section without a question', (): void => {
+    expect(setup('fr').faq()).toEqual([]);
+    expect(TestBed.inject<SiteSectionsService>(SiteSectionsService).optional()).toEqual([]);
   });
 
   it('separates the featured project from the others', (): void => {

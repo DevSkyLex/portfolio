@@ -1,6 +1,7 @@
 import type { MediaRecord } from '@vfortin/content-application';
 import {
   ArticleDocument,
+  FaqEntry,
   LegalDocument,
   LocalizedText,
   Period,
@@ -16,6 +17,7 @@ import {
   profileLinks,
 } from '@vfortin/content-domain';
 import type {
+  faqEntries,
   legalDocuments,
   media,
   profile,
@@ -41,6 +43,15 @@ type ProjectRow = typeof projects.$inferSelect;
  * Drizzle select shape for a persisted timeline entry.
  */
 type TimelineRow = typeof timelineEntries.$inferSelect;
+
+/**
+ * Type FaqRow
+ * @type FaqRow
+ *
+ * @description
+ * Drizzle select shape for a persisted FAQ entry.
+ */
+type FaqRow = typeof faqEntries.$inferSelect;
 
 /**
  * Type SkillRow
@@ -164,6 +175,45 @@ export function toTimelineEntry(row: TimelineRow): TimelineEntry {
     position: row.position,
     version: row.version,
   });
+}
+
+/**
+ * Function toFaqEntry
+ *
+ * @description
+ * Converts stored localized texts, position and version into a validated FAQ entry.
+ *
+ * @param {FaqRow} row - Database row selected from FAQ entries.
+ * @returns {FaqEntry} Domain FAQ entry.
+ */
+export function toFaqEntry(row: FaqRow): FaqEntry {
+  return FaqEntry.rehydrate({
+    id: row.id,
+    question: text('question', row.question),
+    answer: text('answer', row.answer),
+    position: row.position,
+    version: row.version,
+  });
+}
+
+/**
+ * Function toFaqRow
+ *
+ * @description
+ * Converts a FAQ entry into its row.
+ *
+ * @param {FaqEntry} entry - Entry to store.
+ * @returns {typeof faqEntries.$inferInsert} Row values.
+ */
+export function toFaqRow(entry: FaqEntry): typeof faqEntries.$inferInsert {
+  const { id, question, answer, position, version } = entry.snapshot();
+  return {
+    id,
+    question: question.toProps(),
+    answer: answer.toProps(),
+    position,
+    version,
+  };
 }
 
 /**

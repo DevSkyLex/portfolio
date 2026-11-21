@@ -30,6 +30,11 @@ export type {
   TimelineListRepository,
   TimelineRepositories,
   TimelineUnitOfWork,
+  FaqEntryRepository,
+  FaqListRepository,
+  FaqRepositories,
+  FaqUnitOfWork,
+  MaintenanceRepository,
 } from '@internal/content-application/lib/ports/content/content.ports';
 export type { ProjectChangeResult } from '@internal/content-application/lib/use-cases/change-project/change-project';
 export {
@@ -71,6 +76,23 @@ export {
   type TimelineListChangeResult,
 } from '@internal/content-application/lib/use-cases/reorder-timeline/reorder-timeline.use-case';
 export { ReviseTimelineEntry } from '@internal/content-application/lib/use-cases/revise-timeline-entry/revise-timeline-entry.use-case';
+export {
+  CreateFaqEntry,
+  type FaqEntryChangeResult,
+} from '@internal/content-application/lib/use-cases/create-faq-entry/create-faq-entry.use-case';
+export { DeleteFaqEntry } from '@internal/content-application/lib/use-cases/delete-faq-entry/delete-faq-entry.use-case';
+export { GetAdminFaqEntry } from '@internal/content-application/lib/use-cases/get-admin-faq-entry/get-admin-faq-entry.use-case';
+export {
+  ListAdminFaq,
+  type AdminFaqView,
+} from '@internal/content-application/lib/use-cases/list-admin-faq/list-admin-faq.use-case';
+export {
+  ReorderFaq,
+  type FaqListChangeResult,
+} from '@internal/content-application/lib/use-cases/reorder-faq/reorder-faq.use-case';
+export { ReviseFaqEntry } from '@internal/content-application/lib/use-cases/revise-faq-entry/revise-faq-entry.use-case';
+export { GetAdminMaintenance } from '@internal/content-application/lib/use-cases/get-admin-maintenance/get-admin-maintenance.use-case';
+export { ReviseMaintenance } from '@internal/content-application/lib/use-cases/revise-maintenance/revise-maintenance.use-case';
 export type {
   LegalDocumentRepository,
   ProfileRepository,

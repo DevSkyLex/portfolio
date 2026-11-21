@@ -1,0 +1,90 @@
+import { FaqEntry } from '@vfortin/content-domain';
+import type {
+  Clock,
+  FaqRepositories,
+  FaqUnitOfWork,
+} from '@internal/content-application/lib/ports/content/content.ports';
+import type { AdminFaqView } from '@internal/content-application/lib/use-cases/list-admin-faq/list-admin-faq.use-case';
+
+/**
+ * Interface FaqListChangeResult
+ * @interface FaqListChangeResult
+ *
+ * @description
+ * FAQ list after a reorder or deletion, and its public content revision.
+ */
+export interface FaqListChangeResult extends AdminFaqView {
+  // #region Properties
+  /**
+   * Property revision
+   * @readonly
+   *
+   * @description
+   * Public content revision, or `null` when the order did not change.
+   */
+  readonly revision: number | null;
+  // #endregion
+}
+
+/**
+ * Class ReorderFaq
+ * @class ReorderFaq
+ *
+ * @description
+ * Applies a new order to the FAQ entries. The precondition is the list version rather than the
+ * entries' versions, as for the timeline: a stale list (an entry created, deleted or moved since) is
+ * refused as a whole, and editing an entry's text in another tab neither blocks a reorder nor is
+ * invalidated by one.
+ */
+export class ReorderFaq {
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Wires the transaction boundary and the request clock.
+   *
+   * @param {FaqUnitOfWork} unitOfWork - Atomic FAQ and revision writes.
+   * @param {Clock} clock - Rebuild request time.
+   */
+  public constructor(
+    private readonly unitOfWork: FaqUnitOfWork,
+    private readonly clock: Clock,
+  ) {}
+  // #endregion
+
+  // #region Methods
+  /**
+   * Method execute
+   * @method execute
+   *
+   * @description
+   * Checks and bumps the list version, then writes the moved positions and advances the revision; an
+   * unchanged order still bumps the version (the client receives it) but does not advance the content
+   * revision.
+   *
+   * @param {number} expectedVersion - List version read by the client (`If-Match`).
+   * @param {readonly string[]} ids - Every entry, in the wanted order.
+   * @throws {VersionMismatchError} When the list changed since it was read.
+   * @throws {DomainError} `content.faq-order-invalid` when `ids` is not a permutation.
+   * @returns {Promise<FaqListChangeResult>} Ordered entries, list version and optional revision.
+   */
+  public execute(expectedVersion: number, ids: readonly string[]): Promise<FaqListChangeResult> {
+    return this.unitOfWork.run(
+      async ({ entries, lists, buildRequests }: FaqRepositories): Promise<FaqListChangeResult> => {
+        // Bumping first both checks the precondition and locks the list until commit.
+        const version: number = await lists.bump(expectedVersion);
+        const current: FaqEntry[] = await entries.list();
+        const moved: FaqEntry[] = FaqEntry.reorder(current, ids);
+        if (moved.length > 0) await entries.move(moved);
+        return {
+          version,
+          entries: [...current].sort(FaqEntry.compare),
+          revision: moved.length > 0 ? await buildRequests.request(this.clock.now()) : null,
+        };
+      },
+    );
+  }
+  // #endregion
+}

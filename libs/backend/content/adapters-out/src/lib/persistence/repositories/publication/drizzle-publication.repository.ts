@@ -14,6 +14,7 @@ import {
   projects,
   profile,
   timelineEntries,
+  faqEntries,
   skillGroups,
   legalDocuments,
   media,
@@ -57,6 +58,7 @@ export class DrizzlePublicationRepository implements PublicationRepository {
         profile: await tx.select().from(profile),
         timeline: await tx.select().from(timelineEntries),
         skills: await tx.select().from(skillGroups),
+        faq: await tx.select().from(faqEntries),
         legal: (await tx.select().from(legalDocuments)).map((row) => ({
           ...row,
           updatedAt: row.updatedAt.toISOString(),

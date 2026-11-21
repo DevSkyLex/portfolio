@@ -11,6 +11,7 @@ export { loadSiteContent } from '@internal/content-web-data-access/lib/providers
 export { provideContentSnapshots } from '@internal/content-web-data-access/lib/providers/content-snapshots/content-snapshots.provider';
 export { SiteContentService } from '@internal/content-web-data-access/lib/services/site-content/site-content.service';
 export { SiteLinksService } from '@internal/content-web-data-access/lib/services/site-links/site-links.service';
+export { SiteSectionsService } from '@internal/content-web-data-access/lib/services/site-sections/site-sections.service';
 export { CONTENT_SNAPSHOTS } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshots.token';
 export { PageSeoService } from '@internal/content-web-data-access/lib/services/page-seo/page-seo.service';
 export { provideSiteOrigin } from '@internal/content-web-data-access/lib/providers/site-origin/site-origin.provider';

@@ -1,7 +1,9 @@
 import {
+  FaqEntry,
   LegalDocument,
   type LegalDocumentKind,
   LocalizedText,
+  MaintenanceMode,
   Period,
   type Profile,
   Project,
@@ -121,6 +123,14 @@ function entry(
 class InMemoryContentRepository implements ContentRepository, ContentSnapshotReader {
   // #region Properties
   /**
+   * Property maintenance
+   *
+   * @description
+   * Maintenance setting returned by `loadMaintenance`.
+   */
+  public maintenance: MaintenanceMode = MaintenanceMode.initial();
+
+  /**
    * Property revision
    *
    * @description
@@ -156,12 +166,15 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
    * @param {Project[]} projects - Projects returned by `listProjects`.
    * @param {TimelineEntry[]} timeline - Entries returned by `listTimeline`.
    * @param {SkillGroup[]} skills - Groups returned by `listSkillGroups`.
+   * @param {MediaRecord[]} media - Media returned by `loadMedia`.
+   * @param {FaqEntry[]} faq - Entries returned by `listFaq`.
    */
   public constructor(
     private readonly projects: Project[],
     private readonly timeline: TimelineEntry[],
     private readonly skills: SkillGroup[],
     private readonly media: MediaRecord[] = [],
+    private readonly faq: FaqEntry[] = [],
   ) {}
   // #endregion
 
@@ -236,6 +249,19 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
   }
 
   /**
+   * Method listFaq
+   * @method listFaq
+   *
+   * @description
+   * Resolves the configured FAQ fixtures.
+   *
+   * @returns {Promise<FaqEntry[]>} Stored FAQ fixtures.
+   */
+  public listFaq(): Promise<FaqEntry[]> {
+    return Promise.resolve(this.faq);
+  }
+
+  /**
    * Method listSkillGroups
    * @method listSkillGroups
    *
@@ -276,6 +302,19 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
    */
   public currentRevision(): Promise<number> {
     return Promise.resolve(this.revision);
+  }
+
+  /**
+   * Method loadMaintenance
+   * @method loadMaintenance
+   *
+   * @description
+   * Resolves the mutable maintenance setting.
+   *
+   * @returns {Promise<MaintenanceMode>} Configured setting.
+   */
+  public loadMaintenance(): Promise<MaintenanceMode> {
+    return Promise.resolve(this.maintenance);
   }
 
   /**
@@ -367,6 +406,18 @@ describe('GetPublishedContent', (): void => {
     expect(content.skills.map((s: SkillGroup): string => s.id)).toEqual(['front', 'outils']);
   });
 
+  it('orders the FAQ by position', async (): Promise<void> => {
+    const question: (id: string, position: number) => FaqEntry = (
+      id: string,
+      position: number,
+    ): FaqEntry =>
+      FaqEntry.rehydrate({ id, question: t(`${id} ?`), answer: t('r'), position, version: 1 });
+    const content: PublishedContent = await new GetPublishedContent(
+      new InMemoryContentRepository([], [], [], [], [question('contact', 1), question('dispo', 0)]),
+    ).execute();
+    expect(content.faq.map((e: FaqEntry): string => e.id)).toEqual(['dispo', 'contact']);
+  });
+
   it('reuses the content while the revision does not change', async (): Promise<void> => {
     const repository: InMemoryContentRepository = new InMemoryContentRepository(
       [project('crm', 0, 'published')],
@@ -375,10 +426,30 @@ describe('GetPublishedContent', (): void => {
     );
     const useCase: GetPublishedContent = new GetPublishedContent(repository);
     const first: PublishedContent = await useCase.execute();
-    await expect(useCase.execute()).resolves.toBe(first);
+    await expect(useCase.execute()).resolves.toEqual(first);
     expect(repository.reads).toBe(1);
     repository.revision = 8;
     await expect(useCase.execute()).resolves.toMatchObject({ revision: 8 });
     expect(repository.reads).toBe(2);
+  });
+
+  it('reads the maintenance setting live, even while the revision does not change', async (): Promise<void> => {
+    const repository: InMemoryContentRepository = new InMemoryContentRepository(
+      [project('crm', 0, 'published')],
+      [],
+      [],
+    );
+    const useCase: GetPublishedContent = new GetPublishedContent(repository);
+    expect((await useCase.execute()).maintenance.enabled).toBe(false);
+    repository.maintenance = MaintenanceMode.rehydrate({
+      enabled: true,
+      message: { fr: 'Retour à 14 h.' },
+      version: 2,
+    });
+    const content: PublishedContent = await useCase.execute();
+    expect(content.maintenance.enabled).toBe(true);
+    expect(content.maintenance.messageIn('en')).toBe('Retour à 14 h.');
+    expect(content.revision).toBe(repository.revision);
+    expect(repository.reads).toBe(1);
   });
 });
