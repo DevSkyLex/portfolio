@@ -315,7 +315,7 @@ export class SeoAuditPanelComponent {
     {
       id: 'projet',
       width: 176,
-      header: $localize`:@@admin.dashboard.audit.project:Projet`,
+      header: $localize`:@@admin.dashboard.audit.project:Article`,
       icon: lucideFolder,
       cell: (row: IssueRow): string => row.project,
       sortable: true,

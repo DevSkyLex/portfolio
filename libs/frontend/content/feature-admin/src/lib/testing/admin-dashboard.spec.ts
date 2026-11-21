@@ -37,14 +37,14 @@ const AUDIT: SeoDashboard['audit'] = {
       title: 'Library Trails',
       pages: {
         fr: {
-          path: '/projects/library-trails',
+          path: '/articles/library-trails',
           title: 'Library Trails — Valentin Fortin',
           description: 'Résumé',
           keywords: ['angular'],
           keywordsSource: 'techs',
         },
         en: {
-          path: '/en/projects/library-trails',
+          path: '/en/articles/library-trails',
           title: 'Library Trails — Valentin Fortin',
           description: 'Summary',
           keywords: ['angular'],
@@ -123,7 +123,7 @@ const reported = (): SeoDashboard => ({
       ],
       pages: [
         {
-          key: 'https://valentin-fortin.pro/projects/library-trails',
+          key: 'https://valentin-fortin.pro/articles/library-trails',
           clicks: 40,
           impressions: 1000,
           ctr: 0.04,
@@ -238,7 +238,7 @@ async function open(url: string = '/admin/dashboard'): Promise<Opened> {
       provideHttpClientTesting(),
       provideRouter([
         { path: 'admin/dashboard', children: ADMIN_DASHBOARD_ROUTES },
-        { path: 'admin/projects/:id', children: [] },
+        { path: 'admin/articles/:id', children: [] },
       ]),
     ],
   });
@@ -500,7 +500,9 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
     );
     // The audit's totals are the sheet's key figures, without a period compared.
     const totals: string = text(sheet()?.querySelector('content-seo-figure-list'));
-    expect(totals).toBe('Erreurs1Avertissements1Infos0Projets publiés1Brouillons2URL du sitemap10');
+    expect(totals).toBe(
+      'Erreurs1Avertissements1Infos0Articles publiés1Brouillons2URL du sitemap10',
+    );
     // Findings by project, split by severity, and by kind.
     const projects: Element | null | undefined = audit?.querySelector('ui-stacked-bars');
     expect(
@@ -528,7 +530,7 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
         'Titre de recherche trop court : 23 caractères, 30 au minimum.',
       ],
     ]);
-    expect(rows[0]?.querySelector('a')?.getAttribute('href')).toBe('/admin/projects/p1');
+    expect(rows[0]?.querySelector('a')?.getAttribute('href')).toBe('/admin/articles/p1');
     // A status icon in the ink of its meaning, its word as a tooltip and as hidden text.
     const severity: Element | null | undefined = rows[0]?.querySelector(
       '[data-slot="status-icon"]',
@@ -653,7 +655,7 @@ describe('ADMIN_DASHBOARD_ROUTES', (): void => {
       ['morgan exemple', '80', '300', '27 %', '1,2'],
       ['portfolio angular', '2', '900', '0,2 %', '—'],
     ]);
-    expect(text(tables[1]?.tBodies[0]?.rows[0]?.cells[0])).toBe('/projects/library-trails');
+    expect(text(tables[1]?.tBodies[0]?.rows[0]?.cells[0])).toBe('/articles/library-trails');
 
     const audience: HTMLElement | null = await show(opened, 'Audience');
     expect(sections(audience)).toEqual([

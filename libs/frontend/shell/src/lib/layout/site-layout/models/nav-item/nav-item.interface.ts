@@ -3,7 +3,7 @@
  * @interface NavItem
  *
  * @description
- * Site navigation section anchor, localized label, and aurora hue used by the header progress line.
+ * Site navigation link and its associated home section.
  */
 export interface NavItem {
   // #region Properties
@@ -12,7 +12,7 @@ export interface NavItem {
    * @readonly
    *
    * @description
-   * Section element id targeted by the navigation link and scroll spy.
+   * Home section element ID, the link's fragment and the scroll spy's target.
    *
    * @type {string}
    */

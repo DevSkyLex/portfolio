@@ -25,9 +25,22 @@ const LANGUAGES: Readonly<Record<string, string>> = {
  * @returns {string} Readable label.
  */
 export function missingLabel(path: string): string {
+  if (path === 'taxonomy.category')
+    return $localize`:@@admin.article.taxonomy.categoryRequired:Complétez la catégorie dans cette langue.`;
   const parts: string[] = path.split('.');
   const language: string | undefined = LANGUAGES[parts.at(-1) ?? ''] ?? LANGUAGES[parts[1] ?? ''];
   if (!language) return path;
+  if (parts[0] === 'taxonomy') {
+    const label: string =
+      parts[1] === 'category'
+        ? parts.at(-1) === 'en'
+          ? $localize`:@@admin.article.taxonomy.categoryEn:Catégorie en anglais`
+          : $localize`:@@admin.article.taxonomy.categoryFr:Catégorie en français`
+        : parts.at(-1) === 'en'
+          ? $localize`:@@admin.article.taxonomy.tagEn:Tag en anglais`
+          : $localize`:@@admin.article.taxonomy.tagFr:Tag en français`;
+    return parts[1] === 'tags' ? `${label} (${Number(parts[2]) + 1})` : label;
+  }
   if (parts[0] === 'article')
     return parts[2] === 'figures'
       ? $localize`:@@admin.content.missing.figures:Textes alternatifs des images (${language}:language:)`

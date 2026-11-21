@@ -13,5 +13,9 @@ import { techKey } from '@internal/content-web-ui/lib/tech/utils/tech-key/tech-k
  * @param {string} key - Technology catalogue key or alias; unknown keys are retained as their display label.
  */
 export function techDefinition(key: string): TechDefinition {
-  return TECHS[techKey(key)] ?? { label: key };
+  const normalized: string = techKey(key);
+  const definition: TechDefinition | undefined = Object.hasOwn(TECHS, normalized)
+    ? TECHS[normalized]
+    : undefined;
+  return definition ?? { label: key };
 }

@@ -1,13 +1,14 @@
 # Portfolio
 
-An interactive, bilingual portfolio with a private administration area. The public site presents projects, skills and experience, and provides a contact form. The administration interface manages content and messages; it is available in French only.
+An interactive, bilingual portfolio with a private administration area. The public site presents projects, articles, skills and experience, and provides a contact form. The administration interface manages content and messages.
 
-The application is an Nx monorepo: an Angular frontend and three NestJS services for content, contact and identity. Public pages are prerendered from a versioned content snapshot, while the administration interface is rendered in the browser.
+The Nx monorepo contains an Angular frontend and three NestJS services for content, contact and identity. Angular renders public pages on request from a versioned content snapshot. The administration interface renders in the browser.
 
 ## Features
 
 - French and English public pages, theme preferences, responsive navigation and accessible interactions.
-- Project and profile content managed through an administration interface and published to the public site.
+- Bilingual articles with drafts, categories, tags, rich content, cover media, SEO settings and explicit publication.
+- One public article catalogue with category and tag filters. The home page highlights up to four articles in the Projects category.
 - Contact messages with an administration inbox and email notifications.
 - Administrator sessions with password and time-based one-time code authentication; no public account registration.
 - Local development with a full Docker stack or independently running services.

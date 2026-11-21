@@ -8,6 +8,7 @@ import {
   viewChild,
   type Signal,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AsciiPlanetComponent } from '@vfortin/content-web-ui';
 import { ButtonDirective, GlyphComponent, ScrollFrameService } from '@vfortin/ui';
 import type { HeroLetter } from '@internal/content-web-feature/lib/ui/sections/hero-section/models/hero-letter/hero-letter.interface';
@@ -22,7 +23,7 @@ import { heroLetters } from '@internal/content-web-feature/lib/ui/sections/hero-
  */
 @Component({
   selector: 'content-hero-section',
-  imports: [AsciiPlanetComponent, ButtonDirective, GlyphComponent],
+  imports: [AsciiPlanetComponent, ButtonDirective, GlyphComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './hero-section.component.html',
   host: { class: 'block @container' },

@@ -7,7 +7,7 @@ export const projectExistsGuard: CanActivateFn = (route) => {
   const content: SiteContentService = inject<SiteContentService>(SiteContentService);
   const router: Router = inject<Router>(Router);
   const slug: string | null = route.paramMap.get('slug');
-  return slug !== null && content.project(slug) !== null
+  return slug !== null && content.publication(slug) !== null
     ? true
     : router.createUrlTree(['/error', '404']);
 };

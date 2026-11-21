@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import type { ServerResponse } from 'node:http';
 import { CSP_NONCE_HEADER, cspNonce, withCspNonce } from '@internal/web/server/csp-nonce/csp-nonce';
 import { legacyLocaleRedirect } from '@internal/web/server/legacy-locale-redirect/legacy-locale-redirect';
+import { legacyProjectRedirect } from '@internal/web/server/legacy-project-redirect/legacy-project-redirect';
 
 const siteOrigin: string = new URL(process.env['SITE_ORIGIN'] ?? 'https://valentin-fortin.pro')
   .origin;
@@ -39,6 +40,14 @@ app.get('/', (_req: Request, res: Response, next: NextFunction): void => {
   res.redirect(302, '/fr/');
 });
 app.use((req: Request, res: Response, next: NextFunction): void => {
+  const legacyProject: string | null =
+    req.method === 'GET' || req.method === 'HEAD'
+      ? legacyProjectRedirect(req.path, req.originalUrl, localized)
+      : null;
+  if (legacyProject !== null) {
+    res.redirect(308, legacyProject);
+    return;
+  }
   const target: string | null = localized ? legacyLocaleRedirect(req.path, req.originalUrl) : null;
   if (target !== null) {
     res.redirect(308, target);

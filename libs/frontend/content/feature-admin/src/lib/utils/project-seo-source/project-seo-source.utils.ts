@@ -1,6 +1,7 @@
 import type { AdminMedia, ProjectPageSeoSource } from '@vfortin/content-web-data-access/admin';
 import type { ContentLocale } from '@internal/content-web-feature-admin/lib/models/content-locale/content-locale.type';
 import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/ui/forms/project-form/models/project-form-values.model';
+import { editedTagKey } from '@internal/content-web-feature-admin/lib/utils/article-tags/article-tags.utils';
 
 /**
  * Function projectSeoSource
@@ -29,7 +30,15 @@ export function projectSeoSource(
     slug,
     title: values.title[locale].trim(),
     summary: values.summary[locale].trim(),
-    techs: values.techs,
+    techs: [],
+    taxonomy: {
+      tags: values.taxonomy.tags
+        .map((tag) => ({
+          key: editedTagKey(tag),
+          label: tag.label[locale].trim() || tag.label.fr.trim(),
+        }))
+        .filter((tag) => tag.key !== ''),
+    },
     cover: cover
       ? {
           src: cover.src,

@@ -1,6 +1,7 @@
 import type { Mock } from 'vitest';
 import { Component, LOCALE_ID, input, type InputSignal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { provideContentSnapshots } from '@vfortin/content-web-data-access';
 import { AsciiPlanetComponent } from '@vfortin/content-web-ui';
 import { ScrollFrameService, type ScrollFrameTask } from '@vfortin/ui';
@@ -93,6 +94,7 @@ describe('HeroSectionComponent', (): void => {
   beforeEach((): void => {
     TestBed.configureTestingModule({
       providers: [
+        provideRouter([]),
         { provide: LOCALE_ID, useValue: 'fr' },
         provideContentSnapshots({ fr: snapshot, en: { ...snapshot, locale: 'en' } }),
       ],

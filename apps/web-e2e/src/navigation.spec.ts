@@ -1,4 +1,12 @@
-import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type APIResponse,
+  type Locator,
+  type Page,
+  type Response,
+} from '@playwright/test';
 
 test('redirects legacy French links while preserving their query and fragment', async ({
   page,
@@ -6,8 +14,36 @@ test('redirects legacy French links while preserving their query and fragment', 
   page: Page;
 }): Promise<void> => {
   await page.goto('/projects/library-trails?source=link#contexte');
-  await expect(page).toHaveURL(/\/fr\/projects\/library-trails\?source=link#contexte$/);
+  await expect(page).toHaveURL(/\/fr\/articles\/library-trails\?source=link#contexte$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+});
+
+test('redirects localized project addresses to the canonical article collection permanently', async ({
+  request,
+}: {
+  request: APIRequestContext;
+}): Promise<void> => {
+  for (const locale of ['fr', 'en']) {
+    const listing: APIResponse = await request.get(`/${locale}/projects?source=legacy`, {
+      maxRedirects: 0,
+    });
+    expect(listing.status()).toBe(308);
+    const listingUrl: URL = new URL(listing.headers()['location'] ?? '', listing.url());
+    expect(listingUrl.pathname).toBe(`/${locale}/articles`);
+    expect(listingUrl.searchParams.get('category')).toBe('projects');
+    expect(listingUrl.searchParams.get('source')).toBe('legacy');
+
+    const detail: APIResponse = await request.head(
+      `/${locale}/projects/library-trails?source=legacy`,
+      {
+        maxRedirects: 0,
+      },
+    );
+    expect(detail.status()).toBe(308);
+    expect(detail.headers()['location']).toBe(`/${locale}/articles/library-trails?source=legacy`);
+    const missing: APIResponse = await request.get(`/${locale}/articles/unknown-article`);
+    expect(missing.status()).toBe(404);
+  }
 });
 
 test.describe('mobile menu', (): void => {

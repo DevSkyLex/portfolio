@@ -80,7 +80,7 @@ function snapshotProject(locale: 'fr' | 'en', slug: string): SnapshotProject {
  */
 function expectedPage(locale: 'fr' | 'en'): ExpectedPage {
   const project: SnapshotProject = snapshotProject(locale, 'library-trails');
-  const path: string = `/${locale}/projects/library-trails`;
+  const path: string = `/${locale}/articles/library-trails`;
   const cover: SnapshotProject['cover'] = project.cover;
   return {
     locale,
@@ -158,9 +158,9 @@ for (const expected of [expectedPage('fr'), expectedPage('en')]) {
 
     expect(await attribute(page, 'link[rel="canonical"]', 'href')).toBe(expected.canonical);
     for (const [hreflang, href] of [
-      ['fr', `${ORIGIN}/fr/projects/library-trails`],
-      ['en', `${ORIGIN}/en/projects/library-trails`],
-      ['x-default', `${ORIGIN}/fr/projects/library-trails`],
+      ['fr', `${ORIGIN}/fr/articles/library-trails`],
+      ['en', `${ORIGIN}/en/articles/library-trails`],
+      ['x-default', `${ORIGIN}/fr/articles/library-trails`],
     ]) {
       expect(await attribute(page, `link[rel="alternate"][hreflang="${hreflang}"]`, 'href')).toBe(
         href,
@@ -187,18 +187,18 @@ for (const expected of [expectedPage('fr'), expectedPage('en')]) {
   });
 }
 
-test('replaces the metadata when moving to the next project, then removes them on the home page', async ({
+test('updates metadata between project details and the project list', async ({
   page,
 }: {
   page: Page;
 }): Promise<void> => {
-  await page.goto('/projects/library-trails');
+  await page.goto('/articles/library-trails');
   await expect(page.locator('html')).toHaveAttribute('data-app', '');
   await page
     .getByRole('navigation', { name: 'Autres projets' })
     .getByRole('link', { name: /Projet suivant/ })
     .click();
-  await expect(page).not.toHaveURL(/\/projects\/library-trails$/);
+  await expect(page).not.toHaveURL(/\/articles\/library-trails$/);
   const next: string = new URL(page.url()).pathname;
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${ORIGIN}${next}`);
   await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
@@ -206,7 +206,11 @@ test('replaces the metadata when moving to the next project, then removes them o
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
 
   await page.getByRole('link', { name: 'Tous les projets' }).click();
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${ORIGIN}/fr/`);
+  await expect(page).toHaveURL(/\/fr\/articles\?category=projects$/);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    `${ORIGIN}/fr/articles`,
+  );
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(0);
   await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'website');
 });
@@ -225,14 +229,17 @@ test('serves a sitemap listing every page in both languages', async ({
     '/en/',
     '/fr/legal-notice',
     '/en/privacy',
-    '/fr/projects/library-trails',
-    '/en/projects/library-trails',
+    '/fr/articles',
+    '/en/articles',
+    '/fr/articles/library-trails',
+    '/en/articles/library-trails',
   ]) {
     expect(xml).toContain(`<loc>${ORIGIN}${path}</loc>`);
   }
   expect(xml).toContain(
-    `<xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}/fr/projects/library-trails"/>`,
+    `<xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}/fr/articles/library-trails"/>`,
   );
+  expect(xml).not.toContain('/projects');
 });
 
 test('serves robots.txt that keeps the admin area out and points to the sitemap', async ({

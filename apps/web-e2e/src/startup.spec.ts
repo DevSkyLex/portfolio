@@ -132,7 +132,7 @@ async function publicStylesheet(request: APIRequestContext, html: string): Promi
  * @returns {string} Root-relative project page path.
  */
 function projectPath(home: string): string {
-  const path: string | undefined = /href="(\/fr\/projects\/[a-z0-9-]+)"/.exec(home)?.[1];
+  const path: string | undefined = /href="(\/fr\/articles\/[a-z0-9-]+)"/.exec(home)?.[1];
   if (!path) throw new Error('Missing project link on the home page.');
   return path;
 }

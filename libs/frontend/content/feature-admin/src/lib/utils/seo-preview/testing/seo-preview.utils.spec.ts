@@ -28,12 +28,12 @@ describe('seoPreview', (): void => {
     expect(seoPreview(blank, 'fr', 'library-trails')).toEqual({
       title: 'Library Trails — Valentin Fortin',
       description: 'Covoiturage local.',
-      breadcrumb: 'valentin-fortin.pro › fr › projects › library-trails',
+      breadcrumb: 'valentin-fortin.pro › fr › articles › library-trails',
     });
     expect(seoPreview(blank, 'en', 'library-trails')).toEqual({
       title: 'Library Trails EN — Valentin Fortin',
       description: 'Local carpooling.',
-      breadcrumb: 'valentin-fortin.pro › en › projects › library-trails',
+      breadcrumb: 'valentin-fortin.pro › en › articles › library-trails',
     });
     expect(seoPreview({ ...blank, title: { fr: '', en: '' } }, 'fr', 'library-trails').title).toBe(
       'Valentin Fortin',

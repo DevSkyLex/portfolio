@@ -103,6 +103,7 @@ function toProjectArticle(dto: ProjectDto): ProjectArticle {
         ? null
         : { url: dto.siteUrl, label: new URL(dto.siteUrl).hostname.replace(/^www\./, '') },
     cover: dto.cover,
+    ...(dto.taxonomy === undefined ? {} : { taxonomy: dto.taxonomy }),
     seo: {
       title: dto.seo.title,
       description: dto.seo.description,
@@ -138,6 +139,10 @@ export function toSiteContent(snapshot: ContentSnapshot): SiteContent {
     revision: snapshot.revision,
     profile: { ...snapshot.profile, links: toSiteLinks(snapshot.profile.links) },
     projects: snapshot.projects.map(toProjectArticle),
+    articles: (snapshot.articles ?? []).map((article) => ({
+      ...toProjectArticle(article),
+      taxonomy: article.taxonomy,
+    })),
     timeline: snapshot.timeline.map((entry): TimelineStep =>
       toTimelineStep(entry, snapshot.locale),
     ),

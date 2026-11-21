@@ -83,6 +83,37 @@ const project: AdminProject = {
 };
 
 describe('toProjectDraft', (): void => {
+  it('round-trips article taxonomy while preserving existing keys and normalizing new tags', (): void => {
+    const draft: ProjectDraft = toProjectDraft({
+      ...project,
+      kind: 'article',
+      taxonomy: {
+        category: { key: 'architecture', label: { fr: 'Architecture', en: 'Architecture' } },
+        tags: [],
+      },
+    });
+    expect(draft.taxonomy).toBeDefined();
+    draft.taxonomy.tags.push({
+      key: '',
+      label: { fr: 'État applicatif', en: 'Application state' },
+    });
+    expect(toRevisionRequest(draft).taxonomy).toEqual({
+      category: { key: 'architecture', label: { fr: 'Architecture', en: 'Architecture' } },
+      tags: [
+        { key: 'flutter', label: { fr: 'flutter', en: 'flutter' } },
+        { key: 'dart', label: { fr: 'dart', en: 'dart' } },
+        { key: 'etat-applicatif', label: { fr: 'État applicatif', en: 'Application state' } },
+      ],
+    });
+    expect(toRevisionRequest(toProjectDraft(project)).taxonomy).toEqual({
+      category: { key: 'projects', label: { fr: 'Projets', en: 'Projects' } },
+      tags: [
+        { key: 'flutter', label: { fr: 'flutter', en: 'flutter' } },
+        { key: 'dart', label: { fr: 'dart', en: 'dart' } },
+      ],
+    });
+  });
+
   it('resolves the figure URLs for display and opens an unwritten English article empty', (): void => {
     const draft: ProjectDraft = toProjectDraft(project);
     expect(draft.article.fr.content[2]).toEqual({
@@ -121,7 +152,7 @@ describe('toRevisionRequest', (): void => {
     expect(request.article).toEqual({ fr: FRENCH });
     expect(request.cover).toEqual({ media: MEDIA, alt: { fr: 'Couverture' } });
     expect(request.lead).toEqual({ fr: 'Chapô' });
-    expect(request.techs).toEqual(['flutter', 'dart']);
+    expect(request.techs).toEqual([]);
     expect(request.seo).toEqual({
       title: { fr: 'Library Trails, app de covoiturage' },
       description: {},

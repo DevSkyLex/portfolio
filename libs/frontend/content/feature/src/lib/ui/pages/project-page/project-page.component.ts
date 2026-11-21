@@ -15,24 +15,25 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { Router, RouterLink, Scroll } from '@angular/router';
+import { Router, RouterLink, Scroll, type Params } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import { lucideArrowLeft, lucideArrowRight, lucideSquareArrowOutUpRight } from '@ng-icons/lucide';
 import { PageSeoService, SiteContentService } from '@vfortin/content-web-data-access';
 import {
   ARTICLE_TYPOGRAPHY,
   ArticleBlocksComponent,
-  AsciiPlanetComponent,
-  TechIconComponent,
+  TechTagsComponent,
   imageSrcset,
-  techDefinition,
 } from '@vfortin/content-web-ui';
 import { RevealDirective, ScrollFrameService, ScrollProgressDirective } from '@vfortin/ui';
 import type { Subscription } from 'rxjs';
+import { ContentPageHeroComponent } from '@internal/content-web-feature/lib/ui/components/content-page-hero/content-page-hero.component';
 import { PROJECT_ARROW_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-arrow-classes.constants';
 import { PROJECT_ENTER_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-enter-classes.constants';
 import { PROJECT_REVEAL_CLASSES } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-reveal-classes.constants';
 import { PROJECT_VISUAL_TINTS } from '@internal/content-web-feature/lib/ui/pages/project-page/constants/project-visual-tints.constants';
+
+type Publication = ReturnType<SiteContentService['publication']>;
 
 /**
  * Component ProjectPageComponent
@@ -46,12 +47,12 @@ import { PROJECT_VISUAL_TINTS } from '@internal/content-web-feature/lib/ui/pages
   selector: 'content-project-page',
   imports: [
     ArticleBlocksComponent,
-    AsciiPlanetComponent,
+    ContentPageHeroComponent,
     NgIcon,
     RevealDirective,
     RouterLink,
     ScrollProgressDirective,
-    TechIconComponent,
+    TechTagsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './project-page.component.html',
@@ -100,9 +101,30 @@ export class ProjectPageComponent {
    *
    * @type {Signal<ProjectArticle | null>}
    */
-  protected readonly project: Signal<ReturnType<SiteContentService['project']>> = computed<
-    ReturnType<SiteContentService['project']>
-  >(() => this.content.project(this.slug()));
+  protected readonly project: Signal<Publication> = computed(() =>
+    this.content.publication(this.slug()),
+  );
+  protected readonly isProject: Signal<boolean> = computed(
+    () => this.project()?.kind === 'project',
+  );
+  protected readonly backQueryParams: Signal<Params | null> = computed(() =>
+    this.isProject() ? { category: this.content.projectCategory.key } : null,
+  );
+  protected readonly backLabel: Signal<string> = computed(() =>
+    this.isProject()
+      ? $localize`:@@project.back:Tous les projets`
+      : $localize`:@@article.back:Tous les articles`,
+  );
+  protected readonly previousLabel: Signal<string> = computed(() =>
+    this.isProject()
+      ? $localize`:@@project.previous:Projet précédent`
+      : $localize`:@@article.previous:Article précédent`,
+  );
+  protected readonly nextLabel: Signal<string> = computed(() =>
+    this.isProject()
+      ? $localize`:@@project.next:Projet suivant`
+      : $localize`:@@article.next:Article suivant`,
+  );
 
   /**
    * Property sections
@@ -132,7 +154,7 @@ export class ProjectPageComponent {
    */
   protected readonly neighbours: Signal<ReturnType<SiteContentService['neighbours']>> = computed<
     ReturnType<SiteContentService['neighbours']>
-  >(() => this.content.neighbours(this.slug()));
+  >(() => this.content.neighbours(this.slug(), this.isProject() ? 'projects' : 'articles'));
 
   /**
    * Property tint
@@ -240,7 +262,7 @@ export class ProjectPageComponent {
   public constructor() {
     const seo: PageSeoService = inject<PageSeoService>(PageSeoService);
     effect((): void => {
-      const project: ReturnType<SiteContentService['project']> = this.project();
+      const project: Publication = this.project();
       if (project) seo.project(project);
     });
     inject<DestroyRef>(DestroyRef).onDestroy((): void => seo.clear());
@@ -259,21 +281,6 @@ export class ProjectPageComponent {
   // #endregion
 
   // #region Methods
-  /**
-   * Method techLabel
-   * @method techLabel
-   *
-   * @description
-   * Resolves a technology catalogue key to the label displayed on the article page.
-   *
-   * @param {string} tech - Technology key from the project article.
-   *
-   * @returns {string} Catalogue label, including the catalogue's fallback for unknown keys.
-   */
-  protected techLabel(tech: string): string {
-    return techDefinition(tech).label;
-  }
-
   /**
    * Method srcset
    * @method srcset

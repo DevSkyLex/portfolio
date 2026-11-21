@@ -164,7 +164,7 @@ test.describe('cookie consent', (): void => {
       localStorage.getItem('cookie-consent'),
     );
     expect(JSON.parse(stored ?? '{}')).toMatchObject({ version: 1, analytics: false });
-    await page.goto('/projects/library-trails');
+    await page.goto('/articles/library-trails');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Parcours de lecture');
     await expect(banner(page)).toHaveCount(0);
     expect(google).toEqual([]);
@@ -222,14 +222,14 @@ test.describe('cookie consent', (): void => {
       .getByRole('link', { name: /Parcours de lecture/ })
       .first()
       .click();
-    await expect(page).toHaveURL(/\/projects\/library-trails$/);
+    await expect(page).toHaveURL(/\/articles\/library-trails$/);
     await expect
       .poll(async (): Promise<unknown[][]> => commands(page))
       .toContainEqual([
         'event',
         'page_view',
         expect.objectContaining({
-          page_location: expect.stringMatching(/\/projects\/library-trails$/),
+          page_location: expect.stringMatching(/\/articles\/library-trails$/),
         }),
       ]);
   });

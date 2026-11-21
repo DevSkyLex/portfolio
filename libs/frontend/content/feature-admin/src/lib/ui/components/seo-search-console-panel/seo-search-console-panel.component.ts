@@ -63,7 +63,7 @@ type SearchRow = SearchConsoleData['queries'][number];
  * Function pagePath
  *
  * @description
- * Path of an absolute page URL, as the admin names pages (`/projects/movah`, `/en/`); a value that
+ * Path of an absolute page URL, as the admin names pages (`/articles/movah`, `/en/`); a value that
  * is not a URL stays as is.
  *
  * @param {string} url - Page URL.

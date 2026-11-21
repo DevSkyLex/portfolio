@@ -49,12 +49,16 @@ import { toggleValue } from '@internal/ui/lib/data-table/utils/data-table-facets
       variant="secondary"
       size="sm"
       type="button"
-      class="h-8 gap-1.5 rounded-sm border-dashed px-2.5 text-[13px] font-medium"
       align="start"
+      [class]="triggerClasses()"
       [uiPopoverTrigger]="panel"
       [attr.data-active]="selectedCount() > 0 ? '' : null"
     >
-      <ng-icon [svg]="facet().icon ?? icons.filter" size="14" aria-hidden="true" />
+      <ng-icon
+        [svg]="facet().icon ?? icons.filter"
+        [size]="size() === 'lg' ? '16' : '14'"
+        aria-hidden="true"
+      />
       {{ facet().label }}
     </button>
     <ng-template
@@ -129,6 +133,18 @@ export class DataTableFacetFilterComponent {
    * @type {InputSignal<DataTableLabels>}
    */
   public readonly labels: InputSignal<DataTableLabels> = input.required<DataTableLabels>();
+
+  /**
+   * Size of the trigger: `sm` (32 px) for the dense admin toolbars, `lg` (44 px) for a public page
+   * where the filters sit beside 44 px buttons. The popover keeps the one compact menu density.
+   */
+  public readonly size: InputSignal<'sm' | 'lg'> = input<'sm' | 'lg'>('sm');
+
+  protected readonly triggerClasses: Signal<string> = computed<string>((): string =>
+    this.size() === 'lg'
+      ? 'h-11 gap-2 rounded-md border-dashed px-4 text-[15px] font-medium'
+      : 'h-8 gap-1.5 rounded-sm border-dashed px-2.5 text-[13px] font-medium',
+  );
 
   /**
    * Property valuesChanged

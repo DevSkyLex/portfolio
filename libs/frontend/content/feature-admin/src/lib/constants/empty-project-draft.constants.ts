@@ -10,6 +10,7 @@ import type { ProjectFormValues } from '@internal/content-web-feature-admin/lib/
  * @type {ProjectFormValues}
  */
 export const EMPTY_PROJECT_DRAFT: ProjectFormValues = {
+  taxonomy: { category: { key: '', label: { fr: '', en: '' } }, tags: [] },
   title: { fr: '', en: '' },
   summary: { fr: '', en: '' },
   lead: { fr: '', en: '' },
@@ -18,7 +19,6 @@ export const EMPTY_PROJECT_DRAFT: ProjectFormValues = {
   role: { fr: '', en: '' },
   place: { fr: '', en: '' },
   siteUrl: '',
-  techs: [],
   featured: false,
   article: { fr: emptyArticleDocument(), en: emptyArticleDocument() },
   cover: { media: '', alt: { fr: '', en: '' } },

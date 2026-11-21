@@ -73,7 +73,7 @@ describe('PageSeoService', (): void => {
       'Une application mobile pour suivre ses séries.',
     );
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://example.test/fr/projects/library-trails',
+      'https://example.test/fr/articles/library-trails',
     );
     expect(
       [...head.querySelectorAll('link[rel="alternate"]')].map((link: Element): string[] => [
@@ -81,9 +81,9 @@ describe('PageSeoService', (): void => {
         link.getAttribute('href') ?? '',
       ]),
     ).toEqual([
-      ['fr', 'https://example.test/fr/projects/library-trails'],
-      ['en', 'https://example.test/en/projects/library-trails'],
-      ['x-default', 'https://example.test/fr/projects/library-trails'],
+      ['fr', 'https://example.test/fr/articles/library-trails'],
+      ['en', 'https://example.test/en/articles/library-trails'],
+      ['x-default', 'https://example.test/fr/articles/library-trails'],
     ]);
     expect(content(head, 'name="keywords"')).toBe('flutter');
     expect(content(head, 'property="og:type"')).toBe('article');
@@ -132,7 +132,7 @@ describe('PageSeoService', (): void => {
     expect(head.querySelectorAll('meta[property="og:title"]')).toHaveLength(1);
     expect(TestBed.inject<Title>(Title).getTitle()).toBe('Workshop Calendar for research');
     expect(content(head, 'property="og:url"')).toBe(
-      'https://example.test/en/projects/workshop-calendar',
+      'https://example.test/en/articles/workshop-calendar',
     );
     expect(content(head, 'property="og:locale"')).toBe('en_GB');
     expect(content(head, 'property="og:image"')).toBeNull();
@@ -148,7 +148,7 @@ describe('PageSeoService', (): void => {
     const stale: HTMLLinkElement = document.createElement('link');
     stale.setAttribute('data-page-seo', '');
     stale.setAttribute('rel', 'canonical');
-    stale.setAttribute('href', 'https://example.test/projects/old');
+    stale.setAttribute('href', 'https://example.test/articles/old');
     head.append(stale);
 
     seo.project(article());
@@ -157,7 +157,7 @@ describe('PageSeoService', (): void => {
       [...head.querySelectorAll('link[rel="canonical"]')].map((link: Element): string | null =>
         link.getAttribute('href'),
       ),
-    ).toEqual(['https://example.test/fr/projects/library-trails']);
+    ).toEqual(['https://example.test/fr/articles/library-trails']);
   });
 
   it('writes a website page without an image or JSON-LD', (): void => {

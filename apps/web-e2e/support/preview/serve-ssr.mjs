@@ -50,6 +50,10 @@ export async function startSsrPreview(directory, port) {
           const project = structuredClone(snapshots[locale].projects[0]);
           project.slug = 'runtime-publication';
           project.title = 'Runtime publication';
+          project.taxonomy = {
+            category: { key: 'projects', label: locale === 'fr' ? 'Projets' : 'Projects' },
+            tags: [{ key: 'architecture', label: 'Architecture' }],
+          };
           project.article.content.unshift(
             {
               type: 'heading',
@@ -83,6 +87,32 @@ export async function startSsrPreview(directory, port) {
             },
           );
           snapshots[locale].projects.push(project);
+          const collectionEntry = snapshots[locale].projects[0];
+          snapshots[locale].projects.push(
+            ...Array.from({ length: 3 }, (_, index) => ({
+              ...collectionEntry,
+              featured: false,
+              slug: `sample-project-${index + 1}`,
+              title: `Sample project ${index + 1}`,
+            })),
+          );
+          snapshots[locale].articles = Array.from({ length: 5 }, (_, index) => ({
+            ...collectionEntry,
+            featured: false,
+            slug: `sample-article-${index + 1}`,
+            title: `Sample article ${index + 1}`,
+            taxonomy: {
+              category:
+                index < 3
+                  ? { key: 'engineering', label: locale === 'fr' ? 'Ingénierie' : 'Engineering' }
+                  : { key: 'design', label: 'Design' },
+              tags: [
+                index % 2 === 0
+                  ? { key: 'web', label: 'Web' }
+                  : { key: 'data', label: locale === 'fr' ? 'Données' : 'Data' },
+              ],
+            },
+          }));
         }
       }
       res.writeHead(204);

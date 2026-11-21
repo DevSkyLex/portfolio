@@ -93,7 +93,7 @@ export class ProjectPropertiesPanelComponent {
    * @readonly
    *
    * @description
-   * Public address of the project (`/fr/projects/<slug>` or `/en/projects/<slug>`).
+   * Canonical publication address (`/fr/articles/<slug>` or `/en/articles/<slug>`).
    *
    * @type {Signal<string>}
    */
@@ -101,6 +101,11 @@ export class ProjectPropertiesPanelComponent {
     const project: AdminProject | null = this.project();
     return project ? projectPublicPath(project.slug, this.localeId) : '';
   });
+
+  /** The public path cut before each slash (`/fr`, `/articles`, `/slug`), for wrapping. */
+  protected readonly pathSegments: Signal<readonly string[]> = computed<readonly string[]>(
+    (): readonly string[] => this.path().split(/(?=\/)/),
+  );
 
   /**
    * Property icons

@@ -1,4 +1,4 @@
-import type { ProjectArticle } from '@vfortin/content-web-model';
+import type { ArticleTerm, ProjectArticle } from '@vfortin/content-web-model';
 
 /**
  * Type ProjectPageSeoSource
@@ -11,4 +11,4 @@ import type { ProjectArticle } from '@vfortin/content-web-model';
 export type ProjectPageSeoSource = Pick<
   ProjectArticle,
   'slug' | 'title' | 'summary' | 'techs' | 'cover' | 'seo'
->;
+> & { readonly taxonomy?: { readonly tags: readonly ArticleTerm[] } };

@@ -992,13 +992,13 @@ issuer and JWKS from `AUTH_ISSUER` and `AUTH_JWKS_URL`. Its resource is that iss
   requires `content:read`; write, publish and delete scopes imply reading. Each tool call checks its
   own required scopes before execution, with HTTP 403 and the OAuth `insufficient_scope` challenge
   for a missing permission. Invalid origins are refused against the configured resource origin.
-- **Tools**: `list_projects`, `get_project`, `create_project`, `revise_project`, `publish_project`, `unpublish_project`,
+- **Tools**: `list_articles`, `get_article`, `create_article`, `revise_article`, `publish_article`, `unpublish_article`,
   `list_timeline`, `get_timeline_entry`, `create_timeline_entry`, `revise_timeline_entry`,
   `reorder_timeline`, `delete_timeline_entry`, `get_profile`, `revise_profile`, `get_legal_document`
-  and `revise_legal_document`. Queries need reading; project creation needs writing only, since a new project is a draft whose
-  slug derives from its French title; project revisions need writing and, when the
-  project is already published, publishing as well: revisions preserve its publication state and
-  become visible to SSR. Project publication and unpublication need publishing. Timeline, profile and legal
+  and `revise_legal_document`. Queries need reading; article creation needs writing only, since a new article is a draft whose
+  slug derives from its French title. Revisions need writing and, when the article is already published,
+  publishing as well. They preserve its publication state and become visible to SSR. Publication and
+  unpublication need publishing. Timeline, profile and legal
   edits need both writing and publishing, since those existing use cases immediately change public content. Timeline deletion
   needs both deleting and publishing. No contact inbox, SEO provider or arbitrary network/file
   access is exposed; images are added through `upload_media` only (revision below).
@@ -1200,3 +1200,25 @@ third-party player (no cookies, no consent, no CSP exception).
 - **Playback**: the public figure is a `<video>` with controls, muted, looped, `playsinline` and
   `preload="metadata"`, sized by its width and height and labelled by the alternative text. It never
   plays on its own. WebM, posters and remote video import are out of scope.
+
+## D58 — Editorial articles and public collections
+
+Articles share the same versioned publication lifecycle, rich document editor, media and SEO
+settings. `/admin/articles` is the single administration entry point, backed by `/api/content/admin/articles`.
+The article API and MCP tools access the full collection. The legacy project routes preserve access
+for existing links and clients.
+
+An article has one category and up to twenty-four tags, including technologies. A term stores a stable
+key and a localized label. Older technology keys appear as tags, with explicit tag labels taking
+precedence. Saving through the article editor stores the selected terms as tags.
+Articles that share a key appear together when the list is filtered. Publication requires a category
+and complete translations of its label and all tag labels. A draft can be saved while those fields
+are being completed.
+
+The localized category with key `projects` identifies case studies. Existing projects without
+taxonomy inherit that category. The public snapshot retains its `projects` and `articles` fields
+and partitions articles by category at the same content revision. The home page shows at most four
+case studies. The public catalogue at `/articles` includes all articles and its filters are
+shareable URL parameters.
+All public details use `/articles/:slug` and appear under that path in the runtime sitemap by locale.
+Existing `/projects` URLs permanently redirect to the filtered catalogue or the corresponding detail.

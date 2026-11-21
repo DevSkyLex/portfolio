@@ -50,7 +50,13 @@
       <div
         class="flex flex-wrap gap-3 @max-[560px]:w-full @max-[560px]:flex-col @max-[560px]:items-stretch"
       >
-        <a uiBtn size="lg" class="@max-[560px]:w-full" href="#projects" i18n="@@hero.projects"
+        <a
+          uiBtn
+          size="lg"
+          class="@max-[560px]:w-full"
+          routerLink="/articles"
+          [queryParams]="{ category: 'projects' }"
+          i18n="@@hero.projects"
           >Voir les projets</a
         >
         <a

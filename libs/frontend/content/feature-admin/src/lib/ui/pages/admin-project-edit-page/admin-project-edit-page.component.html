@@ -9,7 +9,7 @@
       routerLink=".."
     >
       <ng-icon [svg]="icons.back" size="14" aria-hidden="true" />
-      <ng-container i18n="@@admin.project.back">Tous les projets</ng-container>
+      {{ collectionLabel }}
     </a>
     @if (project(); as current) {
       <ng-icon class="shrink-0 text-fg-faint" [svg]="icons.chevron" size="14" aria-hidden="true" />
@@ -49,8 +49,11 @@
             <h1 uiPageHeaderTitle>{{ current?.title?.fr ?? createLabel }}</h1>
             <!-- One node per branch: content projection only reaches a branch's single root (NG8011). -->
             @if (!current) {
-              <p uiPageHeaderMeta i18n="@@admin.project.create.hint">
-                Le projet est créé en brouillon ; son adresse découle du titre français.
+              <p uiPageHeaderMeta>
+                <ng-container i18n="@@admin.article.create.hint"
+                  >L’article est créé en brouillon. Son adresse découle du titre
+                  français.</ng-container
+                >
               </p>
             }
             <div uiPageHeaderActions>
@@ -118,7 +121,7 @@
               <div uiAlert variant="warning">
                 <ng-icon [svg]="icons.conflict" size="16" aria-hidden="true" />
                 <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.project.conflict.title">
-                  Le projet a été modifié ailleurs depuis son ouverture.
+                  L’article a été modifié ailleurs depuis son ouverture.
                 </p>
                 <div uiAlertDescription class="gap-2 text-[13px]/5">
                   <p i18n="@@admin.project.conflict.description">
@@ -143,6 +146,9 @@
               <content-project-form
                 class="flex flex-1 flex-col"
                 [values]="initial"
+                [categoryChoices]="categoryChoices()"
+                [tagChoices]="tagChoices()"
+                (taxonomyRequested)="loadTaxonomyChoices()"
                 [slug]="current?.slug ?? ''"
                 [complete]="current?.status === 'published'"
                 [pending]="store.writing()"
@@ -202,19 +208,17 @@
         <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
         @if (failure?.status === 404) {
           <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.project.notFound.title">
-            Projet introuvable
+            Article introuvable
           </p>
           <div uiAlertDescription class="gap-2 text-[13px]/5">
             <p i18n="@@admin.project.notFound.description">
               Il a peut-être été supprimé, ou son adresse est incorrecte.
             </p>
-            <a uiBtn variant="secondary" size="xs" routerLink=".."
-              ><ng-container i18n="@@admin.project.back">Tous les projets</ng-container></a
-            >
+            <a uiBtn variant="secondary" size="xs" routerLink="..">{{ collectionLabel }}</a>
           </div>
         } @else {
           <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.project.loadFailed.title">
-            Impossible de charger le projet
+            Impossible de charger l’article
           </p>
           <div uiAlertDescription class="gap-2 text-[13px]/5">
             <p>{{ failure?.message }}</p>
@@ -235,7 +239,9 @@
   } @else {
     <!-- Same header and first fields as the loaded page, so that nothing moves on arrival. -->
     <ng-container [ngTemplateOutlet]="bar" />
-    <span class="sr-only" role="status" i18n="@@admin.project.loading">Chargement du projet…</span>
+    <span class="sr-only" role="status" i18n="@@admin.project.loading"
+      >Chargement de l’article…</span
+    >
     <ui-page-header aria-hidden="true">
       <div uiPageHeaderTitle><span uiSkeleton class="h-7 w-64"></span></div>
       <div uiPageHeaderActions><span uiSkeleton class="h-7 w-20"></span></div>

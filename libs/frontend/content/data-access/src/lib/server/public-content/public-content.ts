@@ -81,10 +81,26 @@ export async function runtimeSitemap(origin: string, upstream: string): Promise<
     if (snapshots[0]?.revision === snapshots[1]?.revision) break;
     if (attempt === 2) throw new Error('Public locale revisions did not converge.');
   }
-  const paths: Set<string> = new Set(['/', '/legal-notice', '/privacy']);
-  for (const snapshot of snapshots)
-    for (const project of snapshot.projects)
-      paths.add(`/projects/${encodeURIComponent(project.slug)}`);
+  const fixedPaths: readonly string[] = ['/', '/legal-notice', '/privacy', '/articles'];
+  const paths: Map<string, ContentSnapshot['locale'][]> = new Map(
+    fixedPaths.map((path): [string, ContentSnapshot['locale'][]] => [path, []]),
+  );
+  for (const snapshot of snapshots) {
+    const addresses: Set<string> = new Set([
+      ...fixedPaths,
+      ...snapshot.projects.map(
+        (project): string => `/articles/${encodeURIComponent(project.slug)}`,
+      ),
+      ...(snapshot.articles ?? []).map(
+        (article): string => `/articles/${encodeURIComponent(article.slug)}`,
+      ),
+    ]);
+    for (const path of addresses) {
+      const locales: ContentSnapshot['locale'][] = paths.get(path) ?? [];
+      locales.push(snapshot.locale);
+      paths.set(path, locales);
+    }
+  }
   const escape: (value: string) => string = (value: string): string =>
     value
       .replace(/&/g, '&amp;')
@@ -94,16 +110,7 @@ export async function runtimeSitemap(origin: string, upstream: string): Promise<
       .replace(/'/g, '&apos;');
   const base: string = new URL(origin).origin;
   const entries: string[] = [];
-  for (const path of paths) {
-    const locales: ('fr' | 'en')[] = snapshots
-      .filter(
-        (snapshot) =>
-          !path.startsWith('/projects/') ||
-          snapshot.projects.some(
-            (project) => path === `/projects/${encodeURIComponent(project.slug)}`,
-          ),
-      )
-      .map((snapshot) => snapshot.locale);
+  for (const [path, locales] of paths) {
     const alternates: string = [
       ...locales.map(
         (locale): string =>

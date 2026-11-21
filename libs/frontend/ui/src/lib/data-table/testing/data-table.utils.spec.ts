@@ -10,6 +10,7 @@ import {
   sortRowsBy,
 } from '@internal/ui/lib/data-table/utils/data-table/data-table.utils';
 import {
+  buildFacetViews,
   facetOptions,
   facetValues,
   matchesFacets,
@@ -22,6 +23,7 @@ import {
 } from '@internal/ui/lib/data-table/utils/data-table-state/data-table-state.utils';
 import { DATA_TABLE_INITIAL_STATE } from '@internal/ui/lib/data-table/constants/data-table-initial-state.constants';
 import type { DataTableFacet } from '@internal/ui/lib/data-table/models/data-table/data-table-facet.interface';
+import type { DataTableFacetView } from '@internal/ui/lib/data-table/models/data-table/data-table-facet-view.interface';
 import type { DataTableState } from '@internal/ui/lib/data-table/models/data-table/data-table-state.interface';
 import type { DataTableSort } from '@internal/ui/lib/data-table/models/data-table/data-table-sort.interface';
 
@@ -182,6 +184,32 @@ describe('data table utils', (): void => {
     expect(facetOptions(age, people, collator)).toBe(age.options);
     expect(toggleValue(['a'], 'b')).toEqual(['a', 'b']);
     expect(toggleValue(['a', 'b'], 'a')).toEqual(['b']);
+  });
+
+  it('counts each facet within search and the other selected facets while retaining zero options', (): void => {
+    const facets: readonly DataTableFacet<Person>[] = [
+      { id: 'tags', label: 'Tags', value: (person) => person.tags },
+      { id: 'age', label: 'Âge', value: (person) => String(person.age) },
+      { id: 'empty', label: 'Empty', value: () => [] },
+    ];
+    const selected: Readonly<Record<string, readonly string[]>> = { tags: ['a'], age: ['28'] };
+    const views: DataTableFacetView[] = buildFacetViews(
+      facets,
+      people,
+      people.slice(1),
+      selected,
+      collator,
+    );
+    expect(views.map((facet) => facet.id)).toEqual(['tags', 'age']);
+    expect(views[0]?.options).toEqual([
+      { value: 'a', label: 'a', count: 0, selected: true },
+      { value: 'b', label: 'b', count: 1, selected: false },
+    ]);
+    expect(views[1]?.options).toEqual([
+      { value: '28', label: '28', count: 0, selected: true },
+      { value: '34', label: '34', count: 0, selected: false },
+      { value: '41', label: '41', count: 1, selected: false },
+    ]);
   });
 
   it('updates the serialisable state, back on the first page', (): void => {

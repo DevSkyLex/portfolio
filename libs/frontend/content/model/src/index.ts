@@ -35,3 +35,5 @@ export type {
   TimelineKind,
   TimelineStep,
 } from '@internal/content-web-model/lib/content.model';
+
+export type { EditorialArticle, ArticleTerm } from './lib/content.model';

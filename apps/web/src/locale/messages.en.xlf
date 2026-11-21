@@ -734,22 +734,6 @@
           <context context-type="linenumber">60,62</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.projects.routeTitle" datatype="html">
-        <source>Projets — Administration</source>
-        <target>Projects — Admin</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/admin-content.routes.ts</context>
-          <context context-type="linenumber">17</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.project.routeTitle" datatype="html">
-        <source>Projet — Administration</source>
-        <target>Project — Admin</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/admin-content.routes.ts</context>
-          <context context-type="linenumber">26</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="admin.information.routeTitle" datatype="html">
         <source>Informations — Administration</source>
         <target>Information — Admin</target>
@@ -767,8 +751,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.content.incomplete" datatype="html">
-        <source>Obligatoire tant que le projet est publié.</source>
-        <target>Required while the project is published.</target>
+        <source>Obligatoire tant que l’article est publié.</source>
+        <target>Required while the article is published.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/incomplete-error.constants.ts</context>
           <context context-type="linenumber">12</context>
@@ -999,32 +983,32 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.publish.done.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet publié</source>
-        <target><x id="count" equiv-text="count"/> project published</target>
+        <source><x id="count" equiv-text="count"/> article publié</source>
+        <target><x id="count" equiv-text="count"/> article published</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.publish.done.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets publiés</source>
-        <target><x id="count" equiv-text="count"/> projects published</target>
+        <source><x id="count" equiv-text="count"/> articles publiés</source>
+        <target><x id="count" equiv-text="count"/> articles published</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.publish.partial.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet publié sur <x id="total" equiv-text="total"/></source>
-        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> projects published</target>
+        <source><x id="count" equiv-text="count"/> article publié sur <x id="total" equiv-text="total"/></source>
+        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> articles published</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.publish.partial.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets publiés sur <x id="total" equiv-text="total"/></source>
-        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> projects published</target>
+        <source><x id="count" equiv-text="count"/> articles publiés sur <x id="total" equiv-text="total"/></source>
+        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> articles published</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">28</context>
@@ -1047,32 +1031,32 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.unpublish.done.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet dépublié</source>
-        <target><x id="count" equiv-text="count"/> project unpublished</target>
+        <source><x id="count" equiv-text="count"/> article dépublié</source>
+        <target><x id="count" equiv-text="count"/> article unpublished</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.unpublish.done.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets dépubliés</source>
-        <target><x id="count" equiv-text="count"/> projects unpublished</target>
+        <source><x id="count" equiv-text="count"/> articles dépubliés</source>
+        <target><x id="count" equiv-text="count"/> articles unpublished</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">39</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.unpublish.partial.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet dépublié sur <x id="total" equiv-text="total"/></source>
-        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> projects unpublished</target>
+        <source><x id="count" equiv-text="count"/> article dépublié sur <x id="total" equiv-text="total"/></source>
+        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> articles unpublished</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.unpublish.partial.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets dépubliés sur <x id="total" equiv-text="total"/></source>
-        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> projects unpublished</target>
+        <source><x id="count" equiv-text="count"/> articles dépubliés sur <x id="total" equiv-text="total"/></source>
+        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> articles unpublished</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">43</context>
@@ -1099,32 +1083,32 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.feature.done.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet mis en avant</source>
-        <target><x id="count" equiv-text="count"/> project featured</target>
+        <source><x id="count" equiv-text="count"/> article mis en avant</source>
+        <target><x id="count" equiv-text="count"/> article featured</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.feature.done.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets mis en avant</source>
-        <target><x id="count" equiv-text="count"/> projects featured</target>
+        <source><x id="count" equiv-text="count"/> articles mis en avant</source>
+        <target><x id="count" equiv-text="count"/> articles featured</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.feature.partial.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet mis en avant sur <x id="total" equiv-text="total"/></source>
-        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> projects featured</target>
+        <source><x id="count" equiv-text="count"/> article mis en avant sur <x id="total" equiv-text="total"/></source>
+        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> articles featured</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.feature.partial.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets mis en avant sur <x id="total" equiv-text="total"/></source>
-        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> projects featured</target>
+        <source><x id="count" equiv-text="count"/> articles mis en avant sur <x id="total" equiv-text="total"/></source>
+        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> articles featured</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">58</context>
@@ -1139,32 +1123,32 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.unfeature.done.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet retiré de l&apos;accueil</source>
-        <target><x id="count" equiv-text="count"/> project removed from the home page</target>
+        <source><x id="count" equiv-text="count"/> article retiré de l&apos;accueil</source>
+        <target><x id="count" equiv-text="count"/> article removed from the home page</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.unfeature.done.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets retirés de l&apos;accueil</source>
-        <target><x id="count" equiv-text="count"/> projects removed from the home page</target>
+        <source><x id="count" equiv-text="count"/> articles retirés de l&apos;accueil</source>
+        <target><x id="count" equiv-text="count"/> articles removed from the home page</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.unfeature.partial.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet retiré de l&apos;accueil sur <x id="total" equiv-text="total"/></source>
-        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> projects removed from the home page</target>
+        <source><x id="count" equiv-text="count"/> article retiré de l&apos;accueil sur <x id="total" equiv-text="total"/></source>
+        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> articles removed from the home page</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.unfeature.partial.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets retirés de l&apos;accueil sur <x id="total" equiv-text="total"/></source>
-        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> projects removed from the home page</target>
+        <source><x id="count" equiv-text="count"/> articles retirés de l&apos;accueil sur <x id="total" equiv-text="total"/></source>
+        <target><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> articles removed from the home page</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-bulk-texts.constants.ts</context>
           <context context-type="linenumber">73</context>
@@ -1243,8 +1227,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.heading.project" datatype="html">
-        <source>Projet</source>
-        <target>Project</target>
+        <source>Article</source>
+        <target>Article</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
           <context context-type="linenumber">22</context>
@@ -1294,9 +1278,9 @@
           <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.projects.heading.techs" datatype="html">
-        <source>Technos</source>
-        <target>Tech</target>
+      <trans-unit id="admin.projects.heading.tags" datatype="html">
+        <source>Tags</source>
+        <target>Tags</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
           <context context-type="linenumber">65</context>
@@ -2279,8 +2263,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.title" datatype="html">
-        <source>Projets</source>
-        <target>Projects</target>
+        <source>Articles</source>
+        <target>Articles</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/project-list-toolbar/project-list-toolbar.component.ts</context>
           <context context-type="linenumber">25,29</context>
@@ -2390,22 +2374,6 @@
           <context context-type="linenumber">137,139</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.projects.empty.title" datatype="html">
-        <source>Aucun projet</source>
-        <target>No projects</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">171,172</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.projects.empty.description" datatype="html">
-        <source> Les projets du service de contenu apparaissent ici, publiés ou en brouillon. </source>
-        <target>Projects from the content service appear here, published or draft.</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">173,177</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="admin.projects.selection.label" datatype="html">
         <source>Actions sur la sélection</source>
         <target>Selection actions</target>
@@ -2423,32 +2391,32 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.table.searchLabel" datatype="html">
-        <source>Rechercher un projet</source>
-        <target>Search projects</target>
+        <source>Rechercher un article</source>
+        <target>Search articles</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
           <context context-type="linenumber">284</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.table.noResults" datatype="html">
-        <source>Aucun projet trouvé</source>
-        <target>No projects found</target>
+        <source>Aucun article trouvé</source>
+        <target>No articles found</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
           <context context-type="linenumber">285</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.table.noResultsHint" datatype="html">
-        <source>Aucun projet ne correspond à la recherche ou aux filtres.</source>
-        <target>No project matches the search or the filters.</target>
+        <source>Aucun article ne correspond à la recherche ou aux filtres.</source>
+        <target>No article matches the search or the filters.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
           <context context-type="linenumber">286</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.table.loading" datatype="html">
-        <source>Chargement des projets…</source>
-        <target>Loading projects…</target>
+        <source>Chargement des articles…</source>
+        <target>Loading articles…</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
           <context context-type="linenumber">287</context>
@@ -3163,8 +3131,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.form.seoSectionHint" datatype="html">
-        <source> Facultatifs : vides, le titre, le résumé et les technos du projet sont repris. </source>
-        <target>Optional: when empty, the project's title, summary and tech are used.</target>
+        <source> Facultatifs : vides, le titre, le résumé et les tags de l’article sont repris. </source>
+        <target>Optional: when empty, the article's title, summary and tags are used.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.html</context>
           <context context-type="linenumber">216,219</context>
@@ -3183,16 +3151,16 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.form.keywordsHint" datatype="html">
-        <source>Vides, les technos du projet sont reprises.</source>
-        <target>When empty, the project's tech is used.</target>
+        <source>Vides, les tags de l’article sont repris.</source>
+        <target>When empty, the article's tags are used.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.html</context>
           <context context-type="linenumber">322,323</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.project.form.useTechs" datatype="html">
-        <source>Reprendre les technos</source>
-        <target>Use the tech</target>
+      <trans-unit id="admin.project.form.useTags" datatype="html">
+        <source>Reprendre les tags</source>
+        <target>Use the tags</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.html</context>
           <context context-type="linenumber">366,368</context>
@@ -3414,18 +3382,6 @@
           <context context-type="linenumber">730,732</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.project.form.techs" datatype="html">
-        <source>Technos</source>
-        <target>Tech</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.html</context>
-          <context context-type="linenumber">755,757</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.html</context>
-          <context context-type="linenumber">765</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="admin.project.form.featured" datatype="html">
         <source>Mis en avant</source>
         <target>Featured</target>
@@ -3502,14 +3458,6 @@
           <context context-type="linenumber">671</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.project.form.techsInvalid" datatype="html">
-        <source>12 clés maximum, en minuscules et séparées par des virgules.</source>
-        <target>12 keys maximum, lowercase and separated by commas.</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.ts</context>
-          <context context-type="linenumber">696</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="admin.project.form.summary.frenchRequired" datatype="html">
         <source>Les textes français marqués d’une erreur sont obligatoires.</source>
         <target>The French texts marked with an error are required.</target>
@@ -3519,8 +3467,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.form.summary.incomplete" datatype="html">
-        <source>Un projet publié doit rester complet en français et en anglais : complétez les champs signalés ou dépubliez-le.</source>
-        <target>A published project must stay complete in French and English: complete the flagged fields or unpublish it.</target>
+        <source>Un article publié doit rester complet en français et en anglais : complétez les champs signalés ou dépubliez-le.</source>
+        <target>A published article must stay complete in French and English: complete the flagged fields or unpublish it.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.ts</context>
           <context context-type="linenumber">823</context>
@@ -3559,8 +3507,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.unsaved.lost" datatype="html">
-        <source>Les modifications de ce projet seront perdues.</source>
-        <target>Changes to this project will be lost.</target>
+        <source>Les modifications de cet article seront perdues.</source>
+        <target>Changes to this article will be lost.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.ts</context>
           <context context-type="linenumber">1023</context>
@@ -4194,18 +4142,6 @@
           <context context-type="linenumber">400</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.project.back" datatype="html">
-        <source>Tous les projets</source>
-        <target>All projects</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">10,12</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">193,195</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="admin.project.properties" datatype="html">
         <source>Propriétés</source>
         <target>Properties</target>
@@ -4235,8 +4171,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.conflict.title" datatype="html">
-        <source> Le projet a été modifié ailleurs depuis son ouverture. </source>
-        <target>This project was changed elsewhere since you opened it.</target>
+        <source> L’article a été modifié ailleurs depuis son ouverture. </source>
+        <target>This article was changed elsewhere since you opened it.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
           <context context-type="linenumber">110,112</context>
@@ -4267,8 +4203,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.notFound.title" datatype="html">
-        <source> Projet introuvable </source>
-        <target>Project not found</target>
+        <source> Article introuvable </source>
+        <target>Article not found</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
           <context context-type="linenumber">186,188</context>
@@ -4283,8 +4219,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.loadFailed.title" datatype="html">
-        <source> Impossible de charger le projet </source>
-        <target>Unable to load the project</target>
+        <source> Impossible de charger l’article </source>
+        <target>Unable to load the article</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
           <context context-type="linenumber">198,200</context>
@@ -4299,8 +4235,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.loading" datatype="html">
-        <source>Chargement du projet…</source>
-        <target>Loading the project…</target>
+        <source>Chargement de l’article…</source>
+        <target>Loading the article…</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
           <context context-type="linenumber">217,218</context>
@@ -4359,8 +4295,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.unpublish.confirmDescription" datatype="html">
-        <source>Le projet repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).</source>
-        <target>The project goes back to draft and disappears from the public site at the next rebuild (a few minutes).</target>
+        <source>L’article repasse en brouillon et disparaît du site public à la prochaine reconstruction (quelques minutes).</source>
+        <target>The article goes back to draft and disappears from the public site at the next rebuild (a few minutes).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
           <context context-type="linenumber">709</context>
@@ -4435,43 +4371,19 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.incomplete" datatype="html">
-        <source>Un projet publié doit rester complet.</source>
-        <target>A published project must stay complete.</target>
+        <source>Un article publié doit rester complet.</source>
+        <target>A published article must stay complete.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
           <context context-type="linenumber">776</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.toast.incompleteHint" datatype="html">
-        <source>Complétez les deux langues ou dépubliez le projet avant de retirer un texte.</source>
-        <target>Complete both languages or unpublish the project before removing a text.</target>
+        <source>Complétez les deux langues ou dépubliez l’article avant de retirer un texte.</source>
+        <target>Complete both languages or unpublish the article before removing a text.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
           <context context-type="linenumber">778</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.project.documentTitle" datatype="html">
-        <source><x id="project" equiv-text="current.title.fr"/> — Projets — Administration</source>
-        <target><x id="project" equiv-text="current.title.fr"/> — Projects — Admin</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">804</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.project.notFound.documentTitle" datatype="html">
-        <source>Projet introuvable — Projets — Administration</source>
-        <target>Project not found — Projects — Admin</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">805</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.projects.count.noun" datatype="html">
-        <source>{VAR_PLURAL, plural, =0 {projet} =1 {projet} other {projets}}</source>
-        <target>{VAR_PLURAL, plural, =0 {projects} =1 {project} other {projects}}</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.html</context>
-          <context context-type="linenumber">10,14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.count.filtered" datatype="html">
@@ -4507,24 +4419,24 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.skipped.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet sélectionné n&apos;est pas concerné.</source>
-        <target><x id="count" equiv-text="count"/> selected project is not affected.</target>
+        <source><x id="count" equiv-text="count"/> article sélectionné n&apos;est pas concerné.</source>
+        <target><x id="count" equiv-text="count"/> selected article is not affected.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
           <context context-type="linenumber">394</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.skipped.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets sélectionnés ne sont pas concernés.</source>
-        <target><x id="count" equiv-text="count"/> selected projects are not affected.</target>
+        <source><x id="count" equiv-text="count"/> articles sélectionnés ne sont pas concernés.</source>
+        <target><x id="count" equiv-text="count"/> selected articles are not affected.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
           <context context-type="linenumber">395</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.conflict" datatype="html">
-        <source>Un projet a été modifié entre-temps : la liste a été rechargée, recommencez.</source>
-        <target>A project was changed in the meantime: the list was reloaded, try again.</target>
+        <source>Un article a été modifié entre-temps : la liste a été rechargée, recommencez.</source>
+        <target>A article was changed in the meantime: the list was reloaded, try again.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
           <context context-type="linenumber">454</context>
@@ -4555,24 +4467,24 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.noneChanged.one" datatype="html">
-        <source>Aucun projet modifié sur <x id="total" equiv-text="total"/>.</source>
-        <target>0 of <x id="total" equiv-text="total"/> project changed.</target>
+        <source>Aucun article modifié sur <x id="total" equiv-text="total"/>.</source>
+        <target>0 of <x id="total" equiv-text="total"/> article changed.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
           <context context-type="linenumber">463</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.bulk.noneChanged.other" datatype="html">
-        <source>Aucun projet modifié sur <x id="total" equiv-text="total"/>.</source>
-        <target>0 of <x id="total" equiv-text="total"/> projects changed.</target>
+        <source>Aucun article modifié sur <x id="total" equiv-text="total"/>.</source>
+        <target>0 of <x id="total" equiv-text="total"/> articles changed.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
           <context context-type="linenumber">464</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.toast.conflict" datatype="html">
-        <source>Le projet a été modifié entre-temps : la liste a été rechargée, recommencez.</source>
-        <target>The project was changed in the meantime: the list was reloaded, try again.</target>
+        <source>L’article a été modifié entre-temps : la liste a été rechargée, recommencez.</source>
+        <target>The article was changed in the meantime: the list was reloaded, try again.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
           <context context-type="linenumber">515</context>
@@ -4915,16 +4827,16 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.count.one" datatype="html">
-        <source><x id="count" equiv-text="count"/> projet</source>
-        <target><x id="count" equiv-text="count"/> project</target>
+        <source><x id="count" equiv-text="count"/> article</source>
+        <target><x id="count" equiv-text="count"/> article</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/project-bulk/project-bulk.utils.ts</context>
           <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.count.other" datatype="html">
-        <source><x id="count" equiv-text="count"/> projets</source>
-        <target><x id="count" equiv-text="count"/> projects</target>
+        <source><x id="count" equiv-text="count"/> articles</source>
+        <target><x id="count" equiv-text="count"/> articles</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/project-bulk/project-bulk.utils.ts</context>
           <context context-type="linenumber">83</context>
@@ -6607,28 +6519,16 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.inboxRetry" datatype="html">
-        <source>Réessayer le compteur</source>
-        <target>Retry the count</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">234</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">259,260</context>
-        </context-group>
+        <source>Réessayer</source>
+        <target>Retry</target>
       </trans-unit>
       <trans-unit id="admin.shell.inboxUnavailable" datatype="html">
-        <source> Nombre de messages indisponible. </source>
+        <source>Nombre de messages indisponible.</source>
         <target>Message count unavailable.</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">246,248</context>
-        </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.projectsRetry" datatype="html">
-        <source>Réessayer les projets</source>
-        <target>Retry projects</target>
+        <source>Réessayer les articles</source>
+        <target>Retry articles</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
           <context context-type="linenumber">273,275</context>
@@ -6639,8 +6539,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.projectsUnavailable" datatype="html">
-        <source> Recherche de projets indisponible. </source>
-        <target>Project search unavailable.</target>
+        <source> Recherche d’articles indisponible. </source>
+        <target>Article search unavailable.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
           <context context-type="linenumber">286,288</context>
@@ -6723,8 +6623,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.palette.placeholder" datatype="html">
-        <source>Rechercher une page, un projet ou une action…</source>
-        <target>Search for a page, a project or an action…</target>
+        <source>Rechercher une page, un article ou une action…</source>
+        <target>Search for a page, a article or an action…</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/components/command-palette/command-palette.component.html</context>
           <context context-type="linenumber">5,6</context>
@@ -6739,8 +6639,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.palette.emptyHint" datatype="html">
-        <source> Cherchez une section, le titre d’un projet ou une action, comme « Voir le site ». </source>
-        <target>Search for a section, a project title or an action, such as "View site".</target>
+        <source> Cherchez une section, le titre d’un article ou une action, comme « Voir le site ». </source>
+        <target>Search for a section, a article title or an action, such as "View site".</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/components/command-palette/command-palette.component.html</context>
           <context context-type="linenumber">18,20</context>
@@ -6755,8 +6655,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.palette.openProject" datatype="html">
-        <source>Ouvrir un projet</source>
-        <target>Open a project</target>
+        <source>Ouvrir un article</source>
+        <target>Open a article</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/components/command-palette/command-palette.component.html</context>
           <context context-type="linenumber">34,35</context>
@@ -6895,16 +6795,16 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.shortcuts.group.projects" datatype="html">
-        <source>Projets</source>
-        <target>Projects</target>
+        <source>Articles</source>
+        <target>Articles</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/components/shortcuts-dialog/constants/admin-shortcuts.constants.ts</context>
           <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.shortcuts.save" datatype="html">
-        <source>Enregistrer un projet</source>
-        <target>Save a project</target>
+        <source>Enregistrer un article</source>
+        <target>Save a article</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/components/shortcuts-dialog/constants/admin-shortcuts.constants.ts</context>
           <context context-type="linenumber">46</context>
@@ -7126,14 +7026,6 @@
           <context context-type="linenumber">10</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="admin.shell.nav.projects" datatype="html">
-        <source>Projets</source>
-        <target>Projects</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/constants/admin-links.constants.ts</context>
-          <context context-type="linenumber">24</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="admin.shell.nav.experiences" datatype="html">
         <source>Expériences</source>
         <target>Experience</target>
@@ -7302,6 +7194,10 @@
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
           <context context-type="linenumber">271,273</context>
         </context-group>
+      </trans-unit>
+      <trans-unit id="nav.articles" datatype="html">
+        <source>Articles</source>
+        <target>Articles</target>
       </trans-unit>
       <trans-unit id="nav.projects" datatype="html">
         <source>Projets</source>
@@ -8321,8 +8217,8 @@
         <target>Severity</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.project" datatype="html">
-        <source>Projet</source>
-        <target>Project</target>
+        <source>Article</source>
+        <target>Article</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.noLocale" datatype="html">
         <source>Toutes les langues</source>
@@ -8361,8 +8257,8 @@
         <target>Info</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.totals.published" datatype="html">
-        <source>Projets publiés</source>
-        <target>Published projects</target>
+        <source>Articles publiés</source>
+        <target>Published articles</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.totals.drafts" datatype="html">
         <source>Brouillons</source>
@@ -8377,20 +8273,20 @@
         <target>No issues found</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.empty.description" datatype="html">
-        <source> Les textes de recherche, les images et les traductions des projets publiés sont complets. </source>
-        <target>The search texts, images and translations of the published projects are complete.</target>
+        <source> Les textes de recherche, les images et les traductions des articles publiés sont complets. </source>
+        <target>The search texts, images and translations of the published articles are complete.</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.none.title" datatype="html">
-        <source>Aucun projet publié</source>
-        <target>No published project</target>
+        <source>Aucun article publié</source>
+        <target>No published article</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.none.description" datatype="html">
-        <source> L’audit porte sur les projets publiés : publiez-en un pour l’analyser. </source>
-        <target>The audit covers published projects: publish one to analyse it.</target>
+        <source> L’audit porte sur les articles publiés : publiez-en un pour l’analyser. </source>
+        <target>The audit covers published articles: publish one to analyse it.</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.issue.searchTitleMissing" datatype="html">
-        <source>Titre de recherche non renseigné : le titre du projet est utilisé.</source>
-        <target>No search title: the project title is used.</target>
+        <source>Titre de recherche non renseigné : le titre de l’article est utilisé.</source>
+        <target>No search title: the article title is used.</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.issue.searchTitleTooShort" datatype="html">
         <source>Titre de recherche trop court : <x id="length" equiv-text="length"/> caractères, <x id="limit" equiv-text="limit"/> au minimum.</source>
@@ -8401,8 +8297,8 @@
         <target>Search title too long: <x id="length" equiv-text="length"/> characters, <x id="limit" equiv-text="limit"/> maximum.</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.issue.searchDescriptionMissing" datatype="html">
-        <source>Description de recherche non renseignée : le résumé du projet est utilisé.</source>
-        <target>No search description: the project summary is used.</target>
+        <source>Description de recherche non renseignée : le résumé de l’article est utilisé.</source>
+        <target>No search description: the article summary is used.</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.issue.searchDescriptionTooShort" datatype="html">
         <source>Description de recherche trop courte : <x id="length" equiv-text="length"/> caractères, <x id="limit" equiv-text="limit"/> au minimum.</source>
@@ -8460,48 +8356,12 @@
         <source>Chargement</source>
         <target>Loading</target>
       </trans-unit>
-      <trans-unit id="admin.project.create.title" datatype="html">
-        <source>Nouveau projet</source>
-        <target>New project</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">202</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.project.create.hint" datatype="html">
-        <source> Le projet est créé en brouillon ; son adresse découle du titre français. </source>
-        <target> The project is created as a draft; its address comes from the French title. </target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
-          <context context-type="linenumber">29,32</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.project.create.documentTitle" datatype="html">
-        <source>Nouveau projet — Projets — Administration</source>
-        <target>New project — Projects — Administration</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/admin-content.routes.ts</context>
-          <context context-type="linenumber">26</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
-          <context context-type="linenumber">867</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="admin.project.toast.created" datatype="html">
         <source>« <x id="title" equiv-text="created.title.fr"/> » créé (brouillon).</source>
         <target>"<x id="title" equiv-text="created.title.fr"/>" created (draft).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.ts</context>
           <context context-type="linenumber">759</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="admin.projects.action.create" datatype="html">
-        <source>Nouveau projet</source>
-        <target>New project</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.html</context>
-          <context context-type="linenumber">19,23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.code.searchTitleMissing" datatype="html">
@@ -8633,8 +8493,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.byProject" datatype="html">
-        <source>Problèmes par projet</source>
-        <target>Findings per project</target>
+        <source>Problèmes par article</source>
+        <target>Findings per article</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
           <context context-type="linenumber">24,26</context>
@@ -8937,16 +8797,16 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.summaryHint" datatype="html">
-        <source>Problèmes relevés sur les textes de recherche, les images et les traductions des projets publiés.</source>
-        <target>Issues found in the search texts, images and translations of the published projects.</target>
+        <source>Problèmes relevés sur les textes de recherche, les images et les traductions des articles publiés.</source>
+        <target>Issues found in the search texts, images and translations of the published articles.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
           <context context-type="linenumber">7,8</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.issuesHint" datatype="html">
-        <source>Un problème par ligne, le plus grave d’abord ; filtrez par gravité ou cherchez un projet.</source>
-        <target>One issue per row, the most serious first; filter by severity or search a project.</target>
+        <source>Un problème par ligne, le plus grave d’abord ; filtrez par gravité ou cherchez un article.</source>
+        <target>One issue per row, the most serious first; filter by severity or search a article.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/seo-audit-panel/seo-audit-panel.component.html</context>
           <context context-type="linenumber">71,72</context>
@@ -9659,6 +9519,202 @@
       <trans-unit id="maintenance.documentTitle" datatype="html">
         <source>Site en maintenance — Valentin Fortin</source>
         <target>Under maintenance — Valentin Fortin</target>
+      </trans-unit>
+      <trans-unit id="projects.more" datatype="html">
+        <source>Tous les projets</source>
+        <target>All projects</target>
+      </trans-unit>
+      <trans-unit id="projects.moreHint" datatype="html">
+        <source>Toutes les études de cas, filtrables par technologie.</source>
+        <target>Every case study, filterable by technology.</target>
+      </trans-unit>
+      <trans-unit id="collection.home" datatype="html">
+        <source>Accueil</source>
+        <target>Home</target>
+      </trans-unit>
+      <trans-unit id="section.articles" datatype="html">
+        <source>Articles</source>
+        <target>Articles</target>
+      </trans-unit>
+      <trans-unit id="articles.category" datatype="html">
+        <source>Catégorie</source>
+        <target>Category</target>
+      </trans-unit>
+      <trans-unit id="articles.tag" datatype="html">
+        <source>Tag</source>
+        <target>Tag</target>
+      </trans-unit>
+      <trans-unit id="articles.searchLabel" datatype="html">
+        <source>Rechercher des articles</source>
+        <target>Search articles</target>
+      </trans-unit>
+      <trans-unit id="articles.resultOne" datatype="html">
+        <source>1 article</source>
+        <target>1 article</target>
+      </trans-unit>
+      <trans-unit id="articles.resultCount" datatype="html">
+        <source><x id="COUNT" equiv-text="count"/> articles</source>
+        <target><x id="COUNT" equiv-text="count"/> articles</target>
+      </trans-unit>
+      <trans-unit id="collection.empty" datatype="html">
+        <source>Aucun contenu à afficher.</source>
+        <target>No content to display.</target>
+      </trans-unit>
+      <trans-unit id="article.back" datatype="html">
+        <source>Tous les articles</source>
+        <target>All articles</target>
+      </trans-unit>
+      <trans-unit id="article.previous" datatype="html">
+        <source>Article précédent</source>
+        <target>Previous article</target>
+      </trans-unit>
+      <trans-unit id="article.next" datatype="html">
+        <source>Article suivant</source>
+        <target>Next article</target>
+      </trans-unit>
+      <trans-unit id="admin.articles.routeTitle" datatype="html">
+        <source>Articles — Administration</source>
+        <target>Articles — Administration</target>
+      </trans-unit>
+      <trans-unit id="admin.articles.title" datatype="html">
+        <source>Articles</source>
+        <target>Articles</target>
+      </trans-unit>
+      <trans-unit id="admin.article.create.title" datatype="html">
+        <source>Nouvel article</source>
+        <target>New article</target>
+      </trans-unit>
+      <trans-unit id="admin.article.routeTitle" datatype="html">
+        <source>Article — Administration</source>
+        <target>Article — Admin</target>
+      </trans-unit>
+      <trans-unit id="admin.article.back" datatype="html">
+        <source>Tous les articles</source>
+        <target>All articles</target>
+      </trans-unit>
+      <trans-unit id="admin.articles.count.noun" datatype="html">
+        <source>{VAR_PLURAL, plural, =0 {article} =1 {article} other {articles}}</source>
+        <target>{VAR_PLURAL, plural, =0 {articles} =1 {article} other {articles}}</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.description" datatype="html">
+        <source>Ils classent l’article dans la liste publique et ses filtres ; un tag de technologie affiche son logo.</source>
+        <target>They file the article in the public list and its filters; a technology tag shows its logo.</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.noTag" datatype="html">
+        <source>Aucun tag : recherchez une technologie ou ajoutez un tag.</source>
+        <target>No tag yet: search for a technology or add a tag.</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.categoryChoice" datatype="html">
+        <source>Catégorie</source>
+        <target>Category</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.categoryPlaceholder" datatype="html">
+        <source>Choisir une catégorie</source>
+        <target>Choose a category</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.newCategory" datatype="html">
+        <source>Nouvelle catégorie</source>
+        <target>New category</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.searchTag" datatype="html">
+        <source>Rechercher un tag</source>
+        <target>Search for a tag</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.searchTagPlaceholder" datatype="html">
+        <source>Technologie ou tag</source>
+        <target>Technology or tag</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.searchTagEmpty" datatype="html">
+        <source>Aucun tag trouvé</source>
+        <target>No matching tags</target>
+      </trans-unit>
+      <trans-unit id="ui.combobox.empty" datatype="html">
+        <source>Aucun résultat</source>
+        <target>No results</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.title" datatype="html">
+        <source>Catégorie et tags</source>
+        <target>Category and tags</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.categoryFr" datatype="html">
+        <source>Libellé en français</source>
+        <target>Label in French</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.categoryEn" datatype="html">
+        <source>Libellé en anglais</source>
+        <target>Label in English</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.tagFr" datatype="html">
+        <source>Tag en français</source>
+        <target>Tag in French</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.tagEn" datatype="html">
+        <source>Tag en anglais</source>
+        <target>Tag in English</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.addTag" datatype="html">
+        <source>Ajouter un tag</source>
+        <target>Add tag</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.selectedTags" datatype="html">
+        <source>Tags sélectionnés</source>
+        <target>Selected tags</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.untitledTag" datatype="html">
+        <source>Nouveau tag</source>
+        <target>New tag</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.editNamedTag" datatype="html">
+        <source>Modifier <x id="TAG" equiv-text="name"/></source>
+        <target>Edit <x id="TAG" equiv-text="name"/></target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.removeNamedTag" datatype="html">
+        <source>Retirer <x id="TAG" equiv-text="name"/></source>
+        <target>Remove <x id="TAG" equiv-text="name"/></target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.finishTag" datatype="html">
+        <source>Terminer</source>
+        <target>Done</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.categoryRequired" datatype="html">
+        <source>Complétez la catégorie dans cette langue.</source>
+        <target>Complete the category in this language.</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.tagRequired" datatype="html">
+        <source>Complétez le tag dans cette langue.</source>
+        <target>Complete the tag in this language.</target>
+      </trans-unit>
+      <trans-unit id="admin.article.taxonomy.tagsInvalid" datatype="html">
+        <source>Choisissez jusqu’à <x id="max" equiv-text="ARTICLE_TAG_LIMIT"/> tags distincts avec un libellé français.</source>
+        <target>Choose up to <x id="max" equiv-text="ARTICLE_TAG_LIMIT"/> distinct tags with French labels.</target>
+      </trans-unit>
+      <trans-unit id="admin.articles.empty.title" datatype="html">
+        <source>Aucun article</source>
+        <target>No articles</target>
+      </trans-unit>
+      <trans-unit id="admin.articles.empty.description" datatype="html">
+        <source>Créez un article, classez-le dans une catégorie et publiez-le quand il est prêt.</source>
+        <target>Create an article, assign a category and publish it when it is ready.</target>
+      </trans-unit>
+      <trans-unit id="admin.article.create.hint" datatype="html">
+        <source>L’article est créé en brouillon. Son adresse découle du titre français.</source>
+        <target>The article starts as a draft. Its URL comes from the French title.</target>
+      </trans-unit>
+      <trans-unit id="admin.shell.nav.articles" datatype="html">
+        <source>Articles</source>
+        <target>Articles</target>
+      </trans-unit>
+      <trans-unit id="admin.article.create.documentTitle" datatype="html">
+        <source>Nouvel article — Articles — Administration</source>
+        <target>New article — Articles — Administration</target>
+      </trans-unit>
+      <trans-unit id="admin.article.documentTitle" datatype="html">
+        <source><x id="article" equiv-text="current.title.fr"/> — Articles — Administration</source>
+        <target><x id="article" equiv-text="current.title.fr"/> — Articles — Administration</target>
+      </trans-unit>
+      <trans-unit id="admin.article.notFound.documentTitle" datatype="html">
+        <source>Article introuvable — Articles — Administration</source>
+        <target>Article not found — Articles — Administration</target>
       </trans-unit>
     </body>
   </file>

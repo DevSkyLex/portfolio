@@ -33,21 +33,10 @@ import {
   untracked,
 } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
-import {
-  lucideArrowDown,
-  lucideArrowUp,
-  lucideArrowUpDown,
-  lucideSearch,
-  lucideX,
-} from '@ng-icons/lucide';
+import { lucideArrowDown, lucideArrowUp, lucideArrowUpDown, lucideSearch } from '@ng-icons/lucide';
 import { ButtonDirective } from '@internal/ui/lib/button/button.directive';
 import { CheckboxComponent } from '@internal/ui/lib/checkbox/checkbox.component';
 import { cn } from '@internal/ui/lib/class-names/class-names.utils';
-import {
-  InputGroupAddonDirective,
-  InputGroupDirective,
-  InputGroupInputDirective,
-} from '@internal/ui/lib/input-group/input-group.directives';
 import { SkeletonDirective } from '@internal/ui/lib/skeleton/skeleton.directive';
 import { EMPTY_IMPORTS } from '@internal/ui/lib/empty/constants/empty.imports';
 import {
@@ -58,8 +47,7 @@ import {
   sortRowsBy,
 } from '@internal/ui/lib/data-table/utils/data-table/data-table.utils';
 import {
-  facetOptions,
-  facetValues,
+  buildFacetViews,
   matchesFacets,
 } from '@internal/ui/lib/data-table/utils/data-table-facets/data-table-facets.utils';
 import {
@@ -73,7 +61,6 @@ import type { DataTableCellContext } from '@internal/ui/lib/data-table/models/da
 import type { DataTableState } from '@internal/ui/lib/data-table/models/data-table/data-table-state.interface';
 import type { DataTableFacet } from '@internal/ui/lib/data-table/models/data-table/data-table-facet.interface';
 import type { DataTableFacetView } from '@internal/ui/lib/data-table/models/data-table/data-table-facet-view.interface';
-import type { DataTableActiveFilter } from '@internal/ui/lib/data-table/models/data-table/data-table-active-filter.interface';
 import type { DataTableColumnToggle } from '@internal/ui/lib/data-table/models/data-table/data-table-column-toggle.interface';
 import type { DataTableDensity } from '@internal/ui/lib/data-table/models/data-table/data-table-density.type';
 import type { DataTableEmptyContext } from '@internal/ui/lib/data-table/models/data-table/data-table-empty-context.interface';
@@ -89,7 +76,7 @@ import { dataTableSkeletonWidths } from '@internal/ui/lib/data-table/constants/d
 import { DataTableCellDirective } from '@internal/ui/lib/data-table/directives/data-table-cell/data-table-cell.directive';
 import { DataTableEmptyDirective } from '@internal/ui/lib/data-table/directives/data-table-empty/data-table-empty.directive';
 import { DataTableColumnMenuComponent } from '@internal/ui/lib/data-table/components/data-table-column-menu/data-table-column-menu.component';
-import { DataTableFacetFilterComponent } from '@internal/ui/lib/data-table/components/data-table-facet-filter/data-table-facet-filter.component';
+import { DataTableFilterBarComponent } from '@internal/ui/lib/data-table/components/data-table-filter-bar/data-table-filter-bar.component';
 import { DataTableEmptyCellComponent } from '@internal/ui/lib/data-table/components/data-table-empty-cell/data-table-empty-cell.component';
 import { DataTablePaginationComponent } from '@internal/ui/lib/data-table/components/data-table-pagination/data-table-pagination.component';
 import { DataTableColumnWidthsService } from '@internal/ui/lib/data-table/services/data-table-column-widths/data-table-column-widths.service';
@@ -153,12 +140,9 @@ interface DataTableResizeHandle<T> {
     CheckboxComponent,
     DataTableColumnMenuComponent,
     DataTableEmptyCellComponent,
-    DataTableFacetFilterComponent,
+    DataTableFilterBarComponent,
     DataTablePaginationComponent,
     EMPTY_IMPORTS,
-    InputGroupAddonDirective,
-    InputGroupDirective,
-    InputGroupInputDirective,
     NgIcon,
     NgTemplateOutlet,
     SkeletonDirective,
@@ -559,13 +543,11 @@ export class DataTableComponent<T> {
     readonly desc: typeof lucideArrowDown;
     readonly unsorted: typeof lucideArrowUpDown;
     readonly search: typeof lucideSearch;
-    readonly remove: typeof lucideX;
   } = {
     asc: lucideArrowUp,
     desc: lucideArrowDown,
     unsorted: lucideArrowUpDown,
     search: lucideSearch,
-    remove: lucideX,
   } as const;
 
   /**
@@ -734,53 +716,13 @@ export class DataTableComponent<T> {
    *
    * @type {Signal<DataTableFacetView[]>}
    */
-  protected readonly facetViews: Signal<DataTableFacetView[]> = computed<DataTableFacetView[]>(
-    () => {
-      const facets: readonly DataTableFacet<T>[] = this.facets();
-      const selected: Readonly<Record<string, readonly string[]>> = this.state().facets;
-      return (
-        facets
-          .map((facet) => {
-            const pool: readonly T[] = this.searched().filter((row) =>
-              matchesFacets(row, facets, selected, facet.id),
-            );
-            const checked: readonly string[] = selected[facet.id] ?? [];
-            return {
-              id: facet.id,
-              label: facet.label,
-              ...(facet.icon ? { icon: facet.icon } : {}),
-              options: facetOptions(facet, this.data(), this.collator).map((option) => ({
-                ...option,
-                count: pool.filter((row) => facetValues(facet, row).includes(option.value)).length,
-                selected: checked.includes(option.value),
-              })),
-            };
-          })
-          // A facet with nothing to pick (no row carries a value) would open an empty menu: left out.
-          .filter((facet) => facet.options.length > 0)
-      );
-    },
-  );
-
-  /**
-   * Property activeFilters
-   * @readonly
-   *
-   * @description
-   * Checked facet values, in facet then state order, shown as removable chips.
-   *
-   * @type {Signal<DataTableActiveFilter[]>}
-   */
-  protected readonly activeFilters: Signal<DataTableActiveFilter[]> = computed<
-    DataTableActiveFilter[]
-  >(() =>
-    this.facetViews().flatMap((facet) =>
-      (this.state().facets[facet.id] ?? []).map((value) => ({
-        facet: facet.id,
-        facetLabel: facet.label,
-        value,
-        label: facet.options.find((option) => option.value === value)?.label ?? value,
-      })),
+  protected readonly facetViews: Signal<DataTableFacetView[]> = computed(() =>
+    buildFacetViews(
+      this.facets(),
+      this.data(),
+      this.searched(),
+      this.state().facets,
+      this.collator,
     ),
   );
 
@@ -1061,58 +1003,6 @@ export class DataTableComponent<T> {
       this.framed() ? 'gap-2' : 'gap-0',
       this.fillsEmpty() && 'flex-1',
       this.class(),
-    ),
-  );
-
-  /**
-   * Property filterBarFrameClasses
-   * @readonly
-   *
-   * @description
-   * Animated frame of the filter bar. On a flush table it carries the one hairline under the toolbar:
-   * closed, the frame is that 1 px line; open, the line rides the moving bottom edge, in both
-   * directions, and the bar content draws the line between the toolbar and the chips.
-   *
-   * @type {Signal<string>}
-   */
-  protected readonly filterBarFrameClasses: Signal<string> = computed<string>(() =>
-    cn(
-      'grid grid-rows-[0fr] transition-[grid-template-rows] duration-(--dur-roll) ease-orbit data-open:grid-rows-[1fr] motion-reduce:transition-none',
-      !this.framed() && 'border-b border-border',
-    ),
-  );
-
-  /**
-   * Property filterBarClasses
-   * @readonly
-   *
-   * @description
-   * Row of the active filter chips and the reset button, under the toolbar: a framed table spaces it by
-   * the table's own gap only; flush tables give it the page gutter and a hairline, like the toolbar.
-   *
-   * @type {Signal<string>}
-   */
-  protected readonly filterBarClasses: Signal<string> = computed<string>(() =>
-    cn(
-      'flex flex-wrap items-center gap-2',
-      !this.framed() && 'min-h-11 border-t border-border px-6 py-1.5 @max-[640px]:px-4',
-    ),
-  );
-
-  /**
-   * Property toolbarClasses
-   * @readonly
-   *
-   * @description
-   * Toolbar row; flush tables give it the page gutter and a hairline.
-   *
-   * @type {Signal<string>}
-   */
-  protected readonly toolbarClasses: Signal<string> = computed<string>(() =>
-    cn(
-      'flex flex-wrap items-center gap-2',
-      // The flush toolbar's bottom hairline is drawn by the filter bar's frame, right under it.
-      !this.framed() && 'min-h-11 px-6 py-1.5 @max-[640px]:px-4',
     ),
   );
 
@@ -2545,10 +2435,9 @@ export class DataTableComponent<T> {
    * @description
    * Copies the search field into the state, back on the first page.
    *
-   * @param {Event} event - Input event of the search field.
+   * @param {string} search - Query emitted by the filter bar.
    */
-  protected onSearch(event: Event): void {
-    const search: string = (event.target as HTMLInputElement).value;
+  protected onSearch(search: string): void {
     this.state.update((state) => ({ ...state, search, page: 0 }));
   }
 
@@ -2564,23 +2453,6 @@ export class DataTableComponent<T> {
    */
   protected setFacet(id: string, values: readonly string[]): void {
     this.state.update((state) => withFacet(state, id, values));
-  }
-
-  /**
-   * Method removeFilter
-   * @method removeFilter
-   *
-   * @description
-   * Unchecks the value of a chip.
-   *
-   * @param {DataTableActiveFilter} filter - Chip removed.
-   */
-  protected removeFilter(filter: DataTableActiveFilter): void {
-    const values: readonly string[] = this.state().facets[filter.facet] ?? [];
-    this.setFacet(
-      filter.facet,
-      values.filter((value) => value !== filter.value),
-    );
   }
 
   /**

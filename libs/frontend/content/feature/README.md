@@ -3,7 +3,7 @@
 ## Purpose
 
 `content-web-feature` owns public hero, projects, journey, skills and about composition, plus the
-`/projects/:slug` detail workflow. It connects the public content projection to presentation and owns
+`/articles/:slug` detail workflow. It connects the public content projection to presentation and owns
 project navigation, metadata and route validity.
 
 ## Public entry points

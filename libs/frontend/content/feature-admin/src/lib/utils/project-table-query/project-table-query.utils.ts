@@ -20,12 +20,16 @@ import { PROJECT_TABLE_FACETS } from '@internal/content-web-feature-admin/lib/co
 export function projectTableState(params: ParamMap, base: DataTableState): DataTableState {
   const facets: Record<string, readonly string[]> = {};
   for (const facet of PROJECT_TABLE_FACETS) {
-    const known: readonly string[] = (facet.options ?? []).map(
+    const known: readonly string[] | undefined = facet.options?.map(
       (option: { readonly value: string }): string => option.value,
     );
     const values: string[] = (params.get(facet.id) ?? '')
       .split(',')
-      .filter((value: string): boolean => known.includes(value));
+      .filter((value: string): boolean =>
+        known
+          ? known.includes(value)
+          : value.length <= 80 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value),
+      );
     if (values.length) facets[facet.id] = [...new Set(values)];
   }
   const column: string | null = params.get('tri');

@@ -704,6 +704,9 @@ export interface ProjectSummary {
    */
   readonly techs: readonly string[];
 
+  /** Localized article tags, when supplied by the snapshot. */
+  readonly taxonomy?: ArticleTaxonomy;
+
   /**
    * Property featured
    * @readonly
@@ -1180,6 +1183,9 @@ export interface SiteContent {
    */
   readonly projects: readonly ProjectArticle[];
 
+  /** Published editorial articles and their localized taxonomy. */
+  readonly articles?: readonly EditorialArticle[];
+
   /**
    * Property timeline
    * @readonly
@@ -1235,4 +1241,20 @@ export interface SiteContent {
    */
   readonly maintenance: SiteMaintenance;
   // #endregion
+}
+
+/** Localized category or tag used by articles. */
+export interface ArticleTerm {
+  readonly key: string;
+  readonly label: string;
+}
+
+interface ArticleTaxonomy {
+  readonly category: ArticleTerm;
+  readonly tags: readonly ArticleTerm[];
+}
+
+/** Editorial content with a published category. */
+export interface EditorialArticle extends ProjectArticle {
+  readonly taxonomy: ArticleTaxonomy;
 }

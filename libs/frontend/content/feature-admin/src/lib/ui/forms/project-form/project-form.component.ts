@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Injector,
+  LOCALE_ID,
   afterNextRender,
   booleanAttribute,
   computed,
@@ -13,7 +15,6 @@ import {
   untracked,
   viewChild,
   viewChildren,
-  type ElementRef,
   type InputSignal,
   type TemplateRef,
   type InputSignalWithTransform,
@@ -23,6 +24,7 @@ import {
 } from '@angular/core';
 import {
   FormField,
+  applyEach,
   disabled,
   form,
   required,
@@ -39,25 +41,33 @@ import {
   lucideImage,
   lucideImageOff,
   lucideImagePlus,
+  lucidePlus,
   lucideTrash2,
   lucideTriangleAlert,
+  lucideX,
 } from '@ng-icons/lucide';
 import {
   ADMIN_MEDIA_LIMITS,
+  type PublicationTaxonomyDraft,
   type AdminMedia,
   type ArticleDocumentDraft,
   type PageSeo,
   type ProjectPageSeoSource,
+  PROJECT_ARTICLE_CATEGORY,
   SITE_ORIGIN,
   figuresMissingAlt,
   isArticleEmpty,
+  publicationCategoryKey,
   projectPageSeo,
 } from '@vfortin/content-web-data-access/admin';
 import {
   AlertDirective,
   AlertTitleDirective,
+  BadgeDirective,
   ButtonDirective,
   CheckboxComponent,
+  ComboboxComponent,
+  ComboboxOptionComponent,
   ConfirmDialogService,
   EMPTY_IMPORTS,
   FieldComponent,
@@ -67,17 +77,18 @@ import {
   KbdDirective,
   ModifierKeyService,
   PeriodPickerComponent,
+  SelectComponent,
+  SelectOptionComponent,
   TagsInputComponent,
   ToastService,
   type PeriodBound,
 } from '@vfortin/ui';
-import { techKey } from '@vfortin/content-web-ui';
+import { TechIconComponent } from '@vfortin/content-web-ui';
 import { EMPTY_PROJECT_DRAFT } from '@internal/content-web-feature-admin/lib/constants/empty-project-draft.constants';
 import { INCOMPLETE_ERROR } from '@internal/content-web-feature-admin/lib/constants/incomplete-error.constants';
 import { PROJECT_FORM_MESSAGES } from '@internal/content-web-feature-admin/lib/constants/project-form-messages.constants';
 import { PROJECT_SEO_LIMITS } from '@internal/content-web-feature-admin/lib/constants/project-seo-limits.constants';
 import { PROJECT_PERIOD_LIMITS } from '@internal/content-web-feature-admin/lib/constants/project-period-limits.constants';
-import { PROJECT_TECH_LIMITS } from '@internal/content-web-feature-admin/lib/constants/project-tech-limits.constants';
 import { PROJECT_SHORT_FIELDS } from '@internal/content-web-feature-admin/lib/constants/project-short-fields.constants';
 import { PROJECT_TEXT_SECTIONS } from '@internal/content-web-feature-admin/lib/constants/project-text-sections.constants';
 import { SEO_PREVIEW_SITE } from '@internal/content-web-feature-admin/lib/constants/seo-preview-site.constants';
@@ -106,6 +117,10 @@ import {
 import { seoPreview } from '@internal/content-web-feature-admin/lib/utils/seo-preview/seo-preview.utils';
 import { serverPath } from '@internal/content-web-feature-admin/lib/utils/server-path/server-path.utils';
 import { socialPreview } from '@internal/content-web-feature-admin/lib/utils/social-preview/social-preview.utils';
+import { editedTagKey } from '@internal/content-web-feature-admin/lib/utils/article-tags/article-tags.utils';
+
+/** Browser mirror of the publication taxonomy contract (D10). */
+const ARTICLE_TAG_LIMIT: number = 24;
 
 /**
  * Type LocalizedField
@@ -160,8 +175,11 @@ const LOCALIZED_FIELDS: readonly LocalizedField[] = [
     AlertDirective,
     AlertTitleDirective,
     ArticleEditorComponent,
+    BadgeDirective,
     ButtonDirective,
     CheckboxComponent,
+    ComboboxComponent,
+    ComboboxOptionComponent,
     EMPTY_IMPORTS,
     FieldComponent,
     FieldErrorDirective,
@@ -172,14 +190,36 @@ const LOCALIZED_FIELDS: readonly LocalizedField[] = [
     LocaleSwitchComponent,
     NgIcon,
     PeriodPickerComponent,
+    SelectComponent,
+    SelectOptionComponent,
     SeoGeneratedTagsComponent,
     SocialPreviewComponent,
     TagsInputComponent,
+    TechIconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './project-form.component.html',
 })
 export class ProjectFormComponent {
+  private readonly host: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly editingTag: WritableSignal<number | null> = signal<number | null>(null);
+  private readonly taxonomyLocale: ContentLocale = inject<string>(LOCALE_ID).startsWith('en')
+    ? 'en'
+    : 'fr';
+  public readonly categoryChoices: InputSignal<readonly PublicationTaxonomyDraft['category'][]> =
+    input<readonly PublicationTaxonomyDraft['category'][]>([]);
+  public readonly tagChoices: InputSignal<readonly PublicationTaxonomyDraft['category'][]> = input<
+    readonly PublicationTaxonomyDraft['category'][]
+  >([]);
+  public readonly taxonomyRequested: OutputEmitterRef<void> = output<void>();
+  protected readonly taxonomyValues: Signal<PublicationTaxonomyDraft> = computed(
+    () => this.model().taxonomy,
+  );
+  protected readonly availableTags: Signal<readonly PublicationTaxonomyDraft['category'][]> =
+    computed(() => {
+      const chosen: Set<string> = new Set(this.tagKeys());
+      return this.tagChoices().filter((tag) => !chosen.has(tag.key));
+    });
   // #region Properties
   /**
    * Property values
@@ -311,7 +351,13 @@ export class ProjectFormComponent {
    *
    * @type {readonly ProjectTextSection[]}
    */
-  protected readonly textSections: readonly ProjectTextSection[] = PROJECT_TEXT_SECTIONS;
+  protected readonly textSections: Signal<readonly ProjectTextSection[]> = computed(() => {
+    const category: PublicationTaxonomyDraft['category'] = this.taxonomyValues().category;
+    return (category.key || publicationCategoryKey(category.label.fr)) ===
+      PROJECT_ARTICLE_CATEGORY.key
+      ? PROJECT_TEXT_SECTIONS
+      : PROJECT_TEXT_SECTIONS.filter((section) => section.key !== 'details');
+  });
 
   /**
    * Property seoLimits
@@ -461,6 +507,8 @@ export class ProjectFormComponent {
     readonly cover: typeof lucideImage;
     readonly coverMissing: typeof lucideImageOff;
     readonly image: typeof lucideImagePlus;
+    readonly addTag: typeof lucidePlus;
+    readonly removeTag: typeof lucideX;
     readonly remove: typeof lucideTrash2;
     readonly saved: typeof lucideCircleCheck;
     readonly warning: typeof lucideTriangleAlert;
@@ -470,6 +518,8 @@ export class ProjectFormComponent {
     cover: lucideImage,
     coverMissing: lucideImageOff,
     image: lucideImagePlus,
+    addTag: lucidePlus,
+    removeTag: lucideX,
     remove: lucideTrash2,
     saved: lucideCircleCheck,
     warning: lucideTriangleAlert,
@@ -564,8 +614,9 @@ export class ProjectFormComponent {
    *
    * @type {WritableSignal<ProjectFormValues>}
    */
-  private readonly model: WritableSignal<ProjectFormValues> =
-    signal<ProjectFormValues>(EMPTY_PROJECT_DRAFT);
+  private readonly model: WritableSignal<ProjectFormValues> = signal<ProjectFormValues>(
+    structuredClone(EMPTY_PROJECT_DRAFT),
+  );
 
   /**
    * Property gaps
@@ -665,6 +716,58 @@ export class ProjectFormComponent {
           return this.serverError(`cover.alt.${locale}`, value());
         });
       }
+      for (const locale of ['fr', 'en'] as const) {
+        validate(
+          path.taxonomy.category.label[locale],
+          ({ value }): { kind: string; message: string } | null => {
+            const label: string = value().trim();
+            if (label.length > 80)
+              return { kind: 'maxLength', message: PROJECT_FORM_MESSAGES.maxChars(80) };
+            if (
+              !label &&
+              (this.complete() ||
+                (locale === 'fr' && this.model().taxonomy.category.label.en.trim() !== ''))
+            )
+              return {
+                kind: 'required',
+                message: $localize`:@@admin.article.taxonomy.categoryRequired:Complétez la catégorie dans cette langue.`,
+              };
+            return this.serverError(`taxonomy.category.label.${locale}`, value());
+          },
+        );
+      }
+      applyEach(path.taxonomy.tags, (tag): void => {
+        for (const locale of ['fr', 'en'] as const) {
+          validate(
+            tag.label[locale],
+            ({ value, pathKeys }): { kind: string; message: string } | null => {
+              const label: string = value().trim();
+              if (label.length > 80)
+                return { kind: 'maxLength', message: PROJECT_FORM_MESSAGES.maxChars(80) };
+              if ((locale === 'fr' || this.complete()) && !label)
+                return {
+                  kind: 'required',
+                  message: $localize`:@@admin.article.taxonomy.tagRequired:Complétez le tag dans cette langue.`,
+                };
+              return this.serverError(pathKeys().join('.'), value());
+            },
+          );
+        }
+      });
+      validate(path.taxonomy.tags, ({ value }): { kind: string; message: string } | null => {
+        const tags: PublicationTaxonomyDraft['tags'] = value();
+        const keys: string[] = tags.map(editedTagKey);
+        if (
+          tags.length > ARTICLE_TAG_LIMIT ||
+          keys.some((key) => !key) ||
+          new Set(keys).size !== keys.length
+        )
+          return {
+            kind: 'tags',
+            message: $localize`:@@admin.article.taxonomy.tagsInvalid:Choisissez jusqu’à ${ARTICLE_TAG_LIMIT}:max: tags distincts avec un libellé français.`,
+          };
+        return this.serverError('taxonomy.tags', value());
+      });
       validate(path.cover.media, ({ value }): { kind: string; message: string } | null =>
         this.serverError('cover.media', value()),
       );
@@ -685,18 +788,6 @@ export class ProjectFormComponent {
           }
         }
         return this.serverError('siteUrl', value());
-      });
-      validate(path.techs, ({ value }): { kind: string; message: string } | null => {
-        const keys: string[] = value();
-        if (
-          keys.length > PROJECT_TECH_LIMITS.count ||
-          keys.some((key: string): boolean => !PROJECT_TECH_LIMITS.key.test(key))
-        )
-          return {
-            kind: 'techs',
-            message: $localize`:@@admin.project.form.techsInvalid:12 clés maximum, en minuscules et séparées par des virgules.`,
-          };
-        return this.serverError('techs', value());
       });
     },
   );
@@ -729,15 +820,15 @@ export class ProjectFormComponent {
   );
 
   /**
-   * Property techLimit
+   * Property tagLimit
    * @readonly
    *
    * @description
-   * Largest number of technology tags, from the contract copy.
+   * Largest number of tags, from the contract copy.
    *
    * @type {number}
    */
-  protected readonly techLimit: number = PROJECT_TECH_LIMITS.count;
+  protected readonly tagLimit: number = ARTICLE_TAG_LIMIT;
 
   /**
    * Property periodMin
@@ -763,18 +854,6 @@ export class ProjectFormComponent {
     year: Math.min(new Date().getFullYear() + 5, PROJECT_PERIOD_LIMITS.yearMax),
     month: 12,
   };
-
-  /**
-   * Property normalizeTech
-   * @readonly
-   *
-   * @description
-   * Stores a typed technology as a catalogue key (`techKey`: trimmed, lowercase, an alias such as
-   * `postgres` replaced by `postgresql`); the validator then checks the kebab-case form.
-   *
-   * @type {(raw: string) => string}
-   */
-  protected readonly normalizeTech: (raw: string) => string = techKey;
 
   /**
    * Property coverSrc
@@ -820,7 +899,7 @@ export class ProjectFormComponent {
       return $localize`:@@admin.project.form.summary.frenchRequired:Les textes français marqués d’une erreur sont obligatoires.`;
     }
     if (this.gaps().size > 0) {
-      return $localize`:@@admin.project.form.summary.incomplete:Un projet publié doit rester complet en français et en anglais : complétez les champs signalés ou dépubliez-le.`;
+      return $localize`:@@admin.project.form.summary.incomplete:Un article publié doit rester complet en français et en anglais : complétez les champs signalés ou dépubliez-le.`;
     }
     const first: string | undefined =
       frenchErrors[0]?.message ?? this.projectForm.article.en().errors()[0]?.message;
@@ -828,7 +907,6 @@ export class ProjectFormComponent {
     // The shared settings sit in the properties panel, possibly a closed sheet: name where to look.
     if (
       this.projectForm.siteUrl().invalid() ||
-      this.projectForm.techs().invalid() ||
       this.projectForm.period().invalid() ||
       this.projectForm.cover.media().invalid() ||
       this.projectForm.cover.alt.fr().invalid() ||
@@ -884,7 +962,10 @@ export class ProjectFormComponent {
         this.slug(),
         this.media(),
       );
-      return { source, page: projectPageSeo(source, locale, this.origin) };
+      return {
+        source,
+        page: projectPageSeo(source, locale, this.origin),
+      };
     };
     return { fr: resolve('fr'), en: resolve('en') };
   });
@@ -923,20 +1004,15 @@ export class ProjectFormComponent {
       };
     });
 
-  /**
-   * Property techsHint
-   * @readonly
-   *
-   * @description
-   * Placeholder of the empty keyword fields: the technologies the page then writes, or a neutral hint
-   * without any.
-   *
-   * @type {Signal<string>}
-   */
-  protected readonly techsHint: Signal<string> = computed<string>((): string =>
-    this.model().techs.length > 0
-      ? this.model().techs.join(', ')
-      : $localize`:@@admin.project.form.keywordsPlaceholder:Ajoutez des mots clés`,
+  /** Stable tag keys used by the automatic page keywords and the copy action. */
+  protected readonly tagKeys: Signal<string[]> = computed(() =>
+    this.taxonomyValues().tags.map(editedTagKey).filter(Boolean),
+  );
+
+  protected readonly tagsHint: Signal<string> = computed<string>(
+    (): string =>
+      this.tagKeys().join(', ') ||
+      $localize`:@@admin.project.form.keywordsPlaceholder:Ajoutez des mots clés`,
   );
 
   /**
@@ -972,7 +1048,8 @@ export class ProjectFormComponent {
     effect((): void => {
       const values: ProjectFormValues = this.values();
       untracked((): void => {
-        this.projectForm().reset(values);
+        this.projectForm().reset(structuredClone(values));
+        this.editingTag.set(null);
         this.sentValues.set(null);
       });
     });
@@ -981,6 +1058,112 @@ export class ProjectFormComponent {
     });
   }
   // #endregion
+
+  /** Adds one bilingual tag row to the article's classification. */
+  protected addTag(): void {
+    const index: number = this.model().taxonomy.tags.length;
+    if (this.pending() || index >= ARTICLE_TAG_LIMIT) return;
+    this.model.update((values) => ({
+      ...values,
+      taxonomy: {
+        ...values.taxonomy,
+        tags: [...values.taxonomy.tags, { key: '', label: { fr: '', en: '' } }],
+      },
+    }));
+    this.projectForm().markAsDirty();
+    this.toggleTagEditor(index);
+  }
+
+  protected toggleTagEditor(index: number): void {
+    const closing: boolean = this.editingTag() === index;
+    this.editingTag.set(closing ? null : index);
+    this.focusTaxonomy(closing ? `article-tag-edit-${index}` : `article-tag-fr-${index}`);
+  }
+
+  protected chooseCategory(key: string | null): void {
+    if (this.pending() || key === null) return;
+    const chosen: PublicationTaxonomyDraft['category'] | undefined = this.categoryChoices().find(
+      (category) => category.key === key,
+    );
+    const category: PublicationTaxonomyDraft['category'] = chosen
+      ? structuredClone(chosen)
+      : { key: '', label: { fr: '', en: '' } };
+    this.model.update((values) => ({
+      ...values,
+      taxonomy: { ...values.taxonomy, category },
+    }));
+    this.projectForm().markAsDirty();
+  }
+
+  protected chooseTag(key: unknown): void {
+    if (
+      this.pending() ||
+      typeof key !== 'string' ||
+      this.taxonomyValues().tags.length >= ARTICLE_TAG_LIMIT
+    )
+      return;
+    const tag: PublicationTaxonomyDraft['category'] | undefined = this.availableTags().find(
+      (candidate) => candidate.key === key,
+    );
+    if (!tag) return;
+    this.model.update((values) => ({
+      ...values,
+      taxonomy: {
+        ...values.taxonomy,
+        tags: [...values.taxonomy.tags, structuredClone(tag)],
+      },
+    }));
+    this.projectForm().markAsDirty();
+  }
+
+  /** Removes the selected taxonomy row from the form. */
+  protected removeTag(index: number): void {
+    if (this.pending()) return;
+    this.model.update((values) => ({
+      ...values,
+      taxonomy: {
+        ...values.taxonomy,
+        tags: values.taxonomy.tags.filter((_, position) => position !== index),
+      },
+    }));
+    this.projectForm().markAsDirty();
+    const editing: number | null = this.editingTag();
+    if (editing !== null && editing >= index) {
+      this.editingTag.set(editing === index ? null : editing - 1);
+    }
+    this.focusTaxonomy('article-tag-choice');
+  }
+
+  protected tagName(term: PublicationTaxonomyDraft['category']): string {
+    return (
+      this.taxonomyLabel(term).trim() ||
+      $localize`:@@admin.article.taxonomy.untitledTag:Nouveau tag`
+    );
+  }
+
+  protected editTagLabel(name: string): string {
+    return $localize`:@@admin.article.taxonomy.editNamedTag:Modifier ${name}:TAG:`;
+  }
+
+  protected removeTagLabel(name: string): string {
+    return $localize`:@@admin.article.taxonomy.removeNamedTag:Retirer ${name}:TAG:`;
+  }
+
+  private focusTaxonomy(id: string): void {
+    afterNextRender(
+      { write: (): void => this.host.nativeElement.querySelector<HTMLElement>(`#${id}`)?.focus() },
+      { injector: this.injector },
+    );
+  }
+
+  /** Exposes the Signal Form's taxonomy error after interaction. */
+  protected taxonomyError(state: FieldState<unknown, string | number>): string | null {
+    return this.visibleError(state);
+  }
+
+  protected taxonomyLabel(term: PublicationTaxonomyDraft['category']): string {
+    return term.label[this.taxonomyLocale] || term.label.fr;
+  }
 
   // #region Methods
   /**
@@ -1002,8 +1185,15 @@ export class ProjectFormComponent {
       this.revealErrors();
       return;
     }
-    this.sentValues.set(structuredClone(this.model()));
-    this.submitted.emit(this.model());
+    const values: ProjectFormValues = structuredClone(this.model());
+    this.sentValues.set(values);
+    this.submitted.emit({
+      ...values,
+      taxonomy: {
+        ...values.taxonomy,
+        tags: values.taxonomy.tags.map((tag) => ({ ...tag, key: editedTagKey(tag) })),
+      },
+    });
   }
 
   /**
@@ -1020,13 +1210,14 @@ export class ProjectFormComponent {
     if (this.pending() || !this.dirty()) return;
     const accepted: boolean = await this.confirmations.confirm({
       title: $localize`:@@admin.project.form.discard.confirmTitle:Abandonner les modifications ?`,
-      description: $localize`:@@admin.project.unsaved.lost:Les modifications de ce projet seront perdues.`,
+      description: $localize`:@@admin.project.unsaved.lost:Les modifications de cet article seront perdues.`,
       confirmLabel: $localize`:@@admin.project.form.discard:Abandonner`,
       cancelLabel: $localize`:@@admin.project.unsaved.keepEditing:Continuer la modification`,
       tone: 'danger',
     });
     if (!accepted || this.pending()) return;
-    this.projectForm().reset(this.values());
+    this.projectForm().reset(structuredClone(this.values()));
+    this.editingTag.set(null);
     this.cancelled.emit();
     afterNextRender(
       { read: (): void => this.status()?.nativeElement.focus() },
@@ -1148,9 +1339,9 @@ export class ProjectFormComponent {
    * Method simpleError
    *
    * @description
-   * Exposes the first visible URL, technology or period validation message.
+   * Exposes the first visible URL or period validation message.
    */
-  protected simpleError(key: 'siteUrl' | 'techs' | 'period'): string | null {
+  protected simpleError(key: 'siteUrl' | 'period'): string | null {
     return this.visibleError(this.projectForm[key]());
   }
 
@@ -1203,18 +1394,18 @@ export class ProjectFormComponent {
   }
 
   /**
-   * Method useTechs
+   * Method useTags
    *
    * @description
-   * « Reprendre les technos »: adds the project's technology keys to one language's keywords, after the
+   * « Reprendre les tags »: adds the article's tag keys to one language's keywords, after the
    * written ones and within the keyword limit (`mergeKeywords`).
    *
    * @param {ContentLocale} locale - Language whose keywords are completed.
    */
-  protected useTechs(locale: ContentLocale): void {
+  protected useTags(locale: ContentLocale): void {
     if (this.pending()) return;
     const keywords: FieldState<string[], string | number> = this.projectForm.seo.keywords[locale]();
-    const merged: string[] = mergeKeywords(keywords.value(), this.model().techs);
+    const merged: string[] = mergeKeywords(keywords.value(), this.tagKeys());
     if (merged.length === keywords.value().length) return;
     keywords.value.set(merged);
     keywords.markAsDirty();
@@ -1510,6 +1701,10 @@ export class ProjectFormComponent {
       this.serverErrors().find(
         (error: { readonly field: string; readonly message: string }): boolean => {
           const path: string = serverPath(error.field);
+          if (field.startsWith('taxonomy.') && field.endsWith('.label.fr')) {
+            const taxon: string = field.slice(0, -9);
+            if (path === taxon || path === `${taxon}.key`) return true;
+          }
           return path === field || (field.endsWith('.fr') && path === field.slice(0, -3));
         },
       );

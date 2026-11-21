@@ -12,5 +12,8 @@ import { TECH_ALIASES } from '@internal/content-web-ui/lib/tech/constants/tech-a
  */
 export function techKey(raw: string): string {
   const key: string = raw.trim().toLowerCase();
-  return TECH_ALIASES[key] ?? key;
+  const alias: string | undefined = Object.hasOwn(TECH_ALIASES, key)
+    ? TECH_ALIASES[key]
+    : undefined;
+  return alias ?? key;
 }

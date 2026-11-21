@@ -17,8 +17,8 @@ export const PROJECT_EDITOR_NARROW_QUERY = '(max-width: 1179.98px)' as const;
  * @description
  * Resizable split of the project form and the properties panel, remembered per viewer. The panel
  * stays between 300 and 480 px whatever the window, so that its fields keep a usable width; the form
- * keeps at least 40 % of the page. 26.5 % gives the 320 px default at 1440 px; bound to
- * `defaultSize` as `'<n>px'` from `readPixels`, the panel opens at 320 px on every window and keeps
+ * keeps at least 40 % of the page. 26.5 % stays close to the 352 px default at 1440 px; bound to
+ * `defaultSize` as `'<n>px'` from `readPixels`, the panel opens at 352 px on every window and keeps
  * its width when the window changes (`pixels`). A stored percentage layout is clamped to the bounds.
  */
 export const PROJECT_EDITOR_LAYOUT = {
@@ -28,5 +28,5 @@ export const PROJECT_EDITOR_LAYOUT = {
     { min: 40, max: 90 },
     { min: '300px', max: '480px' },
   ],
-  pixels: { index: 1, default: 320 },
+  pixels: { index: 1, default: 352 },
 } as const satisfies ResizableLayout;

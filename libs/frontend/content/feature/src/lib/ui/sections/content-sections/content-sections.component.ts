@@ -10,7 +10,7 @@ import { SkillsSectionComponent } from '@internal/content-web-feature/lib/ui/sec
  * @class ContentSectionsComponent
  *
  * @description
- * Composes the public home page content sections in projects, journey, skills and FAQ order.
+ * Composes the home page projects, journey, skills and FAQ in their public order.
  * The FAQ, last before the contact and only when the snapshot holds a question, is prerendered and
  * hydrated on approach like the contact section (D16, D22), which keeps its accordion out of the
  * initial bundle.

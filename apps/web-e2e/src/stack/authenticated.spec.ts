@@ -11,12 +11,12 @@ import {
 import { stackTotp } from '@internal/web-e2e/support/stack';
 
 /**
- * Interface StackProjectSummary
+ * Interface StackArticleSummary
  *
  * @description
  * Seeded project fields used by browser acceptance to select editor targets.
  */
-interface StackProjectSummary {
+interface StackArticleSummary {
   id: string;
   title: { fr: string };
   version: number;
@@ -115,9 +115,11 @@ test.describe('isolated stack acceptance @stack', (): void => {
     // The administration lands on the « Tableau de bord » (D47).
     await expect(page).toHaveURL(/\/admin\/dashboard$/);
     await expect(page.getByRole('heading', { name: 'Tableau de bord', exact: true })).toBeVisible();
+    await expect(page.getByRole('tabpanel', { name: 'Search Console' })).toHaveCSS('opacity', '1');
     await assertAdminAccessibility(page);
     await page.goto('/admin/projects');
-    await expect(page.getByRole('heading', { name: /^Projets(?:\s|$)/ })).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/articles$/);
+    await expect(page.getByRole('heading', { name: /^Articles(?:\s|$)/ })).toBeVisible();
     await assertAdminAccessibility(page);
     const session: APIResponse<unknown> = await page.request.post('/api/auth/refresh', {
       headers: { 'x-csrf': '1' },
@@ -128,31 +130,26 @@ test.describe('isolated stack acceptance @stack', (): void => {
       authorization: `Bearer ${token}`,
       'x-csrf': '1',
     };
-    const redirect: APIResponse<unknown> = await page.request.get('/api/content/admin/projects', {
+    const listed: APIResponse<unknown> = await page.request.get('/api/content/admin/articles', {
       headers,
       maxRedirects: 0,
     });
-    expect(redirect.status()).toBe(301);
-    expect(redirect.headers()['location']).toBe('/api/content/admin/projects/');
-    const listed: APIResponse<unknown> = await page.request.get('/api/content/admin/projects', {
-      headers,
-    });
     expect(listed.status()).toBe(200);
-    const projects: StackProjectSummary[] = (
+    const articles: StackArticleSummary[] = (
       (await listed.json()) as {
-        member: StackProjectSummary[];
+        member: StackArticleSummary[];
       }
     ).member;
-    const first: StackProjectSummary | undefined = projects[0];
-    const second: StackProjectSummary | undefined = projects[1];
+    const first: StackArticleSummary | undefined = articles[0];
+    const second: StackArticleSummary | undefined = articles[1];
     expect(first).toBeDefined();
     expect(second).toBeDefined();
-    if (!first || !second) throw new Error('Seed must provide two projects.');
-    await page.goto(`/admin/projects/${first.id}`);
+    if (!first || !second) throw new Error('Seed must provide two articles.');
+    await page.goto(`/admin/articles/${first.id}`);
     await expect(page.getByRole('heading', { name: first.title.fr, exact: true })).toBeVisible();
     await page.keyboard.press('ControlOrMeta+k');
     await page.getByRole('option', { name: second.title.fr, exact: false }).click();
-    await expect(page).toHaveURL(new RegExp(`/admin/projects/${second.id}$`));
+    await expect(page).toHaveURL(new RegExp(`/admin/articles/${second.id}$`));
     await expect(page.getByRole('heading', { name: second.title.fr, exact: true })).toBeVisible();
 
     const titleField: Locator = page.getByRole('textbox', {
@@ -160,16 +157,16 @@ test.describe('isolated stack acceptance @stack', (): void => {
       exact: true,
     });
     await titleField.fill(`${second.title.fr} draft`);
-    await page.getByRole('link', { name: 'Tous les projets', exact: true }).click();
+    await page.getByRole('link', { name: 'Tous les articles', exact: true }).click();
     const discard: Locator = page.getByRole('alertdialog', { name: 'Quitter sans enregistrer ?' });
     await expect(discard).toBeVisible();
     await discard.getByRole('button', { name: 'Continuer la modification', exact: true }).click();
     await expect(titleField).toHaveValue(`${second.title.fr} draft`);
-    await page.getByRole('link', { name: 'Tous les projets', exact: true }).click();
+    await page.getByRole('link', { name: 'Tous les articles', exact: true }).click();
     await discard.getByRole('button', { name: 'Quitter', exact: true }).click();
-    await expect(page).toHaveURL(/\/admin\/projects$/);
+    await expect(page).toHaveURL(/\/admin\/articles$/);
 
-    await page.goto(`/admin/projects/${first.id}`);
+    await page.goto(`/admin/articles/${first.id}`);
     const editorTitle: Locator = page.getByRole('textbox', {
       name: 'Titre en français',
       exact: true,
@@ -182,12 +179,36 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await page.getByRole('button', { name: 'Enregistrer', exact: false }).click();
     await expect(page.getByText('Utilisez une URL HTTPS valide.', { exact: true })).toBeVisible();
     await siteUrl.fill(initialUrl);
+    const category: Locator = page.locator('#article-category-choice');
+    await category.click();
+    await page.getByRole('option', { name: 'Nouvelle catégorie', exact: true }).click();
+    await expect(page.locator('#article-category-fr')).toHaveValue('');
+    await category.click();
+    await page.getByRole('option', { name: 'Projets', exact: true }).click();
+    await expect(page.locator('#article-category-fr')).toHaveValue('Projets');
+    await expect(page.locator('#edit-techs')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Modifier Vue.js', exact: true })).toBeVisible();
+    const frenchTags: Locator = page.locator('input[id^="article-tag-fr-"]');
+    const englishTags: Locator = page.locator('input[id^="article-tag-en-"]');
+
+    await expect(frenchTags).toHaveCount(0);
+    const tags: Locator = page.getByRole('combobox', { name: 'Rechercher un tag', exact: true });
+    await tags.fill('Node.js');
+    await page.getByRole('option', { name: 'Node.js', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Modifier Node.js', exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Ajouter un tag', exact: true }).click();
+    await expect(frenchTags).toHaveCount(1);
+    await expect(englishTags).toHaveCount(1);
+    await frenchTags.fill('Validation locale');
+    await englishTags.fill('Local verification');
     const updatedTitle: string = `${first.title.fr} acceptance`;
     await editorTitle.fill(updatedTitle);
     const uiSave: Promise<Response> = page.waitForResponse(
       (response: Response): boolean =>
-        response.url().endsWith(`/api/content/admin/projects/${first.id}`) &&
+        response.url().endsWith(`/api/content/admin/articles/${first.id}`) &&
         response.request().method() === 'PUT',
+      { timeout: 15_000 },
     );
     await page.getByRole('button', { name: 'Enregistrer', exact: false }).click();
     expect((await uiSave).status()).toBe(200);
@@ -195,10 +216,19 @@ test.describe('isolated stack acceptance @stack', (): void => {
     await expect(page.getByText('Tout est enregistré', { exact: true })).toBeVisible();
 
     const current: APIResponse<unknown> = await page.request.get(
-      `/api/content/admin/projects/${first.id}`,
+      `/api/content/admin/articles/${first.id}`,
       { headers },
     );
-    const project: Record<string, unknown> = (await current.json()) as Record<string, unknown>;
+    const article: Record<string, unknown> = (await current.json()) as Record<string, unknown>;
+    expect(article['techs']).toEqual([]);
+    expect(article['taxonomy']).toMatchObject({
+      category: { key: 'projects' },
+      tags: expect.arrayContaining([
+        expect.objectContaining({ key: 'vue' }),
+        expect.objectContaining({ key: 'nodejs' }),
+        expect.objectContaining({ label: { fr: 'Validation locale', en: 'Local verification' } }),
+      ]),
+    });
     const fields: string[] = [
       'title',
       'summary',
@@ -213,30 +243,31 @@ test.describe('isolated stack acceptance @stack', (): void => {
       'article',
       'cover',
       'seo',
+      'taxonomy',
     ];
     const revision: Record<string, unknown> = Object.fromEntries(
-      fields.map((field: string): [string, unknown] => [field, project[field]]),
+      fields.map((field: string): [string, unknown] => [field, article[field]]),
     );
-    const version: string = String(project['version']);
+    const version: string = String(article['version']);
     const externalTitle: string = `${first.title.fr} external revision`;
     const saved: APIResponse<unknown> = await page.request.put(
-      `/api/content/admin/projects/${first.id}`,
+      `/api/content/admin/articles/${first.id}`,
       {
         headers: { ...headers, 'if-match': `"${version}"` },
-        data: { ...revision, title: { ...(project['title'] as object), fr: externalTitle } },
+        data: { ...revision, title: { ...(article['title'] as object), fr: externalTitle } },
       },
     );
     expect(saved.status()).toBe(200);
     await editorTitle.fill(`${first.title.fr} stale draft`);
     const staleSave: Promise<Response> = page.waitForResponse(
       (response: Response): boolean =>
-        response.url().endsWith(`/api/content/admin/projects/${first.id}`) &&
+        response.url().endsWith(`/api/content/admin/articles/${first.id}`) &&
         response.request().method() === 'PUT',
     );
     await page.getByRole('button', { name: 'Enregistrer', exact: false }).click();
     expect((await staleSave).status()).toBe(412);
     await expect(
-      page.getByText('Le projet a été modifié ailleurs depuis son ouverture.', { exact: true }),
+      page.getByText('L’article a été modifié ailleurs depuis son ouverture.', { exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'Recharger', exact: true }).click();
     await expect(editorTitle).toHaveValue(externalTitle);
@@ -247,7 +278,7 @@ test.describe('isolated stack acceptance @stack', (): void => {
       .click();
     await expect(page.getByText('Retiré du site public.', { exact: true })).toBeVisible();
     const publication: Promise<Response> = page.waitForResponse((response: Response): boolean =>
-      response.url().endsWith(`/api/content/admin/projects/${first.id}/publish`),
+      response.url().endsWith(`/api/content/admin/articles/${first.id}/publish`),
     );
     await page.getByRole('button', { name: 'Publier', exact: true }).click();
     expect((await publication).status()).toBe(200);

@@ -1,3 +1,4 @@
+import { ContentListPageComponent } from '@internal/content-web-feature/lib/ui/pages/content-list-page/content-list-page.component';
 import { LOCALE_ID } from '@angular/core';
 import { DeferBlockState, TestBed, type ComponentFixture } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
@@ -6,9 +7,11 @@ import {
   Router,
   Scroll,
   provideRouter,
+  withComponentInputBinding,
   type Event as RouterEvent,
   type Route,
 } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import {
   CONTENT_SNAPSHOTS,
   provideContentSnapshots,
@@ -290,7 +293,8 @@ describe('ProjectPageComponent', (): void => {
     expect(root.querySelector('#resultat img')?.getAttribute('alt')).toBe(
       'Écran du tableau de bord',
     );
-    expect(root.querySelector('nav a[href="/projects/library-trails"]')).not.toBeNull();
+    expect(root.querySelector('nav a[href="/articles/library-trails"]')).not.toBeNull();
+    expect(root.querySelector('a[href="/articles?category=projects"]')).not.toBeNull();
     expect(TestBed.inject<Title>(Title).getTitle()).toBe('CRM — Valentin Fortin');
   });
 
@@ -299,7 +303,7 @@ describe('ProjectPageComponent', (): void => {
     const head: HTMLHeadElement = document.head;
     expect(head.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('Résumé.');
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://valentin-fortin.pro/fr/projects/library-trails',
+      'https://valentin-fortin.pro/fr/articles/library-trails',
     );
     expect(head.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
       `https://valentin-fortin.pro${COVER.src}`,
@@ -310,7 +314,7 @@ describe('ProjectPageComponent', (): void => {
     expect(TestBed.inject<Title>(Title).getTitle()).toBe('Solo, projet seul');
     expect(head.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
     expect(head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://valentin-fortin.pro/fr/projects/solo',
+      'https://valentin-fortin.pro/fr/articles/solo',
     );
     expect(head.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(1);
     expect(head.querySelector('meta[property="og:image"]')).toBeNull();
@@ -536,7 +540,7 @@ describe('ProjectPageComponent', (): void => {
 describe('CONTENT_ROUTES', (): void => {
   it('loads the case study page on demand', async (): Promise<void> => {
     const route: Route | undefined = CONTENT_ROUTES.find(
-      (r): boolean => r.path === 'projects/:slug',
+      (r): boolean => r.path === 'articles/:slug',
     );
     await expect(route?.loadComponent?.()).resolves.toBe(ProjectPageComponent);
   });
@@ -567,3 +571,123 @@ interface ProjectSnapshotFixture {
   cover: typeof COVER | null;
   seo: { title: string | null; description: string | null; keywords: string[] };
 }
+
+describe('public collection previews', (): void => {
+  it('limits the homepage to four projects and links to the full collection', async (): Promise<void> => {
+    TestBed.overrideProvider(CONTENT_SNAPSHOTS, {
+      useValue: {
+        fr: {
+          ...snapshot,
+          projects: Array.from({ length: 7 }, (_, index) => ({
+            ...snapshot.projects[0],
+            slug: `project-${index}`,
+            featured: index === 0,
+          })),
+        },
+      },
+    });
+    const fixture: ComponentFixture<ContentSectionsComponent> =
+      TestBed.createComponent(ContentSectionsComponent);
+    await fixture.whenStable();
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelectorAll('#projects content-project-card')).toHaveLength(4);
+    expect(root.querySelector('#projects a[href="/articles?category=projects"]')).not.toBeNull();
+  });
+});
+
+it('restores search and valid facets from an article list URL', async (): Promise<void> => {
+  TestBed.configureTestingModule({
+    providers: [provideRouter(CONTENT_ROUTES, withComponentInputBinding())],
+  });
+  TestBed.overrideProvider(CONTENT_SNAPSHOTS, {
+    useValue: {
+      fr: {
+        ...snapshot,
+        articles: [
+          {
+            ...snapshot.projects[0],
+            slug: 'angular-notes',
+            title: 'Angular notes',
+            taxonomy: {
+              category: { key: 'engineering', label: 'Engineering' },
+              tags: [{ key: 'angular', label: 'Angular' }],
+            },
+          },
+          {
+            ...snapshot.projects[0],
+            slug: 'design-notes',
+            title: 'Design notes',
+            taxonomy: {
+              category: { key: 'design', label: 'Design' },
+              tags: [{ key: 'angular', label: 'Angular' }],
+            },
+          },
+        ],
+      },
+    },
+  });
+  const harness: RouterTestingHarness = await RouterTestingHarness.create();
+  await harness.navigateByUrl(
+    '/articles?q=ANGULAR&category=engineering&category=missing&tag=angular',
+    ContentListPageComponent,
+  );
+  const root: HTMLElement | null = harness.routeNativeElement;
+  if (!root) throw new Error('Article collection was not rendered');
+  expect(root.querySelector<HTMLInputElement>('input[type="search"]')?.value).toBe('ANGULAR');
+  expect(root.querySelectorAll('[data-slot="data-table-filter-chip"]')).toHaveLength(2);
+  expect(root.querySelectorAll('content-project-card')).toHaveLength(1);
+  expect(root.querySelector('content-project-card a')?.getAttribute('href')).toBe(
+    '/articles/angular-notes',
+  );
+});
+
+it('counts the results and writes each filter change in the URL', async (): Promise<void> => {
+  TestBed.configureTestingModule({
+    providers: [provideRouter(CONTENT_ROUTES, withComponentInputBinding())],
+  });
+  TestBed.overrideProvider(CONTENT_SNAPSHOTS, {
+    useValue: {
+      fr: {
+        ...snapshot,
+        articles: ['angular', 'design'].map((key: string) => ({
+          ...snapshot.projects[0],
+          slug: `${key}-notes`,
+          title: `${key} notes`,
+          taxonomy: {
+            category: { key, label: key },
+            tags: [{ key: 'angular', label: 'Angular' }],
+          },
+        })),
+      },
+    },
+  });
+  const harness: RouterTestingHarness = await RouterTestingHarness.create();
+  await harness.navigateByUrl('/articles?q=nothing', ContentListPageComponent);
+  const root: HTMLElement | null = harness.routeNativeElement;
+  if (!root) throw new Error('Article collection was not rendered');
+  const router: Router = TestBed.inject(Router);
+  const status = (): HTMLElement | null => root.querySelector('p[role="status"]');
+  // No result: the count is kept for assistive technologies only.
+  expect(status()?.classList).toContain('sr-only');
+
+  const search: HTMLInputElement | null = root.querySelector('input[type="search"]');
+  if (!search) throw new Error('The search input is missing.');
+  search.value = 'notes';
+  search.dispatchEvent(new Event('input', { bubbles: true }));
+  await harness.fixture.whenStable();
+  expect(status()?.textContent?.trim()).toBe('2 articles');
+  expect(router.url).toBe('/articles?q=notes');
+
+  search.value = 'design';
+  search.dispatchEvent(new Event('input', { bubbles: true }));
+  await harness.fixture.whenStable();
+  expect(status()?.textContent?.trim()).toBe('1 article');
+
+  await harness.navigateByUrl('/articles?tag=angular', ContentListPageComponent);
+  const chip: HTMLButtonElement | null = root.querySelector(
+    '[data-slot="data-table-filter-chip"] button',
+  );
+  chip?.click();
+  await harness.fixture.whenStable();
+  expect(router.url).toBe('/articles');
+});

@@ -11,7 +11,8 @@ import type { ArticleCodeTokenKind } from '@vfortin/content-web-model';
  * `codeBlock` is a whole code box (the editor's `<pre>`); the public page frames its code in
  * `codeFrame`, a header row (language, copy button and status) above `codePre`. `codeTokens` colours
  * the highlighted runs by kind with text tokens of 4.5:1 or more on `surface-raised` in both themes
- * (the light aurora cyan, 4.3:1, is left out).
+ * (the light aurora cyan, 4.3:1, is left out). Code boxes span the whole article column; the text keeps
+ * its reading measure.
  */
 export const ARTICLE_TYPOGRAPHY = {
   flow: 'flex flex-col gap-4',
@@ -27,8 +28,8 @@ export const ARTICLE_TYPOGRAPHY = {
   blockquote:
     'flex max-w-measure flex-col gap-3 border-l-2 border-border-strong pl-6 text-fg-muted',
   codeBlock:
-    'max-w-measure overflow-x-auto rounded-xl bg-surface-raised p-5 font-mono text-[13px]/6 text-fg',
-  codeFrame: 'flex max-w-measure flex-col overflow-hidden rounded-xl bg-surface-raised',
+    'w-full overflow-x-auto rounded-xl bg-surface-raised p-5 font-mono text-[13px]/6 text-fg',
+  codeFrame: 'flex w-full flex-col overflow-hidden rounded-xl bg-surface-raised',
   codeHeader: 'flex min-h-10 items-center gap-3 border-b border-border py-1.5 pr-1.5 pl-5',
   codeLanguage: 'font-mono text-xs/5 text-fg-muted',
   codeStatus: 'ml-auto text-xs/5 text-fg-muted',

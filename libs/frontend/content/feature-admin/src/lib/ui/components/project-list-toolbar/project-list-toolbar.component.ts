@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, type InputSignal } from '@angular/core';
 import { SidebarTriggerComponent } from '@vfortin/ui';
 
 /**
@@ -21,10 +21,10 @@ import { SidebarTriggerComponent } from '@vfortin/ui';
       class="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] text-[13px] @max-[640px]:px-4"
     >
       <ui-sidebar-trigger class="-ml-2" />
-      <span class="font-medium text-fg" aria-current="page" i18n="@@admin.projects.title"
-        >Projets</span
-      >
+      <span class="font-medium text-fg" aria-current="page">{{ label() }}</span>
     </header>
   `,
 })
-export class ProjectListToolbarComponent {}
+export class ProjectListToolbarComponent {
+  public readonly label: InputSignal<string> = input($localize`:@@admin.projects.title:Articles`);
+}

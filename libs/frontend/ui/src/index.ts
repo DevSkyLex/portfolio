@@ -77,6 +77,7 @@ export * from '@internal/ui/lib/data-table/models/data-table/data-table-cell-con
 export * from '@internal/ui/lib/data-table/models/data-table/data-table-column.interface';
 export * from '@internal/ui/lib/data-table/models/data-table/data-table-sort.interface';
 export * from '@internal/ui/lib/data-table/data-table.component';
+export * from '@internal/ui/lib/data-table/components/data-table-filter-bar/data-table-filter-bar.component';
 export * from '@internal/ui/lib/data-table/components/data-table-empty-cell/data-table-empty-cell.component';
 export * from '@internal/ui/lib/data-table/utils/data-table/data-table.utils';
 export * from '@internal/ui/lib/data-table/models/data-table/sort-direction.type';
@@ -87,6 +88,7 @@ export * from '@internal/ui/lib/data-table/models/data-table/data-table-empty-la
 export * from '@internal/ui/lib/data-table/models/data-table/data-table-state.interface';
 export * from '@internal/ui/lib/data-table/models/data-table/data-table-facet.interface';
 export * from '@internal/ui/lib/data-table/models/data-table/data-table-facet-option.interface';
+export * from '@internal/ui/lib/data-table/models/data-table/data-table-facet-view.interface';
 export * from '@internal/ui/lib/data-table/models/data-table/data-table-density.type';
 export * from '@internal/ui/lib/data-table/models/data-table/data-table-labels.interface';
 export * from '@internal/ui/lib/data-table/models/data-table/data-table-search-predicate.type';

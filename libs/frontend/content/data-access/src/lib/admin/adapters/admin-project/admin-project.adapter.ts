@@ -73,6 +73,8 @@ function documentView(document: EditableArticleDocumentDto): ArticleDocumentDraf
  */
 export function toAdminProject(dto: AdminProjectDto): AdminProject {
   return {
+    ...(dto.kind === undefined ? {} : { kind: dto.kind }),
+    ...(dto.taxonomy === undefined ? {} : { taxonomy: structuredClone(dto.taxonomy) }),
     id: dto.id,
     slug: dto.slug,
     status: dto.status,

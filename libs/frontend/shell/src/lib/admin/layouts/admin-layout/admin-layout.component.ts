@@ -7,8 +7,10 @@ import {
   DestroyRef,
   LOCALE_ID,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -234,44 +236,13 @@ import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/co
               </a>
             }
           </nav>
-          @if (inboxSummary.callState().error) {
-            <p
-              role="alert"
-              class="text-xs text-danger-ink group-data-collapsed/sidebar:sr-only @max-[1024px]:order-last"
-              i18n="@@admin.shell.inboxUnavailable"
-            >
-              Nombre de messages indisponible.
-            </p>
-            <button
-              uiBtn
-              variant="ghost"
-              size="xs"
-              type="button"
-              class="self-start group-data-collapsed/sidebar:w-8 group-data-collapsed/sidebar:px-0 @max-[1024px]:order-last"
-              uiTooltip="Réessayer le compteur"
-              i18n-uiTooltip="@@admin.shell.inboxRetry"
-              tooltipPosition="right"
-              [tooltipDisabled]="!rail()"
-              (click)="inboxSummary.refresh()"
-            >
-              <ng-icon
-                class="hidden group-data-collapsed/sidebar:block"
-                [svg]="icons.retry"
-                size="14"
-                aria-hidden="true"
-              />
-              <span class="group-data-collapsed/sidebar:sr-only" i18n="@@admin.shell.inboxRetry"
-                >Réessayer le compteur</span
-              >
-            </button>
-          }
           @if (projectNavigation.callState().error) {
             <p
               role="alert"
               class="text-xs text-danger-ink group-data-collapsed/sidebar:sr-only @max-[1024px]:order-last"
               i18n="@@admin.shell.projectsUnavailable"
             >
-              Recherche de projets indisponible.
+              Recherche d’articles indisponible.
             </p>
             <button
               uiBtn
@@ -279,7 +250,7 @@ import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/co
               size="xs"
               type="button"
               class="self-start group-data-collapsed/sidebar:w-8 group-data-collapsed/sidebar:px-0 @max-[1024px]:order-last"
-              uiTooltip="Réessayer les projets"
+              uiTooltip="Réessayer les articles"
               i18n-uiTooltip="@@admin.shell.projectsRetry"
               tooltipPosition="right"
               [tooltipDisabled]="!rail()"
@@ -292,7 +263,7 @@ import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/co
                 aria-hidden="true"
               />
               <span class="group-data-collapsed/sidebar:sr-only" i18n="@@admin.shell.projectsRetry"
-                >Réessayer les projets</span
+                >Réessayer les articles</span
               >
             </button>
           }
@@ -483,7 +454,7 @@ export class AdminLayoutComponent {
    * @readonly
    *
    * @description
-   * Application-wide toasts shown by the layout's toaster; reports a logout that was not confirmed.
+   * Application-wide notifications shown by the layout's toaster.
    *
    * @type {ToastService}
    */
@@ -872,6 +843,23 @@ export class AdminLayoutComponent {
       .subscribe(() => {
         void this.inboxSummary.refresh();
       });
+    effect((onCleanup): void => {
+      if (!this.inboxSummary.callState().error) return;
+      const id: string = untracked(() =>
+        this.toasts.error(
+          $localize`:@@admin.shell.inboxUnavailable:Nombre de messages indisponible.`,
+          {
+            action: {
+              label: $localize`:@@admin.shell.inboxRetry:Réessayer`,
+              onClick: (): void => {
+                void this.inboxSummary.refresh();
+              },
+            },
+          },
+        ),
+      );
+      onCleanup((): void => this.toasts.dismiss(id));
+    });
     const destroyRef: DestroyRef = inject<DestroyRef>(DestroyRef);
     this.watchWidth(destroyRef);
     this.watchScrollbar(destroyRef);

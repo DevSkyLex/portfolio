@@ -6,10 +6,10 @@ import type { DataTableState } from '@internal/ui/lib/data-table/models/data-tab
  * @description
  * Whether the search or a facet narrows the rows.
  *
- * @param {DataTableState} state - Table state.
+ * @param {Pick<DataTableState, 'search' | 'facets'>} state - Search and facet state.
  * @returns {boolean} Whether a filter is active.
  */
-export function hasActiveFilters(state: DataTableState): boolean {
+export function hasActiveFilters(state: Pick<DataTableState, 'search' | 'facets'>): boolean {
   return !!state.search.trim() || Object.values(state.facets).some((values) => values.length > 0);
 }
 

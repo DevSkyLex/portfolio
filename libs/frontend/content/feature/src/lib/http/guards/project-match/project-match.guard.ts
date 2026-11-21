@@ -5,5 +5,5 @@ import { loadSiteContent } from '@vfortin/content-web-data-access';
 export const projectMatchGuard: CanMatchFn = (_route, segments) =>
   loadSiteContent().then((content): boolean => {
     const slug: string | undefined = segments[1]?.path;
-    return slug !== undefined && content.project(slug) !== null;
+    return slug !== undefined && content.publication(slug) !== null;
   });

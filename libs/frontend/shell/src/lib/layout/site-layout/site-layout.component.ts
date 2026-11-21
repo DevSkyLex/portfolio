@@ -112,8 +112,10 @@ export class SiteLayoutComponent {
    * @readonly
    *
    * @description
-   * Localized in-page sections and the hue underlining the current one in the header, in page order; the
-   * FAQ is listed only while the snapshot holds a question (its section renders nothing otherwise).
+   * Localized sections of the home page and the hue underlining the current one in the header, in page
+   * order, every one an anchor followed by the scroll spy; the FAQ is listed only while the snapshot
+   * holds a question (its section renders nothing otherwise). The header splits them: the sections,
+   * then the articles page, then the contact as its action.
    *
    * @type {Signal<readonly NavItem[]>}
    */
@@ -150,6 +152,21 @@ export class SiteLayoutComponent {
       ].filter((item: NavItem): boolean => !item.optional || optional.includes(item.fragment));
     },
   );
+
+  /** Sections of the home page listed before the articles page: every one but the contact. */
+  protected readonly homeSections: Signal<readonly NavItem[]> = computed<readonly NavItem[]>(
+    (): readonly NavItem[] =>
+      this.nav().filter((item: NavItem): boolean => item.fragment !== 'contact'),
+  );
+
+  /** The contact section, the last entry of every navigation and the header's action. */
+  protected readonly contact: Signal<NavItem | undefined> = computed<NavItem | undefined>(
+    (): NavItem | undefined =>
+      this.nav().find((item: NavItem): boolean => item.fragment === 'contact'),
+  );
+
+  /** Label of the articles page, the one entry of the navigation that is a page of its own (D58). */
+  protected readonly articlesLabel: string = $localize`:@@nav.articles:Articles`;
 
   /**
    * Property links

@@ -145,11 +145,18 @@ describe('SiteLayoutComponent', () => {
       [...doc.querySelectorAll<HTMLAnchorElement>('#footer-nav + ul a')].map(
         (link: HTMLAnchorElement): string => link.getAttribute('href') ?? '',
       );
-    expect(fragments()).toEqual(['/#projects', '/#journey', '/#skills', '/#contact']);
+    expect(fragments()).toEqual(['/#projects', '/#journey', '/#skills', '/articles', '/#contact']);
 
     TestBed.inject(SiteSectionsService).publish(['faq']);
     await harness.fixture.whenStable();
-    expect(fragments()).toEqual(['/#projects', '/#journey', '/#skills', '/#faq', '/#contact']);
+    expect(fragments()).toEqual([
+      '/#projects',
+      '/#journey',
+      '/#skills',
+      '/#faq',
+      '/articles',
+      '/#contact',
+    ]);
     expect(doc.querySelector('#footer-nav + ul a[href="/#faq"]')?.textContent?.trim()).toBe('FAQ');
   });
 
@@ -374,7 +381,7 @@ describe('admin area', () => {
       providers: [
         // The French build, whose « Voir le site » opens `/` (the English one opens `/en/`).
         { provide: LOCALE_ID, useValue: 'fr' },
-        provideRouter([{ path: 'admin/projects/:id', children: [] }]),
+        provideRouter([{ path: 'admin/articles/:id', children: [] }]),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideAdminInboxSummary(),
@@ -414,7 +421,7 @@ describe('admin area', () => {
     };
     expect(press().defaultPrevented).toBe(true);
     press();
-    backend.expectOne('/api/content/admin/projects').flush({
+    backend.expectOne('/api/content/admin/articles').flush({
       member: [
         {
           id: 'p1',
@@ -447,13 +454,18 @@ describe('admin area', () => {
     item('Library Trails')?.click();
     await flush();
     await fixture.whenStable();
-    expect(TestBed.inject<Router>(Router).url).toBe('/admin/projects/p1');
+    expect(TestBed.inject<Router>(Router).url).toBe('/admin/articles/p1');
     expect(palette()).toBeNull();
     unread().flush(null, { status: 500, statusText: 'Server Error' });
     await flush();
     await fixture.whenStable();
     expect(root.querySelector('nav')?.textContent).not.toContain('non lu');
-    expect(root.textContent).toContain('Nombre de messages indisponible.');
+    expect(root.querySelector('aside')?.textContent).not.toContain(
+      'Nombre de messages indisponible.',
+    );
+    expect(root.querySelector('ui-toaster [role="alert"]')?.textContent).toContain(
+      'Nombre de messages indisponible.',
+    );
 
     const open: Mock<
       ((url?: string | URL, target?: string, features?: string) => WindowProxy | null) &
@@ -463,7 +475,7 @@ describe('admin area', () => {
       .find((b) => b.textContent?.includes('Rechercher'))
       ?.click();
     backend
-      .expectOne('/api/content/admin/projects')
+      .expectOne('/api/content/admin/articles')
       .flush(null, { status: 500, statusText: 'Server Error' });
     await flush();
     await fixture.whenStable();
@@ -550,6 +562,8 @@ describe('admin area', () => {
       '',
       'dashboard',
       'projects',
+      'projects/:id',
+      'articles',
       'experiences',
       'education',
       'faq',

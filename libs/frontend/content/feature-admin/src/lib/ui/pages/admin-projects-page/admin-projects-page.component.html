@@ -1,22 +1,24 @@
-<content-project-list-toolbar />
+<content-project-list-toolbar [label]="collectionLabel" />
 
 <ui-page-header>
   <h1 uiPageHeaderTitle>
-    <ng-container i18n="@@admin.projects.title">Projets</ng-container>
+    {{ collectionLabel }}
     @let total = store.projects().length;
     <span class="text-[14px] font-normal text-fg-faint tabular-nums" data-slot="project-count">
       {{ countLabel() }}
-      <span class="sr-only"
-        ><ng-container i18n="@@admin.projects.count.noun">{total, plural,
-          =0 {projet}
-          =1 {projet}
-          other {projets}
-        }</ng-container></span
-      ></span
+      <span class="sr-only">
+        <ng-container i18n="@@admin.articles.count.noun">{total, plural,
+          =0 {article}
+          =1 {article}
+          other {articles}
+        }</ng-container>
+      </span></span
     >
   </h1>
   <div uiPageHeaderActions>
-    <a uiBtn size="xs" routerLink="new" i18n="@@admin.projects.action.create">Nouveau projet</a>
+    <a uiBtn size="xs" routerLink="new">
+      <ng-container i18n="@@admin.article.create.title">Nouvel article</ng-container>
+    </a>
   </div>
 </ui-page-header>
 

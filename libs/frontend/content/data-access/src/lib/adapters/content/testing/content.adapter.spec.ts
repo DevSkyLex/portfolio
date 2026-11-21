@@ -81,6 +81,18 @@ const snapshot = (projects: ProjectDto[]): ContentSnapshot => ({
 });
 
 describe('toSiteContent', (): void => {
+  it('preserves the taxonomy of a published case study', (): void => {
+    const taxonomy: NonNullable<ProjectDto['taxonomy']> = {
+      category: { key: 'projects', label: 'Projets' },
+      tags: [{ key: 'architecture', label: 'Architecture' }],
+    };
+    const article: ProjectDto = {
+      ...project({ title: null, description: null, keywords: [] }),
+      taxonomy,
+    };
+    expect(toSiteContent(snapshot([article])).projects[0]?.taxonomy).toEqual(taxonomy);
+  });
+
   it('resolves the label of each public link, a written one first', (): void => {
     expect(toSiteContent(snapshot([])).profile.links).toEqual([
       {

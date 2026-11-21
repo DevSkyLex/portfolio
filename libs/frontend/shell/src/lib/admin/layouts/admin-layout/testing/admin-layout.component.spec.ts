@@ -109,7 +109,7 @@ function measureGroup(width: number): void {
 @Component({
   imports: [SidebarTriggerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<header><ui-sidebar-trigger class="-ml-2" /><span>Projets</span></header>`,
+  template: `<header><ui-sidebar-trigger class="-ml-2" /><span>Articles</span></header>`,
 })
 class PageComponent {}
 
@@ -209,8 +209,8 @@ async function openPage(): Promise<{
   root: HTMLElement;
   trigger: () => HTMLButtonElement | null;
 }> {
-  const { fixture, root } = await setup([{ path: 'admin/projects', component: PageComponent }]);
-  await TestBed.inject(Router).navigateByUrl('/admin/projects');
+  const { fixture, root } = await setup([{ path: 'admin/articles', component: PageComponent }]);
+  await TestBed.inject(Router).navigateByUrl('/admin/articles');
   await fixture.whenStable();
   return {
     fixture,
@@ -383,7 +383,7 @@ describe('AdminLayoutComponent', () => {
     expect(html.style.getPropertyValue('--admin-scrollbar')).toBe('');
   });
 
-  it('names the unread count with a real plural and retries failed sidebar loads with ghost buttons', async () => {
+  it('retries a failed unread count from its toast and restores the badge', async () => {
     const { backend, fixture, root } = await setup();
     const messages = (): HTMLAnchorElement | undefined =>
       [...root.querySelectorAll<HTMLAnchorElement>('nav a')].find((link) =>
@@ -409,13 +409,22 @@ describe('AdminLayoutComponent', () => {
       .flush(null, { status: 500, statusText: 'Server Error' });
     await flush();
     await fixture.whenStable();
+    const toastSelector: string = 'ui-toaster [data-slot="toast"][role="alert"]';
+    const toast: HTMLElement | null = root.querySelector(toastSelector);
+    expect(toast?.textContent).toContain('Nombre de messages indisponible.');
+    expect(root.querySelector('aside [role="alert"]')).toBeNull();
+    expect(messages()?.textContent?.trim()).toBe('Messages');
     const retry: HTMLButtonElement | undefined = [
-      ...root.querySelectorAll<HTMLButtonElement>('aside button'),
-    ].find((button) => button.textContent?.trim() === 'Réessayer le compteur');
-    // A catalogue ghost button; its tooltip, which names it in the rail, takes over its data-slot.
-    expect(retry?.hasAttribute('uibtn')).toBe(true);
-    expect(retry?.getAttribute('data-slot')).toBe('tooltip-trigger');
-    expect(retry?.className).toContain('h-7');
+      ...(toast?.querySelectorAll<HTMLButtonElement>('button') ?? []),
+    ].find((button) => button.textContent?.trim() === 'Réessayer');
+    retry?.click();
+    backend
+      .expectOne((r) => r.url === '/api/contact/admin/messages')
+      .flush({ member: [], totalItems: 2 });
+    await flush();
+    await fixture.whenStable();
+    expect(root.querySelector(toastSelector)).toBeNull();
+    expect(messages()?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Messages 2 non lus');
   });
 
   it('skips to the page without changing the address', async () => {
@@ -494,7 +503,7 @@ describe('AdminLayoutComponent', () => {
       'Ouvrir la palette de commandes',
       'Afficher cette aide',
       'Réduire ou déployer la barre latérale',
-      'Enregistrer un projet',
+      'Enregistrer un article',
       'Paragraphe',
       'Titre 2',
       'Titre 3',
@@ -519,7 +528,7 @@ describe('AdminLayoutComponent', () => {
       'Général',
     );
     expect([...(panel?.querySelectorAll('h3') ?? [])].map((h3) => h3.textContent)).toEqual([
-      'Projets',
+      'Articles',
       'Article',
     ]);
     const caps = (index: number): (string | null)[] =>
@@ -579,7 +588,7 @@ describe('AdminLayoutComponent', () => {
     ];
     expect(entries.map((entry) => entry.textContent?.trim())).toEqual([
       'Tableau de bord',
-      'Projets',
+      'Articles',
       'Expériences',
       'Formations',
       'FAQ',
@@ -591,7 +600,7 @@ describe('AdminLayoutComponent', () => {
     ]);
     expect(entries.map((entry) => entry.getAttribute('href'))).toEqual([
       '/admin/dashboard',
-      '/admin/projects',
+      '/admin/articles',
       '/admin/experiences',
       '/admin/education',
       '/admin/faq',
@@ -605,7 +614,7 @@ describe('AdminLayoutComponent', () => {
     expect(entries[9]?.querySelector('ng-icon')).not.toBeNull();
 
     press('k', { ctrlKey: true });
-    backend.expectOne('/api/content/admin/projects').flush({ member: [], totalItems: 0 });
+    backend.expectOne('/api/content/admin/articles').flush({ member: [], totalItems: 0 });
     await flush();
     await fixture.whenStable();
     const security: HTMLElement | undefined = [
@@ -617,7 +626,7 @@ describe('AdminLayoutComponent', () => {
   it('recalls the palette keys in a footer bar under the list, flush with the panel', async () => {
     const { backend, fixture } = await setup();
     press('k', { ctrlKey: true });
-    backend.expectOne('/api/content/admin/projects').flush({ member: [], totalItems: 0 });
+    backend.expectOne('/api/content/admin/articles').flush({ member: [], totalItems: 0 });
     await flush();
     await fixture.whenStable();
     const panel: HTMLElement | null = document.querySelector('[aria-label="Palette de commandes"]');
@@ -660,7 +669,7 @@ describe('AdminLayoutComponent', () => {
   it('opens the keyboard shortcuts help from the command palette', async () => {
     const { backend, fixture } = await setup();
     press('k', { ctrlKey: true });
-    backend.expectOne('/api/content/admin/projects').flush({ member: [], totalItems: 0 });
+    backend.expectOne('/api/content/admin/articles').flush({ member: [], totalItems: 0 });
     await flush();
     await fixture.whenStable();
     [...document.querySelectorAll<HTMLElement>('[role="option"]')]
@@ -838,12 +847,12 @@ describe('AdminLayoutComponent', () => {
     const aside: HTMLElement = root.querySelector('aside') as HTMLElement;
     expect(aside.className).toContain('group/sidebar');
     // Labels stay the accessible names, hidden visually in the rail.
-    const label: HTMLElement | null | undefined = entry('Projets')?.querySelector('span');
+    const label: HTMLElement | null | undefined = entry('Articles')?.querySelector('span');
     expect(label?.className).toContain('group-data-collapsed/sidebar:sr-only');
     expect(entry('Rechercher')?.querySelector('kbd')?.className).toContain(
       'group-data-collapsed/sidebar:hidden',
     );
-    for (const name of ['Valentin Fortin', 'Rechercher', 'Projets', 'Messages', 'Voir le site']) {
+    for (const name of ['Valentin Fortin', 'Rechercher', 'Articles', 'Messages', 'Voir le site']) {
       const bubble: Element | null = await tip(entry(name));
       expect(bubble?.firstChild?.textContent?.trim()).toBe(name);
     }
@@ -856,7 +865,7 @@ describe('AdminLayoutComponent', () => {
     // Expanded, the entries keep their visible labels and no tooltip.
     press('[');
     await fixture.whenStable();
-    expect(await tip(entry('Projets'))).toBeNull();
+    expect(await tip(entry('Articles'))).toBeNull();
     expect(badge?.textContent?.replace(/\s+/g, ' ').trim()).toBe('3 non lus');
   });
 
@@ -914,10 +923,10 @@ describe('AdminLayoutComponent', () => {
   it('loads the same admin address from the English build, and nothing for the current one', async () => {
     const loaded: string[] = watchNavigation();
     const { fixture, root } = await setup(
-      [{ path: 'admin/projects', component: PageComponent }],
+      [{ path: 'admin/articles', component: PageComponent }],
       [{ provide: LOCALE_ID, useValue: 'fr' }],
     );
-    await TestBed.inject(Router).navigateByUrl('/admin/projects?statut=publie');
+    await TestBed.inject(Router).navigateByUrl('/admin/articles?statut=publie');
     await fixture.whenStable();
     let { items } = await languageMenu(fixture, root);
     items[0]?.click();
@@ -927,7 +936,7 @@ describe('AdminLayoutComponent', () => {
     ({ items } = await languageMenu(fixture, root));
     items[1]?.click();
     await fixture.whenStable();
-    expect(loaded).toEqual(['/en/admin/projects?statut=publie']);
+    expect(loaded).toEqual(['/en/admin/articles?statut=publie']);
   });
 
   it('goes back to the French build from /en/admin, the site link following the language', async () => {

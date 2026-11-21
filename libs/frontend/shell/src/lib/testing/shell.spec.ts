@@ -136,13 +136,17 @@ beforeEach(() => {
 });
 
 describe('shell', () => {
-  it('composes the home page inside the layout, with anchor navigation', async () => {
+  it('links the home sections, the articles page and the contact action from the header', async () => {
     const harness: RouterTestingHarness = await RouterTestingHarness.create('/');
     const root: HTMLElement = harness.routeNativeElement?.ownerDocument.body ?? document.body;
     const nav: (string | null)[] = [...root.querySelectorAll('header nav a')].map((a) =>
       a.getAttribute('href'),
     );
-    expect(nav).toEqual(['/#projects', '/#journey', '/#skills', '/#contact']);
+    expect(nav).toEqual(['/#projects', '/#journey', '/#skills', '/articles', '/#contact']);
+    // The contact is the header's action, a button-styled link after the articles page.
+    expect(root.querySelector('header nav a[href="/#contact"]')?.getAttribute('data-slot')).toBe(
+      'button',
+    );
     expect(root.querySelector('main #projects')).not.toBeNull();
 
     // Deferred contact section (@defer): its anchor exists before the code loads.

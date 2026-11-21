@@ -29,6 +29,7 @@ import {
   lucideTriangleAlert,
 } from '@ng-icons/lucide';
 import type { AdminProject } from '@vfortin/content-web-data-access/admin';
+import { TechIconComponent } from '@vfortin/content-web-ui';
 import {
   BadgeDirective,
   ButtonDirective,
@@ -46,6 +47,7 @@ import {
   TooltipDirective,
   type DataTableColumn,
   type DataTableFacet,
+  type DataTableFacetOption,
   type DataTableLabels,
   type DataTableSearchPredicate,
   type DataTableState,
@@ -60,6 +62,7 @@ import { missingLabel } from '@internal/content-web-feature-admin/lib/utils/miss
 import { orderProjects } from '@internal/content-web-feature-admin/lib/utils/order-projects/order-projects.utils';
 import { matchesProjectSearch } from '@internal/content-web-feature-admin/lib/utils/project-search/project-search.utils';
 import { projectPublicPath } from '@internal/content-web-feature-admin/lib/utils/project-public-path/project-public-path.utils';
+import { localizedArticleTags } from '@internal/content-web-feature-admin/lib/utils/article-tags/article-tags.utils';
 
 /**
  * Component ProjectListDataviewComponent
@@ -93,6 +96,7 @@ import { projectPublicPath } from '@internal/content-web-feature-admin/lib/utils
     NgIcon,
     RouterLink,
     SelectionBarComponent,
+    TechIconComponent,
     TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -101,6 +105,7 @@ import { projectPublicPath } from '@internal/content-web-feature-admin/lib/utils
   templateUrl: './project-list-dataview.component.html',
 })
 export class ProjectListDataviewComponent {
+  protected readonly collectionLabel: string = $localize`:@@admin.articles.title:Articles`;
   // #region Properties
   /**
    * Property projects
@@ -242,18 +247,39 @@ export class ProjectListDataviewComponent {
    * @readonly
    *
    * @description
-   * Status, home-page and completeness filters.
+   * Status, home-page, completeness and dynamically labelled tag filters.
    *
    * @type {readonly DataTableFacet<AdminProject>[]}
    */
-  protected readonly facets: readonly DataTableFacet<AdminProject>[] = PROJECT_TABLE_FACETS;
+  protected readonly facets: Signal<readonly DataTableFacet<AdminProject>[]> = computed(() => {
+    const labels: Map<string, string> = new Map();
+    for (const row of this.rows()) {
+      for (const tag of this.tagsFor(row)) if (!labels.has(tag.key)) labels.set(tag.key, tag.label);
+    }
+    const options: DataTableFacetOption[] = [...labels].map(([value, label]) => ({ value, label }));
+    options.sort((left, right) => left.label.localeCompare(right.label, this.localeId));
+    return PROJECT_TABLE_FACETS.map((facet) =>
+      facet.id === 'tag' ? { ...facet, options } : facet,
+    );
+  });
+
+  protected tagsFor(project: AdminProject): ReturnType<typeof localizedArticleTags> {
+    return localizedArticleTags(project, this.localeId.startsWith('en') ? 'en' : 'fr');
+  }
+
+  protected additionalTagLabels(tags: ReturnType<typeof localizedArticleTags>): string {
+    return tags
+      .slice(2)
+      .map((tag) => tag.label)
+      .join(', ');
+  }
 
   /**
    * Property search
    * @readonly
    *
    * @description
-   * Every word in a title, the slug or a technology, accents ignored.
+   * Every word in a title, the slug or a tag, accents ignored.
    *
    * @type {DataTableSearchPredicate<AdminProject>}
    */
@@ -281,10 +307,10 @@ export class ProjectListDataviewComponent {
    * @type {Partial<DataTableLabels>}
    */
   protected readonly labels: Partial<DataTableLabels> = {
-    searchLabel: $localize`:@@admin.projects.table.searchLabel:Rechercher un projet`,
-    noResults: $localize`:@@admin.projects.table.noResults:Aucun projet trouvé`,
-    noResultsHint: $localize`:@@admin.projects.table.noResultsHint:Aucun projet ne correspond à la recherche ou aux filtres.`,
-    loading: $localize`:@@admin.projects.table.loading:Chargement des projets…`,
+    searchLabel: $localize`:@@admin.projects.table.searchLabel:Rechercher un article`,
+    noResults: $localize`:@@admin.projects.table.noResults:Aucun article trouvé`,
+    noResultsHint: $localize`:@@admin.projects.table.noResultsHint:Aucun article ne correspond à la recherche ou aux filtres.`,
+    loading: $localize`:@@admin.projects.table.loading:Chargement des articles…`,
   };
 
   /**
