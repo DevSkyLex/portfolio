@@ -260,11 +260,13 @@ test.describe('isolated stack acceptance @stack', (): void => {
     const content: string = `Acceptance message ${Date.now()}: please verify delivery to the local inbox.`;
     await page.goto('/#contact');
     // The contact section is deferred until its placeholder approaches the viewport.
+    const contact: Locator = page.getByRole('form', { name: 'Formulaire de contact' });
+    // Input typed before hydration is lost (D22): wait until the character counter reacts.
     await expect(async (): Promise<void> => {
       await page.locator('#contact').scrollIntoViewIfNeeded();
-      await expect(page.getByRole('form', { name: 'Formulaire de contact' })).toBeVisible();
+      await contact.getByRole('textbox', { name: 'Message', exact: false }).fill('Bonjour');
+      await expect(contact.getByText('7 / 2000')).toBeVisible({ timeout: 500 });
     }).toPass();
-    const contact: Locator = page.getByRole('form', { name: 'Formulaire de contact' });
     await contact.getByRole('textbox', { name: 'Nom', exact: false }).fill('Acceptance sender');
     await contact
       .getByRole('textbox', { name: 'Adresse e-mail', exact: false })

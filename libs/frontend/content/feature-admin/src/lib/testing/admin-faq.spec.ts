@@ -653,4 +653,55 @@ describe('AdminFaqEditPageComponent', (): void => {
     expect(opened.root().textContent).toContain('Question introuvable');
     expect(TestBed.inject(Title).getTitle()).toBe('Question introuvable — FAQ — Administration');
   });
+
+  it('guards unsaved changes on unload and saves them with Ctrl+S', async (): Promise<void> => {
+    const opened: Opened = await edit(entry('a', 0));
+    const clean: Event = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(clean);
+    expect(clean.defaultPrevented).toBe(false);
+    await type(opened, 'edit-faq-question-fr', 'Autre');
+    const dirty: Event = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(dirty);
+    expect(dirty.defaultPrevented).toBe(true);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true }));
+    await opened.settle();
+    const call: TestRequest = opened.backend.expectOne(`${API}/entries/a`);
+    expect(call.request.method).toBe('PUT');
+    call.flush(entry('a', 0, { version: 2, question: { fr: 'Autre', en: 'Question a' } }));
+    await opened.settle();
+  });
+
+  it('keeps the question when its deletion is cancelled', async (): Promise<void> => {
+    const opened: Opened = await edit(entry('a', 0), [confirming([false])]);
+    button(opened.root(), 'Supprimer').click();
+    await opened.settle();
+    opened.backend.expectNone(`${API}/entries/a`);
+    expect(TestBed.inject(Router).url).toBe('/admin/faq/a');
+  });
+
+  it('toasts a save refused by the server', async (): Promise<void> => {
+    const opened: Opened = await edit(entry('a', 0));
+    await type(opened, 'edit-faq-question-fr', 'Autre');
+    await submit(opened);
+    opened.backend
+      .expectOne(`${API}/entries/a`)
+      .flush({ code: 'internal' }, { status: 500, statusText: 'Server Error' });
+    await opened.settle();
+    expect(toasts()[0]?.[0]).toBe('error');
+    expect(opened.root().textContent).not.toContain('modifiée ailleurs');
+  });
+
+  it('asks for both languages when the API finds the question incomplete', async (): Promise<void> => {
+    const opened: Opened = await edit(entry('a', 0));
+    await type(opened, 'edit-faq-question-fr', 'Autre');
+    await submit(opened);
+    opened.backend
+      .expectOne(`${API}/entries/a`)
+      .flush(
+        { code: 'content.faq-entry-incomplete' },
+        { status: 422, statusText: 'Unprocessable Entity' },
+      );
+    await opened.settle();
+    expect(toasts()).toEqual([['error', 'Complétez les deux langues.']]);
+  });
 });

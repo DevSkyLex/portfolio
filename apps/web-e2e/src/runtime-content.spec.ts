@@ -125,7 +125,7 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
         ),
       )
       .toBe(true);
-    await expect(diagram).toHaveAttribute('src', /%23131316/);
+    await expect(diagram).toHaveAttribute('src', /%230e0e19/);
     expect(await flowchartAppearance(diagram)).toEqual(ORBITE_FLOWCHART);
     const smallFigure: Locator = page.getByRole('figure').filter({ has: diagram });
     expect(
@@ -140,7 +140,7 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
     await expect(smallControls.getByRole('button', { name: 'Vers la droite' })).toBeDisabled();
     await expect(page.getByText('Invalid diagram source', { exact: true })).toBeVisible();
     await chooseFooterOption(page, 'Thème', 'Clair');
-    await expect(diagram).toHaveAttribute('src', /%23f6f6f7/);
+    await expect(diagram).toHaveAttribute('src', /%23f6f6fa/);
     expect(await flowchartAppearance(diagram)).toEqual(ORBITE_FLOWCHART);
 
     const heading: string = 'Architecture and responsibilities of the published application';
@@ -242,7 +242,7 @@ test('serves and hydrates a fresh article without rebuilding the SSR application
     await expect(expand).toBeFocused();
 
     await chooseFooterOption(page, 'Thème', 'Sombre');
-    await expect(diagram).toHaveAttribute('src', /%23131316/);
+    await expect(diagram).toHaveAttribute('src', /%230e0e19/);
 
     // A direct link opens before Mermaid expands the content above the destination.
     const destination: Locator = page.getByRole('region', {

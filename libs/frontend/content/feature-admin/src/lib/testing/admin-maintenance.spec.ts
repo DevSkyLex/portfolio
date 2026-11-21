@@ -67,13 +67,14 @@ interface Opened {
  * Function open
  *
  * @description
- * Mounts the route as the shell does (`/admin/maintenance`) and answers the read.
+ * Mounts the route as the shell does (`/admin/maintenance`) and answers the read, or fails it with
+ * a 500 when `stored` is `'error'`.
  *
- * @param {AdminMaintenance} stored - Setting the API answers.
+ * @param {AdminMaintenance | 'error'} stored - Setting the API answers, or `'error'`.
  *
  * @returns {Promise<Opened>} Harness.
  */
-async function open(stored: AdminMaintenance): Promise<Opened> {
+async function open(stored: AdminMaintenance | 'error'): Promise<Opened> {
   TestBed.configureTestingModule({
     providers: [
       { provide: LOCALE_ID, useValue: 'fr' },
@@ -91,7 +92,12 @@ async function open(stored: AdminMaintenance): Promise<Opened> {
     await flush();
     await harness.fixture.whenStable();
   };
-  backend.expectOne({ method: 'GET', url: URL }).flush(stored);
+  const read: TestRequest = backend.expectOne({ method: 'GET', url: URL });
+  if (stored === 'error') {
+    read.flush({ code: 'internal' }, { status: 500, statusText: 'Server Error' });
+  } else {
+    read.flush(stored);
+  }
   await settle();
   return { backend, root: (): HTMLElement => harness.routeNativeElement as HTMLElement, settle };
 }
@@ -202,5 +208,64 @@ describe('ADMIN_MAINTENANCE_ROUTES', (): void => {
     await opened.settle();
     expect(opened.root().textContent).not.toContain('modifiée ailleurs');
     expect(opened.root().textContent).toContain('Version 5');
+  });
+
+  it('switches the maintenance off and says the public site is online', async (): Promise<void> => {
+    const opened: Opened = await open(setting(true, 6, { fr: 'Retour à 14 h.' }));
+    opened.root().querySelector<HTMLButtonElement>('button[role="switch"]')?.click();
+    await opened.settle();
+    await submit(opened);
+    const put: TestRequest = opened.backend.expectOne({ method: 'PUT', url: URL });
+    expect(put.request.body).toEqual({ enabled: false, message: { fr: 'Retour à 14 h.' } });
+    put.flush(setting(false, 7, { fr: 'Retour à 14 h.' }));
+    await opened.settle();
+    expect(opened.root().querySelector('[data-slot="badge"]')?.textContent?.trim()).toBe(
+      'Désactivé',
+    );
+    expect(TestBed.inject<ToastService>(ToastService).toasts()[0]?.description).toBe(
+      'Le site public est en ligne.',
+    );
+  });
+
+  it('toasts a refused save without showing a conflict', async (): Promise<void> => {
+    const opened: Opened = await open(setting(false, 2));
+    opened.root().querySelector<HTMLButtonElement>('button[role="switch"]')?.click();
+    await opened.settle();
+    await submit(opened);
+    opened.backend
+      .expectOne({ method: 'PUT', url: URL })
+      .flush({ code: 'internal' }, { status: 500, statusText: 'Server Error' });
+    await opened.settle();
+    expect(TestBed.inject<ToastService>(ToastService).toasts()[0]?.type).toBe('error');
+    expect(opened.root().textContent).not.toContain('modifiée ailleurs');
+  });
+
+  it('offers to retry a failed read', async (): Promise<void> => {
+    const opened: Opened = await open('error');
+    const retry: HTMLButtonElement | undefined = [
+      ...opened.root().querySelectorAll<HTMLButtonElement>('button'),
+    ].find((button: HTMLButtonElement): boolean => button.textContent?.trim() === 'Réessayer');
+    expect(retry).toBeDefined();
+    retry?.click();
+    await opened.settle();
+    opened.backend.expectOne({ method: 'GET', url: URL }).flush(setting(false, 3));
+    await opened.settle();
+    expect(opened.root().querySelector('button[role="switch"]')).not.toBeNull();
+  });
+
+  it('guards unsaved changes on unload and saves them with Ctrl+S', async (): Promise<void> => {
+    const opened: Opened = await open(setting(false, 2));
+    const clean: Event = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(clean);
+    expect(clean.defaultPrevented).toBe(false);
+    opened.root().querySelector<HTMLButtonElement>('button[role="switch"]')?.click();
+    await opened.settle();
+    const dirty: Event = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(dirty);
+    expect(dirty.defaultPrevented).toBe(true);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true }));
+    await opened.settle();
+    opened.backend.expectOne({ method: 'PUT', url: URL }).flush(setting(true, 3));
+    await opened.settle();
   });
 });
