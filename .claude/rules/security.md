@@ -42,10 +42,11 @@ paths:
 - Edge (D20): strict CSP `script-src 'self'` (no inline script), HSTS and the headers of
   `docker/nginx/snippets/security-headers.conf`.
 - No `innerHTML` / `bypassSecurityTrust*` with content, no open redirect from query parameters.
-- Uploads (D40): administrator only (`@AdminOnly` runs before Multer), one file of at most 10 MiB, SVG and
-  undecodable input refused, re-encoded to WebP by sharp (pixel limit, metadata stripped), stored under a
-  random uuid name; served only from the fixed pattern `/media/<uuid>(-960)?.webp` with `nosniff`, never
-  under a client-supplied name or type. Nginx caps bodies (11 MB upload, 1100 kB project and legal
-  document edits).
+- Uploads (D40, D57): administrator only (`@AdminOnly` runs before Multer), one file: an image of at
+  most 10 MiB (SVG and undecodable input refused, re-encoded to WebP by sharp, pixel limit, metadata
+  stripped) or an MP4 video of at most 50 MiB recognised by its box structure; stored under a random uuid
+  name, served only from the fixed patterns `/media/<uuid>(-960)?.webp` and `/media/<uuid>.mp4` with
+  `nosniff`, never under a client-supplied name or type. Nginx caps bodies (51 MB upload, streamed to the
+  service unbuffered; 1100 kB project and legal document edits).
 
 Review: the `pf-security-auditor` agent.

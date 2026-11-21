@@ -7,7 +7,7 @@ import type { SeoSourceStatus } from '@internal/content-web-feature-admin/lib/mo
  * @class SeoSourceListComponent
  *
  * @description
- * Sources of the dashboard in the side panel (D51): one row per source with the icon of its state,
+ * Sources of the dashboard in the « Détails » sheet (D51): one row per source with the icon of its state,
  * its name and the sentence saying when it was last collected or why it was not. The sentence
  * carries the state, so the icon stays decorative.
  */

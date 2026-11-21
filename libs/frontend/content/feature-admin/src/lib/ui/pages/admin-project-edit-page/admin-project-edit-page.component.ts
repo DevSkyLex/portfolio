@@ -16,7 +16,7 @@ import {
   type Signal,
   type TemplateRef,
 } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -93,6 +93,7 @@ import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/u
     AlertTitleDirective,
     ButtonDirective,
     NgIcon,
+    NgTemplateOutlet,
     PAGE_HEADER_IMPORTS,
     ProjectFormComponent,
     ProjectPropertiesPanelComponent,

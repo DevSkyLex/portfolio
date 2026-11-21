@@ -220,7 +220,7 @@ describe('RefreshSeoDashboard', (): void => {
     expect(summary).toEqual({
       startedAt: clock.current,
       finishedAt: clock.current,
-      refreshed: 7,
+      refreshed: 9,
       failures: [],
     });
     // Search Console ends three days back, GA4 the day before.
@@ -230,6 +230,7 @@ describe('RefreshSeoDashboard', (): void => {
       { start: '2026-10-26', end: '2026-11-01' },
       { start: '2026-10-05', end: '2026-11-01' },
       { start: '2026-08-04', end: '2026-11-01' },
+      { start: '2025-11-02', end: '2026-11-01' },
     ]);
     expect(analytics.report.mock.calls[0]?.[0].current).toEqual({
       start: '2026-10-28',
@@ -292,12 +293,13 @@ describe('RefreshSeoDashboard', (): void => {
     );
     analytics.report.mockRejectedValue(new Error('token abc123 leaked'));
     const summary: SeoRefreshSummary = await (await refresh().start()).completion;
-    expect(summary.refreshed).toBe(3);
+    expect(summary.refreshed).toBe(4);
     expect(summary.failures).toEqual([
       { source: 'search-console', range: '7d', code: 'permission-denied' },
       { source: 'analytics', range: '7d', code: 'unexpected' },
       { source: 'analytics', range: '28d', code: 'unexpected' },
       { source: 'analytics', range: '90d', code: 'unexpected' },
+      { source: 'analytics', range: '365d', code: 'unexpected' },
     ]);
     expect(store.entries.get('search-console:7d')).toEqual({
       data: expect.objectContaining({ window: expect.objectContaining({ range: '7d' }) }),

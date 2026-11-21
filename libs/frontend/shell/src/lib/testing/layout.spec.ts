@@ -33,6 +33,7 @@ import { AdminLayoutComponent } from '@internal/web-shell/lib/admin/layouts/admi
 import { IDENTITY_SECURITY_ROUTES } from '@vfortin/identity-web-feature';
 import { ADMIN_PROTECTED_ROUTES } from '@internal/web-shell/lib/admin/admin-protected.routes';
 import { ADMIN_ROUTES } from '@internal/web-shell/lib/admin/admin.routes';
+import { AdminAuthLayoutComponent } from '@internal/web-shell/lib/admin/layouts/admin-auth-layout/admin-auth-layout.component';
 import { APP_ROUTES } from '@internal/web-shell/lib/app.routes';
 import { provideWebShell } from '@internal/web-shell/lib/provide-web-shell';
 import { provideWebShellServer } from '@internal/web-shell/lib/provide-web-shell.server';
@@ -517,6 +518,10 @@ describe('admin area', () => {
     // The OAuth consent page (D45) and the protected layout both require the session.
     expect(ADMIN_ROUTES[1]?.canMatch).toHaveLength(1);
     expect(ADMIN_ROUTES[2]?.canMatch).toHaveLength(1);
+    // The login and the consent render in the frame bearing the site mark, outside the admin layout.
+    expect(ADMIN_ROUTES[0]?.component).toBe(AdminAuthLayoutComponent);
+    expect(ADMIN_ROUTES[1]?.component).toBe(AdminAuthLayoutComponent);
+    expect(ADMIN_ROUTES[2]?.component).toBeUndefined();
     const admin: Route | undefined = APP_ROUTES.find((route) => route.path === 'admin');
     let settled: boolean = false;
     // The router calls loadChildren in the route's injection context.

@@ -1,5 +1,7 @@
 import {
+  CoverNotImageError,
   MediaMissingError,
+  MediaTooLargeError,
   MediaUnreachableError,
   UnsupportedMediaError,
 } from '@internal/content-application/lib/errors/application-error';
@@ -10,8 +12,10 @@ import {
   PurgeMedia,
 } from '@internal/content-application/lib/use-cases/purge-media/purge-media.use-case';
 import { UploadMedia } from '@internal/content-application/lib/use-cases/upload-media/upload-media.use-case';
+import { assertImageCover } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
 import {
   FakeImageProcessor,
+  FakeVideoProbe,
   FixedClock,
   InMemoryMediaRepository,
   InMemoryMediaStorage,
@@ -54,7 +58,10 @@ interface MediaHarness {
  * @param {readonly MediaRecord[]} initial - Initial media rows.
  * @returns {MediaHarness} Fakes and use cases.
  */
-function setup(initial: readonly MediaRecord[] = []): MediaHarness {
+function setup(
+  initial: readonly MediaRecord[] = [],
+  limits: { imageBytes: number; videoBytes: number } = { imageBytes: 1000, videoBytes: 2000 },
+): MediaHarness {
   const media: InMemoryMediaRepository = new InMemoryMediaRepository(initial);
   const storage: InMemoryMediaStorage = new InMemoryMediaStorage();
   const processor: FakeImageProcessor = new FakeImageProcessor();
@@ -64,7 +71,15 @@ function setup(initial: readonly MediaRecord[] = []): MediaHarness {
     storage,
     processor,
     clock,
-    upload: new UploadMedia(media, processor, storage, new SequenceIds(), clock),
+    upload: new UploadMedia(
+      media,
+      processor,
+      storage,
+      new SequenceIds(),
+      clock,
+      new FakeVideoProbe(),
+      limits,
+    ),
     purge: new PurgeMedia(media, storage, clock),
   };
 }
@@ -75,6 +90,7 @@ describe('UploadMedia', (): void => {
     const record: MediaRecord = await upload.execute(bytes('IMGW photo'));
     expect(record).toEqual({
       id: '00000000-0000-4000-8000-000000000001',
+      kind: 'image',
       width: 2400,
       height: 600,
       bytes: 3,
@@ -131,6 +147,38 @@ describe('UploadMedia', (): void => {
       'fulfilled',
     ]);
     expect(processor.maxActive).toBe(1);
+  });
+
+  it('stores an MP4 video as sent, without decoding it as an image', async (): Promise<void> => {
+    const { upload, processor, storage, media } = setup();
+    const sent: Uint8Array = bytes('VID clip');
+    const record: MediaRecord = await upload.execute(sent);
+    expect(record).toMatchObject({
+      kind: 'video',
+      width: 1920,
+      height: 1080,
+      bytes: sent.byteLength,
+      hasSmall: false,
+    });
+    expect(processor.calls).toBe(0);
+    expect(storage.files.get(record.id)).toEqual({ kind: 'video', full: sent, small: null });
+    expect(media.rows.get(record.id)?.kind).toBe('video');
+  });
+
+  it('holds images and videos to their own size limit', async (): Promise<void> => {
+    const { upload, storage } = setup([], { imageBytes: 8, videoBytes: 12 });
+    await expect(upload.execute(bytes('IMG too long'))).rejects.toBeInstanceOf(MediaTooLargeError);
+    await expect(upload.execute(bytes('VID longer clip'))).rejects.toThrow('The video exceeds');
+    await expect(upload.execute(bytes('VID short'))).resolves.toMatchObject({ kind: 'video' });
+    expect(storage.files.size).toBe(1);
+  });
+
+  it('refuses an MP4 without a readable video track', async (): Promise<void> => {
+    const { upload, storage } = setup();
+    await expect(upload.execute(bytes('VIDX audio only'))).rejects.toBeInstanceOf(
+      UnsupportedMediaError,
+    );
+    expect(storage.log).toEqual([]);
   });
 });
 
@@ -209,5 +257,18 @@ describe('PurgeMedia', (): void => {
     await expect(purge.execute()).resolves.toEqual({ purged: [] });
     expect(media.rows.has('raced')).toBe(true);
     expect(storage.log).toEqual([]);
+  });
+});
+
+describe('assertImageCover', (): void => {
+  it('accepts an image cover and refuses a video one (D57)', (): void => {
+    const image: MediaRecord = { ...mediaRecord('00000000-0000-4000-8000-0000000000a1') };
+    const video: MediaRecord = {
+      ...mediaRecord('00000000-0000-4000-8000-0000000000a2'),
+      kind: 'video',
+    };
+    expect((): void => assertImageCover(image.id, [image, video])).not.toThrow();
+    expect((): void => assertImageCover(null, [video])).not.toThrow();
+    expect((): void => assertImageCover(video.id, [image, video])).toThrow(CoverNotImageError);
   });
 });

@@ -6,7 +6,7 @@ import { z } from 'zod/mini';
  * @description
  * Report lengths of the SEO dashboard (D47), mirrored by the domain's `SEO_RANGES`.
  */
-export const SEO_DASHBOARD_RANGES = ['7d', '28d', '90d'] as const;
+export const SEO_DASHBOARD_RANGES = ['7d', '28d', '90d', '365d'] as const;
 
 /**
  * Constant SEO_DASHBOARD_DEFAULT_RANGE

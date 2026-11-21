@@ -54,8 +54,8 @@ import { toSecretGroups } from '@internal/identity-web-feature/lib/utils/secret-
  * @class SecurityPageComponent
  *
  * @description
- * "Sécurité" administration page (D17, D36), laid out like a settings page in the project editor's
- * centred 920 px column: sections each with its title and description beside flat hairline rows
+ * "Sécurité" administration page (D17, D36), laid out like a settings page across the page
+ * container: sections split by hairline rules, each with its title and description beside flat hairline rows
  * (stacked on a narrow column), for the optional one-time code (status and action), the trusted
  * devices and the connected MCP applications (D45, their own section component), and the dialogs
  * that enable it (password, then QR code or key, then a code) or disable it (password and code). The

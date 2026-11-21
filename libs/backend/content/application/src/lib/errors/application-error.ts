@@ -277,3 +277,37 @@ export class SeoRefreshTooSoonError extends ApplicationError {
   }
   // #endregion
 }
+
+/**
+ * Class CoverNotImageError
+ * @class CoverNotImageError
+ *
+ * @description
+ * A project cover points to a video; covers are images (D57).
+ */
+export class CoverNotImageError extends ApplicationError {
+  // #region Properties
+  /**
+   * Property details
+   * @readonly
+   *
+   * @description
+   * The rejected field, `cover`.
+   */
+  public readonly details: readonly string[] = ['cover'];
+  // #endregion
+
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Creates the stable failure of a video chosen as cover.
+   */
+  public constructor() {
+    super('content.cover-not-image', 'A project cover must be an image.');
+    this.name = 'CoverNotImageError';
+  }
+  // #endregion
+}

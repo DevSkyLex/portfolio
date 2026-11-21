@@ -115,6 +115,7 @@ const [COVER, FIGURE] = FIXTURE.media.map((media: AdminFixture['media'][number])
   height: media.height,
   bytes: 1000,
   sha256: media.id.replaceAll('-', '').padEnd(64, '0'),
+  kind: 'image',
   hasSmall: media.width > 960,
   createdAt: new Date('2026-10-01T00:00:00Z'),
   unlinkedAt: null,
@@ -376,6 +377,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       ).toEqual({
         type: 'figure',
         attrs: {
+          kind: 'image',
           src: `/media/${FIGURE.id}.webp`,
           small: `/media/${FIGURE.id}-960.webp`,
           width: 1200,
@@ -717,10 +719,10 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       intercept.mockRestore();
     });
 
-    it('answers 413 for a file above 10 MiB', async (): Promise<void> => {
+    it('answers 413 for a file above 50 MiB, the video limit', async (): Promise<void> => {
       const response: request.Response = await admin(upload()).attach(
         'file',
-        Buffer.alloc(10 * 1024 * 1024 + 1),
+        Buffer.alloc(50 * 1024 * 1024 + 1),
         'huge.png',
       );
       expect(response.status).toBe(413);

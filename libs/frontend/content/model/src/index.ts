@@ -23,6 +23,7 @@ export type {
   Profile,
   ProjectArticle,
   ProjectImage,
+  ProjectVideo,
   ProjectSeo,
   ProjectSummary,
   SiteContent,

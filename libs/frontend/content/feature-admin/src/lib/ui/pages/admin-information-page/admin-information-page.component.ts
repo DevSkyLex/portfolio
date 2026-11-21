@@ -38,7 +38,7 @@ import { withSiteRebuildNotice } from '@internal/content-web-feature-admin/lib/u
  * « Informations » page: the profile texts of the home and « À propos » sections, their facts and
  * the public links (contact section, footer), laid out like the « Sécurité » settings page (D36
  * settings page revision): the 48 px bar naming the section, the page header with its meta line,
- * then the centred 920 px column of setting sections, each bilingual field with its own language
+ * then the setting sections across the page container, each bilingual field with its own language
  * selector. Saves with `If-Match`
  * (Ctrl/Cmd+S, the save bar) and toasts the outcome with the rebuild notice; a version conflict stays
  * an inline alert offering to reload; leaving a dirty form asks first.

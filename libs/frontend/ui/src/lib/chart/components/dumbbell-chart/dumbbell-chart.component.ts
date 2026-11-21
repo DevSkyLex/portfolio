@@ -29,7 +29,15 @@ interface Line {
   readonly end: number | null;
   readonly from: number;
   readonly to: number;
+  /** Both ends within CLOSE_SPAN of the track: the dots split vertically. */
+  readonly close: boolean;
 }
+
+/** Gap, in percent of the track, under which two dots would overlap. */
+const CLOSE_SPAN: number = 3;
+
+/** A measure's dot on the track, ringed with the surface so it stands off the rule and the grid. */
+const MARK: string = 'absolute top-1/2 size-3 -translate-1/2 rounded-full ring-2 ring-surface';
 
 /** A tick of the shared axis. */
 interface Tick {
@@ -44,9 +52,10 @@ interface Tick {
  *
  * @description
  * Items compared on two measures of one scale (a page's mobile and desktop score): a ringed dot per
- * measure in the first two series tones, a hairline rule between them, a shared axis with a hairline
- * grid, both values printed at the end of each row (so no value hides behind a hover) and a legend
- * naming the two series. A `max` fixes the scale (100 for a score); otherwise it follows `chartTicks`.
+ * measure in the first two series tones (split vertically when they would overlap), a rule between
+ * them, a shared axis with a dashed grid, both values printed at the end of each row in a fixed
+ * column, each after its tone's dot (so no value hides behind a hover and the axis lines up), and a
+ * legend naming the two series. A `max` fixes the scale (100 for a score); otherwise it follows `chartTicks`.
  */
 @Component({
   selector: 'ui-dumbbell-chart',
@@ -76,43 +85,55 @@ interface Tick {
       <ul class="flex flex-col" [attr.aria-label]="label()">
         @for (line of lines(); track line.row.key) {
           <li
-            class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] items-center gap-x-4 py-1.5 text-[13px]/5"
+            class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_5.5rem] items-center gap-x-4 py-2 text-[13px]/5"
           >
             <span class="min-w-0 truncate text-fg" [title]="line.row.label">{{
               line.row.label
             }}</span>
-            <span class="relative h-4" aria-hidden="true">
+            <span class="relative h-5" aria-hidden="true">
               @for (tick of ticks(); track tick.value) {
                 <span
-                  class="absolute inset-y-0 border-s border-border"
+                  class="absolute inset-y-0 border-s border-dashed border-border"
                   [style.left.%]="tick.left"
                 ></span>
               }
               @if (line.start !== null && line.end !== null) {
                 <span
-                  class="absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-border-strong"
+                  class="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-border-strong"
                   [style.left.%]="line.from"
                   [style.width.%]="line.to - line.from"
                 ></span>
               }
+              <!-- Two measures too close to tell apart split vertically, so neither dot hides the other. -->
               @if (line.start !== null) {
-                <span [class]="startMark()" [style.left.%]="line.start"></span>
+                <span
+                  [class]="line.close ? startMarkClose() : startMark()"
+                  [style.left.%]="line.start"
+                ></span>
               }
               @if (line.end !== null) {
-                <span [class]="endMark()" [style.left.%]="line.end"></span>
+                <span
+                  [class]="line.close ? endMarkClose() : endMark()"
+                  [style.left.%]="line.end"
+                ></span>
               }
             </span>
-            <span class="flex justify-end gap-2 text-[12px]/4 text-fg-muted tabular-nums">
-              <span class="sr-only">{{ startLabel() }}</span>
-              <span>{{ line.row.start?.display ?? '—' }}</span>
-              <span class="text-fg-faint" aria-hidden="true">·</span>
-              <span class="sr-only">{{ endLabel() }}</span>
-              <span>{{ line.row.end?.display ?? '—' }}</span>
+            <span class="flex justify-end gap-3 text-[12px]/4 font-medium text-fg tabular-nums">
+              <span class="flex items-center gap-1.5">
+                <span [class]="startValueDot()" aria-hidden="true"></span>
+                <span class="sr-only">{{ startLabel() }}</span>
+                {{ line.row.start?.display ?? '—' }}
+              </span>
+              <span class="flex items-center gap-1.5">
+                <span [class]="endValueDot()" aria-hidden="true"></span>
+                <span class="sr-only">{{ endLabel() }}</span>
+                {{ line.row.end?.display ?? '—' }}
+              </span>
             </span>
           </li>
         }
       </ul>
-      <div class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] gap-x-4" aria-hidden="true">
+      <div class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_5.5rem] gap-x-4" aria-hidden="true">
         <span></span>
         <span class="relative mt-1 h-4">
           @for (tick of ticks(); track tick.value) {
@@ -123,7 +144,7 @@ interface Tick {
             >
           }
         </span>
-        <span class="invisible text-[12px]/4 tabular-nums">00 · 00</span>
+        <span></span>
       </div>
     }
   `,
@@ -228,6 +249,7 @@ export class DumbbellChartComponent {
           end,
           from: Math.min(start ?? 0, end ?? 0),
           to: Math.max(start ?? 0, end ?? 0),
+          close: start !== null && end !== null && Math.abs(start - end) < CLOSE_SPAN,
         };
       }),
   );
@@ -241,17 +263,27 @@ export class DumbbellChartComponent {
   );
 
   protected readonly startMark: Signal<string> = computed<string>((): string =>
-    cn(
-      'absolute top-1/2 size-2.5 -translate-1/2 rounded-full ring-2 ring-surface',
-      CHART_TONE_FILLS[this.startTone()],
-    ),
+    cn(MARK, CHART_TONE_FILLS[this.startTone()]),
   );
 
   protected readonly endMark: Signal<string> = computed<string>((): string =>
-    cn(
-      'absolute top-1/2 size-2.5 -translate-1/2 rounded-full ring-2 ring-surface',
-      CHART_TONE_FILLS[this.endTone()],
-    ),
+    cn(MARK, CHART_TONE_FILLS[this.endTone()]),
+  );
+
+  protected readonly startMarkClose: Signal<string> = computed<string>((): string =>
+    cn(MARK, '-mt-1.5', CHART_TONE_FILLS[this.startTone()]),
+  );
+
+  protected readonly endMarkClose: Signal<string> = computed<string>((): string =>
+    cn(MARK, 'mt-1.5', CHART_TONE_FILLS[this.endTone()]),
+  );
+
+  protected readonly startValueDot: Signal<string> = computed<string>((): string =>
+    cn('size-1.5 shrink-0 rounded-full', CHART_TONE_FILLS[this.startTone()]),
+  );
+
+  protected readonly endValueDot: Signal<string> = computed<string>((): string =>
+    cn('size-1.5 shrink-0 rounded-full', CHART_TONE_FILLS[this.endTone()]),
   );
 
   protected readonly classes: Signal<string> = computed<string>((): string =>

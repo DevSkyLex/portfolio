@@ -1,11 +1,11 @@
 <form
   id="edit-timeline-form"
-  class="@container/form flex flex-1 flex-col gap-8"
+  class="@container/form flex flex-1 flex-col gap-4"
   novalidate
   (submit)="onSubmit($event)"
 >
   @if (summary(); as message) {
-    <div uiAlert variant="danger" class="-mb-2">
+    <div uiAlert variant="danger">
       <ng-icon [svg]="icons.alert" size="16" aria-hidden="true" />
       <p uiAlertTitle class="text-[13px]/5">{{ message }}</p>
     </div>
@@ -209,10 +209,7 @@
   @let periodError = settingError('period');
   @let techsError = settingError('techs');
   <fieldset uiFieldSet class="gap-6" [disabled]="pending()">
-    <section
-      class="flex flex-col gap-3 border-t border-border pt-6"
-      aria-labelledby="edit-timeline-period-label"
-    >
+    <section class="flex flex-col gap-3" aria-labelledby="edit-timeline-period-label">
       <h3
         id="edit-timeline-period-label"
         class="flex items-baseline gap-1 text-[14px]/5 font-semibold text-fg"

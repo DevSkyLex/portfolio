@@ -163,7 +163,10 @@ export class PageHeaderTabsDirective {
    * @type {Signal<string>}
    */
   protected readonly classes: Signal<string> = computed<string>((): string =>
-    cn('flex min-w-0 px-6 @max-[640px]:px-4 [&_[data-slot=tabs-list]]:border-b-0', this.class()),
+    cn(
+      'flex min-w-0 px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] @max-[640px]:px-4 [&_[data-slot=tabs-list]]:border-b-0',
+      this.class(),
+    ),
   );
   // #endregion
 }

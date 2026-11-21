@@ -1,5 +1,5 @@
 import type { MediaRecord } from '@vfortin/content-application';
-import type { MediaDto, PublicImageDto } from '@vfortin/content-contracts';
+import type { MediaDto, PublicFigureDto, PublicImageDto } from '@vfortin/content-contracts';
 
 /**
  * Function mediaSrc
@@ -25,7 +25,13 @@ function mediaSrc(id: string, suffix: '' | '-960' = ''): string {
  * @returns {MediaDto} Media DTO.
  */
 export function toMediaDto(record: MediaRecord): MediaDto {
-  return { id: record.id, src: mediaSrc(record.id), width: record.width, height: record.height };
+  return {
+    id: record.id,
+    kind: record.kind,
+    src: record.kind === 'video' ? videoSrc(record.id) : mediaSrc(record.id),
+    width: record.width,
+    height: record.height,
+  };
 }
 
 /**
@@ -44,4 +50,42 @@ export function toPublicImage(record: MediaRecord): PublicImageDto {
     width: record.width,
     height: record.height,
   };
+}
+
+/**
+ * Function videoSrc
+ *
+ * @description
+ * Builds the public URL of the MP4 of a video (D57).
+ *
+ * @param {string} id - Media identifier.
+ * @returns {string} Public URL.
+ */
+function videoSrc(id: string): string {
+  return `/media/${id}.mp4`;
+}
+
+/**
+ * Function toPublicFigure
+ *
+ * @description
+ * Resolves a figure's media for the public snapshot: an image with its renditions, or a video (D57).
+ *
+ * @param {MediaRecord} record - Stored media.
+ * @param {string} alt - Localized alternative text.
+ * @param {string} caption - Localized caption.
+ * @returns {PublicFigureDto} Public figure.
+ */
+export function toPublicFigure(record: MediaRecord, alt: string, caption: string): PublicFigureDto {
+  return record.kind === 'video'
+    ? {
+        kind: 'video',
+        src: videoSrc(record.id),
+        small: null,
+        width: record.width,
+        height: record.height,
+        alt,
+        caption,
+      }
+    : { kind: 'image', ...toPublicImage(record), alt, caption };
 }

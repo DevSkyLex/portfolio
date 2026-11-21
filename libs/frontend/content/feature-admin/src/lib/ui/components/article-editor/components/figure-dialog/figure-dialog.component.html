@@ -5,15 +5,30 @@
       i18n="@@admin.article.figureDialog.title"
       class="font-sans text-[16px]/6 font-semibold"
     >
-      Image de l’article
+      Média de l’article
     </h2>
     <p uiDialogDescription i18n="@@admin.article.figureDialog.description" class="text-[13px]/5">
-      Le texte alternatif décrit l’image aux lecteurs d’écran ; il est obligatoire avant
+      Le texte alternatif décrit l’image ou la vidéo aux lecteurs d’écran ; il est obligatoire avant
       publication.
     </p>
   </div>
   @if (data.src; as src) {
-    <img class="aspect-video w-full rounded-xl bg-surface-sunk object-contain" alt="" [src]="src" />
+    @if (src.endsWith('.mp4')) {
+      <!-- A video figure (D57) previews its first frame, muted and paused. -->
+      <video
+        class="aspect-video w-full rounded-xl bg-surface-sunk object-contain"
+        preload="metadata"
+        playsinline
+        [muted]="true"
+        [src]="src + '#t=0.1'"
+      ></video>
+    } @else {
+      <img
+        class="aspect-video w-full rounded-xl bg-surface-sunk object-contain"
+        alt=""
+        [src]="src"
+      />
+    }
   }
   @let altError = error('alt');
   <ui-field

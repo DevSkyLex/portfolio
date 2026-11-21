@@ -6,7 +6,7 @@ import { InvalidValueError } from '@internal/content-domain/lib/errors/domain-er
  * @description
  * Report lengths offered by the SEO dashboard (D47): the last 7, 28 or 90 days of available data.
  */
-export const SEO_RANGES = ['7d', '28d', '90d'] as const;
+export const SEO_RANGES = ['7d', '28d', '90d', '365d'] as const;
 
 /**
  * Type SeoRange
@@ -23,7 +23,12 @@ export type SeoRange = (typeof SEO_RANGES)[number];
  * @description
  * Number of calendar days covered by each report length.
  */
-export const SEO_RANGE_DAYS: Readonly<Record<SeoRange, number>> = { '7d': 7, '28d': 28, '90d': 90 };
+export const SEO_RANGE_DAYS: Readonly<Record<SeoRange, number>> = {
+  '7d': 7,
+  '28d': 28,
+  '90d': 90,
+  '365d': 365,
+};
 
 /**
  * Interface DateSpan

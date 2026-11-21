@@ -1,6 +1,6 @@
 <!-- Below 1024 px the top bar already names the section: the bar would repeat the title. -->
 <header
-  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[1024px]:hidden"
+  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] text-[13px] @max-[1024px]:hidden"
 >
   <ui-sidebar-trigger class="-ml-2" />
   <span class="font-medium text-fg" aria-current="page" i18n="@@admin.maintenance.title"
@@ -28,9 +28,9 @@
     </p>
   </ui-page-header>
 
-  <!-- The project editor's centred 920 px column, holding the setting sections (D36). -->
+  <!-- The full container on the header gutter; a settings form stays flat (D36 cards revision). -->
   <div
-    class="@container/settings mx-auto flex w-full max-w-[920px] min-w-0 flex-1 flex-col gap-8 px-6 py-8 @max-[640px]:px-4 @max-[640px]:py-6"
+    class="@container/settings flex w-full min-w-0 flex-1 flex-col gap-8 px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
   >
     @if (store.conflict()) {
       <div uiAlert variant="warning">

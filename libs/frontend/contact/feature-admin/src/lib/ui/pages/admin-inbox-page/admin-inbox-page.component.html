@@ -1,5 +1,5 @@
 <header
-  class="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[640px]:px-4"
+  class="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] text-[13px] @max-[640px]:px-4"
 >
   <ui-sidebar-trigger class="-ml-2" />
   <span class="font-medium text-fg" aria-current="page" i18n="@@admin.inbox.title">Messages</span>
@@ -47,13 +47,12 @@
     </div>
   </ui-page-header>
 
-  <div class="flex min-h-0 flex-col" [uiTabsContent]="filterKey()">
+  <div
+    class="flex min-h-0 flex-col gap-4 px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
+    [uiTabsContent]="filterKey()"
+  >
     @if (store.loadCallState().error; as error) {
-      <div
-        uiAlert
-        variant="danger"
-        class="mx-6 mt-4 w-auto px-3 py-2.5 text-[13px]/5 @max-[640px]:mx-4"
-      >
+      <div uiAlert variant="danger" class="w-auto px-3 py-2.5 text-[13px]/5">
         <ng-icon [svg]="icons.error" size="14" aria-hidden="true" />
         <p class="col-start-2">{{ error.message }}</p>
         <div class="col-start-2 mt-1.5">
@@ -73,10 +72,13 @@
     }
 
     @if (store.loading() && store.messages().length === 0) {
-      <div class="flex flex-col" role="status">
+      <div class="flex flex-col overflow-hidden rounded-xl border border-border" role="status">
         <span class="sr-only" i18n="@@admin.inbox.loading">Chargement…</span>
         @for (row of [1, 2, 3]; track row) {
-          <div class="flex flex-col gap-2 border-b border-border px-4 py-3" aria-hidden="true">
+          <div
+            class="flex flex-col gap-2 border-b border-border px-4 py-3 last:border-b-0"
+            aria-hidden="true"
+          >
             <span uiSkeleton class="h-3 w-40 rounded-full"></span>
             <span uiSkeleton class="h-3 w-64 rounded-full"></span>
           </div>
@@ -85,7 +87,7 @@
     } @else if (store.messages().length === 0 && !store.loadCallState().error) {
       <!-- Nothing follows the list in the tab panel: the fill layout. -->
       @let current = filter();
-      <div uiEmpty layout="fill">
+      <div uiEmpty layout="fill" class="rounded-xl border border-border">
         <div uiEmptyHeader>
           <div uiEmptyMedia variant="icon">
             <ng-icon [svg]="current.icon" size="16" />
@@ -109,10 +111,11 @@
         }
       </div>
     } @else {
+      <!-- One card holds both panes; the separator between them is the card's inner hairline. -->
       <div
         uiResizablePanelGroup
         #panes="uiResizablePanelGroup"
-        class="min-h-0 flex-1"
+        class="min-h-0 flex-1 overflow-hidden rounded-xl border border-border"
         (layoutChange)="savePanes(panes.pixelSizes()[0])"
       >
         <div

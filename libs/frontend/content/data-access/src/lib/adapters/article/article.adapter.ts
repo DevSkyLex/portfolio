@@ -248,6 +248,18 @@ function toBlock(block: PublicArticleBlockDto): ArticleBlock | null {
     case 'horizontalRule':
       return { kind: 'rule' };
     case 'figure':
+      if (block.attrs.kind === 'video') {
+        return {
+          kind: 'video',
+          video: {
+            src: block.attrs.src,
+            width: block.attrs.width,
+            height: block.attrs.height,
+            label: block.attrs.alt,
+          },
+          caption: block.attrs.caption,
+        };
+      }
       return {
         kind: 'figure',
         image: {

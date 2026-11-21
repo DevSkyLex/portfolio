@@ -17,7 +17,7 @@ const MEDIA_ID: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
  * @description
  * Same-origin WebP URL of an uploaded media, the only image URL a figure displays.
  */
-const MEDIA_SRC: RegExp = /^\/media\/[0-9a-f-]{36}\.webp$/;
+const MEDIA_SRC: RegExp = /^\/media\/[0-9a-f-]{36}\.(?:webp|mp4)$/;
 
 /**
  * Function figureView
@@ -36,7 +36,18 @@ function figureView(node: ProseMirrorNode): HTMLElement {
   figure.dataset['media'] = String(node.attrs['media']);
   const alt: string = String(node.attrs['alt'] ?? '');
   const src: unknown = node.attrs['src'];
-  if (typeof src === 'string' && src !== '') {
+  if (typeof src === 'string' && src.endsWith('.mp4')) {
+    // A video figure (D57) shows its first frame; the editor never plays it.
+    const video: HTMLVideoElement = document.createElement('video');
+    video.className = ARTICLE_TYPOGRAPHY.image;
+    video.src = `${src}#t=0.1`;
+    video.muted = true;
+    video.preload = 'metadata';
+    video.playsInline = true;
+    video.draggable = false;
+    if (alt !== '') video.setAttribute('aria-label', alt);
+    figure.append(video);
+  } else if (typeof src === 'string' && src !== '') {
     const image: HTMLImageElement = document.createElement('img');
     image.className = ARTICLE_TYPOGRAPHY.image;
     image.src = src;
@@ -125,10 +136,16 @@ export const FigureNode: Node = Node.create({
         getAttrs: (element: HTMLElement): Record<string, string | null> | false => {
           const media: string | null = element.getAttribute('data-media');
           if (!media || !MEDIA_ID.test(media)) return false;
-          const src: string | null | undefined = element.querySelector('img')?.getAttribute('src');
+          const video: HTMLVideoElement | null = element.querySelector('video');
+          const src: string | null | undefined = video
+            ? video.getAttribute('src')?.split('#')[0]
+            : element.querySelector('img')?.getAttribute('src');
           return {
             media,
-            alt: element.querySelector('img')?.getAttribute('alt') ?? '',
+            alt:
+              (video
+                ? video.getAttribute('aria-label')
+                : element.querySelector('img')?.getAttribute('alt')) ?? '',
             caption: element.querySelector('figcaption')?.textContent ?? '',
             src: src && MEDIA_SRC.test(src) ? src : null,
           };
@@ -139,12 +156,18 @@ export const FigureNode: Node = Node.create({
 
   renderHTML({ node }: { node: ProseMirrorNode }): DOMOutputSpec {
     const src: unknown = node.attrs['src'];
-    const image: [string, Record<string, string>] = [
-      'img',
-      typeof src === 'string' && src !== ''
-        ? { src, alt: String(node.attrs['alt']), class: ARTICLE_TYPOGRAPHY.image }
-        : { alt: String(node.attrs['alt']), class: ARTICLE_TYPOGRAPHY.image },
-    ];
+    const image: [string, Record<string, string>] =
+      typeof src === 'string' && src.endsWith('.mp4')
+        ? [
+            'video',
+            { src, 'aria-label': String(node.attrs['alt']), class: ARTICLE_TYPOGRAPHY.image },
+          ]
+        : [
+            'img',
+            typeof src === 'string' && src !== ''
+              ? { src, alt: String(node.attrs['alt']), class: ARTICLE_TYPOGRAPHY.image }
+              : { alt: String(node.attrs['alt']), class: ARTICLE_TYPOGRAPHY.image },
+          ];
     const caption: string = String(node.attrs['caption'] ?? '');
     const attributes: Record<string, string> = {
       'data-media': String(node.attrs['media']),

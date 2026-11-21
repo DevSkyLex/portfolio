@@ -14,7 +14,7 @@ import {
   type TemplateRef,
   type WritableSignal,
 } from '@angular/core';
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, type ParamMap } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
@@ -42,10 +42,6 @@ import {
   ALERT_IMPORTS,
   ButtonDirective,
   PAGE_HEADER_IMPORTS,
-  ResizableHandleComponent,
-  ResizableLayoutService,
-  ResizablePanelDirective,
-  ResizablePanelGroupDirective,
   SheetHeaderDirective,
   SheetService,
   SheetTitleDirective,
@@ -61,13 +57,8 @@ import {
   ToggleGroupItemDirective,
   TooltipDirective,
   type DialogRef,
-  type PanelSize,
   type ToggleGroupValue,
 } from '@vfortin/ui';
-import {
-  DASHBOARD_LAYOUT,
-  DASHBOARD_NARROW_QUERY,
-} from '@internal/content-web-feature-admin/lib/constants/dashboard-layout.constants';
 import { SEO_RANGE_LABELS } from '@internal/content-web-feature-admin/lib/constants/seo-dashboard-labels.constants';
 import type { SeoFigure } from '@internal/content-web-feature-admin/lib/models/seo-figure/seo-figure.interface';
 import type { SeoFormatter } from '@internal/content-web-feature-admin/lib/models/seo-formatter/seo-formatter.interface';
@@ -132,10 +123,9 @@ const CLOCK_MS: number = 30_000;
  * « Tableau de bord » page (D47), the administration's landing page: the 48 px bar naming the
  * section, the page header with the time of the latest collection and one tab per source (Search
  * Console, Audience (GA4), Core Web Vitals, the internal SEO audit; D51), then the reports, at most
- * 1200 px wide, beside a resizable side panel remembered per viewer: the window toggle (7, 28 or 90
- * days, kept in `?periode=`), « Actualiser », the key figures of the tab and the state of every
- * source. Below 1180 px the panel becomes a « Détails » sheet, the window controls return to the page
- * header and each tab shows its figure strip again. Each Google tab shows its own state (variables to
+ * on the page container with no side panel (D36 cards revision): the header holds the window toggle
+ * (7, 28, 90 days or 1 year, kept in `?periode=`), « Actualiser » and a « Détails » sheet with the key
+ * figures of the tab and the state of every source, and each tab shows its strip of figure cards. Each Google tab shows its own state (variables to
  * set, no collection yet, a failed collection above the last good report); another window keeps the
  * previous figures dimmed until it arrives. « Actualiser » starts a background refresh, disabled with
  * a spinner while it runs (the store polls until it ends); within 10 minutes of the previous one its
@@ -150,9 +140,6 @@ const CLOCK_MS: number = 30_000;
     NgTemplateOutlet,
     PAGE_HEADER_IMPORTS,
     SeoAnalyticsPanelComponent,
-    ResizableHandleComponent,
-    ResizablePanelDirective,
-    ResizablePanelGroupDirective,
     SeoAuditPanelComponent,
     SeoFigureListComponent,
     SeoSearchConsolePanelComponent,
@@ -416,7 +403,7 @@ export class AdminDashboardPageComponent {
    * @readonly
    *
    * @description
-   * Key figures of the tab shown, for the side panel; `null` while its source has no report.
+   * Key figures of the tab shown, for the « Détails » sheet; `null` while its source has no report.
    *
    * @type {Signal<TabFigures | null>}
    */
@@ -466,7 +453,7 @@ export class AdminDashboardPageComponent {
    * @readonly
    *
    * @description
-   * Collection state of every source, for the side panel; `null` before the first read.
+   * Collection state of every source, for the « Détails » sheet; `null` before the first read.
    *
    * @type {Signal<readonly SeoSourceStatus[] | null>}
    */
@@ -476,66 +463,6 @@ export class AdminDashboardPageComponent {
     const dashboard: SeoDashboard | null = this.dashboard();
     return dashboard ? seoSourceStatuses(dashboard, this.format) : null;
   });
-
-  /**
-   * Property splitLayout
-   * @readonly
-   *
-   * @description
-   * Default split, bounds and storage key of the reports and the side panel.
-   */
-  protected readonly splitLayout: typeof DASHBOARD_LAYOUT = DASHBOARD_LAYOUT;
-
-  /**
-   * Property layouts
-   * @readonly
-   *
-   * @description
-   * Per-viewer storage of the split between the reports and the side panel.
-   *
-   * @type {ResizableLayoutService}
-   */
-  private readonly layouts: ResizableLayoutService =
-    inject<ResizableLayoutService>(ResizableLayoutService);
-
-  /**
-   * Property panelWidth
-   * @readonly
-   *
-   * @description
-   * Side panel width in pixels, read from storage before the first render so the panel starts at
-   * its remembered width (320 px by default), and kept in step with each save.
-   *
-   * @type {WritableSignal<number>}
-   */
-  protected readonly panelWidth: WritableSignal<number> = signal<number>(
-    this.layouts.readPixels(DASHBOARD_LAYOUT),
-  );
-
-  /**
-   * Property panelDefault
-   * @readonly
-   *
-   * @description
-   * Side panel width bound to its panel, as a pixel size; the reports take the rest.
-   *
-   * @type {Signal<PanelSize>}
-   */
-  protected readonly panelDefault: Signal<PanelSize> = computed<PanelSize>(
-    (): PanelSize => `${this.panelWidth()}px` as const,
-  );
-
-  /**
-   * Property narrow
-   * @readonly
-   *
-   * @description
-   * Whether the side panel moves to the « Détails » sheet and the window controls to the page
-   * header; `false` where `matchMedia` is unavailable.
-   *
-   * @type {WritableSignal<boolean>}
-   */
-  protected readonly narrow: WritableSignal<boolean> = signal<boolean>(false);
 
   /**
    * Property detailsOpen
@@ -576,7 +503,7 @@ export class AdminDashboardPageComponent {
    * @readonly
    *
    * @description
-   * Opens the « Détails » sheet below 1180 px.
+   * Opens the « Détails » sheet.
    *
    * @type {SheetService}
    */
@@ -592,17 +519,6 @@ export class AdminDashboardPageComponent {
    * @type {Injector}
    */
   private readonly injector: Injector = inject<Injector>(Injector);
-
-  /**
-   * Property document
-   * @readonly
-   *
-   * @description
-   * Document whose window answers the narrow layout query.
-   *
-   * @type {Document}
-   */
-  private readonly document: Document = inject<Document>(DOCUMENT);
 
   /**
    * Property refreshTooltip
@@ -662,8 +578,7 @@ export class AdminDashboardPageComponent {
    * @constructor
    *
    * @description
-   * Follows `?periode=` (links, back and forward) to load its window, ticks the page clock, follows
-   * the side panel breakpoint, and toasts the end of a refresh this page started or followed.
+   * Follows `?periode=` (links, back and forward) to load its window, ticks the page clock and toasts the end of a refresh this page started or followed.
    */
   public constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params: ParamMap): void => {
@@ -680,11 +595,6 @@ export class AdminDashboardPageComponent {
     destroy.onDestroy((): void => {
       clearInterval(clock);
       this.detailsSheet?.close();
-    });
-    this.watchWidth(destroy);
-    // Back above 1180 px the side panel shows the details again: an open sheet would repeat them.
-    effect((): void => {
-      if (!this.narrow()) untracked((): void => this.detailsSheet?.close());
     });
     let wasRunning: boolean = false;
     effect((): void => {
@@ -778,7 +688,7 @@ export class AdminDashboardPageComponent {
    * @method openDetails
    *
    * @description
-   * Opens the key figures and the sources in a narrow right sheet whose title takes the focus first,
+   * Opens the key figures and the sources in a right sheet whose title takes the focus first,
    * as the project editor's properties sheet does.
    */
   protected openDetails(): void {
@@ -799,42 +709,6 @@ export class AdminDashboardPageComponent {
   }
 
   /**
-   * Method saveSplit
-   * @method saveSplit
-   *
-   * @description
-   * Remembers the side panel width after a drag, a key press or a reset on the separator; a width
-   * not measured yet is not saved.
-   *
-   * @param {number | undefined} width - Side panel width in pixels.
-   */
-  protected saveSplit(width: number | undefined): void {
-    if (!width) return;
-    this.panelWidth.set(Math.round(width));
-    this.layouts.writePixels(DASHBOARD_LAYOUT, width);
-  }
-
-  /**
-   * Method resetSplit
-   * @method resetSplit
-   *
-   * @description
-   * Restores the default side panel width (320 px) on a double click of the separator, then saves it.
-   *
-   * @param {ResizablePanelGroupDirective} group - Group of the reports and the side panel.
-   * @param {ResizableHandleComponent} handle - Separator between them.
-   */
-  protected resetSplit(
-    group: ResizablePanelGroupDirective,
-    handle: ResizableHandleComponent,
-  ): void {
-    // The delta applies to the reports, before the handle: the panel grows when they shrink.
-    const width: number = DASHBOARD_LAYOUT.pixels.default;
-    group.resizePixels(handle, (group.pixelSizes()[1] ?? width) - width);
-    group.commit();
-  }
-
-  /**
    * Method reload
    * @method reload
    *
@@ -845,25 +719,5 @@ export class AdminDashboardPageComponent {
     void this.store.load(this.store.range());
   }
 
-  /**
-   * Method watchWidth
-   * @method watchWidth
-   *
-   * @description
-   * Follows the side panel breakpoint until the page is destroyed. The admin renders in the browser
-   * only (D18); the optional calls cover environments without `matchMedia`.
-   *
-   * @param {DestroyRef} destroyRef - Lifetime of the page, which removes the listener.
-   */
-  private watchWidth(destroyRef: DestroyRef): void {
-    const query: MediaQueryList | undefined =
-      this.document.defaultView?.matchMedia?.(DASHBOARD_NARROW_QUERY);
-    if (!query) return;
-    this.narrow.set(query.matches);
-    const listener: (event: MediaQueryListEvent) => void = (event: MediaQueryListEvent): void =>
-      this.narrow.set(event.matches);
-    query.addEventListener('change', listener);
-    destroyRef.onDestroy((): void => query.removeEventListener('change', listener));
-  }
   // #endregion
 }

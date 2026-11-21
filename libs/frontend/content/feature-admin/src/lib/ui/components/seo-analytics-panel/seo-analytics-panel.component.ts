@@ -23,7 +23,7 @@ import {
   type ChartSeries,
   type DataTableColumn,
 } from '@vfortin/ui';
-import { lucideFileText } from '@ng-icons/lucide';
+import { lucideEye, lucideFileText, lucideUsers } from '@ng-icons/lucide';
 import { NgIcon } from '@ng-icons/core';
 import type { SeoFormatter } from '@internal/content-web-feature-admin/lib/models/seo-formatter/seo-formatter.interface';
 import { SeoKpiTileComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-kpi-tile/seo-kpi-tile.component';
@@ -89,7 +89,7 @@ type AudienceShare = AnalyticsData['channels'][number];
     SeoSectionHeaderComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-col' },
+  host: { class: 'flex flex-col gap-4' },
   templateUrl: './seo-analytics-panel.component.html',
 })
 export class SeoAnalyticsPanelComponent {
@@ -155,10 +155,8 @@ export class SeoAnalyticsPanelComponent {
    * @readonly
    *
    * @description
-   * Whether the strip of key figures shows above the charts: off while the dashboard's side panel
-   * lists them (D51).
-   *
-   * @type {InputSignalWithTransform<boolean, unknown>}
+   * Whether the strip of key figure cards shows above the charts (on by default, D36 cards
+   * revision).
    */
   public readonly strip: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
     true,
@@ -293,6 +291,7 @@ export class SeoAnalyticsPanelComponent {
     {
       id: 'path',
       header: $localize`:@@admin.dashboard.searchConsole.page:Page`,
+      icon: lucideFileText,
       cell: (page: AudiencePage): string => page.path,
       sortable: true,
       width: 360,
@@ -304,6 +303,7 @@ export class SeoAnalyticsPanelComponent {
       id: 'views',
       width: 112,
       header: $localize`:@@admin.dashboard.analytics.views:Vues`,
+      icon: lucideEye,
       cell: (page: AudiencePage): string => this.format.count(page.views),
       sortValue: (page: AudiencePage): number => page.views,
       sortable: true,
@@ -314,6 +314,7 @@ export class SeoAnalyticsPanelComponent {
       id: 'users',
       width: 168,
       header: $localize`:@@admin.dashboard.analytics.activeUsers:Utilisateurs actifs`,
+      icon: lucideUsers,
       cell: (page: AudiencePage): string => this.format.count(page.activeUsers),
       sortValue: (page: AudiencePage): number => page.activeUsers,
       sortable: true,

@@ -1,5 +1,6 @@
 import { Project, type ProjectRevision, Slug } from '@vfortin/content-domain';
 import { MediaNotFoundError } from '@internal/content-application/lib/errors/application-error';
+import { assertImageCover } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
 import type {
   ContentRepositories,
   ContentUnitOfWork,
@@ -68,6 +69,7 @@ export class CreateProject {
         if (unknown.length > 0) {
           throw new MediaNotFoundError(unknown);
         }
+        assertImageCover(project.coverMedia(), found);
         await projects.insert(project);
         if (mediaIds.length > 0) {
           await media.relink(mediaIds);

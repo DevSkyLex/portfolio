@@ -12,7 +12,14 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
-import { lucideCircleCheck, lucideTriangleAlert } from '@ng-icons/lucide';
+import { flagFr, flagGb } from '@ng-icons/flag-icons';
+import {
+  lucideCircleCheck,
+  lucideFolder,
+  lucideLanguages,
+  lucideMessageSquareWarning,
+  lucideTriangleAlert,
+} from '@ng-icons/lucide';
 import type { SeoAudit, SeoAuditIssue } from '@vfortin/content-web-data-access/admin';
 import {
   BarListComponent,
@@ -21,7 +28,6 @@ import {
   DataTableEmptyDirective,
   EMPTY_IMPORTS,
   StackedBarsComponent,
-  TooltipDirective,
   type BarListItem,
   type ChartLegendEntry,
   type DataTableColumn,
@@ -36,6 +42,7 @@ import type { SeoFormatter } from '@internal/content-web-feature-admin/lib/model
 import { SeoKpiTileComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-kpi-tile/seo-kpi-tile.component';
 import { SeoSectionHeaderComponent } from '@internal/content-web-feature-admin/lib/ui/components/seo-section-header/seo-section-header.component';
 import { SEO_SEVERITY_ICONS } from '@internal/content-web-feature-admin/lib/constants/seo-status-icons.constants';
+import { CONTENT_LOCALE_LABELS } from '@internal/content-web-feature-admin/lib/constants/content-locale-labels.constants';
 import type { SeoStatusIcon } from '@internal/content-web-feature-admin/lib/models/seo-status-icon/seo-status-icon.interface';
 import { seoAuditMessage } from '@internal/content-web-feature-admin/lib/utils/seo-audit-message/seo-audit-message.utils';
 import type { SeoFigure } from '@internal/content-web-feature-admin/lib/models/seo-figure/seo-figure.interface';
@@ -64,8 +71,17 @@ interface IssueRow {
   readonly severityLabel: string;
   readonly status: SeoStatusIcon;
   readonly locale: string;
+  readonly localeFlag: string | null;
   readonly message: string;
 }
+
+/**
+ * Constant LOCALE_FLAGS
+ *
+ * @description
+ * Flag of each content language, the ones of the per-field language toggles (`flag-icons`).
+ */
+const LOCALE_FLAGS: Readonly<Record<'fr' | 'en', string>> = { fr: flagFr, en: flagGb };
 
 /**
  * Constant SEVERITY_RANK
@@ -103,10 +119,9 @@ const SEVERITY_RANK: Readonly<Record<Severity, number>> = { error: 0, warning: 1
     SeoKpiTileComponent,
     SeoSectionHeaderComponent,
     StackedBarsComponent,
-    TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-col' },
+  host: { class: 'flex flex-col gap-4' },
   templateUrl: './seo-audit-panel.component.html',
 })
 export class SeoAuditPanelComponent {
@@ -150,10 +165,8 @@ export class SeoAuditPanelComponent {
    * @readonly
    *
    * @description
-   * Whether the strip of key figures shows above the charts: off while the dashboard's side panel
-   * lists them (D51).
-   *
-   * @type {InputSignalWithTransform<boolean, unknown>}
+   * Whether the strip of key figure cards shows above the charts (on by default, D36 cards
+   * revision).
    */
   public readonly strip: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
     true,
@@ -193,7 +206,9 @@ export class SeoAuditPanelComponent {
             severity: issue.severity,
             severityLabel: SEO_SEVERITY_LABELS[issue.severity],
             status: SEO_SEVERITY_ICONS[issue.severity],
-            locale: issue.locale ? issue.locale.toUpperCase() : '',
+            // Named and flagged like the per-field language toggles.
+            locale: issue.locale ? CONTENT_LOCALE_LABELS[issue.locale] : '',
+            localeFlag: issue.locale ? LOCALE_FLAGS[issue.locale] : null,
             message: seoAuditMessage(issue),
           })),
         )
@@ -289,9 +304,10 @@ export class SeoAuditPanelComponent {
   protected readonly columns: readonly DataTableColumn<IssueRow>[] = [
     {
       id: 'gravite',
-      width: 88,
-      maxWidth: 112,
+      width: 150,
+      maxWidth: 200,
       header: $localize`:@@admin.dashboard.audit.severity:Gravité`,
+      icon: lucideTriangleAlert,
       sortValue: (row: IssueRow): number => SEVERITY_RANK[row.severity],
       sortable: true,
       searchable: false,
@@ -300,20 +316,23 @@ export class SeoAuditPanelComponent {
       id: 'projet',
       width: 176,
       header: $localize`:@@admin.dashboard.audit.project:Projet`,
+      icon: lucideFolder,
       cell: (row: IssueRow): string => row.project,
       sortable: true,
     },
     {
       id: 'langue',
-      width: 88,
-      maxWidth: 112,
+      width: 120,
+      maxWidth: 180,
       header: $localize`:@@admin.dashboard.audit.locale:Langue`,
+      icon: lucideLanguages,
       cell: (row: IssueRow): string => row.locale,
       sortable: true,
     },
     {
       id: 'probleme',
       header: $localize`:@@admin.dashboard.audit.message:Problème`,
+      icon: lucideMessageSquareWarning,
       cell: (row: IssueRow): string => row.message,
       width: 400,
       minWidth: 200,

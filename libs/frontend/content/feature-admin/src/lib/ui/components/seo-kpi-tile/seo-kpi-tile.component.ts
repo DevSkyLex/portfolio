@@ -30,9 +30,9 @@ import type { SeoDelta } from '@internal/content-web-feature-admin/lib/models/se
   imports: [NgIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // One cell of the dashboard's full-width figure strip: the strip draws the hairlines between cells.
-  host: { class: 'block min-w-0 border-e border-b border-border' },
+  host: { class: 'block min-w-0 rounded-xl border border-border' },
   template: `
-    <div class="flex h-full flex-col gap-1 px-6 py-4 @max-[640px]:px-4">
+    <div class="flex h-full flex-col gap-1 px-5 py-4">
       <p class="truncate text-[13px]/5 text-fg-muted">{{ label() }}</p>
       <p class="text-[22px]/7 font-semibold tracking-tight text-fg">{{ value() }}</p>
       @if (delta(); as change) {

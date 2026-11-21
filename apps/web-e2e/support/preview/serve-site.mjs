@@ -19,6 +19,7 @@ const TYPES = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
+  '.mp4': 'video/mp4',
   '.avif': 'image/avif',
   '.txt': 'text/plain; charset=utf-8',
   // Nginx mime.types and `charset utf-8` (docker/nginx/snippets/site.conf): sitemap.xml (D42).
@@ -26,8 +27,8 @@ const TYPES = {
   '.webmanifest': 'application/manifest+json',
 };
 
-/** Uploaded image names (D40), the only files served under `/media/`. */
-const MEDIA_NAME = /^\/media\/[0-9a-f-]{36}(?:-960)?\.webp$/;
+/** Uploaded image and video names (D40, D57), the only files served under `/media/`. */
+const MEDIA_NAME = /^\/media\/[0-9a-f-]{36}(?:(?:-960)?\.webp|\.mp4)$/;
 
 /**
  * Resolves regular files within the root, including after symlink resolution, so adjacent files

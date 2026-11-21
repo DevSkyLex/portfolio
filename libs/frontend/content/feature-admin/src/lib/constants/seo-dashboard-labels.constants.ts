@@ -41,6 +41,7 @@ export const SEO_RANGE_LABELS: Readonly<Record<SeoRange, string>> = {
   '7d': $localize`:@@admin.dashboard.range.7d:7 jours`,
   '28d': $localize`:@@admin.dashboard.range.28d:28 jours`,
   '90d': $localize`:@@admin.dashboard.range.90d:90 jours`,
+  '365d': $localize`:@@admin.dashboard.range.365d:1 an`,
 };
 
 /**

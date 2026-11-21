@@ -264,21 +264,22 @@ describe('SecurityPageComponent', () => {
     expect(devices?.textContent).toContain(
       'l’écran du code propose de faire confiance à l’appareil pendant 30 jours',
     );
-    // The standard full-width header; the content sits in the editor's centred 920 px column.
+    // The standard full-width header; the content spans the container on its gutter, no narrower column.
     const column: HTMLElement | null | undefined = section?.parentElement;
-    expect(column?.classList).toContain('mx-auto');
-    expect(column?.classList).toContain('max-w-[920px]');
+    expect(column?.classList).toContain('py-6');
+    expect([...(column?.classList ?? [])].some((name) => name.includes('max-w-'))).toBe(false);
     expect(devices?.parentElement).toBe(column);
     expect(
       [...(root.querySelector('ui-page-header')?.classList ?? [])].some((name) =>
         name.startsWith('px-'),
       ),
     ).toBe(false);
-    // Both sections share the grid, so titles and rows line up; only spacing divides them.
+    // Both sections share the grid, so titles and rows line up; a hairline rule divides them.
     for (const current of [section, devices]) {
       expect(current?.classList).toContain('@3xl/settings:grid-cols-[14rem_minmax(0,1fr)]');
     }
-    expect(devices?.classList).not.toContain('border-t');
+    expect(devices?.classList).toContain('border-t');
+    expect(section?.classList).not.toContain('border-t');
     expect(devices?.classList).toContain('pt-10');
     expect(section?.classList).toContain('pb-10');
     // No card or hairline rows while disabled: only the dashed empty states, each a 36 px action at most.

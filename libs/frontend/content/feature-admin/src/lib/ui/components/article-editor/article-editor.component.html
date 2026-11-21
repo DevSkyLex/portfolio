@@ -237,9 +237,9 @@
       class="h-8 min-w-8 rounded-sm px-2"
       type="button"
       i18n-aria-label="@@admin.article.toolbar.image.label"
-      aria-label="Image"
+      aria-label="Image ou vidéo"
       i18n-uiTooltip="@@admin.article.toolbar.image.tooltip"
-      uiTooltip="Image : choisir, glisser ou coller un fichier"
+      uiTooltip="Image ou vidéo MP4 : choisir, glisser ou coller un fichier"
       [disabled]="locked() || !upload()"
       (click)="picker.click()"
     >
@@ -348,7 +348,7 @@
           size="14"
           aria-hidden="true"
         />
-        <ng-container i18n="@@admin.article.uploading">Envoi de l’image…</ng-container>
+        <ng-container i18n="@@admin.article.uploading">Envoi du fichier…</ng-container>
       }
     </span>
     <!-- Far end, after the upload status: its buttons join the toolbar's single tab stop. -->

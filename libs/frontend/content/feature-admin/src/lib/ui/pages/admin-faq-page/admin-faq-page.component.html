@@ -1,5 +1,5 @@
 <header
-  class="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[640px]:px-4"
+  class="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] text-[13px] @max-[640px]:px-4"
 >
   <ui-sidebar-trigger class="-ml-2" />
   <span class="font-medium text-fg" aria-current="page" i18n="@@admin.faq.section">FAQ</span>
@@ -21,32 +21,36 @@
   </div>
 </ui-page-header>
 
-@if (loadFailed()) {
-  <div uiAlert variant="danger" class="mx-6 my-6 w-auto max-w-[920px] @max-[640px]:mx-4">
-    <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
-    <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.faq.loadFailed">
-      Impossible de charger les questions
-    </p>
-    <div uiAlertDescription class="gap-2 text-[13px]/5">
-      <p>{{ store.loadCallState().error?.message }}</p>
-      <button
-        uiBtn
-        variant="secondary"
-        size="xs"
-        type="button"
-        i18n="@@admin.faq.action.retry"
-        (click)="reload()"
-      >
-        Réessayer
-      </button>
+<div
+  class="flex min-w-0 flex-1 flex-col gap-4 px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
+>
+  @if (loadFailed()) {
+    <div uiAlert variant="danger" class="w-auto">
+      <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+      <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.faq.loadFailed">
+        Impossible de charger les questions
+      </p>
+      <div uiAlertDescription class="gap-2 text-[13px]/5">
+        <p>{{ store.loadCallState().error?.message }}</p>
+        <button
+          uiBtn
+          variant="secondary"
+          size="xs"
+          type="button"
+          i18n="@@admin.faq.action.retry"
+          (click)="reload()"
+        >
+          Réessayer
+        </button>
+      </div>
     </div>
-  </div>
-} @else {
-  <content-faq-list-dataview
-    [entries]="store.entries()"
-    [loading]="store.loading()"
-    [writing]="store.writing()"
-    (moved)="move($event)"
-    (deleteRequested)="remove($event)"
-  />
-}
+  } @else {
+    <content-faq-list-dataview
+      [entries]="store.entries()"
+      [loading]="store.loading()"
+      [writing]="store.writing()"
+      (moved)="move($event)"
+      (deleteRequested)="remove($event)"
+    />
+  }
+</div>

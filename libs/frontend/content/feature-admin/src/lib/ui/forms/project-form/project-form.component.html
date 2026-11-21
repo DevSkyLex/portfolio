@@ -125,7 +125,8 @@
           }
         </h2>
         <p class="text-[13px]/5 text-fg-faint" i18n="@@admin.project.form.articleHint">
-          Les intertitres forment le sommaire ; glissez ou collez une image pour l’ajouter.
+          Les intertitres forment le sommaire ; glissez ou collez une image ou une vidéo MP4 pour
+          l’ajouter.
         </p>
       </div>
       @if (articleLang === 'en') {
@@ -521,10 +522,7 @@
 -->
 <ng-template #settings>
   <fieldset uiFieldSet class="gap-6" [disabled]="pending()">
-    <section
-      class="flex flex-col gap-3 border-t border-border pt-6"
-      aria-labelledby="edit-cover-label"
-    >
+    <section class="flex flex-col gap-3" aria-labelledby="edit-cover-label">
       <header class="flex flex-col gap-1">
         <h3
           id="edit-cover-label"

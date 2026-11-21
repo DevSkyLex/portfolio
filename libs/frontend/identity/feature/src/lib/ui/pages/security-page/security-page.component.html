@@ -1,6 +1,6 @@
 <!-- Below 1024 px the top bar already names the section: the bar would repeat the title. -->
 <header
-  class="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-6 text-[13px] @max-[1024px]:hidden"
+  class="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] text-[13px] @max-[1024px]:hidden"
 >
   <ui-sidebar-trigger class="-ml-2" />
   <span class="font-medium text-fg" aria-current="page" i18n="@@admin.security.title"
@@ -15,9 +15,9 @@
   </p>
 </ui-page-header>
 
-<!-- The project editor's centred 920 px column; spacing alone divides the sections. -->
+<!-- The full page container on the page header gutter; flat sections split by rules. -->
 <div
-  class="@container/settings mx-auto flex w-full max-w-[920px] min-w-0 flex-col px-6 py-8 @max-[640px]:px-4 @max-[640px]:py-6"
+  class="@container/settings flex w-full min-w-0 flex-col px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
 >
   <section
     class="group/section grid grid-cols-1 gap-x-10 gap-y-4 pb-10 @max-[640px]:pb-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
@@ -164,7 +164,7 @@
   </section>
 
   <section
-    class="grid grid-cols-1 gap-x-10 gap-y-4 pt-10 pb-10 @max-[640px]:pt-8 @max-[640px]:pb-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
+    class="grid grid-cols-1 gap-x-10 gap-y-4 border-t border-border pt-10 pb-10 @max-[640px]:pt-8 @max-[640px]:pb-8 @3xl/settings:grid-cols-[14rem_minmax(0,1fr)]"
     aria-labelledby="trusted-devices-title"
   >
     <div class="flex flex-col gap-1.5 @3xl/settings:pt-4">

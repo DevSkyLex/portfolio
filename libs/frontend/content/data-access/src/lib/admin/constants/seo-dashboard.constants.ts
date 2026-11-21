@@ -9,7 +9,7 @@ import type { SeoRange } from '@internal/content-web-data-access/lib/admin/model
  *
  * @type {readonly SeoRange[]}
  */
-export const SEO_RANGES: readonly SeoRange[] = ['7d', '28d', '90d'];
+export const SEO_RANGES: readonly SeoRange[] = ['7d', '28d', '90d', '365d'];
 
 /**
  * Constant SEO_DEFAULT_RANGE

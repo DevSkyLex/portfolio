@@ -17,6 +17,7 @@ import { AdminMediaApiService } from '@internal/content-web-data-access/lib/admi
  */
 const MEDIA: AdminMedia = {
   id: '3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90',
+  kind: 'image',
   src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp',
   width: 1600,
   height: 900,

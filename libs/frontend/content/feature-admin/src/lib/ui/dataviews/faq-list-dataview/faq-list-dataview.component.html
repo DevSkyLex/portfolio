@@ -1,6 +1,6 @@
 @if (entries().length > 0) {
   <ol
-    class="mx-auto flex w-full max-w-[920px] flex-col px-6 py-4 @max-[640px]:px-4"
+    class="flex w-full flex-col gap-2"
     role="list"
     uiSortableList
     aria-label="Questions"
@@ -10,7 +10,7 @@
   >
     @for (entry of entries(); track entry.id; let i = $index) {
       <li
-        class="flex items-start gap-2 border-b border-border bg-surface py-3"
+        class="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3"
         data-slot="faq-row"
         [uiSortableItem]="i"
       >
@@ -76,16 +76,14 @@
   <span class="sr-only" role="status" i18n="@@admin.faq.list.loading"
     >Chargement des questions…</span
   >
-  <div
-    class="mx-auto flex w-full max-w-[920px] flex-col gap-3 px-6 py-4 @max-[640px]:px-4"
-    aria-hidden="true"
-  >
+  <div class="flex w-full flex-col gap-2" aria-hidden="true">
     <span uiSkeleton class="h-12 w-full"></span>
     <span uiSkeleton class="h-12 w-full"></span>
     <span uiSkeleton class="h-12 w-full"></span>
   </div>
 } @else {
-  <div uiEmpty layout="fill">
+  <!-- Framed like the list it replaces, as the data tables frame their empty state. -->
+  <div uiEmpty layout="fill" class="rounded-xl border border-border">
     <div uiEmptyHeader>
       <div uiEmptyMedia variant="icon">
         <ng-icon [svg]="icons.empty" size="16" />

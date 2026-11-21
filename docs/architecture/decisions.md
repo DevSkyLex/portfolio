@@ -220,6 +220,25 @@ The mockup's control borders (`--line`, 1.22:1 on the page) left outline buttons
 
 The administration (login, sidebar shell, project list and editor, inbox) follows a dense product-tool layout in the manner of Linear rather than the public site's editorial one: Geist at 12 to 14 px for the controls and lists, a 232 px sidebar with 32 px entries, a 48 px title bar per page, hairline rows grouped by status, a properties panel beside the project editor, a two-pane inbox, and keyboard use: Ctrl/Cmd+K opens a command palette (pages, projects, actions), Ctrl/Cmd+S saves a project, J/K and E move through and archive messages (a message shown for one second is marked read, 2026-11-04). Destructive actions confirm in an alert dialog rather than `window.confirm`, and the sidebar displays the inbox owner's unread summary, refreshed on navigation and invalidated by message mutations. It keeps the Orbite tokens and the D35 state scale; aurora violet marks the workspace mark, while selection takes the brand accent `accent` and statuses the D37 families (unread is info). The admin stays client-rendered and is localized like the site (D18 revision).
 
+Cards revision (2026-11-21, owner request). Admin content no longer runs edge to edge between hairlines:
+every page lays its content on the same gutter as the top bar and the page header (24 px, 16 px below
+640 px) and puts each block in a card (`rounded-xl border border-border`, no background), 16 px apart;
+titled groups of cards (the dashboard reports) sit 32 px apart under their heading. Data tables are
+framed and list rows keep their hairlines inside their card, while forms and settings pages
+(information, maintenance, legal, project, timeline entry, FAQ question, security) stay flat on the
+gutter with their hairline dividers, across the full container width with no narrower column (the
+920 px column of the settings page revision is gone, 2026-11-21); the sortable rows (« Repères », « Liens », FAQ questions) are cards 8 px apart; the side panels
+(dashboard details, project properties) stay panels. The bar, the page header and the content share one
+container: centred at 80 rem with a gutter of at least 24 px (16 px below 640 px), computed as
+`max(1.5rem, (100% - 80rem) / 2 + 1.5rem)`. The dashboard has no side panel: its window
+controls and « Détails » sheet sit in the header and each tab shows its figure cards (2026-11-21, with a
+one-year window, `365d`, added to the three others; Search Console keeps 16 months, so the previous
+year it compares with is only partly covered). A page with a side panel (project and timeline entry
+properties) splits the whole page: the column (bar, header, content) keeps the
+container computed on its own width, and the panel runs the full height on the edge, its title row
+continuing the 48 px bar. The dashboard no longer centres its reports
+between hairlines past 1200 px.
+
 Admin audit 1 revision. Widths that carry content are in pixels, not in percent of the window: a
 resizable panel takes `'<n>px'` sizes and bounds, converted with the group's length measured in the
 browser (a `ResizeObserver`; before the first measure a pixel default is a fixed CSS basis), and keeps its
@@ -852,7 +871,7 @@ The owner wants one administration page to follow the site's search presence: Go
 Google Analytics 4, the Core Web Vitals and an internal audit of the content. This decision covers the
 API, which the page will consume.
 
-- **Endpoint**: `GET /api/content/admin/seo/dashboard?range=7d|28d|90d` (`@AdminOnly`, `no-store`,
+- **Endpoint**: `GET /api/content/admin/seo/dashboard?range=7d|28d|90d|365d` (`@AdminOnly`, `no-store`,
   `28d` by default, `SeoDashboardDtoSchema`) answers the range, the refresh state and four sections. Each
   Google section has a `status`: `not-configured` with the environment variables still to set
   (`missing`), `pending` before its first refresh, `ok` with `fetchedAt` and its report, or `error` with
@@ -1162,3 +1181,22 @@ it off.
   (site mark, heading, message or default line, the public e-mail) without header or footer, answered
   503 with `Retry-After: 3600` and `X-Robots-Tag: noindex`; the admin area never reaches the route. An
   unreadable snapshot leaves the site routes to answer as before.
+
+## D57 — MP4 videos in article figures
+
+Project articles show short demonstrations as videos hosted with the other media, never through a
+third-party player (no cookies, no consent, no CSP exception).
+
+- **One figure node**: a figure references an image or a video; the media decides. Alternative text,
+  caption, the media references of a project, the purge and the MCP Markdown (`![alt](media:<id>)`)
+  stay the same for both. A cover must be an image (`content.cover-not-image`, 422).
+- **Upload**: the same endpoint accepts an MP4 up to 50 MiB (images stay at 10 MiB; Nginx allows 51m and streams the body to the service, `proxy_request_buffering off`, since its 32 MiB `/var/cache/nginx` tmpfs could not hold a large video).
+  `Mp4VideoProbe` reads the `ftyp` box (AVIF and HEIF brands remain images) and the track header of
+  the first video track for the display size, rotation applied; the file is kept as sent, without
+  transcoding, so the owner compresses it beforehand. The `media.kind` column (migration
+  `0018_media_kind`) defaults existing rows to `image`.
+- **Serving**: `/media/<uuid>.mp4` is served by Nginx like the WebP files (immutable, byte ranges);
+  the e2e preview server mirrors it.
+- **Playback**: the public figure is a `<video>` with controls, muted, looped, `playsinline` and
+  `preload="metadata"`, sized by its width and height and labelled by the alternative text. It never
+  plays on its own. WebM, posters and remote video import are out of scope.

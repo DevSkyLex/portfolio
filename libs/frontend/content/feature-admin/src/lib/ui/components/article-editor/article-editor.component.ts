@@ -295,11 +295,14 @@ export class ArticleEditorComponent implements FormValueControl<ArticleDocumentD
    * @readonly
    *
    * @description
-   * Types offered by the image picker, from the upload limits.
+   * Types offered by the media picker, from the upload limits: images and MP4 videos (D57).
    *
    * @type {string}
    */
-  protected readonly accept: string = ADMIN_MEDIA_LIMITS.types.join(',');
+  protected readonly accept: string = [
+    ...ADMIN_MEDIA_LIMITS.types,
+    ...ADMIN_MEDIA_LIMITS.videoTypes,
+  ].join(',');
 
   /**
    * Property icons
@@ -1008,8 +1011,8 @@ export class ArticleEditorComponent implements FormValueControl<ArticleDocumentD
    * Method insertImages
    *
    * @description
-   * Uploads image files one after the other and inserts each figure once its media is stored, never a
-   * local `blob:` URL. A refused file or a failed upload is toasted and skipped.
+   * Uploads image or MP4 files (D57) one after the other and inserts each figure once its media is
+   * stored, never a local `blob:` URL. A refused file or a failed upload is toasted and skipped.
    *
    * @param {readonly File[]} files - Files chosen, dropped or pasted.
    * @param {number | null} at - Drop position, or `null` for the selection.
@@ -1021,7 +1024,7 @@ export class ArticleEditorComponent implements FormValueControl<ArticleDocumentD
     if (!upload || this.locked()) return;
     let position: number | null = at;
     for (const file of files) {
-      const refusal: string | null = imageFileError(file);
+      const refusal: string | null = imageFileError(file, true);
       if (refusal) {
         this.toasts.error(refusal);
         continue;
@@ -1032,7 +1035,7 @@ export class ArticleEditorComponent implements FormValueControl<ArticleDocumentD
         position = this.insertFigure(media, position);
       } catch (error) {
         this.toasts.error(
-          $localize`:@@admin.article.toast.uploadFailed:L’image n’a pas été envoyée.`,
+          $localize`:@@admin.article.toast.uploadFailed:Le fichier n’a pas été envoyé.`,
           error instanceof Error && error.message ? { description: error.message } : {},
         );
       } finally {

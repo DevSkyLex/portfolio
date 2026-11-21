@@ -44,13 +44,13 @@ describe('loadContentFixtures', (): void => {
     const first: SeoRefreshSummary = await loadContentFixtures(url, {
       siteOrigin: 'http://localhost:8080',
     });
-    // Search Console and GA4 per range (7, 28, 90 days), and one Web Vitals report.
-    expect(first.refreshed).toBe(7);
+    // Search Console and GA4 per range (7, 28, 90, 365 days), and one Web Vitals report.
+    expect(first.refreshed).toBe(9);
     expect(first.failures).toEqual([]);
     const again: SeoRefreshSummary = await loadContentFixtures(url, {
       siteOrigin: 'http://localhost:8080',
     });
-    expect(again.refreshed).toBe(7);
+    expect(again.refreshed).toBe(9);
 
     const database: ContentDatabaseHandle = await openContentDatabase(url);
     try {

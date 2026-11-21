@@ -88,6 +88,27 @@ import { imageSrcset } from '@internal/content-web-ui/lib/article/utils/image-sr
           }
         </figure>
       }
+      @case ('video') {
+        <!-- Played on demand, muted and looped (D57); the #t fragment paints the first frame. The muted
+             property is bound: the attribute alone does not mute a video created by script. -->
+        <figure [class]="typography.figure + ' ' + reveal()" uiReveal>
+          <video
+            [class]="typography.image"
+            [src]="block.video.src + '#t=0.1'"
+            [width]="block.video.width"
+            [height]="block.video.height"
+            [attr.aria-label]="block.video.label || null"
+            [muted]="true"
+            controls
+            loop
+            playsinline
+            preload="metadata"
+          ></video>
+          @if (block.caption) {
+            <figcaption [class]="typography.caption">{{ block.caption }}</figcaption>
+          }
+        </figure>
+      }
     }
   }`,
 })

@@ -1058,7 +1058,7 @@ export class DataTableComponent<T> {
   protected readonly classes: Signal<string> = computed<string>(() =>
     cn(
       'flex min-w-0 flex-col',
-      this.framed() ? 'gap-4' : 'gap-0',
+      this.framed() ? 'gap-2' : 'gap-0',
       this.fillsEmpty() && 'flex-1',
       this.class(),
     ),
@@ -1087,15 +1087,15 @@ export class DataTableComponent<T> {
    * @readonly
    *
    * @description
-   * Row of the active filter chips and the reset button, under the toolbar; flush tables give it the
-   * page gutter and a hairline, like the toolbar.
+   * Row of the active filter chips and the reset button, under the toolbar: a framed table spaces it by
+   * the table's own gap only; flush tables give it the page gutter and a hairline, like the toolbar.
    *
    * @type {Signal<string>}
    */
   protected readonly filterBarClasses: Signal<string> = computed<string>(() =>
     cn(
       'flex flex-wrap items-center gap-2',
-      this.framed() ? 'pt-2' : 'min-h-11 border-t border-border px-6 py-1.5 @max-[640px]:px-4',
+      !this.framed() && 'min-h-11 border-t border-border px-6 py-1.5 @max-[640px]:px-4',
     ),
   );
 
@@ -1644,11 +1644,17 @@ export class DataTableComponent<T> {
    * @type {Signal<string>}
    */
   protected readonly headClasses: Signal<string> = computed<string>(() =>
-    this.stickyHeader()
-      ? this.scrolls()
-        ? 'sticky top-0 z-1 bg-surface'
-        : 'sticky top-[var(--data-table-sticky-top,0px)] z-1 bg-surface'
-      : '',
+    cn(
+      this.stickyHeader() &&
+        (this.scrolls()
+          ? 'sticky top-0 z-1 bg-surface'
+          : 'sticky top-[var(--data-table-sticky-top,0px)] z-1 bg-surface'),
+      // The opaque sticky heading would square the frame's corners: its edge cells follow the frame's
+      // inner radius (12 px less the 1 px border).
+      this.stickyHeader() &&
+        this.framed() &&
+        '[&>tr>th:first-child]:rounded-ss-[11px] [&>tr>th:last-child]:rounded-se-[11px]',
+    ),
   );
 
   /**
@@ -1680,7 +1686,8 @@ export class DataTableComponent<T> {
     cn(
       'border-b border-border align-middle',
       this.framed()
-        ? 'group-last/row:border-b-0'
+        ? // Inside the frame, the edge cells keep 16 px from the border so a trailing button never hugs it.
+          'group-last/row:border-b-0 first:ps-4 last:pe-4'
         : 'first:ps-6 last:pe-6 @max-[640px]:first:ps-4 @max-[640px]:last:pe-4',
     ),
   );

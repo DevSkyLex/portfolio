@@ -43,6 +43,15 @@ export interface DataTableColumn<T> {
    *
    * @type {boolean | undefined}
    */
+  /**
+   * Property icon
+   * @readonly
+   *
+   * @description
+   * ng-icons SVG shown before the heading text (decorative, the text stays the accessible name).
+   */
+  readonly icon?: string;
+
   readonly headerHidden?: boolean;
 
   /**

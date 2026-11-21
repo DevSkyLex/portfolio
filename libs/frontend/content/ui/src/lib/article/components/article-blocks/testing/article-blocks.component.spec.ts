@@ -226,6 +226,36 @@ describe('ArticleBlocksComponent', (): void => {
     expect(figures[1]?.querySelector('figcaption')).toBeNull();
   });
 
+  it('plays a video figure on demand, muted, with its reserved size and label (D57)', async (): Promise<void> => {
+    const fixture: ComponentFixture<ArticleBlocksComponent> =
+      TestBed.createComponent(ArticleBlocksComponent);
+    fixture.componentRef.setInput('blocks', [
+      {
+        kind: 'video',
+        video: {
+          src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.mp4',
+          width: 1280,
+          height: 720,
+          label: 'Démonstration du filtre',
+        },
+        caption: 'Le filtre en action.',
+      },
+    ] satisfies ArticleBlock[]);
+    await fixture.whenStable();
+    const root: HTMLElement = fixture.nativeElement;
+    const video: HTMLVideoElement | null = root.querySelector('figure > video');
+    expect(video?.getAttribute('src')).toBe(
+      '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.mp4#t=0.1',
+    );
+    expect([video?.getAttribute('width'), video?.getAttribute('height')]).toEqual(['1280', '720']);
+    expect(video?.getAttribute('aria-label')).toBe('Démonstration du filtre');
+    expect(video?.hasAttribute('controls')).toBe(true);
+    expect(video?.hasAttribute('autoplay')).toBe(false);
+    expect(video?.getAttribute('preload')).toBe('metadata');
+    expect(video?.muted).toBe(true);
+    expect(root.querySelector('figcaption')?.textContent).toBe('Le filtre en action.');
+  });
+
   it('lets the page reveal each top-level block', async (): Promise<void> => {
     const root: HTMLElement = await render('reveal-me');
     for (const block of root.children) {

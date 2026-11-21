@@ -27,7 +27,14 @@ import {
   type DumbbellRow,
   type StackedBarRow,
 } from '@vfortin/ui';
-import { lucideGauge } from '@ng-icons/lucide';
+import {
+  lucideFileText,
+  lucideGauge,
+  lucideMonitorSmartphone,
+  lucideMousePointerClick,
+  lucideMove,
+  lucideTimer,
+} from '@ng-icons/lucide';
 import {
   SEO_SOURCE_ERROR_LABELS,
   SEO_STRATEGY_LABELS,
@@ -155,7 +162,7 @@ function pathOf(url: string): string {
     TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-col' },
+  host: { class: 'flex flex-col gap-4' },
   templateUrl: './seo-web-vitals-panel.component.html',
 })
 export class SeoWebVitalsPanelComponent {
@@ -250,10 +257,8 @@ export class SeoWebVitalsPanelComponent {
    * @readonly
    *
    * @description
-   * Whether the strip of key figures shows above the charts: off while the dashboard's side panel
-   * lists them (D51).
-   *
-   * @type {InputSignalWithTransform<boolean, unknown>}
+   * Whether the strip of key figure cards shows above the charts (on by default, D36 cards
+   * revision).
    */
   public readonly strip: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
     true,
@@ -364,6 +369,7 @@ export class SeoWebVitalsPanelComponent {
     {
       id: 'page',
       header: $localize`:@@admin.dashboard.searchConsole.page:Page`,
+      icon: lucideFileText,
       cell: (row: VitalsRow): string => row.path,
       sortable: true,
       width: 240,
@@ -374,6 +380,7 @@ export class SeoWebVitalsPanelComponent {
       id: 'strategy',
       width: 104,
       header: $localize`:@@admin.dashboard.vitals.strategy:Appareil`,
+      icon: lucideMonitorSmartphone,
       cell: (row: VitalsRow): string => row.strategy,
       sortable: true,
     },
@@ -381,6 +388,7 @@ export class SeoWebVitalsPanelComponent {
       id: 'lcp',
       width: 136,
       header: 'LCP',
+      icon: lucideTimer,
       sortValue: (row: VitalsRow): number | null => this.p75(row, 'lcp'),
       sortable: true,
     },
@@ -388,6 +396,7 @@ export class SeoWebVitalsPanelComponent {
       id: 'inp',
       width: 136,
       header: 'INP',
+      icon: lucideMousePointerClick,
       sortValue: (row: VitalsRow): number | null => this.p75(row, 'inp'),
       sortable: true,
     },
@@ -395,6 +404,7 @@ export class SeoWebVitalsPanelComponent {
       id: 'cls',
       width: 136,
       header: 'CLS',
+      icon: lucideMove,
       sortValue: (row: VitalsRow): number | null => this.p75(row, 'cls'),
       sortable: true,
     },
@@ -402,6 +412,7 @@ export class SeoWebVitalsPanelComponent {
       id: 'score',
       width: 136,
       header: $localize`:@@admin.dashboard.vitals.score:Score labo`,
+      icon: lucideGauge,
       sortValue: (row: VitalsRow): number | null => row.scoreValue,
       sortable: true,
     },

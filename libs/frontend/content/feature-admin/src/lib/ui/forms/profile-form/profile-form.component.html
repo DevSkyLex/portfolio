@@ -100,8 +100,13 @@
       </p>
     </div>
     <fieldset uiFieldSet class="gap-0" [disabled]="pending()">
-      <!-- Rows reorder by dragging their grip, or with its arrow keys. -->
-      <div uiSortableList [disabled]="pending()" (moved)="reorder('facts', $event)">
+      <!-- Rows reorder by dragging their grip, or with its arrow keys; each is a card, like the FAQ rows. -->
+      <div
+        class="flex flex-col gap-2"
+        uiSortableList
+        [disabled]="pending()"
+        (moved)="reorder('facts', $event)"
+      >
         @for (fact of profileForm.facts; track $index; let i = $index) {
           @let factKey = 'facts.' + i;
           @let lang = language(factKey);
@@ -111,7 +116,7 @@
           @let labelError = error(fact.label[lang]());
           @let valueError = error(fact.value[lang]());
           <div
-            class="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,2fr)_auto] items-start gap-x-2 gap-y-3 border-b border-border py-4 first:pt-0 @max-[640px]/settings:grid-cols-1"
+            class="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,2fr)_auto] items-start gap-x-2 gap-y-3 rounded-xl border border-border bg-surface p-4 @max-[640px]/settings:grid-cols-1"
             role="group"
             [uiSortableItem]="i"
             [attr.aria-label]="factName"
@@ -203,7 +208,7 @@
             </span>
           </div>
         } @empty {
-          <div uiEmpty appearance="dashed" class="mb-4">
+          <div uiEmpty appearance="dashed">
             <div uiEmptyHeader>
               <div uiEmptyMedia variant="icon">
                 <ng-icon [svg]="icons.facts" size="16" />
@@ -256,7 +261,12 @@
       </p>
     </div>
     <fieldset uiFieldSet class="gap-0" [disabled]="pending()">
-      <div uiSortableList [disabled]="pending()" (moved)="reorder('links', $event)">
+      <div
+        class="flex flex-col gap-2"
+        uiSortableList
+        [disabled]="pending()"
+        (moved)="reorder('links', $event)"
+      >
         @for (link of profileForm.links; track $index; let i = $index) {
           @let kindId = 'edit-profile-link-' + i + '-kind';
           @let urlId = 'edit-profile-link-' + i + '-url';
@@ -266,7 +276,7 @@
           @let labelError = error(link.label());
           @let option = kindOption(link.kind().value());
           <div
-            class="grid grid-cols-[auto_9rem_minmax(0,3fr)_minmax(0,2fr)_auto] items-start gap-x-2 gap-y-3 border-b border-border py-4 first:pt-0 @max-[640px]/settings:grid-cols-1"
+            class="grid grid-cols-[auto_9rem_minmax(0,3fr)_minmax(0,2fr)_auto] items-start gap-x-2 gap-y-3 rounded-xl border border-border bg-surface p-4 @max-[640px]/settings:grid-cols-1"
             role="group"
             [uiSortableItem]="i"
             [attr.aria-label]="rowLabel('link', i)"
@@ -370,7 +380,7 @@
             </span>
           </div>
         } @empty {
-          <div uiEmpty appearance="dashed" class="mb-4">
+          <div uiEmpty appearance="dashed">
             <div uiEmptyHeader>
               <div uiEmptyMedia variant="icon">
                 <ng-icon [svg]="icons.links" size="16" />

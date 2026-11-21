@@ -23,7 +23,10 @@ import type {
   TimelineEntry,
 } from '@vfortin/content-domain';
 import { toPublicCodeBlock } from '@internal/content-adapters-in/lib/http/presenters/code-tokens/code-tokens.presenter';
-import { toPublicImage } from '@internal/content-adapters-in/lib/http/presenters/media/media.presenter';
+import {
+  toPublicFigure,
+  toPublicImage,
+} from '@internal/content-adapters-in/lib/http/presenters/media/media.presenter';
 import { projectPeriodLabel } from '@internal/content-adapters-in/lib/http/presenters/project-period/project-period.presenter';
 
 /**
@@ -58,11 +61,7 @@ function publicArticle(
         : [
             {
               type: 'figure',
-              attrs: {
-                ...toPublicImage(record),
-                alt: block.attrs.alt,
-                caption: block.attrs.caption,
-              },
+              attrs: toPublicFigure(record, block.attrs.alt, block.attrs.caption),
             },
           ];
     });

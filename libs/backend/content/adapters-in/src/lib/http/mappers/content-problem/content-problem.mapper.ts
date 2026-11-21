@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import type { ProblemMapper } from '@vfortin/backend-http';
 import {
+  CoverNotImageError,
   MediaMissingError,
   ManualPublicationDisabledError,
   MediaNotFoundError,
@@ -85,7 +86,11 @@ export const contentProblemMapper: ProblemMapper = (
       title: exception.message,
     };
   }
-  if (exception instanceof MediaNotFoundError || exception instanceof DomainError) {
+  if (
+    exception instanceof MediaNotFoundError ||
+    exception instanceof CoverNotImageError ||
+    exception instanceof DomainError
+  ) {
     return {
       status: HttpStatus.UNPROCESSABLE_ENTITY,
       code: exception.code,

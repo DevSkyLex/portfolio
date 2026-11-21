@@ -12,5 +12,5 @@ import type { AdminMedia } from '@internal/content-web-data-access/lib/admin/mod
  * @returns {AdminMedia} Independent media view.
  */
 export function toAdminMedia(dto: MediaDto): AdminMedia {
-  return { id: dto.id, src: dto.src, width: dto.width, height: dto.height };
+  return { id: dto.id, kind: dto.kind, src: dto.src, width: dto.width, height: dto.height };
 }

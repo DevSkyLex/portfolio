@@ -391,6 +391,7 @@ describe('ContentModule', (): void => {
         uploaded = response.body;
         expect(uploaded).toEqual({
           id: expect.stringMatching(/^[0-9a-f-]{36}$/),
+          kind: 'image',
           src: `/media/${uploaded.id}.webp`,
           width: 1600,
           height: 900,
@@ -492,6 +493,23 @@ describe('ContentModule', (): void => {
         await expect(purge.execute()).resolves.toEqual({ purged: [uploaded.id] });
         expect(existsSync(join(mediaDirectory, `${uploaded.id}.webp`))).toBe(false);
         expect(readdirSync(mediaDirectory)).toEqual([]);
+      });
+
+      it('stores an MP4 video as sent, with the size of its track (D57)', async (): Promise<void> => {
+        const video: Buffer = tinyMp4(1280, 720);
+        const response: request.Response = await admin()
+          .post('/api/content/admin/media')
+          .set(auth)
+          .attach('file', video, 'demo.mp4');
+        expect(response.status).toBe(201);
+        expect(response.body).toEqual({
+          id: expect.stringMatching(/^[0-9a-f-]{36}$/),
+          kind: 'video',
+          src: `/media/${response.body.id}.mp4`,
+          width: 1280,
+          height: 720,
+        });
+        expect(readdirSync(mediaDirectory)).toContain(`${response.body.id}.mp4`);
       });
     });
 
@@ -901,3 +919,35 @@ describe('ContentModule', (): void => {
     });
   });
 });
+
+/**
+ * Function tinyMp4
+ *
+ * @description
+ * Builds the smallest MP4 the video probe accepts: an `ftyp` and a `moov` holding one video track
+ * header of the supplied size (no media data, which the server never decodes).
+ *
+ * @param {number} width - Display width.
+ * @param {number} height - Display height.
+ * @returns {Buffer} File bytes.
+ */
+function tinyMp4(width: number, height: number): Buffer {
+  const box = (type: string, ...parts: Buffer[]): Buffer => {
+    const payload: Buffer = Buffer.concat(parts);
+    const header: Buffer = Buffer.alloc(8);
+    header.writeUInt32BE(8 + payload.length, 0);
+    header.write(type, 4, 'ascii');
+    return Buffer.concat([header, payload]);
+  };
+  const tkhd: Buffer = Buffer.alloc(84);
+  tkhd.writeInt32BE(0x10000, 40);
+  tkhd.writeInt32BE(0x10000, 56);
+  tkhd.writeInt32BE(0x40000000, 72);
+  tkhd.writeUInt32BE(width * 65536, 76);
+  tkhd.writeUInt32BE(height * 65536, 80);
+  const hdlr: Buffer = Buffer.concat([Buffer.alloc(8), Buffer.from('vide'), Buffer.alloc(13)]);
+  return Buffer.concat([
+    box('ftyp', Buffer.from('isom'), Buffer.alloc(4), Buffer.from('isommp41')),
+    box('moov', box('trak', box('tkhd', tkhd), box('mdia', box('hdlr', hdlr)))),
+  ]);
+}

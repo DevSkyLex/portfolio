@@ -26,6 +26,8 @@ import type {
   FaqUnitOfWork,
   IdGenerator,
   ImageProcessor,
+  ProbedVideo,
+  VideoProbe,
   LegalDocumentRepository,
   MaintenanceRepository,
   MediaFiles,
@@ -95,6 +97,7 @@ export function mediaRecord(id: string, overrides: Partial<MediaRecord> = {}): M
     height: 800,
     bytes: 1000,
     sha256: `sha-${id}`,
+    kind: 'image',
     hasSmall: true,
     createdAt: new Date('2026-10-01T00:00:00Z'),
     unlinkedAt: null,
@@ -1068,6 +1071,37 @@ export class InMemorySeoReportStore implements SeoReportStore {
    */
   public async refreshState(): Promise<SeoRefreshState> {
     return this.state;
+  }
+  // #endregion
+}
+
+/**
+ * Class FakeVideoProbe
+ * @class FakeVideoProbe
+ * @implements {VideoProbe}
+ *
+ * @description
+ * Recognizes bytes starting with `VID` as a 1920 x 1080 video, and `VIDX` as an MP4 without a
+ * readable video track.
+ */
+export class FakeVideoProbe implements VideoProbe {
+  // #region Methods
+  /**
+   * Method probe
+   * @method probe
+   *
+   * @description
+   * Answers from the leading marker of the bytes.
+   *
+   * @param {Uint8Array} bytes - Uploaded bytes.
+   * @returns {ProbedVideo | null} Display size, or `null` for anything else.
+   */
+  public probe(bytes: Uint8Array): ProbedVideo | null {
+    const head: string = new TextDecoder().decode(bytes.slice(0, 4));
+    if (head === 'VIDX') {
+      throw new UnsupportedMediaError('Send an MP4 video with a readable video track.');
+    }
+    return head.startsWith('VID') ? { width: 1920, height: 1080 } : null;
   }
   // #endregion
 }
