@@ -73,7 +73,7 @@ const project: AdminProject = {
   featured: true,
   article: { fr: FRENCH, en: null },
   cover: { media: MEDIA, alt: t('Couverture') },
-  media: [{ id: MEDIA, src: `/media/${MEDIA}.webp`, width: 1600, height: 900 }],
+  media: [{ id: MEDIA, kind: 'image', src: `/media/${MEDIA}.webp`, width: 1600, height: 900 }],
   seo: {
     title: { fr: 'Library Trails, app de covoiturage' },
     description: {},

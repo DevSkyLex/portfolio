@@ -19,6 +19,15 @@ export interface AdminMedia {
   readonly id: string;
 
   /**
+   * Property kind
+   * @readonly
+   *
+   * @description
+   * `image` or `video` (D57); only an image can be a cover.
+   */
+  readonly kind: 'image' | 'video';
+
+  /**
    * Property src
    * @readonly
    *

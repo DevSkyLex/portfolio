@@ -1,12 +1,12 @@
 <form
-  class="flex flex-1 flex-col"
+  class="flex flex-1 flex-col gap-4"
   novalidate
   [id]="'edit-legal-' + kind() + '-form'"
   (submit)="onSubmit($event)"
 >
   @let lang = shown();
   @let headingId = 'edit-legal-' + kind() + '-title';
-  <section class="flex flex-col gap-4 pb-10 @max-[640px]:pb-8" [attr.aria-labelledby]="headingId">
+  <section class="flex flex-col gap-4" [attr.aria-labelledby]="headingId">
     <div class="flex flex-col gap-1.5">
       <h2 class="flex items-baseline gap-1 text-[14px]/5 font-semibold text-fg" [id]="headingId">
         {{ texts().tab }}

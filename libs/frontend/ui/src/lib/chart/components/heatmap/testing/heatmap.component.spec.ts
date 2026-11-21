@@ -99,13 +99,16 @@ describe('HeatmapComponent', (): void => {
     ]);
   });
 
-  it('names the hovered cell under the grid and rings it', async (): Promise<void> => {
+  it('names the hovered cell in a bubble and rings it', async (): Promise<void> => {
     const { fixture, host, grid } = await setup();
+    const tooltip = (): Element | null => host.querySelector('[data-slot="heatmap-tooltip"]');
     slots(host)[3]?.dispatchEvent(new PointerEvent('pointerenter'));
     await fixture.whenStable();
     expect(
       host.querySelector('[aria-live="polite"]')?.textContent?.replace(/\s+/g, ' ').trim(),
     ).toBe('2 sessions mardi 10');
+    expect(tooltip()?.textContent?.replace(/\s+/g, ' ').trim()).toBe('2 sessions mardi 10');
+    expect(tooltip()?.getAttribute('aria-hidden')).toBe('true');
     expect(slots(host)[3]?.className).toContain('ring-2');
     slots(host)[0]?.dispatchEvent(new PointerEvent('pointerenter'));
     await fixture.whenStable();
@@ -113,6 +116,7 @@ describe('HeatmapComponent', (): void => {
     grid.dispatchEvent(new PointerEvent('pointerleave'));
     await fixture.whenStable();
     expect(host.querySelector('.ring-2')).toBeNull();
+    expect(tooltip()).toBeNull();
   });
 
   it('moves through the grid with the arrows from the latest measured day', async (): Promise<void> => {

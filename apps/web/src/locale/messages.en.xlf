@@ -1979,16 +1979,16 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.article.toolbar.image.label" datatype="html">
-        <source>Image</source>
-        <target>Image</target>
+        <source>Image ou vidéo</source>
+        <target>Image or video</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/article-editor/article-editor.component.html</context>
           <context context-type="linenumber">241</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.article.toolbar.image.tooltip" datatype="html">
-        <source>Image : choisir, glisser ou coller un fichier</source>
-        <target>Image: choose, drag or paste a file</target>
+        <source>Image ou vidéo MP4 : choisir, glisser ou coller un fichier</source>
+        <target>Image or MP4 video: choose, drag or paste a file</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/article-editor/article-editor.component.html</context>
           <context context-type="linenumber">242,244</context>
@@ -2043,8 +2043,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.article.uploading" datatype="html">
-        <source>Envoi de l’image…</source>
-        <target>Uploading image…</target>
+        <source>Envoi du fichier…</source>
+        <target>Uploading file…</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/article-editor/article-editor.component.html</context>
           <context context-type="linenumber">351,354</context>
@@ -2075,24 +2075,24 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.article.toast.uploadFailed" datatype="html">
-        <source>L’image n’a pas été envoyée.</source>
-        <target>The image wasn't uploaded.</target>
+        <source>Le fichier n’a pas été envoyé.</source>
+        <target>The file wasn't uploaded.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/article-editor/article-editor.component.ts</context>
           <context context-type="linenumber">1035</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.article.figureDialog.title" datatype="html">
-        <source> Image de l’article </source>
-        <target> Article image </target>
+        <source> Média de l’article </source>
+        <target> Article media </target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/article-editor/components/figure-dialog/figure-dialog.component.html</context>
           <context context-type="linenumber">8,10</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.article.figureDialog.description" datatype="html">
-        <source> Le texte alternatif décrit l’image aux lecteurs d’écran ; il est obligatoire avant publication. </source>
-        <target> The alt text describes the image to screen readers; it is required before publishing. </target>
+        <source> Le texte alternatif décrit l’image ou la vidéo aux lecteurs d’écran ; il est obligatoire avant publication. </source>
+        <target> The alt text describes the image or video to screen readers; it is required before publishing. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/article-editor/components/figure-dialog/figure-dialog.component.html</context>
           <context context-type="linenumber">11,15</context>
@@ -3139,8 +3139,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.form.articleHint" datatype="html">
-        <source> Les intertitres forment le sommaire ; glissez ou collez une image pour l’ajouter. </source>
-        <target>Subheadings build the table of contents; drag or paste an image to add it.</target>
+        <source> Les intertitres forment le sommaire ; glissez ou collez une image ou une vidéo MP4 pour l’ajouter. </source>
+        <target>Subheadings build the table of contents; drag or paste an image or MP4 video to add it.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.html</context>
           <context context-type="linenumber">128,131</context>
@@ -3487,8 +3487,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.form.figureAlt" datatype="html">
-        <source>Chaque image de l’article doit avoir un texte alternatif.</source>
-        <target>Every image in the article needs alt text.</target>
+        <source>Chaque image ou vidéo de l’article doit avoir un texte alternatif.</source>
+        <target>Every image or video in the article needs alt text.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/forms/project-form/project-form.component.ts</context>
           <context context-type="linenumber">636</context>
@@ -4841,6 +4841,14 @@
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-timeline-page/admin-timeline-page.component.ts</context>
           <context context-type="linenumber">450</context>
         </context-group>
+      </trans-unit>
+      <trans-unit id="admin.article.mediaFile.type" datatype="html">
+        <source>« <x id="name" equiv-text="name"/> » n’est ni une image ni une vidéo acceptée : JPEG, PNG, WebP, AVIF, GIF ou MP4.</source>
+        <target>"<x id="name" equiv-text="name"/>" is neither an accepted image nor an accepted video: JPEG, PNG, WebP, AVIF, GIF or MP4.</target>
+      </trans-unit>
+      <trans-unit id="admin.article.videoFile.size" datatype="html">
+        <source>« <x id="name" equiv-text="name"/> » dépasse 50 Mo.</source>
+        <target>"<x id="name" equiv-text="name"/>" exceeds 50 MB.</target>
       </trans-unit>
       <trans-unit id="admin.article.imageFile.type" datatype="html">
         <source>« <x id="name" equiv-text="name"/> » n’est pas une image acceptée : JPEG, PNG, WebP, AVIF ou GIF.</source>
@@ -8003,6 +8011,10 @@
         <source>90 jours</source>
         <target>90 days</target>
       </trans-unit>
+      <trans-unit id="admin.dashboard.range.365d" datatype="html">
+        <source>1 an</source>
+        <target>1 year</target>
+      </trans-unit>
       <trans-unit id="admin.dashboard.refresh" datatype="html">
         <source>Actualiser</source>
         <target>Refresh</target>
@@ -8311,6 +8323,10 @@
       <trans-unit id="admin.dashboard.audit.project" datatype="html">
         <source>Projet</source>
         <target>Project</target>
+      </trans-unit>
+      <trans-unit id="admin.dashboard.audit.noLocale" datatype="html">
+        <source>Toutes les langues</source>
+        <target>All languages</target>
       </trans-unit>
       <trans-unit id="admin.dashboard.audit.locale" datatype="html">
         <source>Langue</source>

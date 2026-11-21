@@ -22,7 +22,7 @@ import { CODE_LANGUAGE_LABELS } from '@internal/content-web-data-access/lib/cons
  */
 function legalBlocks(blocks: readonly ArticleBlock[]): LegalBlock[] {
   return blocks.flatMap((block: ArticleBlock): LegalBlock[] => {
-    if (block.kind === 'figure') return [];
+    if (block.kind === 'figure' || block.kind === 'video') return [];
     if (block.kind === 'diagram') {
       return [
         { kind: 'code', language: CODE_LANGUAGE_LABELS.mermaid, text: block.source, tokens: [] },

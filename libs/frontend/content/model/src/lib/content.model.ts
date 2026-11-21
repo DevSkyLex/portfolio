@@ -145,7 +145,7 @@ export type LegalDocumentKind = 'notice' | 'privacy';
  * @description
  * Block of a legal document (D40). Mermaid source is represented as code on legal pages.
  */
-export type LegalBlock = Exclude<ArticleBlock, { readonly kind: 'figure' | 'diagram' }>;
+export type LegalBlock = Exclude<ArticleBlock, { readonly kind: 'figure' | 'video' | 'diagram' }>;
 
 /**
  * Interface LegalSection
@@ -546,7 +546,55 @@ export type ArticleBlock =
   | ArticleCode
   | { readonly kind: 'diagram'; readonly source: string }
   | { readonly kind: 'rule' }
-  | { readonly kind: 'figure'; readonly image: ProjectImage; readonly caption: string };
+  | { readonly kind: 'figure'; readonly image: ProjectImage; readonly caption: string }
+  | { readonly kind: 'video'; readonly video: ProjectVideo; readonly caption: string };
+
+/**
+ * Interface ProjectVideo
+ * @interface ProjectVideo
+ *
+ * @description
+ * MP4 video shown by an article figure (D57), played on demand without sound.
+ */
+export interface ProjectVideo {
+  // #region Properties
+  /**
+   * Property src
+   * @readonly
+   *
+   * @description
+   * URL of the MP4.
+   */
+  readonly src: string;
+
+  /**
+   * Property width
+   * @readonly
+   *
+   * @description
+   * Display width in pixels, which reserves the player's space before it loads.
+   */
+  readonly width: number;
+
+  /**
+   * Property height
+   * @readonly
+   *
+   * @description
+   * Display height in pixels.
+   */
+  readonly height: number;
+
+  /**
+   * Property label
+   * @readonly
+   *
+   * @description
+   * Text alternative describing what the video shows; empty when the caption says it.
+   */
+  readonly label: string;
+  // #endregion
+}
 
 /**
  * Interface ArticleSection

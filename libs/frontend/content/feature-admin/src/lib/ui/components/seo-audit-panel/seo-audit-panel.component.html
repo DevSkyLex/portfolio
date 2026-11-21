@@ -1,5 +1,5 @@
-<!-- Full-width figure strip and chart grid: the hairlines between cells replace cards (D36). -->
-<section aria-labelledby="audit-summary">
+<!-- Figure strip and chart grid: each figure and chart is a card (D36 cards revision). -->
+<section class="flex flex-col gap-4" aria-labelledby="audit-summary">
   <content-seo-section-header
     headingId="audit-summary"
     heading="Synthèse de l’audit"
@@ -8,9 +8,9 @@
     i18n-description="@@admin.dashboard.audit.summaryHint"
   />
   @if (strip()) {
-    <div class="overflow-hidden border-b border-border">
+    <div class="contents">
       <div
-        class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-6"
+        class="grid grid-cols-2 gap-4 @min-[48rem]/dashboard:grid-cols-3 @min-[72rem]/dashboard:grid-cols-6"
       >
         @for (total of totals(); track total.id) {
           <content-seo-kpi-tile [label]="total.label" [value]="total.value" [compared]="false" />
@@ -20,10 +20,10 @@
   }
 
   @if (rows().length) {
-    <div class="overflow-hidden border-b border-border">
-      <div class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2">
+    <div class="contents">
+      <div class="grid gap-4 @min-[56rem]/dashboard:grid-cols-2">
         <section
-          class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+          class="flex min-w-0 flex-col gap-4 rounded-xl border border-border px-5 pt-4 pb-5"
           aria-labelledby="audit-projects"
         >
           <h3 id="audit-projects" class="text-[13px]/5 font-medium text-fg">
@@ -42,7 +42,7 @@
           />
         </section>
         <section
-          class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+          class="flex min-w-0 flex-col gap-4 rounded-xl border border-border px-5 pt-4 pb-5"
           aria-labelledby="audit-kinds"
         >
           <h3 id="audit-kinds" class="text-[13px]/5 font-medium text-fg">
@@ -59,7 +59,7 @@
   }
 </section>
 
-<section aria-labelledby="audit-issues">
+<section class="flex flex-col gap-4" aria-labelledby="audit-issues">
   <content-seo-section-header
     headingId="audit-issues"
     heading="Problèmes relevés"
@@ -74,7 +74,6 @@
     density="compact"
     caption="Problèmes relevés"
     i18n-caption="@@admin.dashboard.audit.caption"
-    [framed]="false"
     [data]="rows()"
     [columns]="columns"
     [facets]="facets"
@@ -82,10 +81,29 @@
     [columnMenu]="false"
   >
     <ng-template uiDataTableCell="gravite" [uiDataTableCellRows]="rows()" let-row>
-      <span data-slot="status-icon" [class]="row.status.classes" [uiTooltip]="row.severityLabel">
-        <ng-icon [svg]="row.status.icon" size="14" aria-hidden="true" />
-        <span class="sr-only">{{ row.severityLabel }}</span>
+      <span class="flex items-center gap-2">
+        <span data-slot="status-icon" [class]="row.status.classes">
+          <ng-icon class="block" [svg]="row.status.icon" size="14" aria-hidden="true" />
+        </span>
+        <span class="text-fg">{{ row.severityLabel }}</span>
       </span>
+    </ng-template>
+
+    <ng-template uiDataTableCell="langue" [uiDataTableCellRows]="rows()" let-row>
+      @if (row.localeFlag; as flag) {
+        <span class="flex items-center gap-2">
+          <ng-icon
+            class="block shrink-0 overflow-hidden rounded-2xs"
+            [svg]="flag"
+            size="16"
+            aria-hidden="true"
+          />
+          <span class="truncate">{{ row.locale }}</span>
+        </span>
+      } @else {
+        <span class="text-fg-faint" aria-hidden="true">—</span>
+        <span class="sr-only" i18n="@@admin.dashboard.audit.noLocale">Toutes les langues</span>
+      }
     </ng-template>
 
     <ng-template uiDataTableCell="projet" [uiDataTableCellRows]="rows()" let-row>

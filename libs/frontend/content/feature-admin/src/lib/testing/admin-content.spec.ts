@@ -95,8 +95,15 @@ const t = (fr: string, en?: string): { fr: string; en?: string } =>
  * @description
  * Media stored by the fake upload endpoint.
  */
-const MEDIA: { id: string; src: string; width: number; height: number } = {
+const MEDIA: {
+  id: string;
+  kind: 'image';
+  src: string;
+  width: number;
+  height: number;
+} = {
   id: '3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90',
+  kind: 'image',
   src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp',
   width: 1600,
   height: 900,
@@ -728,10 +735,10 @@ describe('projects admin (front end)', (): void => {
     await settle();
     await submit();
     expect(root.querySelector('form [data-slot="alert"]')?.textContent).toContain(
-      'Chaque image de l’article doit avoir un texte alternatif.',
+      'Chaque image ou vidéo de l’article doit avoir un texte alternatif.',
     );
     expect(root.querySelector('#edit-article-en-error')?.textContent).toContain(
-      'Chaque image de l’article doit avoir un texte alternatif.',
+      'Chaque image ou vidéo de l’article doit avoir un texte alternatif.',
     );
     expect(root.querySelector('#edit-article-en')?.getAttribute('aria-describedby')).toBe(
       'edit-article-en-error',
@@ -1380,7 +1387,7 @@ describe('AdminProjectEditPageComponent', (): void => {
     const [toast] = TestBed.inject<ToastService>(ToastService).toasts();
     expect([toast?.type, toast?.message, toast?.description]).toEqual([
       'error',
-      'L’image n’a pas été envoyée.',
+      'Le fichier n’a pas été envoyé.',
       'L’image dépasse 10 Mo.',
     ]);
   });

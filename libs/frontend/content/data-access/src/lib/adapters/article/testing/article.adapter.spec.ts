@@ -246,12 +246,25 @@ describe('toArticle', (): void => {
         {
           type: 'figure',
           attrs: {
+            kind: 'image',
             src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp',
             small: null,
             width: 800,
             height: 600,
             alt: 'Écran',
             caption: '',
+          },
+        },
+        {
+          type: 'figure',
+          attrs: {
+            kind: 'video',
+            src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a91.mp4',
+            small: null,
+            width: 1280,
+            height: 720,
+            alt: 'Démonstration',
+            caption: 'En action.',
           },
         },
       ],
@@ -304,6 +317,16 @@ describe('toArticle', (): void => {
           alt: 'Écran',
         },
         caption: '',
+      },
+      {
+        kind: 'video',
+        video: {
+          src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a91.mp4',
+          width: 1280,
+          height: 720,
+          label: 'Démonstration',
+        },
+        caption: 'En action.',
       },
     ]);
   });

@@ -11,6 +11,7 @@ import { projectSeoSource } from '@internal/content-web-feature-admin/lib/utils/
  */
 const MEDIA: AdminMedia = {
   id: '8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f',
+  kind: 'image',
   src: '/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp',
   width: 2400,
   height: 1350,

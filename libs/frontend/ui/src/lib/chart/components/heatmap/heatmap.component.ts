@@ -6,6 +6,8 @@ import {
   inject,
   input,
   signal,
+  viewChild,
+  type ElementRef,
   type InputSignal,
   type InputSignalWithTransform,
   type Signal,
@@ -30,6 +32,12 @@ interface Slot {
   readonly classes: string;
 }
 
+/** Anchor of the hover bubble, in pixels from the frame. */
+interface Bubble {
+  readonly x: number;
+  readonly y: number;
+}
+
 /** A row of the grid as drawn. */
 interface Line {
   readonly index: number;
@@ -44,8 +52,8 @@ interface Line {
  * @description
  * A grid of magnitudes (a calendar of days by weekday): one hue from faint to full in four steps
  * relative to the largest cell (CHART_HEAT_STEPS), a measured zero on the hover surface and a slot
- * outside the window left empty, a "less / more" scale legend, and a readout line under the grid that
- * names the hovered or focused cell (arrows move it on the focused grid). The values stay in a table
+ * outside the window left empty, a "less / more" scale legend, and a bubble above the hovered or
+ * focused cell that names it (arrows move it on the focused grid, a live region announces it). The values stay in a table
  * view.
  */
 @Component({
@@ -60,48 +68,68 @@ interface Line {
     @if (empty()) {
       <p [class]="emptyClasses">{{ emptyLabel() }}</p>
     } @else {
-      <div
-        class="grid gap-0.5 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
-        tabindex="0"
-        role="group"
-        [attr.aria-label]="label()"
-        [attr.aria-describedby]="hintId"
-        [style.grid-template-columns]="template()"
-        (pointerleave)="pointerLeft()"
-        (focus)="focusEntered()"
-        (blur)="focusLeft()"
-        (keydown)="keyPressed($event)"
-      >
-        @for (line of lines(); track line.row.key) {
-          <span
-            class="flex items-center pe-2 text-[11px]/4 whitespace-nowrap text-fg-faint"
-            aria-hidden="true"
-            >{{ line.row.label }}</span
-          >
-          @for (slot of line.slots; track slot.column) {
+      <!-- The positioning box of the bubble: the cells' offsets are measured from it. -->
+      <div #frame class="relative">
+        <div
+          class="grid gap-1 rounded-xs outline-2 outline-offset-4 outline-transparent focus-visible:outline-accent/55"
+          tabindex="0"
+          role="group"
+          [attr.aria-label]="label()"
+          [attr.aria-describedby]="hintId"
+          [style.grid-template-columns]="template()"
+          (pointerleave)="pointerLeft()"
+          (focus)="focusEntered()"
+          (blur)="focusLeft()"
+          (keydown)="keyPressed($event)"
+        >
+          @for (line of lines(); track line.row.key) {
             <span
-              data-slot="heatmap-cell"
-              [class]="slot.classes"
+              class="flex items-center pe-2 text-[11px]/4 whitespace-nowrap text-fg-faint"
               aria-hidden="true"
-              (pointerenter)="pointerEntered(line.index, slot.column)"
-            ></span>
+              >{{ line.row.label }}</span
+            >
+            @for (slot of line.slots; track slot.column) {
+              <span
+                data-slot="heatmap-cell"
+                [class]="slot.classes"
+                aria-hidden="true"
+                [attr.data-row]="line.index"
+                [attr.data-column]="slot.column"
+                (pointerenter)="pointerEntered(line.index, slot.column)"
+              ></span>
+            }
           }
-        }
-        <span aria-hidden="true"></span>
-        @for (column of columns(); track $index) {
-          <span
-            class="min-w-0 overflow-visible pt-1 text-[11px]/4 whitespace-nowrap text-fg-faint"
-            aria-hidden="true"
-            >{{ column }}</span
-          >
+          <span aria-hidden="true"></span>
+          @for (column of columns(); track $index) {
+            <span
+              class="min-w-0 overflow-visible pt-1 text-[11px]/4 whitespace-nowrap text-fg-faint"
+              aria-hidden="true"
+              >{{ column }}</span
+            >
+          }
+        </div>
+
+        <!-- Above the active cell, centred on it; the live region announces it. -->
+        @if (activeCell(); as cell) {
+          @if (bubble(); as at) {
+            <span
+              data-slot="heatmap-tooltip"
+              class="pointer-events-none absolute z-10 block w-max max-w-xs -translate-x-1/2 -translate-y-[calc(100%+6px)] rounded-sm border border-border bg-surface-float px-2 py-1 text-[12px]/4 whitespace-nowrap text-fg-muted shadow-float"
+              aria-hidden="true"
+              [style.left.px]="at.x"
+              [style.top.px]="at.y"
+            >
+              <span class="font-medium text-fg tabular-nums">{{ cell.display }}</span>
+              {{ cell.label }}
+            </span>
+          }
         }
       </div>
 
-      <div class="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <p class="min-h-4 text-[12px]/4 text-fg-muted" aria-live="polite">
+      <div class="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+        <p class="sr-only" aria-live="polite">
           @if (activeCell(); as cell) {
-            <span class="font-medium text-fg tabular-nums">{{ cell.display }}</span>
-            {{ cell.label }}
+            {{ cell.display }} {{ cell.label }}
           }
         </p>
         <span class="flex items-center gap-1.5 text-[11px]/4 text-fg-faint" aria-hidden="true">
@@ -237,9 +265,11 @@ export class HeatmapComponent {
             column,
             cell,
             classes: cn(
-              'h-7 min-w-0 rounded-2xs',
+              // Square once the columns are narrower than 28 px (a year of weeks), 28 px tall otherwise.
+              'aspect-square max-h-7 w-full min-w-0 rounded-2xs',
               cell === null ? CHART_EMPTY_FILL : this.step(cell.value),
-              current && 'ring-2 ring-fg ring-offset-1 ring-offset-surface',
+              // Raised above the following cells, which would otherwise paint over its ring.
+              current && 'relative z-1 ring-2 ring-fg ring-offset-1 ring-offset-surface',
             ),
           };
         }),
@@ -262,6 +292,24 @@ export class HeatmapComponent {
   );
 
   private readonly focused: WritableSignal<boolean> = signal<boolean>(false);
+
+  private readonly frame: Signal<ElementRef<HTMLElement> | undefined> =
+    viewChild<ElementRef<HTMLElement>>('frame');
+
+  /**
+   * Anchor of the bubble in the frame: the top centre of the active cell, measured when the cell
+   * becomes active; the bubble is centred on it, 6 px above.
+   */
+  protected readonly bubble: Signal<Bubble | null> = computed<Bubble | null>((): Bubble | null => {
+    const active: { row: number; column: number } | null = this.active();
+    const frame: HTMLElement | undefined = this.frame()?.nativeElement;
+    if (!active || !frame) return null;
+    const cell: HTMLElement | null = frame.querySelector<HTMLElement>(
+      `[data-row="${active.row}"][data-column="${active.column}"]`,
+    );
+    if (!cell) return null;
+    return { x: cell.offsetLeft + cell.offsetWidth / 2, y: cell.offsetTop };
+  });
   // #endregion
 
   // #region Methods

@@ -46,10 +46,10 @@ import { relativeDate } from '@internal/contact-web-feature-admin/lib/utils/rela
   ],
   templateUrl: './message-list-dataview.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // Beside the reading pane, the inbox page's separator draws the dividing line; `min-w-0` lets the
-  // rows shrink to the pane so the time stays visible and the previews truncate.
+  // The inbox page's pane card draws the frame; `min-w-0` lets the rows shrink to the pane so the
+  // time stays visible and the previews truncate.
   host: {
-    class: 'flex min-h-0 min-w-0 flex-col border-border @max-[1024px]:border-b',
+    class: 'flex min-h-0 min-w-0 flex-col',
   },
 })
 export class MessageListDataviewComponent {

@@ -21,7 +21,7 @@ import type { SeoFigure } from '@internal/content-web-feature-admin/lib/models/s
  * @class SeoFigureListComponent
  *
  * @description
- * Key figures of a dashboard tab in the side panel (D51): one row per figure, its name on the start
+ * Key figures of a dashboard tab in the « Détails » sheet (D51): one row per figure, its name on the start
  * side and its value on the end side with, for a windowed report, its signed change in the ink of
  * its meaning; screen readers also hear whether the change is favourable. The period compared is
  * named once, under the list, instead of on every row as the strip's tiles do.

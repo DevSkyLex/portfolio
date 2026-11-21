@@ -1,5 +1,5 @@
-<!-- Full-width figure strip and chart grid: the hairlines between cells replace cards (D36). -->
-<section aria-labelledby="cwv-summary">
+<!-- Figure strip and chart grid: each figure and chart is a card (D36 cards revision). -->
+<section class="flex flex-col gap-4" aria-labelledby="cwv-summary">
   <content-seo-section-header
     headingId="cwv-summary"
     heading="Synthèse des performances"
@@ -8,8 +8,8 @@
     i18n-description="@@admin.dashboard.vitals.summaryHint"
   />
   @if (strip()) {
-    <div class="overflow-hidden border-b border-border">
-      <div class="-me-px -mb-px grid grid-cols-2 @min-[48rem]/dashboard:grid-cols-4">
+    <div class="contents">
+      <div class="grid grid-cols-2 gap-4 @min-[48rem]/dashboard:grid-cols-4">
         @for (figure of figures(); track figure.id) {
           <content-seo-kpi-tile [label]="figure.label" [value]="figure.value" [compared]="false" />
         }
@@ -17,10 +17,10 @@
     </div>
   }
 
-  <div class="overflow-hidden border-b border-border">
-    <div class="-me-px -mb-px grid @min-[56rem]/dashboard:grid-cols-2">
+  <div class="contents">
+    <div class="grid gap-4 @min-[56rem]/dashboard:grid-cols-2">
       <section
-        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        class="flex min-w-0 flex-col gap-4 rounded-xl border border-border px-5 pt-4 pb-5"
         aria-labelledby="cwv-distribution"
       >
         <div class="flex flex-col gap-1">
@@ -43,7 +43,7 @@
         />
       </section>
       <section
-        class="flex min-w-0 flex-col gap-4 border-e border-b border-border px-6 pt-5 pb-6 @max-[640px]:px-4"
+        class="flex min-w-0 flex-col gap-4 rounded-xl border border-border px-5 pt-4 pb-5"
         aria-labelledby="cwv-scores"
       >
         <div class="flex flex-col gap-1">
@@ -71,7 +71,7 @@
   </div>
 </section>
 
-<section aria-labelledby="cwv-pages">
+<section class="flex flex-col gap-4" aria-labelledby="cwv-pages">
   <content-seo-section-header
     headingId="cwv-pages"
     heading="Mesures par page"
@@ -100,7 +100,6 @@
     columnWidthsKey="portfolio.admin.table.seo-vitals"
     density="compact"
     caption="Core Web Vitals"
-    [framed]="false"
     [data]="rows()"
     [columns]="columns"
     [rowKey]="rowKey"

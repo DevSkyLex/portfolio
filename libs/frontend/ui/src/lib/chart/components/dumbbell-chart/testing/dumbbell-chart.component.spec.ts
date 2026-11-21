@@ -54,8 +54,8 @@ describe('DumbbellChartComponent', (): void => {
     const rows: HTMLElement[] = [...host.querySelectorAll<HTMLElement>('ul[aria-label] > li')];
     expect(host.querySelector('ul[aria-label]')?.getAttribute('aria-label')).toBe('Score labo');
     expect(rows.map((row: HTMLElement) => row.textContent?.replace(/\s+/g, ''))).toEqual([
-      '/Mobile40·Ordinateur90',
-      '/projectsMobile60·Ordinateur—',
+      '/Mobile40Ordinateur90',
+      '/projectsMobile60Ordinateur—',
     ]);
     // Ceiling 100 from the values (four steps of 25).
     const first: HTMLElement[] = [
@@ -87,6 +87,30 @@ describe('DumbbellChartComponent', (): void => {
     fixture.componentRef.setInput('max', null);
     await fixture.whenStable();
     expect(host.querySelectorAll('li .ring-surface')).toHaveLength(0);
+  });
+
+  it('splits two measures too close to tell apart and keeps apart ones on the rule', async (): Promise<void> => {
+    const { fixture, host } = await setup();
+    fixture.componentRef.setInput('rows', [
+      {
+        key: 'a',
+        label: 'a',
+        start: { value: 67, display: '67' },
+        end: { value: 66, display: '66' },
+      },
+      ...ROWS,
+    ]);
+    await fixture.whenStable();
+    const rows: HTMLElement[] = [...host.querySelectorAll<HTMLElement>('ul[aria-label] > li')];
+    const close: string[] = [...(rows[0]?.querySelectorAll('.ring-surface') ?? [])].map(
+      (dot: Element) => dot.className,
+    );
+    expect(close[0]).toContain('-mt-1.5');
+    expect(close[1]).toContain('mt-1.5');
+    const apart: string[] = [...(rows[1]?.querySelectorAll('.ring-surface') ?? [])].map(
+      (dot: Element) => dot.className,
+    );
+    expect(apart.some((name: string) => /(^|\s)-?mt-1\.5(\s|$)/.test(name))).toBe(false);
   });
 
   it('keeps its room with a note on the empty surface when there is nothing to draw', async (): Promise<void> => {

@@ -22,8 +22,12 @@ export const ADMIN_MEDIA_LIMITS: {
   readonly field: 'file';
   readonly bytes: number;
   readonly types: readonly string[];
+  readonly videoBytes: number;
+  readonly videoTypes: readonly string[];
 } = {
   field: 'file',
   bytes: 10 * 1024 * 1024,
   types: ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'],
+  videoBytes: 50 * 1024 * 1024,
+  videoTypes: ['video/mp4'],
 } as const;

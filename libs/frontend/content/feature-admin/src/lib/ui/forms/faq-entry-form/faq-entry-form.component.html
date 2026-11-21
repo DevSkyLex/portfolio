@@ -1,11 +1,11 @@
 <form
   id="edit-faq-form"
-  class="@container/form flex flex-1 flex-col gap-8"
+  class="@container/form flex flex-1 flex-col gap-4"
   novalidate
   (submit)="onSubmit($event)"
 >
   @if (summary(); as message) {
-    <div uiAlert variant="danger" class="-mb-2">
+    <div uiAlert variant="danger">
       <ng-icon [svg]="icons.alert" size="16" aria-hidden="true" />
       <p uiAlertTitle class="text-[13px]/5">{{ message }}</p>
     </div>

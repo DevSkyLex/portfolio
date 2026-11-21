@@ -32,3 +32,20 @@
     overflow-x: hidden;
   }
 }
+
+/*
+ * Quieter fields in the administration (owner request, 2026-11-21): the rim of every control takes the
+ * hairline of the dividers and, in the dark theme, the field sits halfway between the page and the
+ * raised surface. The disabled fill keeps its own value, which derived from the field rim. Both
+ * selectors outrank `:root[data-theme='light']` of theme.css; unlayered like
+ * the tokens, which a rule of the base layer could not override.
+ */
+html[data-admin]:not([data-theme='light']) {
+  --surface-field: color-mix(in srgb, var(--surface-raised) 50%, var(--surface));
+  --border-field: var(--border);
+  --fill-disabled: color-mix(in srgb, var(--border-strong) 42%, var(--surface));
+}
+
+html[data-admin][data-theme='light'] {
+  --border-field: var(--border);
+}

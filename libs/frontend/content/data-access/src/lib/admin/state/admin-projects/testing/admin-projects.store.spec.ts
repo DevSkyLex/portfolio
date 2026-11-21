@@ -238,8 +238,15 @@ describe('AdminProjectsStore', (): void => {
 
 describe('toAdminProject', (): void => {
   it('projects transport optional values and owns nested mutable collections', (): void => {
-    const media: { id: string; src: string; width: number; height: number } = {
+    const media: {
+      id: string;
+      kind: 'image';
+      src: string;
+      width: number;
+      height: number;
+    } = {
       id: '3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90',
+      kind: 'image',
       src: '/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp',
       width: 1200,
       height: 800,

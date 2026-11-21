@@ -28,7 +28,14 @@ import {
   type StackedBarRow,
   type StackedBarSegment,
 } from '@vfortin/ui';
-import { lucideFileText, lucideSearch } from '@ng-icons/lucide';
+import {
+  lucideEye,
+  lucideFileText,
+  lucideListOrdered,
+  lucideMousePointerClick,
+  lucidePercent,
+  lucideSearch,
+} from '@ng-icons/lucide';
 import { NgIcon } from '@ng-icons/core';
 import {
   SEO_DEVICE_LABELS,
@@ -100,7 +107,7 @@ function pagePath(url: string): string {
     StackedBarsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-col' },
+  host: { class: 'flex flex-col gap-4' },
   templateUrl: './seo-search-console-panel.component.html',
 })
 export class SeoSearchConsolePanelComponent {
@@ -158,10 +165,8 @@ export class SeoSearchConsolePanelComponent {
    * @readonly
    *
    * @description
-   * Whether the strip of key figures shows above the charts: off while the dashboard's side panel
-   * lists them (D51).
-   *
-   * @type {InputSignalWithTransform<boolean, unknown>}
+   * Whether the strip of key figure cards shows above the charts (on by default, D36 cards
+   * revision).
    */
   public readonly strip: InputSignalWithTransform<boolean, unknown> = input<boolean, unknown>(
     true,
@@ -384,6 +389,7 @@ export class SeoSearchConsolePanelComponent {
   protected readonly queryColumns: readonly DataTableColumn<SearchRow>[] = this.columns(
     $localize`:@@admin.dashboard.searchConsole.query:Requête`,
     (row: SearchRow): string => row.key,
+    lucideSearch,
   );
 
   /**
@@ -398,6 +404,7 @@ export class SeoSearchConsolePanelComponent {
   protected readonly pageColumns: readonly DataTableColumn<SearchRow>[] = this.columns(
     $localize`:@@admin.dashboard.searchConsole.page:Page`,
     (row: SearchRow): string => pagePath(row.key),
+    lucideFileText,
   );
 
   /**
@@ -423,18 +430,21 @@ export class SeoSearchConsolePanelComponent {
    *
    * @param {string} header - Heading of the name column.
    * @param {(row: SearchRow) => string} name - Name of a row.
+   * @param {string} icon - Icon of the name column's heading.
    *
    * @returns {readonly DataTableColumn<SearchRow>[]} Columns.
    */
   private columns(
     header: string,
     name: (row: SearchRow) => string,
+    icon: string,
   ): readonly DataTableColumn<SearchRow>[] {
     const format: SeoFormatter = this.format;
     return [
       {
         id: 'key',
         header,
+        icon,
         cell: name,
         sortable: true,
         width: 280,
@@ -446,6 +456,7 @@ export class SeoSearchConsolePanelComponent {
         id: 'clicks',
         width: 96,
         header: $localize`:@@admin.dashboard.searchConsole.clicks:Clics`,
+        icon: lucideMousePointerClick,
         cell: (row: SearchRow): string => format.count(row.clicks),
         sortValue: (row: SearchRow): number => row.clicks,
         sortable: true,
@@ -456,6 +467,7 @@ export class SeoSearchConsolePanelComponent {
         id: 'impressions',
         width: 120,
         header: $localize`:@@admin.dashboard.searchConsole.impressions:Impressions`,
+        icon: lucideEye,
         cell: (row: SearchRow): string => format.count(row.impressions),
         sortValue: (row: SearchRow): number => row.impressions,
         sortable: true,
@@ -466,6 +478,7 @@ export class SeoSearchConsolePanelComponent {
         id: 'ctr',
         width: 96,
         header: $localize`:@@admin.dashboard.searchConsole.ctr:CTR`,
+        icon: lucidePercent,
         cell: (row: SearchRow): string => format.percent(row.ctr),
         sortValue: (row: SearchRow): number => row.ctr,
         sortable: true,
@@ -476,6 +489,7 @@ export class SeoSearchConsolePanelComponent {
         id: 'position',
         width: 104,
         header: $localize`:@@admin.dashboard.searchConsole.positionShort:Position`,
+        icon: lucideListOrdered,
         cell: (row: SearchRow): string => (row.position > 0 ? format.decimal(row.position) : '—'),
         sortValue: (row: SearchRow): number | null => (row.position > 0 ? row.position : null),
         sortable: true,

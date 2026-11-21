@@ -22,7 +22,7 @@ import {
  * @description
  * Media answered by the fake upload.
  */
-const MEDIA: AdminMedia = { ...GOLDEN_MEDIA, width: 1600, height: 900 };
+const MEDIA: AdminMedia = { ...GOLDEN_MEDIA, kind: 'image', width: 1600, height: 900 };
 
 /**
  * Constant DOCUMENT
@@ -338,7 +338,7 @@ describe('ArticleEditorComponent', (): void => {
     expect(prevented).toHaveBeenCalled();
     await settle();
     expect(host.upload).toHaveBeenCalledWith(expect.any(File));
-    expect(root.querySelector('[role="status"]')?.textContent).toContain('Envoi de l’image');
+    expect(root.querySelector('[role="status"]')?.textContent).toContain('Envoi du fichier');
     expect(figures(editor)).toEqual([]);
     answer(MEDIA);
     await settle();
@@ -407,9 +407,12 @@ describe('ArticleEditorComponent', (): void => {
     );
     await settle();
     expect(toasts.toasts().map((toast): [string, string] => [toast.type, toast.message])).toEqual([
-      ['error', '« logo.svg » n’est pas une image acceptée : JPEG, PNG, WebP, AVIF ou GIF.'],
+      [
+        'error',
+        '« logo.svg » n’est ni une image ni une vidéo acceptée : JPEG, PNG, WebP, AVIF, GIF ou MP4.',
+      ],
       ['error', '« big.png » dépasse 10 Mo.'],
-      ['error', 'L’image n’a pas été envoyée.'],
+      ['error', 'Le fichier n’a pas été envoyé.'],
     ]);
     expect(toasts.toasts()[2]?.description).toBe('L’image dépasse 10 Mo.');
     expect(figures(editor)).toEqual([]);
@@ -428,7 +431,7 @@ describe('ArticleEditorComponent', (): void => {
     if (!picker) throw new Error('picker missing');
     const click: Mock = vi.fn();
     picker.click = click;
-    toolbarButton(root, 'Image').click();
+    toolbarButton(root, 'Image ou vidéo').click();
     expect(click).toHaveBeenCalled();
     Object.defineProperty(picker, 'files', { value: [png()], configurable: true });
     picker.dispatchEvent(new Event('change'));

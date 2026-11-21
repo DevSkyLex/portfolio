@@ -634,7 +634,7 @@ export class ProjectFormComponent {
             if ((state.touched() || this.complete()) && figuresMissingAlt(document) > 0)
               return {
                 kind: 'figureAlt',
-                message: $localize`:@@admin.project.form.figureAlt:Chaque image de l’article doit avoir un texte alternatif.`,
+                message: $localize`:@@admin.project.form.figureAlt:Chaque image ou vidéo de l’article doit avoir un texte alternatif.`,
               };
             if (this.gaps().has(`article.${locale}`)) return INCOMPLETE_ERROR;
             return this.serverError(`article.${locale}`, document);

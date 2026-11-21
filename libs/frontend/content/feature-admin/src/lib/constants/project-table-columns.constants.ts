@@ -1,4 +1,13 @@
 import type { AdminProject } from '@vfortin/content-web-data-access/admin';
+import {
+  lucideCircleDot,
+  lucideFolder,
+  lucideHistory,
+  lucideLayers,
+  lucideLink,
+  lucideListChecks,
+  lucideStar,
+} from '@ng-icons/lucide';
 import type { DataTableColumn } from '@vfortin/ui';
 
 /**
@@ -20,6 +29,7 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
   {
     id: 'titre',
     header: $localize`:@@admin.projects.heading.project:Projet`,
+    icon: lucideFolder,
     sortable: true,
     hideable: false,
     sortValue: (project: AdminProject): string => project.title.fr,
@@ -28,6 +38,7 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
   {
     id: 'slug',
     header: $localize`:@@admin.projects.heading.slug:Slug`,
+    icon: lucideLink,
     sortable: true,
     sortValue: (project: AdminProject): string => project.slug,
     class: '@max-[760px]:hidden',
@@ -38,6 +49,7 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
   {
     id: 'statut',
     header: $localize`:@@admin.projects.heading.status:Statut`,
+    icon: lucideCircleDot,
     sortable: true,
     sortValue: (project: AdminProject): string => project.status,
     width: 112,
@@ -47,14 +59,16 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
   {
     id: 'accueil',
     header: $localize`:@@admin.projects.heading.featured:Mis en avant`,
+    icon: lucideStar,
     class: '@max-[760px]:hidden',
-    width: 112,
+    width: 136,
     minWidth: 56,
     maxWidth: 200,
   },
   {
     id: 'completude',
     header: $localize`:@@admin.projects.heading.completeness:Complétude`,
+    icon: lucideListChecks,
     class: '@max-[640px]:hidden',
     width: 144,
     minWidth: 64,
@@ -63,6 +77,7 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
   {
     id: 'technos',
     header: $localize`:@@admin.projects.heading.techs:Technos`,
+    icon: lucideLayers,
     class: '@max-[1024px]:hidden',
     width: 224,
     minWidth: 64,
@@ -71,10 +86,11 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
   {
     id: 'version',
     header: $localize`:@@admin.projects.heading.version:Version`,
+    icon: lucideHistory,
     sortable: true,
     sortValue: (project: AdminProject): number => project.version,
     class: '@max-[760px]:hidden',
-    width: 88,
+    width: 112,
     minWidth: 48,
     maxWidth: 160,
   },

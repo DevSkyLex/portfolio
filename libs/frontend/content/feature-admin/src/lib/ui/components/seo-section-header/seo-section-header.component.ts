@@ -7,13 +7,13 @@ import { ChangeDetectionStrategy, Component, input, type InputSignal } from '@an
  * @description
  * Heading of a section of a « Tableau de bord » tab (D51): its title, which names the section for
  * assistive technologies (`id`, referenced by the section's `aria-labelledby`), and one factual line
- * on what the section shows, over the section's full width and above a hairline.
+ * on what the section shows, above the section's cards (D36 cards revision).
  */
 @Component({
   selector: 'content-seo-section-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex flex-col gap-1 border-b border-border px-6 pt-8 pb-4 @max-[640px]:px-4',
+    class: 'flex flex-col gap-1',
   },
   template: `
     <h2 class="text-[15px]/6 font-semibold text-fg" [id]="headingId()">{{ heading() }}</h2>

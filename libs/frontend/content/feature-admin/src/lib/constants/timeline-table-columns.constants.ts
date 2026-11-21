@@ -1,4 +1,5 @@
 import type { AdminTimelineEntry } from '@vfortin/content-web-data-access/admin';
+import { lucideCalendar, lucideLayers, lucideMapPin, lucideType } from '@ng-icons/lucide';
 import type { DataTableColumn } from '@vfortin/ui';
 
 /**
@@ -17,6 +18,7 @@ export const TIMELINE_TABLE_COLUMNS: readonly DataTableColumn<AdminTimelineEntry
   {
     id: 'intitule',
     header: $localize`:@@admin.timeline.column.title:Intitulé`,
+    icon: lucideType,
     sortable: true,
     hideable: false,
     sortValue: (entry: AdminTimelineEntry): string => entry.title.fr,
@@ -25,6 +27,7 @@ export const TIMELINE_TABLE_COLUMNS: readonly DataTableColumn<AdminTimelineEntry
   {
     id: 'periode',
     header: $localize`:@@admin.timeline.column.period:Période`,
+    icon: lucideCalendar,
     sortable: true,
     // Months as one number; an ongoing entry ends after every dated one.
     sortValue: (entry: AdminTimelineEntry): number =>
@@ -38,6 +41,7 @@ export const TIMELINE_TABLE_COLUMNS: readonly DataTableColumn<AdminTimelineEntry
   {
     id: 'lieu',
     header: $localize`:@@admin.timeline.column.place:Lieu`,
+    icon: lucideMapPin,
     sortable: true,
     sortValue: (entry: AdminTimelineEntry): string => entry.place.fr,
     class: 'w-56 @max-[760px]:hidden',
@@ -48,6 +52,7 @@ export const TIMELINE_TABLE_COLUMNS: readonly DataTableColumn<AdminTimelineEntry
   {
     id: 'technos',
     header: $localize`:@@admin.timeline.column.techs:Technos`,
+    icon: lucideLayers,
     class: 'w-56 @max-[1024px]:hidden',
     width: 224,
     minWidth: 64,
