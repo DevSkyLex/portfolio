@@ -179,6 +179,25 @@ export function toProjectDraft(project: AdminProject): ProjectDraft {
   };
 }
 
+/** Longest taxonomy key and label the article contract accepts (D58). */
+const TAXONOMY_KEY_MAX: number = 80;
+
+/**
+ * Bounded tag key of a legacy technology, the browser copy of the domain's `technologyTagKey`: a key
+ * within 80 characters is kept, a longer one becomes its stem and a 64-bit FNV-1a suffix. The article
+ * API exposes such a technology under the bounded key, so merging by this key never duplicates it.
+ */
+export function technologyTagKey(tech: string): string {
+  if (tech.length <= TAXONOMY_KEY_MAX) return tech;
+  let hash: bigint = 0xcbf29ce484222325n;
+  for (const character of tech) {
+    hash = BigInt.asUintN(64, (hash ^ BigInt(character.charCodeAt(0))) * 0x100000001b3n);
+  }
+  const suffix: string = hash.toString(16);
+  const stem: string = tech.slice(0, TAXONOMY_KEY_MAX - suffix.length - 1).replace(/-$/, '');
+  return `${stem}-${suffix}`;
+}
+
 /** Keeps legacy technology keys available as tags until their next canonical article save. */
 export function articleTags(
   article: Pick<AdminProject, 'taxonomy' | 'techs'>,
@@ -186,8 +205,11 @@ export function articleTags(
   const tags: Map<string, NonNullable<AdminProject['taxonomy']>['tags'][number]> = new Map(
     (article.taxonomy?.tags ?? []).map((tag) => [tag.key, tag]),
   );
-  for (const key of article.techs) {
-    if (!tags.has(key)) tags.set(key, { key, label: { fr: key, en: key } });
+  for (const tech of article.techs) {
+    // The bounded key matches the tag the API already projected; the label stays within the limit.
+    const key: string = technologyTagKey(tech);
+    const label: string = tech.slice(0, TAXONOMY_KEY_MAX);
+    if (!tags.has(key)) tags.set(key, { key, label: { fr: label, en: label } });
   }
   return [...tags.values()];
 }
