@@ -17,10 +17,9 @@
  *  5. Branch names other than `<type>/<lowercase-kebab>` (commit headers are checked by commitlint in
  *     `.githooks/commit-msg`). Tag creation and deletion.
  *  6. Publishing: `npm|pnpm|yarn publish`, `unpublish`, `deprecate`, `dist-tag add|rm`, `npm version <bump>`,
- *     `docker push`, `gh release create|delete|edit|upload`.
- *  7. Production and deployment: `gh pr merge` (a merge into `main` deploys), `gh workflow run` of the
- *     deploy or site-build workflows, `gh secret|variable set|delete`, `gh api` writes to merges, refs,
- *     releases, secrets or workflow dispatches, `ansible-playbook` (except `--syntax-check` and `--list-*`),
+ *     `docker push`, `gh release delete|edit|upload`.
+ *  7. Production: `gh secret|variable set|delete`, `gh api` writes to refs, releases or secrets,
+ *     `ansible-playbook` (except `--syntax-check` and `--list-*`),
  *     ad-hoc `ansible`, `ansible-vault` operations, `docker compose` on `compose.prod.yml` (except `config`),
  *     and running `docker/scripts/{deploy,publish-site,backup}.sh`.
  *  8. Local data loss: `docker compose down -v`, `docker volume rm|prune`, `docker system prune`,
@@ -72,14 +71,6 @@ const PROTECTED_BRANCHES = new Set(['main']);
  * Package name used to identify a portfolio checkout before enforcing command policy.
  */
 const REPO_NAME = '@vfortin/source';
-/**
- * Constant PRODUCTION_WORKFLOWS
- *
- * @description
- * Matches workflow names that deploy services or publish the site to production.
- */
-const PRODUCTION_WORKFLOWS =
-  /^(?:deploy(?:\.yml)?|site-build(?:\.yml)?|deploy services|site build)$/i;
 /**
  * Constant MAIN_IS_PRODUCTION
  *
@@ -634,43 +625,33 @@ function checkPackageManager(program, argv) {
  * Function checkGh
  *
  * @description
- * Rejects GitHub CLI operations that merge, deploy, change credentials or publish releases.
+ * Rejects GitHub CLI operations that change credentials, rewrite refs or alter published releases.
+ * Merging a pull request, running the deploy workflows and publishing a release (which deploys the
+ * services, docs/operations/deployment.md) are allowed at the owner's request.
  *
  * @param {string[]} argv - GitHub CLI executable and command arguments.
  * @returns {{ what: string, why: string } | null} Refusal for a protected operation, or null otherwise.
  */
 function checkGh(argv) {
   const [, group, action] = argv;
-  if (group === 'pr' && action === 'merge') {
-    return deny('gh pr merge', `${MAIN_IS_PRODUCTION} The user merges.`);
-  }
-  if (group === 'workflow' && action === 'run') {
-    const workflow = argv.slice(3).find((a) => !a.startsWith('-'));
-    if (workflow && PRODUCTION_WORKFLOWS.test(workflow)) {
-      return deny(
-        `gh workflow run ${workflow}`,
-        'It deploys to the VPS. Only the user triggers a deployment.',
-      );
-    }
-  }
   if (['secret', 'variable'].includes(group) && ['set', 'delete', 'remove'].includes(action)) {
     return deny(
       `gh ${group} ${action}`,
       'Repository secrets and variables are changed by the user.',
     );
   }
-  if (group === 'release' && ['create', 'delete', 'edit', 'upload'].includes(action)) {
-    return deny(`gh release ${action}`, 'This repository publishes no GitHub release.');
+  if (group === 'release' && ['delete', 'edit', 'upload'].includes(action)) {
+    return deny(`gh release ${action}`, 'Published releases are changed by the user.');
   }
   if (group === 'api') {
     const text = argv.join(' ');
     if (
-      /\/merge\b|\/git\/refs|\/releases\b|\/secrets\b|\/variables\b|\/dispatches\b/.test(text) &&
+      /\/git\/refs|\/releases\b|\/secrets\b|\/variables\b/.test(text) &&
       /(-X|--method)[ =]?(PUT|POST|PATCH|DELETE)/i.test(text)
     ) {
       return deny(
         'gh api write',
-        'Same limits as merges, pushes, releases, secrets and deployments.',
+        'Same limits as pushes, releases and secrets.',
       );
     }
   }

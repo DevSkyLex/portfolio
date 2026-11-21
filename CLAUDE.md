@@ -44,13 +44,14 @@ own `.claude/` tooling, described in [.claude/README.md](.claude/README.md).
   and `git-and-commits.md` always load.
 - **Hooks** run on every edit and shell command: `guard.mjs` refuses edits of generated files, secrets,
   local data and Nx-managed files and the high-signal architecture violations; `guard-git.mjs` refuses
-  pushes to `main`, merges, deployments, Ansible, the production stack, tags, force pushes, history
-  rewrites and hook bypasses; `guard-delete.mjs` refuses deletes git cannot undo; `format.mjs` formats the
+  pushes to `main`, `git merge` on `main`, Ansible, the production stack, tags, force pushes, history
+  rewrites and hook bypasses (it lets `gh pr merge` and `gh release create` through); `guard-delete.mjs` refuses deletes git cannot undo; `format.mjs` formats the
   edited file with Prettier. A refusal means stop and ask, not work around it.
 - **Dev servers** for the Browser pane are in `.claude/launch.json` (`web` 4200, `site` 4300, services
   3101 to 3103).
 - **Hard limits** (the "AI tooling" section of `AGENTS.md` is authoritative): no commit unless the user
-  asks; never push to `main`, merge into it or deploy; never read or write secrets (service `.env` files,
+  asks; never push to `main`; merge a pull request (`gh pr merge`) or publish a release
+  (`gh release create`, which deploys) only when the user asks; never read or write secrets (service `.env` files,
   `.data/`, `docker/dev/secrets/`, the Ansible vault, key files); never hand-edit generated or Nx-managed
   files. Code, docs and prompts are English; public UI copy is French source with English targets.
 

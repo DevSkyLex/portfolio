@@ -48,8 +48,9 @@ procedures, never over the hard limits.
   public UI copy is French source with explicit `@@` ids and English targets in
   `apps/web/src/locale/messages.en.xlf`, the admin UI included (`@@admin.<area>.<key>`, D18).
 - **Hard limits** (never without the user's explicit request in this conversation; the hooks refuse most
-  of them): no commit unless asked; no push to `main`, merge into it or `gh pr merge` (`main` deploys); no
-  deployment (deploy or site-build workflows, Ansible playbooks, `docker/compose.prod.yml`, deployment
+  of them): no commit unless asked; no push to `main`; merging a pull request (`gh pr merge`) or
+  publishing a release (`gh release create`, which deploys the services) only when the user asks for it,
+  once its checks pass; no other deployment (Ansible playbooks, `docker/compose.prod.yml`, deployment
   scripts, image pushes); no tags, force pushes, rewrites of pushed history or hook bypasses
   (`--no-verify`, `core.hooksPath`, `PF_SKIP_PUSH_CHECKS`); never read or write secrets (service `.env`
   files, `.data/`, `docker/dev/secrets/`, the Ansible vault, key files); never hand-edit generated files
