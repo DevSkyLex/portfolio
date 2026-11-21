@@ -1035,12 +1035,12 @@ export interface SeoReportStore {
  * @template R - Reader of the source.
  *
  * @description
- * A configured source with its reader, or the settings still to provide (environment variable
- * names, shown to the owner as `not-configured`). `demo` marks a stand-in reader of demonstration
- * figures (D52), which the dashboard announces.
+ * A configured source with its reader, the settings still to provide (environment variable names,
+ * shown to the owner as `not-configured`), or, in local development, a source whose reports are the
+ * fixtures loaded in the cache (D55): it has no reader, so a refresh leaves them in place.
  */
 export type SeoSourceSetup<R> =
-  { readonly reader: R; readonly demo?: boolean } | { readonly missing: readonly string[] };
+  { readonly reader: R } | { readonly missing: readonly string[] } | { readonly fixtures: true };
 
 /**
  * Interface SeoSources

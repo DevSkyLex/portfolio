@@ -16,4 +16,7 @@ export {
  * @description
  * Explicit contact database migration command used by service operations.
  */
-export { migrateContact } from '@internal/contact-composition/lib/tasks/contact-database/contact-database.tasks';
+export {
+  loadContactFixtureData,
+  migrateContact,
+} from '@internal/contact-composition/lib/tasks/contact-database/contact-database.tasks';

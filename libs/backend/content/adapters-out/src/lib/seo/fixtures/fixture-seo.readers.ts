@@ -26,7 +26,7 @@ const DAY_MS: number = 86_400_000;
  *
  * @description
  * Deterministic pseudo-random generator (mulberry32) seeded by a text, so that a window always gets the
- * same demonstration figures.
+ * same fixture figures.
  *
  * @param {string} text - Seed.
  * @returns {() => number} Generator of numbers in [0, 1).
@@ -190,15 +190,15 @@ const PAGES: readonly { path: string; weight: number }[] = [
 ];
 
 /**
- * Class DemoSearchConsoleReader
- * @class DemoSearchConsoleReader
+ * Class FixtureSearchConsoleReader
+ * @class FixtureSearchConsoleReader
  *
  * @description
- * Search Console stand-in for local development (D52): plausible figures of a developer portfolio,
- * the same for the same window, so that the dashboard shows its charts before any Google setup. The
- * dashboard says the figures are demonstration data.
+ * Search Console fixture generator (D55): plausible figures of a developer portfolio, the same for
+ * the same window. Run once by the content fixtures, which store its reports in the dashboard cache;
+ * never wired as a live source.
  */
-export class DemoSearchConsoleReader implements SearchConsoleReader {
+export class FixtureSearchConsoleReader implements SearchConsoleReader {
   // #region Constructor
   /**
    * Constructor
@@ -306,13 +306,13 @@ export class DemoSearchConsoleReader implements SearchConsoleReader {
 }
 
 /**
- * Class DemoAnalyticsReader
- * @class DemoAnalyticsReader
+ * Class FixtureAnalyticsReader
+ * @class FixtureAnalyticsReader
  *
  * @description
- * Google Analytics 4 stand-in for local development (D52), deterministic per window.
+ * Google Analytics 4 fixture generator (D55), deterministic per window; run by the content fixtures only.
  */
-export class DemoAnalyticsReader implements AnalyticsReader {
+export class FixtureAnalyticsReader implements AnalyticsReader {
   // #region Methods
   /**
    * Method report
@@ -458,14 +458,14 @@ function vital(p75: number, good: number, poor: number): FieldVital {
 }
 
 /**
- * Class DemoWebVitalsReader
- * @class DemoWebVitalsReader
+ * Class FixtureWebVitalsReader
+ * @class FixtureWebVitalsReader
  *
  * @description
- * PageSpeed Insights stand-in for local development (D52): per URL and strategy, field vitals on the
+ * PageSpeed Insights fixture generator (D55): per URL and strategy, field vitals on the
  * URL or, for the less visited pages, the origin, and a lab run; desktop measures better than mobile.
  */
-export class DemoWebVitalsReader implements WebVitalsReader {
+export class FixtureWebVitalsReader implements WebVitalsReader {
   // #region Methods
   /**
    * Method measure

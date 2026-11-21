@@ -12,6 +12,8 @@ export {
   type ContentHttpOptions,
 } from '@internal/content-composition/lib/http/content-http/content-http';
 export {
+  type ContentFixtureOptions,
+  loadContentFixtures,
   migrateContent,
   seedContentDatabase,
 } from '@internal/content-composition/lib/tasks/content-database/content-database.tasks';

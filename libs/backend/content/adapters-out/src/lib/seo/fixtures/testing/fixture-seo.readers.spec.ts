@@ -7,10 +7,10 @@ import type {
 } from '@vfortin/content-application';
 import type { ReportWindow } from '@vfortin/content-domain';
 import {
-  DemoAnalyticsReader,
-  DemoSearchConsoleReader,
-  DemoWebVitalsReader,
-} from '@internal/content-adapters-out/lib/seo/demo/demo-seo.readers';
+  FixtureAnalyticsReader,
+  FixtureSearchConsoleReader,
+  FixtureWebVitalsReader,
+} from '@internal/content-adapters-out/lib/seo/fixtures/fixture-seo.readers';
 
 /**
  * Constant WINDOW
@@ -37,9 +37,11 @@ const WINDOW: ReportWindow = {
 const sum = (rows: readonly SearchMetrics[], key: 'clicks' | 'impressions'): number =>
   rows.reduce((total: number, row: SearchMetrics): number => total + row[key], 0);
 
-describe('DemoSearchConsoleReader', (): void => {
+describe('FixtureSearchConsoleReader', (): void => {
   it('reports every day of the window with consistent totals, the same for the same window', async (): Promise<void> => {
-    const reader: DemoSearchConsoleReader = new DemoSearchConsoleReader('http://localhost:8080');
+    const reader: FixtureSearchConsoleReader = new FixtureSearchConsoleReader(
+      'http://localhost:8080',
+    );
     const report: SearchConsoleReport = await reader.report(WINDOW);
     expect(report.daily).toHaveLength(28);
     expect(report.daily[0]?.date).toBe('2026-10-05');
@@ -65,9 +67,9 @@ describe('DemoSearchConsoleReader', (): void => {
   });
 });
 
-describe('DemoAnalyticsReader', (): void => {
+describe('FixtureAnalyticsReader', (): void => {
   it('reports the audience of every day with shares adding up to the window', async (): Promise<void> => {
-    const report: AnalyticsReport = await new DemoAnalyticsReader().report(WINDOW);
+    const report: AnalyticsReport = await new FixtureAnalyticsReader().report(WINDOW);
     expect(report.daily).toHaveLength(28);
     expect(report.totals.sessions).toBe(
       report.daily.reduce((total: number, day) => total + day.sessions, 0),
@@ -88,7 +90,7 @@ describe('DemoAnalyticsReader', (): void => {
   });
 
   it('keeps a quieter weekend', async (): Promise<void> => {
-    const report: AnalyticsReport = await new DemoAnalyticsReader().report({
+    const report: AnalyticsReport = await new FixtureAnalyticsReader().report({
       range: '7d',
       current: { start: '2026-10-26', end: '2026-11-01' },
       previous: { start: '2026-10-19', end: '2026-10-25' },
@@ -101,9 +103,9 @@ describe('DemoAnalyticsReader', (): void => {
   });
 });
 
-describe('DemoWebVitalsReader', (): void => {
+describe('FixtureWebVitalsReader', (): void => {
   it('provides varied but valid field samples for different pages', async (): Promise<void> => {
-    const reader: DemoWebVitalsReader = new DemoWebVitalsReader();
+    const reader: FixtureWebVitalsReader = new FixtureWebVitalsReader();
     const samples: WebVitalsMeasure[] = await Promise.all(
       Array.from({ length: 50 }, (_, index: number) =>
         reader.measure(`http://localhost:8080/projects/${index}`, 'mobile'),
@@ -119,7 +121,7 @@ describe('DemoWebVitalsReader', (): void => {
   });
 
   it('measures each URL and strategy the same way, categories following the thresholds', async (): Promise<void> => {
-    const reader: DemoWebVitalsReader = new DemoWebVitalsReader();
+    const reader: FixtureWebVitalsReader = new FixtureWebVitalsReader();
     const urls: string[] = [
       'http://localhost:8080/',
       'http://localhost:8080/projects/library-trails',

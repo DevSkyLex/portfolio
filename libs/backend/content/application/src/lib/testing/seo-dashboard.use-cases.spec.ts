@@ -5,6 +5,7 @@ import {
   ProjectSeo,
   type ReportWindow,
   Slug,
+  reportWindow,
 } from '@vfortin/content-domain';
 import {
   SeoRefreshTooSoonError,
@@ -409,15 +410,34 @@ describe('GetSeoDashboard', (): void => {
   const dashboard = (): Promise<SeoDashboardView> =>
     new GetSeoDashboard(store, sources, repository, clock).execute('28d');
 
-  it('announces demonstration figures when a source is a demo stand-in', async (): Promise<void> => {
-    const view: SeoDashboardView = await new GetSeoDashboard(
+  it('serves a fixture source from the cache, and a refresh leaves it in place', async (): Promise<void> => {
+    const fixtures: SeoSources = { ...sources, analytics: { fixtures: true } };
+    const empty: SeoDashboardView = await new GetSeoDashboard(
       store,
-      { ...sources, analytics: { reader: { report: async () => AUDIENCE }, demo: true } },
+      fixtures,
       repository,
       clock,
     ).execute('28d');
-    expect(view.demo).toBe(true);
-    expect(view.analytics).toEqual({ status: 'pending' });
+    expect(empty.demo).toBe(true);
+    expect(empty.analytics).toEqual({ status: 'pending' });
+    const window: ReturnType<typeof reportWindow> = reportWindow('28d', clock.now(), 1);
+    await store.saveReport(
+      { source: 'analytics', range: '28d', data: { ...AUDIENCE, window } },
+      clock.now(),
+    );
+    await (
+      await new RefreshSeoDashboard(store, fixtures, repository, clock, {
+        siteOrigin: ORIGIN,
+        webVitalsUrls: [],
+      }).start()
+    ).completion;
+    const view: SeoDashboardView = await new GetSeoDashboard(
+      store,
+      fixtures,
+      repository,
+      clock,
+    ).execute('28d');
+    expect(view.analytics).toMatchObject({ status: 'ok', data: { ...AUDIENCE, window } });
   });
 
   it('shows unconfigured and never fetched sections and the audit', async (): Promise<void> => {

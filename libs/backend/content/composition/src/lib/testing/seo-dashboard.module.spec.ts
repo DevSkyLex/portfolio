@@ -6,9 +6,6 @@ import { AdminAuthModule } from '@vfortin/backend-auth';
 import { ObservabilityModule } from '@vfortin/backend-observability';
 import {
   type ContentDatabaseHandle,
-  DemoAnalyticsReader,
-  DemoSearchConsoleReader,
-  DemoWebVitalsReader,
   GoogleAnalyticsReader,
   GoogleSearchConsoleReader,
   PageSpeedWebVitalsReader,
@@ -255,18 +252,12 @@ describe('seoSources', (): void => {
     );
   });
 
-  it('stands demonstration readers in for the unconfigured sources only when asked', (): void => {
-    const sources: SeoSources = seoSources({ ...SEO, demoData: true, pageSpeedApiKey: 'key' });
-    expect(sources.searchConsole).toEqual({
-      reader: expect.any(DemoSearchConsoleReader),
-      demo: true,
-    });
-    expect(sources.analytics).toEqual({ reader: expect.any(DemoAnalyticsReader), demo: true });
+  it('serves the unconfigured sources from the cache fixtures only when asked', (): void => {
+    const sources: SeoSources = seoSources({ ...SEO, fixtureData: true, pageSpeedApiKey: 'key' });
+    expect(sources.searchConsole).toEqual({ fixtures: true });
+    expect(sources.analytics).toEqual({ fixtures: true });
     // A configured source keeps its Google adapter.
     expect(sources.webVitals).toEqual({ reader: expect.any(PageSpeedWebVitalsReader) });
-    expect(seoSources({ ...SEO, demoData: true }).webVitals).toEqual({
-      reader: expect.any(DemoWebVitalsReader),
-      demo: true,
-    });
+    expect(seoSources({ ...SEO, fixtureData: true }).webVitals).toEqual({ fixtures: true });
   });
 });

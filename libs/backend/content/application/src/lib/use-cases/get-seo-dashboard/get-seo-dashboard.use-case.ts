@@ -180,7 +180,8 @@ export interface SeoDashboardView {
    * @readonly
    *
    * @description
-   * Whether a Google section shows demonstration figures instead of an unconfigured source (D52).
+   * Whether a Google section shows the fixtures loaded in the cache instead of an unconfigured
+   * source (D55, local development).
    */
   readonly demo: boolean;
 
@@ -372,9 +373,7 @@ export class GetSeoDashboard {
     ];
     return {
       range,
-      demo: setups.some(
-        (setup: SeoSourceSetup<unknown>): boolean => 'reader' in setup && setup.demo === true,
-      ),
+      demo: setups.some((setup: SeoSourceSetup<unknown>): boolean => 'fixtures' in setup),
       refresh: refreshOf(cache.refresh, now),
       searchConsole: sectionOf(this.sources.searchConsole, cache.searchConsole),
       analytics: sectionOf(this.sources.analytics, cache.analytics),

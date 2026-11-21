@@ -59,8 +59,8 @@ const ContentServiceConfigSchema = z.object({
   SEO_GA4_PROPERTY_ID: optional(z.string().regex(/^\d{6,12}$/)),
   /** PageSpeed Insights API key, from `SEO_PAGESPEED_API_KEY_FILE` in production. */
   SEO_PAGESPEED_API_KEY: optional(z.string().regex(/^[\w-]{20,100}$/)),
-  /** Demonstration figures for each unconfigured Google source (D52); local development only. */
-  SEO_DEMO_DATA: z.preprocess(
+  /** Unconfigured Google sources read the fixtures of the report cache (D55); local development only. */
+  SEO_FIXTURES: z.preprocess(
     (value: unknown): unknown => (value === '' ? undefined : value),
     z.stringbool().default(false),
   ),
@@ -137,7 +137,7 @@ export function seoDashboardOptions(config: ContentServiceConfig): ContentSeoOpt
     analyticsPropertyId: config.SEO_GA4_PROPERTY_ID ?? null,
     pageSpeedApiKey: config.SEO_PAGESPEED_API_KEY ?? null,
     webVitalsUrls: config.SEO_WEB_VITALS_URLS ?? [],
-    demoData: config.SEO_DEMO_DATA,
+    fixtureData: config.SEO_FIXTURES,
   };
 }
 

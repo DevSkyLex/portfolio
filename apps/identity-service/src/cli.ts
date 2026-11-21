@@ -1,4 +1,9 @@
-import { bootstrapAdmin, generateSigningKey, migrateIdentity } from '@vfortin/identity-composition';
+import {
+  bootstrapAdmin,
+  generateSigningKey,
+  loadIdentityFixtureData,
+  migrateIdentity,
+} from '@vfortin/identity-composition';
 import { join } from 'node:path';
 import {
   type IdentityServiceConfig,
@@ -57,9 +62,20 @@ async function run([command, argument]: string[]): Promise<void> {
       );
       return;
     }
+    case 'fixtures': {
+      // Development data only: the production stack never sets this flag (D55).
+      if (process.env['FIXTURES_ALLOWED'] !== 'true') {
+        throw new Error('Fixtures are development data: set FIXTURES_ALLOWED=true to load them.');
+      }
+      const fixture: { readonly email: string } = await loadIdentityFixtureData(
+        config.IDENTITY_DATABASE_URL,
+      );
+      console.log(`Identity fixtures loaded: administrator ${fixture.email}.`);
+      return;
+    }
     default:
       throw new Error(
-        `Unknown command "${command ?? ''}": migrate, generate-key or bootstrap-admin.`,
+        `Unknown command "${command ?? ''}": migrate, generate-key, bootstrap-admin or fixtures.`,
       );
   }
 }

@@ -72,7 +72,7 @@ describe('loadContentServiceConfig', (): void => {
       analyticsPropertyId: null,
       pageSpeedApiKey: null,
       webVitalsUrls: [],
-      demoData: false,
+      fixtureData: false,
     });
   });
 
@@ -93,10 +93,10 @@ describe('loadContentServiceConfig', (): void => {
       analyticsPropertyId: '123456789',
       pageSpeedApiKey: 'AIzaSyFakeKeyForTheDashboardTests0000',
       webVitalsUrls: ['https://valentin-fortin.pro/', 'https://valentin-fortin.pro/en/'],
-      demoData: false,
+      fixtureData: false,
     });
     expect(
-      seoDashboardOptions(loadContentServiceConfig({ ...base, SEO_DEMO_DATA: 'true' })).demoData,
+      seoDashboardOptions(loadContentServiceConfig({ ...base, SEO_FIXTURES: 'true' })).fixtureData,
     ).toBe(true);
     expect(
       loadContentServiceConfig({

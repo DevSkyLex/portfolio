@@ -2,6 +2,8 @@ import {
   type ContactDatabaseHandle,
   migrateContactDatabase,
   openContactDatabase,
+  SystemClock,
+  loadContactFixtures,
 } from '@vfortin/contact-adapters-out';
 
 /**
@@ -17,6 +19,25 @@ export async function migrateContact(databaseUrl: string, migrationsFolder: stri
   const database: ContactDatabaseHandle = await openContactDatabase(databaseUrl);
   try {
     await migrateContactDatabase(database, migrationsFolder);
+  } finally {
+    await database.close();
+  }
+}
+
+/**
+ * Function loadContactFixtureData
+ *
+ * @description
+ * Loads the contact development fixtures (D55): the fixture inbox, dated from now, without any mail.
+ * The database handle is closed even when loading rejects.
+ *
+ * @param {string} databaseUrl - Connection URL for the contact database.
+ * @returns {Promise<number>} Number of fixture messages.
+ */
+export async function loadContactFixtureData(databaseUrl: string): Promise<number> {
+  const database: ContactDatabaseHandle = await openContactDatabase(databaseUrl);
+  try {
+    return await loadContactFixtures(database.db, new SystemClock().now());
   } finally {
     await database.close();
   }
