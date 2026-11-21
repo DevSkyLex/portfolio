@@ -15,12 +15,12 @@ import {
 import { type SeoDashboardDto, SeoDashboardDtoSchema } from '@vfortin/content-contracts';
 import {
   LocalizedText,
-  Project,
+  Article,
   ProjectPeriod,
-  ProjectSeo,
+  ArticleSeo,
   Slug,
   ArticleDocument,
-  auditProjectSeo,
+  auditArticleSeo,
   reportWindow,
 } from '@vfortin/content-domain';
 import { type JWK, SignJWT, exportJWK, generateKeyPair } from 'jose';
@@ -64,7 +64,7 @@ const text = (value: string): LocalizedText => LocalizedText.of('t', { fr: value
  * @description
  * Published project audited by the dashboard fixture.
  */
-const PROJECT: Project = Project.rehydrate({
+const PROJECT: Article = Article.rehydrate({
   id: 'library-trails',
   slug: Slug.of('library-trails'),
   title: text('Atlas'),
@@ -91,7 +91,7 @@ const PROJECT: Project = Project.rehydrate({
     }),
   },
   cover: null,
-  seo: ProjectSeo.empty(),
+  seo: ArticleSeo.empty(),
 });
 
 /**
@@ -150,7 +150,7 @@ function view(): SeoDashboardView {
     },
     audit: {
       generatedAt: FETCHED,
-      projects: [auditProjectSeo(PROJECT)],
+      projects: [auditArticleSeo(PROJECT)],
       sitemap: { pages: 4, urls: 8 },
       totals: { published: 1, drafts: 0, issues: { error: 0, warning: 3, info: 6 } },
     },

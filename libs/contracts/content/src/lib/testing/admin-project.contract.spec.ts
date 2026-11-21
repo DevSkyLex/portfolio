@@ -1,8 +1,11 @@
 import {
   AdminProjectDtoSchema,
   AdminProjectListSchema,
+  ArticleRevisionRequestSchema,
   type ProjectRevisionRequest,
   ProjectRevisionRequestSchema,
+  PublicationKindQuerySchema,
+  PUBLICATION_TAXONOMY_LIMITS,
 } from '@internal/content-contracts/lib/admin-project.contract';
 import project from '@internal/content-contracts/lib/testing/admin-project.fixture.json';
 
@@ -35,6 +38,53 @@ describe('AdminProjectDtoSchema', (): void => {
 });
 
 describe('ProjectRevisionRequestSchema', (): void => {
+  it('accepts bilingual taxonomy and rejects repeated tag keys', (): void => {
+    const category = {
+      key: 'architecture',
+      label: { fr: 'Architecture', en: 'Architecture' },
+    } as const;
+    const tag = { key: 'server-rendering', label: { fr: ' Rendu serveur ' } } as const;
+    const draft: Record<string, unknown> = {
+      ...revisionOf(project),
+      taxonomy: { category, tags: [tag] },
+    };
+    expect(ProjectRevisionRequestSchema.parse(draft).taxonomy).toEqual({
+      category,
+      tags: [{ key: 'server-rendering', label: { fr: 'Rendu serveur' } }],
+    });
+    expect(
+      ProjectRevisionRequestSchema.safeParse({ ...draft, taxonomy: { category, tags: [tag, tag] } })
+        .success,
+    ).toBe(false);
+  });
+
+  it('selects articles explicitly while preserving the project collection by default', (): void => {
+    expect(PublicationKindQuerySchema.parse({})).toEqual({ kind: 'project' });
+    expect(PublicationKindQuerySchema.parse({ kind: 'article' })).toEqual({ kind: 'article' });
+    expect(PublicationKindQuerySchema.safeParse({ kind: 'other' }).success).toBe(false);
+  });
+
+  it('round-trips all tags formerly split across article tags and technologies', (): void => {
+    const tags: NonNullable<ProjectRevisionRequest['taxonomy']>['tags'] = Array.from(
+      { length: PUBLICATION_TAXONOMY_LIMITS.tags },
+      (_, i) => ({
+        key: `term-${i}`,
+        label: { fr: `Term ${i}`, en: `Term ${i}` },
+      }),
+    );
+    const revision: Record<string, unknown> = { ...revisionOf(project), techs: undefined };
+    expect(
+      ArticleRevisionRequestSchema.parse({ ...revision, taxonomy: { category: null, tags } })
+        .taxonomy?.tags,
+    ).toHaveLength(24);
+    expect(
+      ArticleRevisionRequestSchema.safeParse({
+        ...revision,
+        taxonomy: { category: null, tags: [...tags, { key: 'extra', label: { fr: 'Extra' } }] },
+      }).success,
+    ).toBe(false);
+  });
+
   it('accepts the revision built from the fixture and trims the texts', (): void => {
     const parsed: ProjectRevisionRequest = ProjectRevisionRequestSchema.parse({
       ...revisionOf(project),

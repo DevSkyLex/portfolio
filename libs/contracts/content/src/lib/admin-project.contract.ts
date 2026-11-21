@@ -22,6 +22,41 @@ export const LocalizedTextDtoSchema = z.object({
   en: z.optional(z.string().check(z.trim(), z.maxLength(4000))),
 });
 
+/** Identifies the editorial collection that owns a publication. */
+export const PublicationKindSchema = z.enum(['project', 'article']);
+export type PublicationKindDto = z.infer<typeof PublicationKindSchema>;
+
+/** Selects a collection while preserving existing project requests. */
+export const PublicationKindQuerySchema = z.object({
+  kind: z._default(PublicationKindSchema, 'project'),
+});
+export type PublicationKindQuery = z.infer<typeof PublicationKindQuerySchema>;
+
+export const PUBLICATION_TAXONOMY_LIMITS = { key: 80, label: 80, tags: 24 } as const;
+
+/** Locale-independent key used to group articles across translations. */
+export const PublicationTaxonKeySchema = z
+  .string()
+  .check(z.maxLength(PUBLICATION_TAXONOMY_LIMITS.key), z.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/));
+
+const TaxonLabel = z.string().check(z.trim(), z.maxLength(PUBLICATION_TAXONOMY_LIMITS.label));
+const PublicationTaxonSchema = z.object({
+  key: PublicationTaxonKeySchema,
+  label: z.object({ fr: TaxonLabel.check(z.minLength(1)), en: z.optional(TaxonLabel) }),
+});
+
+/** A draft may lack a category or English labels. Publication checks them in the domain. */
+export const PublicationTaxonomySchema = z.object({
+  category: z.nullable(PublicationTaxonSchema),
+  tags: z.array(PublicationTaxonSchema).check(
+    z.maxLength(PUBLICATION_TAXONOMY_LIMITS.tags),
+    z.refine((tags): boolean => new Set(tags.map((tag) => tag.key)).size === tags.length, {
+      message: 'Each tag key must occur only once.',
+    }),
+  ),
+});
+export type PublicationTaxonomyDto = z.infer<typeof PublicationTaxonomySchema>;
+
 /**
  * Type LocalizedTextDto
  * @type LocalizedTextDto
@@ -146,6 +181,7 @@ export const ProjectRevisionRequestSchema = z.object({
   }),
   cover: z.nullable(ProjectCoverDtoSchema),
   seo: ProjectSeoDtoSchema,
+  taxonomy: z.optional(PublicationTaxonomySchema),
 });
 
 /**
@@ -166,6 +202,7 @@ export type ProjectRevisionRequest = z.infer<typeof ProjectRevisionRequestSchema
 export const AdminProjectDtoSchema = z.extend(ProjectRevisionRequestSchema, {
   id: z.string(),
   slug: z.string(),
+  kind: z.optional(PublicationKindSchema),
   status: z.enum(['draft', 'published']),
   version: z.int(),
   position: z.int(),
@@ -203,6 +240,25 @@ export const AdminProjectListSchema = z.object({
  * Project list response returned by the administrator API.
  */
 export type AdminProjectList = z.infer<typeof AdminProjectListSchema>;
+
+/** Article editors use taxonomy. The former technology field remains accepted for older clients. */
+export const ArticleRevisionRequestSchema = z.extend(ProjectRevisionRequestSchema, {
+  techs: z.optional(ProjectRevisionRequestSchema.shape.techs),
+});
+export type ArticleRevisionRequest = z.infer<typeof ArticleRevisionRequestSchema>;
+
+/** The canonical article representation exposes its taxonomy even for legacy records. */
+export const AdminArticleDtoSchema = z.extend(AdminProjectDtoSchema, {
+  taxonomy: PublicationTaxonomySchema,
+});
+export type AdminArticleDto = z.infer<typeof AdminArticleDtoSchema>;
+
+/** All articles, including formerly separate project records. */
+export const AdminArticleListSchema = z.object({
+  member: z.array(AdminArticleDtoSchema),
+  totalItems: z.int(),
+});
+export type AdminArticleList = z.infer<typeof AdminArticleListSchema>;
 
 /**
  * Constant CONTENT_ADMIN_ERROR_CODES

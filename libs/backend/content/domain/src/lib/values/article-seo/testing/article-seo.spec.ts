@@ -5,13 +5,13 @@ import {
   PROJECT_SEO_KEYWORD_MAX_LENGTH,
   PROJECT_SEO_KEYWORD_MIN_LENGTH,
   PROJECT_SEO_TITLE_MAX_LENGTH,
-  ProjectSeo,
-  type ProjectSeoProps,
-} from '@internal/content-domain/lib/values/project-seo/project-seo';
+  ArticleSeo,
+  type ArticleSeoProps,
+} from '@internal/content-domain/lib/values/article-seo/article-seo';
 
-describe('ProjectSeo', (): void => {
+describe('ArticleSeo', (): void => {
   it('trims the texts and keywords and leaves blank texts and empty lists out', (): void => {
-    const seo: ProjectSeo = ProjectSeo.of({
+    const seo: ArticleSeo = ArticleSeo.of({
       title: { fr: '  Library Trails, suivi de séries  ', en: '   ' },
       description: { en: ' A series tracker. ' },
       keywords: { fr: ['  Flutter ', 'Supabase'], en: [] },
@@ -24,7 +24,7 @@ describe('ProjectSeo', (): void => {
   });
 
   it('resolves one language without falling back on the other', (): void => {
-    const seo: ProjectSeo = ProjectSeo.of({
+    const seo: ArticleSeo = ArticleSeo.of({
       title: { fr: 'Library Trails, suivi de séries' },
       description: { en: 'A series tracker.' },
       keywords: { en: ['series tracker'] },
@@ -39,8 +39,8 @@ describe('ProjectSeo', (): void => {
       description: 'A series tracker.',
       keywords: ['series tracker'],
     });
-    expect(ProjectSeo.empty().in('fr')).toEqual({ title: null, description: null, keywords: [] });
-    expect(ProjectSeo.empty().toProps()).toEqual({ title: {}, description: {}, keywords: {} });
+    expect(ArticleSeo.empty().in('fr')).toEqual({ title: null, description: null, keywords: [] });
+    expect(ArticleSeo.empty().toProps()).toEqual({ title: {}, description: {}, keywords: {} });
   });
 
   it('accepts values at the limits, counted after trimming', (): void => {
@@ -52,7 +52,7 @@ describe('ProjectSeo', (): void => {
       (_: unknown, index: number): string =>
         String(index).padStart(PROJECT_SEO_KEYWORD_MIN_LENGTH, 'k'),
     );
-    const seo: ProjectSeo = ProjectSeo.of({
+    const seo: ArticleSeo = ArticleSeo.of({
       title: { en: ` ${title} ` },
       description: { fr: description },
       keywords: { fr: shortest, en: [` ${longest} `] },
@@ -63,7 +63,7 @@ describe('ProjectSeo', (): void => {
     expect(seo.in('en').keywords).toEqual([longest]);
   });
 
-  it.each<[string, ProjectSeoProps]>([
+  it.each<[string, ArticleSeoProps]>([
     [
       'seo.title.en',
       {
@@ -104,9 +104,9 @@ describe('ProjectSeo', (): void => {
     ['seo.keywords.fr', { title: {}, description: {}, keywords: { fr: ['Flutter', ' x '] } }],
     ['seo.keywords.en', { title: {}, description: {}, keywords: { en: ['Flutter', '   '] } }],
     ['seo.keywords.fr', { title: {}, description: {}, keywords: { fr: ['Flutter', ' flutter'] } }],
-  ])('rejects an invalid %s', (field: string, props: ProjectSeoProps): void => {
-    expect((): ProjectSeo => ProjectSeo.of(props)).toThrow(DomainError);
-    expect((): ProjectSeo => ProjectSeo.of(props)).toThrow(
+  ])('rejects an invalid %s', (field: string, props: ArticleSeoProps): void => {
+    expect((): ArticleSeo => ArticleSeo.of(props)).toThrow(DomainError);
+    expect((): ArticleSeo => ArticleSeo.of(props)).toThrow(
       expect.objectContaining({ code: 'content.invalid-value', details: [field] }),
     );
   });

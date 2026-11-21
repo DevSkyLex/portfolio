@@ -553,6 +553,110 @@ describe('ContentModule', (): void => {
       expect((await admin().post('/api/content/admin/projects').send(source)).status).toBe(401);
     });
 
+    it('publishes and reclassifies articles through one versioned administration API', async (): Promise<void> => {
+      const base: string = '/api/content/admin/articles';
+      expect((await admin().get(base)).status).toBe(401);
+      const original: request.Response = await admin()
+        .get(base + '/project-library-trails')
+        .set(auth);
+      const projects: { key: string; label: { fr: string; en: string } } = {
+        key: 'projects',
+        label: { fr: 'Projets', en: 'Projects' },
+      };
+      const legacyTechs: readonly string[] = ['vue', 'typescript', 'css'];
+      expect(original.body.taxonomy).toEqual({
+        category: projects,
+        tags: legacyTechs.map((key) => ({ key, label: { fr: key, en: key } })),
+      });
+      const legacy: request.Response = await admin()
+        .get('/api/content/admin/projects/project-library-trails')
+        .set(auth);
+      expect(legacy.body).toMatchObject({ techs: legacyTechs, taxonomy: { tags: [] } });
+      const created: request.Response = await admin()
+        .post(base)
+        .set(auth)
+        .send({
+          ...original.body,
+          taxonomy: { category: projects, tags: [] },
+          title: { fr: 'Catalogue unifié', en: 'Unified catalogue' },
+        });
+      expect(created.status).toBe(201);
+      const path: string = base + '/' + created.body.id;
+      const slug: string = created.body.slug;
+      const listed: request.Response = await admin().get(base).set(auth);
+      expect(listed.body.member).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: 'project-library-trails' }),
+          expect.objectContaining({ id: created.body.id }),
+        ]),
+      );
+
+      const published: request.Response = await admin()
+        .post(path + '/publish')
+        .set(auth)
+        .set('if-match', '"1"');
+      expect(published.status).toBe(200);
+      const fr: string = '/api/content/snapshot?locale=fr';
+      const before: request.Response = await admin().get(fr);
+      expect(before.body.projects).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            slug,
+            techs: legacyTechs,
+            taxonomy: {
+              category: { key: 'projects', label: 'Projets' },
+              tags: legacyTechs.map((key) => ({ key, label: key })),
+            },
+          }),
+        ]),
+      );
+
+      const taxonomy = {
+        category: { key: 'engineering', label: { fr: 'Ingénierie', en: 'Engineering' } },
+        tags: [{ key: 'web', label: { fr: 'Web', en: 'Web' } }],
+      } as const;
+      const changed: request.Response = await admin()
+        .put(path)
+        .set(auth)
+        .set('if-match', '"2"')
+        .send({ ...published.body, techs: undefined, taxonomy });
+      expect(changed.status).toBe(200);
+      expect(changed.headers['etag']).toBe('"3"');
+      expect(changed.body.taxonomy).toEqual(taxonomy);
+      expect(changed.body.techs).toEqual([]);
+      const after: request.Response = await admin().get(fr);
+      expect(after.body.projects).not.toEqual(
+        expect.arrayContaining([expect.objectContaining({ slug })]),
+      );
+      expect(after.body.articles).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            slug,
+            taxonomy: {
+              category: { key: 'engineering', label: 'Ingénierie' },
+              tags: [{ key: 'web', label: 'Web' }],
+            },
+          }),
+        ]),
+      );
+      expect(
+        (
+          await admin()
+            .post(path + '/unpublish')
+            .set(auth)
+            .set('if-match', '"2"')
+        ).status,
+      ).toBe(412);
+      expect(
+        (
+          await admin()
+            .post(path + '/unpublish')
+            .set(auth)
+            .set('if-match', '"3"')
+        ).status,
+      ).toBe(200);
+    });
+
     describe('timeline', (): void => {
       const base: string = '/api/content/admin/timeline';
       const body: Record<string, unknown> = {

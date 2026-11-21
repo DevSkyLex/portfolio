@@ -12,7 +12,7 @@ import {
   PurgeMedia,
 } from '@internal/content-application/lib/use-cases/purge-media/purge-media.use-case';
 import { UploadMedia } from '@internal/content-application/lib/use-cases/upload-media/upload-media.use-case';
-import { assertImageCover } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
+import { assertImageCover } from '@internal/content-application/lib/use-cases/revise-article/revise-article.use-case';
 import {
   FakeImageProcessor,
   FakeVideoProbe,

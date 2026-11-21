@@ -6,10 +6,10 @@ import {
   MaintenanceMode,
   Period,
   type Profile,
-  Project,
+  Article,
   ProjectPeriod,
-  type ProjectProps,
-  ProjectSeo,
+  type ArticleProps,
+  ArticleSeo,
   type SkillGroup,
   Slug,
   TimelineEntry,
@@ -44,21 +44,21 @@ const t: (fr: string) => LocalizedText = (fr: string): LocalizedText =>
  * @description
  * Builds a minimal valid project with the requested status, display position, cover and figures.
  *
- * @param {string} slug - Project identifier and public slug.
+ * @param {string} slug - Article identifier and public slug.
  * @param {number} position - Display-order position.
- * @param {ProjectProps['status']} status - Visibility state.
+ * @param {ArticleProps['status']} status - Visibility state.
  * @param {string | null} cover - Media of the cover, or `null`.
  * @param {readonly string[]} figures - Media of the French figures.
- * @returns {Project} Rehydrated project aggregate.
+ * @returns {Article} Rehydrated project aggregate.
  */
 function project(
   slug: string,
   position: number,
-  status: ProjectProps['status'],
+  status: ArticleProps['status'],
   cover: string | null = null,
   figures: readonly string[] = [],
-): Project {
-  return Project.rehydrate({
+): Article {
+  return Article.rehydrate({
     id: slug,
     slug: Slug.of(slug),
     title: t(slug),
@@ -76,7 +76,7 @@ function project(
     version: 1,
     article: { fr: articleDoc('§', figures) },
     cover: cover === null ? null : { media: cover, alt: { fr: 'Couverture' } },
-    seo: ProjectSeo.empty(),
+    seo: ArticleSeo.empty(),
   });
 }
 
@@ -163,14 +163,14 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
    * @description
    * Stores collection fixtures served by this repository double.
    *
-   * @param {Project[]} projects - Projects returned by `listProjects`.
+   * @param {Article[]} projects - Projects returned by `listArticles`.
    * @param {TimelineEntry[]} timeline - Entries returned by `listTimeline`.
    * @param {SkillGroup[]} skills - Groups returned by `listSkillGroups`.
    * @param {MediaRecord[]} media - Media returned by `loadMedia`.
    * @param {FaqEntry[]} faq - Entries returned by `listFaq`.
    */
   public constructor(
-    private readonly projects: Project[],
+    private readonly projects: Article[],
     private readonly timeline: TimelineEntry[],
     private readonly skills: SkillGroup[],
     private readonly media: MediaRecord[] = [],
@@ -222,15 +222,15 @@ class InMemoryContentRepository implements ContentRepository, ContentSnapshotRea
   }
 
   /**
-   * Method listProjects
-   * @method listProjects
+   * Method listArticles
+   * @method listArticles
    *
    * @description
    * Counts the read and resolves the configured project fixtures.
    *
-   * @returns {Promise<Project[]>} Stored project fixtures.
+   * @returns {Promise<Article[]>} Stored project fixtures.
    */
-  public listProjects(): Promise<Project[]> {
+  public listArticles(): Promise<Article[]> {
     this.reads++;
     return Promise.resolve(this.projects);
   }
@@ -346,7 +346,7 @@ describe('GetPublishedContent', (): void => {
       [],
     );
     const content: PublishedContent = await new GetPublishedContent(repository).execute();
-    expect(content.projects.map((p: Project): string => p.slug.value)).toEqual([
+    expect(content.articles.map((p: Article): string => p.slug.value)).toEqual([
       'library-trails',
       'crm',
     ]);

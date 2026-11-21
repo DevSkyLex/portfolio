@@ -17,23 +17,23 @@ import {
   ReviseFaqEntry,
   GetAdminLegalDocument,
   GetAdminProfile,
-  GetAdminProject,
+  GetAdminArticle,
   GetAdminTimelineEntry,
   ImportRemoteMedia,
-  ListAdminProjects,
+  ListAdminArticles,
   ManagePublication,
   ListAdminTimeline,
   MediaUnreachableError,
   NotFoundError,
-  PublishProject,
+  PublishArticle,
   ReorderTimeline,
   ReviseLegalDocument,
   ReviseMaintenance,
   ReviseProfile,
-  ReviseProject,
-  CreateProject,
+  ReviseArticle,
+  CreateArticle,
   ReviseTimelineEntry,
-  UnpublishProject,
+  UnpublishArticle,
   UploadMedia,
   VersionMismatchError,
 } from '@vfortin/content-application';
@@ -49,7 +49,7 @@ import {
   FaqEntry,
   LegalDocument,
   MaintenanceMode,
-  Project,
+  Article,
   Slug,
   TimelineEntry,
   reviseProfile,
@@ -60,7 +60,7 @@ import request from 'supertest';
 import { ContentMcpController } from '@internal/content-adapters-in/lib/http/controllers/content-mcp/content-mcp.controller';
 import { ContentMcpTools } from '@internal/content-adapters-in/lib/mcp/content-mcp-tools/content-mcp-tools';
 import { contentProblemMapper } from '@internal/content-adapters-in/lib/http/mappers/content-problem/content-problem.mapper';
-import { toProjectRevision } from '@internal/content-adapters-in/lib/http/presenters/admin-project/admin-project.presenter';
+import { toArticleRevision } from '@internal/content-adapters-in/lib/http/presenters/admin-article/admin-article.presenter';
 
 const FIXTURE: AdminProjectDto = JSON.parse(
   readFileSync(
@@ -95,9 +95,12 @@ const DOC: ArticleDocumentProps = {
   content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Publisher' }] }],
 };
 
-function project(status: 'draft' | 'published' = 'published'): Project {
-  return Project.rehydrate({
-    ...toProjectRevision(ProjectRevisionRequestSchema.parse(FIXTURE)),
+function project(status: 'draft' | 'published' = 'published'): Article {
+  const request: ReturnType<typeof ProjectRevisionRequestSchema.parse> =
+    ProjectRevisionRequestSchema.parse(FIXTURE);
+  return Article.rehydrate({
+    ...toArticleRevision(request),
+    techs: request.techs,
     id: FIXTURE.id,
     slug: Slug.of(FIXTURE.slug),
     status,
@@ -110,12 +113,12 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
   let app: INestApplication<Server>;
   let tools: ContentMcpTools;
   const useCases = {
-    listProjects: { execute: vi.fn<ListAdminProjects['execute']>() },
-    getProject: { execute: vi.fn<GetAdminProject['execute']>() },
-    createProject: { execute: vi.fn<CreateProject['execute']>() },
-    reviseProject: { execute: vi.fn<ReviseProject['execute']>() },
-    publish: { execute: vi.fn<PublishProject['execute']>() },
-    unpublish: { execute: vi.fn<UnpublishProject['execute']>() },
+    listProjects: { execute: vi.fn<ListAdminArticles['execute']>() },
+    getProject: { execute: vi.fn<GetAdminArticle['execute']>() },
+    createProject: { execute: vi.fn<CreateArticle['execute']>() },
+    reviseProject: { execute: vi.fn<ReviseArticle['execute']>() },
+    publish: { execute: vi.fn<PublishArticle['execute']>() },
+    unpublish: { execute: vi.fn<UnpublishArticle['execute']>() },
     listTimeline: { execute: vi.fn<ListAdminTimeline['execute']>() },
     getEntry: { execute: vi.fn<GetAdminTimelineEntry['execute']>() },
     createEntry: { execute: vi.fn<CreateTimelineEntry['execute']>() },
@@ -173,12 +176,12 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
             publish: vi.fn(),
           },
         },
-        { provide: ListAdminProjects, useValue: useCases.listProjects },
-        { provide: GetAdminProject, useValue: useCases.getProject },
-        { provide: CreateProject, useValue: useCases.createProject },
-        { provide: ReviseProject, useValue: useCases.reviseProject },
-        { provide: PublishProject, useValue: useCases.publish },
-        { provide: UnpublishProject, useValue: useCases.unpublish },
+        { provide: ListAdminArticles, useValue: useCases.listProjects },
+        { provide: GetAdminArticle, useValue: useCases.getProject },
+        { provide: CreateArticle, useValue: useCases.createProject },
+        { provide: ReviseArticle, useValue: useCases.reviseProject },
+        { provide: PublishArticle, useValue: useCases.publish },
+        { provide: UnpublishArticle, useValue: useCases.unpublish },
         { provide: ListAdminTimeline, useValue: useCases.listTimeline },
         { provide: GetAdminTimelineEntry, useValue: useCases.getEntry },
         { provide: CreateTimelineEntry, useValue: useCases.createEntry },
@@ -228,7 +231,7 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
 
   beforeEach((): void => {
     vi.clearAllMocks();
-    const aggregate: Project = project();
+    const aggregate: Article = project();
     const entry: TimelineEntry = TimelineEntry.rehydrate({
       ...TimelineEntry.revisionOf(ENTRY),
       id: 'entry',
@@ -242,16 +245,16 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
       version: 4,
       updatedAt: new Date('2026-11-05T09:00:00Z'),
     });
-    useCases.listProjects.execute.mockResolvedValue([{ project: aggregate, media: [] }]);
-    useCases.getProject.execute.mockResolvedValue({ project: aggregate, media: [] });
+    useCases.listProjects.execute.mockResolvedValue([{ article: aggregate, media: [] }]);
+    useCases.getProject.execute.mockResolvedValue({ article: aggregate, media: [] });
     useCases.createProject.execute.mockResolvedValue({
-      project: aggregate,
+      article: aggregate,
       media: [],
       version: 1,
       revision: null,
     });
     for (const mock of [useCases.reviseProject, useCases.publish, useCases.unpublish])
-      mock.execute.mockResolvedValue({ project: aggregate, media: [], version: 5, revision: null });
+      mock.execute.mockResolvedValue({ article: aggregate, media: [], version: 5, revision: null });
     for (const mock of [useCases.listTimeline, useCases.reorder, useCases.deleteEntry])
       mock.execute.mockResolvedValue({
         kind: 'experience',
@@ -347,12 +350,14 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
       );
     }
     expect(useCases.createProject.execute).toHaveBeenCalledWith(
-      toProjectRevision(ProjectRevisionRequestSchema.parse(FIXTURE)),
+      toArticleRevision(ProjectRevisionRequestSchema.parse(FIXTURE)),
+      'project',
     );
     expect(useCases.reviseProject.execute).toHaveBeenCalledWith(
       FIXTURE.id,
       3,
-      toProjectRevision(ProjectRevisionRequestSchema.parse(FIXTURE)),
+      toArticleRevision(ProjectRevisionRequestSchema.parse(FIXTURE)),
+      'project',
     );
     expect(useCases.reviseEntry.execute).toHaveBeenCalledWith('experience', 'entry', 2, ENTRY);
     expect(useCases.reorder.execute).toHaveBeenCalledWith('experience', 7, ['entry']);
@@ -369,7 +374,7 @@ describe('ContentMcpController and ContentMcpTools', (): void => {
     const listed: request.Response = await rpc('tools/list');
     expect(listed.body.result.tools).toHaveLength(26);
     const revise: { inputSchema: unknown } = listed.body.result.tools.find(
-      (entry: { name: string }): boolean => entry.name === 'revise_project',
+      (entry: { name: string }): boolean => entry.name === 'revise_article',
     );
     // The article is described by the Markdown guide, not by the 88 kB editor JSON Schema (D54).
     expect(JSON.stringify(revise.inputSchema).length).toBeLessThan(20_000);
@@ -426,7 +431,7 @@ Un site **rapide**.
     expect(useCases.reviseProject.execute).toHaveBeenLastCalledWith(
       FIXTURE.id,
       3,
-      toProjectRevision(
+      toArticleRevision(
         ProjectRevisionRequestSchema.parse({
           ...FIXTURE,
           article: {
@@ -453,6 +458,7 @@ Un site **rapide**.
           },
         }),
       ),
+      'project',
     );
 
     const refused: request.Response = await call('revise_project', {
@@ -542,7 +548,7 @@ Un site **rapide**.
     });
     expect(created.body.result.isError).toBeUndefined();
     expect(useCases.createProject.execute).toHaveBeenLastCalledWith(
-      toProjectRevision(
+      toArticleRevision(
         ProjectRevisionRequestSchema.parse({
           ...FIXTURE,
           article: {
@@ -555,6 +561,7 @@ Un site **rapide**.
           },
         }),
       ),
+      'project',
     );
   });
 
@@ -616,7 +623,7 @@ Un site **rapide**.
     expect(denied.status).toBe(403);
     expect(denied.headers['www-authenticate']).toContain('content:publish');
     expect(useCases.reviseProject.execute).not.toHaveBeenCalled();
-    useCases.getProject.execute.mockResolvedValue({ project: project('draft'), media: [] });
+    useCases.getProject.execute.mockResolvedValue({ article: project('draft'), media: [] });
     expect((await call('revise_project', args, 'write')).body.result.isError).not.toBe(true);
     useCases.getProject.execute.mockRejectedValueOnce(new Error('lookup failed'));
     expect((await call('revise_project', args, 'write')).status).toBe(403);
@@ -627,8 +634,8 @@ Un site **rapide**.
   });
 
   it('denies write-only edits with predicted future or stale draft versions before mutation', async (): Promise<void> => {
-    const draft: Project = project('draft');
-    useCases.getProject.execute.mockResolvedValue({ project: draft, media: [] });
+    const draft: Article = project('draft');
+    useCases.getProject.execute.mockResolvedValue({ article: draft, media: [] });
     for (const expectedVersion of [draft.version + 1, draft.version - 1]) {
       const denied: request.Response = await call(
         'revise_project',

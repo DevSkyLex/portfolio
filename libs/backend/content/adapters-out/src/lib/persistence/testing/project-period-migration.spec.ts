@@ -1,4 +1,4 @@
-import type { Project, ProjectPeriodProps } from '@vfortin/content-domain';
+import type { Article, ProjectPeriodProps } from '@vfortin/content-domain';
 import { sql } from 'drizzle-orm';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -9,7 +9,7 @@ import {
   migrateContentDatabase,
   openContentDatabase,
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
-import { DrizzleProjectRepository } from '@internal/content-adapters-out/lib/persistence/repositories/content-admin/drizzle-content-admin.repositories';
+import { DrizzleArticleRepository } from '@internal/content-adapters-out/lib/persistence/repositories/content-admin/drizzle-content-admin.repositories';
 import { projects } from '@internal/content-adapters-out/lib/persistence/schema/content.schema';
 
 /**
@@ -71,7 +71,7 @@ function migrationsBefore(root: string): string {
  * Inserts a project row as stored before D46: a period label, no period.
  *
  * @param {ContentDatabaseHandle} handle - Database handle.
- * @param {string} id - Project identifier and slug.
+ * @param {string} id - Article identifier and slug.
  * @param {string} label - French period label.
  * @returns {Promise<void>} Completion after the insert.
  */
@@ -177,8 +177,8 @@ describe(`${CONVERSION} migration (Postgres via PGlite)`, (): void => {
     expect(await periods()).toEqual(converted);
 
     // Every converted row rehydrates into the aggregate.
-    const repository: DrizzleProjectRepository = new DrizzleProjectRepository(handle.db);
-    const turn: Project | null = await repository.get('year-turn');
+    const repository: DrizzleArticleRepository = new DrizzleArticleRepository(handle.db);
+    const turn: Article | null = await repository.get('year-turn');
     expect(turn?.snapshot().period.toProps()).toEqual(bounds([2023, 11], [2024, 2]));
     expect(await repository.list()).toHaveLength(CASES.length);
   });

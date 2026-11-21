@@ -188,7 +188,7 @@ describe('ContentModule', (): void => {
         'neighborhood-atlas',
         'accessibility-notebook',
       ]);
-      expect(body.audit.sitemap).toEqual({ pages: 7, urls: 14 });
+      expect(body.audit.sitemap).toEqual({ pages: 8, urls: 16 });
     });
 
     it('refreshes in the background into the cache, then throttles', async (): Promise<void> => {
@@ -208,7 +208,7 @@ describe('ContentModule', (): void => {
       expect((await dashboard('7d')).searchConsole).toMatchObject({
         data: { totals: { clicks: 7 } },
       });
-      expect(measured).toContain('https://valentin-fortin.pro/fr/projects/library-trails');
+      expect(measured).toContain('https://valentin-fortin.pro/fr/articles/library-trails');
       expect((await dashboard()).refresh.nextAllowedAt).not.toBeNull();
 
       const again: request.Response = await request(app.getHttpServer())

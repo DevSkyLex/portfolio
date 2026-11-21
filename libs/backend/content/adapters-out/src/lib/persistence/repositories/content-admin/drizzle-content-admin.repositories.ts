@@ -2,23 +2,24 @@ import { lockContentRevision } from '@internal/content-adapters-out/lib/persiste
 import {
   type ContentRepositories,
   type ContentUnitOfWork,
-  type ProjectRepository,
+  type ArticleRepository,
   type SiteBuildRequestRepository,
   VersionMismatchError,
 } from '@vfortin/content-application';
 import type {
   LocalizedText,
   LocalizedTextProps,
-  Project,
-  ProjectArticle,
-  ProjectProps,
+  Article,
+  LocalizedArticleBody,
+  ArticleProps,
+  PublicationKind,
 } from '@vfortin/content-domain';
 import { and, desc, eq, gt, lte, sql } from 'drizzle-orm';
 import type {
   ContentDatabase,
   ContentTransaction,
 } from '@internal/content-adapters-out/lib/persistence/database/content-database';
-import { toProject } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
+import { toArticle } from '@internal/content-adapters-out/lib/persistence/mappers/content/content.mappers';
 import { DrizzleMediaRepository } from '@internal/content-adapters-out/lib/persistence/repositories/media/drizzle-media.repository';
 import {
   contentRevision,
@@ -41,16 +42,24 @@ const props = (text: LocalizedText): LocalizedTextProps => text.toProps();
  * @description
  * Stored values of a project's editable content and status, shared by the insert and the update.
  *
- * @param {Project} project - Aggregate to persist.
+ * @param {Article} project - Aggregate to persist.
  * @returns {Omit<typeof projects.$inferInsert, 'id' | 'slug' | 'position' | 'version'>} Column values.
  */
 function editableColumns(
-  project: Project,
+  project: Article,
 ): Omit<typeof projects.$inferInsert, 'id' | 'slug' | 'position' | 'version'> {
-  const p: ProjectProps = project.snapshot();
-  const article: ProjectArticle = p.article;
+  const p: ReturnType<Article['snapshot']> = project.snapshot();
+  const article: LocalizedArticleBody = p.article;
   const { keywords, ...seoTexts } = p.seo.toProps();
   return {
+    kind: project.kind,
+    taxonomy: {
+      category:
+        p.taxonomy.category === null
+          ? null
+          : { key: p.taxonomy.category.key, label: props(p.taxonomy.category.label) },
+      tags: p.taxonomy.tags.map((tag) => ({ key: tag.key, label: props(tag.label) })),
+    },
     title: props(p.title),
     summary: props(p.summary),
     lead: props(p.lead),
@@ -83,13 +92,13 @@ function editableColumns(
 }
 
 /**
- * Class DrizzleProjectRepository
- * @class DrizzleProjectRepository
+ * Class DrizzleArticleRepository
+ * @class DrizzleArticleRepository
  *
  * @description
  * Implements project reads and optimistic-locking updates using the content Drizzle tables.
  */
-export class DrizzleProjectRepository implements ProjectRepository {
+export class DrizzleArticleRepository implements ArticleRepository {
   // #region Constructor
   /**
    * Constructor
@@ -111,10 +120,15 @@ export class DrizzleProjectRepository implements ProjectRepository {
    * @description
    * Loads all project rows and rehydrates them into validated aggregates.
    *
-   * @returns {Promise<Project[]>} Stored projects, including drafts.
+   * @returns {Promise<Article[]>} Stored projects, including drafts.
    */
-  public async list(): Promise<Project[]> {
-    return (await this.db.select().from(projects)).map(toProject);
+  public async list(kind?: PublicationKind): Promise<Article[]> {
+    return (
+      await this.db
+        .select()
+        .from(projects)
+        .where(kind === undefined ? undefined : eq(projects.kind, kind))
+    ).map(toArticle);
   }
 
   /**
@@ -124,12 +138,12 @@ export class DrizzleProjectRepository implements ProjectRepository {
    * @description
    * Loads one project row and maps it to a domain aggregate when present.
    *
-   * @param {string} id - Project identifier.
-   * @returns {Promise<Project | null>} Aggregate, or `null` when absent.
+   * @param {string} id - Article identifier.
+   * @returns {Promise<Article | null>} Aggregate, or `null` when absent.
    */
-  public async get(id: string): Promise<Project | null> {
+  public async get(id: string): Promise<Article | null> {
     const [row] = await this.db.select().from(projects).where(eq(projects.id, id));
-    return row ? toProject(row) : null;
+    return row ? toArticle(row) : null;
   }
 
   /**
@@ -140,12 +154,12 @@ export class DrizzleProjectRepository implements ProjectRepository {
    * Updates editable project values and increments the stored version only when the expected
    * version still matches; rejects with `VersionMismatchError` when no row was updated.
    *
-   * @param {Project} project - Aggregate state to persist.
+   * @param {Article} project - Aggregate state to persist.
    * @param {number} expectedVersion - Version read before the edit.
    * @returns {Promise<number>} Incremented persisted version.
    */
-  public async save(project: Project, expectedVersion: number): Promise<number> {
-    const p: ProjectProps = project.snapshot();
+  public async save(project: Article, expectedVersion: number): Promise<number> {
+    const p: ArticleProps = project.snapshot();
     const updated: { version: number }[] = await this.db
       .update(projects)
       .set({
@@ -169,11 +183,11 @@ export class DrizzleProjectRepository implements ProjectRepository {
    * @description
    * Inserts a new project row with its identity, position and version 1.
    *
-   * @param {Project} project - New aggregate.
+   * @param {Article} project - New aggregate.
    * @returns {Promise<void>} Completion after the insert.
    */
-  public async insert(project: Project): Promise<void> {
-    const p: ProjectProps = project.snapshot();
+  public async insert(project: Article): Promise<void> {
+    const p: ArticleProps = project.snapshot();
     await this.db.insert(projects).values({
       id: p.id,
       slug: p.slug.value,
@@ -379,7 +393,7 @@ export class DrizzleContentUnitOfWork implements ContentUnitOfWork {
     return this.db.transaction(async (tx: ContentTransaction): Promise<T> => {
       await lockContentRevision(tx);
       return work({
-        projects: new DrizzleProjectRepository(tx),
+        projects: new DrizzleArticleRepository(tx),
         buildRequests: new DrizzleSiteBuildRequestRepository(tx),
         media: new DrizzleMediaRepository(tx),
       });

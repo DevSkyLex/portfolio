@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   type ContentDatabaseHandle,
-  DrizzleProjectRepository,
+  DrizzleArticleRepository,
   DrizzleSeoReportStore,
   openContentDatabase,
 } from '@vfortin/content-adapters-out';
@@ -54,7 +54,7 @@ describe('loadContentFixtures', (): void => {
 
     const database: ContentDatabaseHandle = await openContentDatabase(url);
     try {
-      expect((await new DrizzleProjectRepository(database.db).list()).length).toBeGreaterThan(0);
+      expect((await new DrizzleArticleRepository(database.db).list()).length).toBeGreaterThan(0);
       const cache: SeoDashboardCache = await new DrizzleSeoReportStore(database.db).load('28d');
       expect(cache.searchConsole?.data).not.toBeNull();
       expect(cache.analytics?.data).not.toBeNull();

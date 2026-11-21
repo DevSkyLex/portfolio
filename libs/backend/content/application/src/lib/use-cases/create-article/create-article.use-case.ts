@@ -1,23 +1,23 @@
-import { Project, type ProjectRevision, Slug } from '@vfortin/content-domain';
+import { Article, type ArticleRevision, type PublicationKind, Slug } from '@vfortin/content-domain';
 import { MediaNotFoundError } from '@internal/content-application/lib/errors/application-error';
-import { assertImageCover } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
+import { assertImageCover } from '@internal/content-application/lib/use-cases/revise-article/revise-article.use-case';
 import type {
   ContentRepositories,
   ContentUnitOfWork,
   IdGenerator,
   MediaRecord,
 } from '@internal/content-application/lib/ports/content/content.ports';
-import type { ProjectChangeResult } from '@internal/content-application/lib/use-cases/change-project/change-project';
+import type { ArticleChangeResult } from '@internal/content-application/lib/use-cases/change-article/change-article';
 
 /**
- * Class CreateProject
- * @class CreateProject
+ * Class CreateArticle
+ * @class CreateArticle
  *
  * @description
  * Adds a draft project after the last one. Its slug derives from the French title and stays fixed
  * afterwards (the public URL); a draft does not advance the public content revision.
  */
-export class CreateProject {
+export class CreateArticle {
   // #region Constructor
   /**
    * Constructor
@@ -45,23 +45,33 @@ export class CreateProject {
    * with `MediaNotFoundError` when the revision references an unknown media, inserts the draft and
    * takes its media out of the purge grace period (D40).
    *
-   * @param {ProjectRevision} revision - Content of the new project.
-   * @returns {Promise<ProjectChangeResult>} Created draft, version 1, no revision and its media.
+   * @param {ArticleRevision} revision - Content of the new project.
+   * @returns {Promise<ArticleChangeResult>} Created draft, version 1, no revision and its media.
    */
-  public execute(revision: ProjectRevision): Promise<ProjectChangeResult> {
+  public execute(
+    revision: ArticleRevision,
+    legacyKind?: PublicationKind,
+  ): Promise<ArticleChangeResult> {
     return this.unitOfWork.run(
-      async ({ projects, media }: ContentRepositories): Promise<ProjectChangeResult> => {
-        const existing: Project[] = await projects.list();
+      async ({ projects, media }: ContentRepositories): Promise<ArticleChangeResult> => {
+        const existing: Article[] = await projects.list();
         const slug: Slug = Slug.fromTitle(
           revision.title.toProps().fr,
-          new Set(existing.map((project: Project): string => project.slug.value)),
+          new Set(existing.map((project: Article): string => project.slug.value)),
         );
         const position: number =
-          existing.reduce(
-            (last: number, project: Project): number => Math.max(last, project.position),
-            -1,
-          ) + 1;
-        const project: Project = Project.create({ id: this.ids.next(), slug, position }, revision);
+          existing
+            .filter(
+              (entry: Article): boolean => legacyKind === undefined || entry.kind === legacyKind,
+            )
+            .reduce(
+              (last: number, project: Article): number => Math.max(last, project.position),
+              -1,
+            ) + 1;
+        const project: Article = Article.create(
+          { id: this.ids.next(), slug, position, kind: legacyKind ?? 'article' },
+          revision,
+        );
         const mediaIds: string[] = project.mediaIds();
         const found: MediaRecord[] = await media.existing(mediaIds);
         const known: Set<string> = new Set(found.map((record: MediaRecord): string => record.id));
@@ -75,7 +85,7 @@ export class CreateProject {
           await media.relink(mediaIds);
         }
         return {
-          project,
+          article: project,
           version: project.version,
           revision: null,
           media: await media.existing(mediaIds),

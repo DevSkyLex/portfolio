@@ -1,28 +1,28 @@
-import type { Project } from '@vfortin/content-domain';
+import type { Article, PublicationKind } from '@vfortin/content-domain';
 import { NotFoundError } from '@internal/content-application/lib/errors/application-error';
 import type {
   MediaRecord,
   MediaRepository,
-  ProjectRepository,
+  ArticleRepository,
 } from '@internal/content-application/lib/ports/content/content.ports';
 
 /**
- * Interface AdminProjectView
- * @interface AdminProjectView
+ * Interface AdminArticleView
+ * @interface AdminArticleView
  *
  * @description
- * Project read by the administrator with the stored media its cover and figures reference.
+ * Article read by the administrator with the stored media its cover and figures reference.
  */
-export interface AdminProjectView {
+export interface AdminArticleView {
   // #region Properties
   /**
    * Property project
    * @readonly
    *
    * @description
-   * Project aggregate.
+   * Article aggregate.
    */
-  readonly project: Project;
+  readonly article: Article;
 
   /**
    * Property media
@@ -36,14 +36,14 @@ export interface AdminProjectView {
 }
 
 /**
- * Class GetAdminProject
- * @class GetAdminProject
+ * Class GetAdminArticle
+ * @class GetAdminArticle
  *
  * @description
  * Loads one project aggregate and its media for administration and reports absence as an
  * application error.
  */
-export class GetAdminProject {
+export class GetAdminArticle {
   // #region Constructor
   /**
    * Constructor
@@ -52,11 +52,11 @@ export class GetAdminProject {
    * @description
    * Injects the repositories used to locate project aggregates and their media.
    *
-   * @param {ProjectRepository} projects - Project read and write port.
+   * @param {ArticleRepository} projects - Article read and write port.
    * @param {MediaRepository} media - Media rows.
    */
   public constructor(
-    private readonly projects: ProjectRepository,
+    private readonly projects: ArticleRepository,
     private readonly media: MediaRepository,
   ) {}
   // #endregion
@@ -69,15 +69,15 @@ export class GetAdminProject {
    * @description
    * Returns the requested project or rejects with `NotFoundError` when no project has that id.
    *
-   * @param {string} id - Project identifier.
-   * @returns {Promise<AdminProjectView>} Requested project and its media.
+   * @param {string} id - Article identifier.
+   * @returns {Promise<AdminArticleView>} Requested project and its media.
    */
-  public async execute(id: string): Promise<AdminProjectView> {
-    const project: Project | null = await this.projects.get(id);
-    if (project === null) {
-      throw new NotFoundError('Project');
+  public async execute(id: string, legacyKind?: PublicationKind): Promise<AdminArticleView> {
+    const project: Article | null = await this.projects.get(id);
+    if (project === null || (legacyKind !== undefined && project.kind !== legacyKind)) {
+      throw new NotFoundError('Article');
     }
-    return { project, media: await this.media.existing(project.mediaIds()) };
+    return { article: project, media: await this.media.existing(project.mediaIds()) };
   }
   // #endregion
 }

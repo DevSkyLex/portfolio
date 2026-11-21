@@ -9,226 +9,162 @@ import {
   Param,
   Post,
   Put,
+  Query,
+  Req,
   Res,
 } from '@nestjs/common';
 import { AdminOnly } from '@vfortin/backend-auth';
 import { IfMatchVersion, ZodValidationPipe, versionEtag } from '@vfortin/backend-http';
 import {
-  type AdminProjectView,
-  CreateProject,
-  GetAdminProject,
-  ListAdminProjects,
-  type MediaRecord,
-  PublishProject,
-  type ProjectChangeResult,
-  ReviseProject,
-  UnpublishProject,
+  CreateArticle,
+  GetAdminArticle,
+  ListAdminArticles,
+  PublishArticle,
+  ReviseArticle,
+  UnpublishArticle,
+  type AdminArticleView,
+  type ArticleChangeResult,
 } from '@vfortin/content-application';
 import {
-  type AdminProjectDto,
-  type AdminProjectList,
-  type ProjectRevisionRequest,
-  ProjectRevisionRequestSchema,
+  ArticleRevisionRequestSchema,
+  PublicationKindQuerySchema,
+  type AdminArticleDto,
+  type AdminArticleList,
+  type ArticleRevisionRequest,
+  type PublicationKindQuery,
 } from '@vfortin/content-contracts';
-import type { Project } from '@vfortin/content-domain';
-import type { Response } from 'express';
+import type { PublicationKind } from '@vfortin/content-domain';
+import type { Request, Response } from 'express';
 import {
-  toAdminProjectDto,
-  toProjectRevision,
-} from '@internal/content-adapters-in/lib/http/presenters/admin-project/admin-project.presenter';
+  toAdminArticleDto,
+  toArticleRevision,
+  toLegacyArticleDto,
+} from '@internal/content-adapters-in/lib/http/presenters/admin-article/admin-article.presenter';
 
-/**
- * Class AdminContentController
- * @class AdminContentController
- *
- * @description
- * Exposes authenticated project administration routes and uses `If-Match` versions for writes.
- */
-@Controller('content/admin/projects')
+const legacyPath: RegExp = /\/content\/admin\/projects(?:\/|$)/;
+
+/** Publishes the article administration API and its filtered compatibility routes. */
+@Controller(['content/admin/articles', 'content/admin/projects'])
 @AdminOnly()
 export class AdminContentController {
-  // #region Constructor
-  /**
-   * Constructor
-   * @constructor
-   *
-   * @description
-   * Injects project query and command use cases used by the administration routes.
-   *
-   * @param {ListAdminProjects} listProjects - Lists drafts and published projects.
-   * @param {GetAdminProject} getProject - Loads a project by identifier.
-   * @param {CreateProject} createProject - Adds a draft project.
-   * @param {ReviseProject} reviseProject - Applies project text edits.
-   * @param {PublishProject} publishProject - Publishes a complete project.
-   * @param {UnpublishProject} unpublishProject - Returns a project to draft state.
-   */
   public constructor(
-    @Inject(ListAdminProjects) private readonly listProjects: ListAdminProjects,
-    @Inject(GetAdminProject) private readonly getProject: GetAdminProject,
-    @Inject(CreateProject) private readonly createProject: CreateProject,
-    @Inject(ReviseProject) private readonly reviseProject: ReviseProject,
-    @Inject(PublishProject) private readonly publishProject: PublishProject,
-    @Inject(UnpublishProject) private readonly unpublishProject: UnpublishProject,
+    @Inject(ListAdminArticles) private readonly listArticles: ListAdminArticles,
+    @Inject(GetAdminArticle) private readonly getArticle: GetAdminArticle,
+    @Inject(CreateArticle) private readonly createArticle: CreateArticle,
+    @Inject(ReviseArticle) private readonly reviseArticle: ReviseArticle,
+    @Inject(PublishArticle) private readonly publishArticle: PublishArticle,
+    @Inject(UnpublishArticle) private readonly unpublishArticle: UnpublishArticle,
   ) {}
-  // #endregion
 
-  // #region Methods
-  /**
-   * Method list
-   * @method list
-   *
-   * @description
-   * Returns every administration project and the total count, with cache storage disabled.
-   *
-   * @returns {Promise<AdminProjectList>} Project list response and item count.
-   */
   @Get()
   @Header('Cache-Control', 'no-store')
-  public async list(): Promise<AdminProjectList> {
-    const member: AdminProjectDto[] = (await this.listProjects.execute()).map(
-      (view: AdminProjectView): AdminProjectDto => toAdminProjectDto(view.project, view.media),
-    );
+  public async list(
+    @Req() request: Request,
+    @Query(new ZodValidationPipe(PublicationKindQuerySchema)) query: PublicationKindQuery,
+  ): Promise<AdminArticleList> {
+    const articles: AdminArticleView[] = await this.listArticles.execute(this.kind(request, query));
+    const presenter: typeof toAdminArticleDto = this.presenter(request);
+    const member: AdminArticleDto[] = articles.map((view) => presenter(view.article, view.media));
     return { member, totalItems: member.length };
   }
 
-  /**
-   * Method get
-   * @method get
-   *
-   * @description
-   * Loads one project and sets its version ETag on the response for subsequent conditional writes.
-   *
-   * @param {string} id - Project identifier from the route.
-   * @param {Response} response - Express response receiving the ETag.
-   * @returns {Promise<AdminProjectDto>} Administration project representation.
-   */
   @Get(':id')
   @Header('Cache-Control', 'no-store')
   public async get(
     @Param('id') id: string,
+    @Req() request: Request,
+    @Query(new ZodValidationPipe(PublicationKindQuerySchema)) query: PublicationKindQuery,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<AdminProjectDto> {
-    const view: AdminProjectView = await this.getProject.execute(id);
-    return this.respond(response, view.project, view.media);
+  ): Promise<AdminArticleDto> {
+    return this.respond(
+      request,
+      response,
+      await this.getArticle.execute(id, this.kind(request, query)),
+    );
   }
 
-  /**
-   * Method create
-   * @method create
-   *
-   * @description
-   * Validates the content, adds it as a draft project and answers 201 with its version as `ETag`.
-   *
-   * @param {ProjectRevisionRequest} body - Contract-validated editable fields.
-   * @param {Response} response - Express response receiving the ETag.
-   * @returns {Promise<AdminProjectDto>} Created project representation.
-   */
   @Post()
   @HttpCode(HttpStatus.CREATED)
   public async create(
-    @Body(new ZodValidationPipe(ProjectRevisionRequestSchema)) body: ProjectRevisionRequest,
+    @Body(new ZodValidationPipe(ArticleRevisionRequestSchema)) body: ArticleRevisionRequest,
+    @Req() request: Request,
+    @Query(new ZodValidationPipe(PublicationKindQuerySchema)) query: PublicationKindQuery,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<AdminProjectDto> {
-    const result: ProjectChangeResult = await this.createProject.execute(toProjectRevision(body));
-    return this.respond(response, result.project, result.media, result.version);
+  ): Promise<AdminArticleDto> {
+    const result: ArticleChangeResult = await this.createArticle.execute(
+      toArticleRevision(body),
+      this.kind(request, query),
+    );
+    return this.respond(request, response, result, result.version);
   }
 
-  /**
-   * Method revise
-   * @method revise
-   *
-   * @description
-   * Validates the edit payload, applies it against the `If-Match` version and returns the new ETag.
-   *
-   * @param {string} id - Project identifier from the route.
-   * @param {number} expectedVersion - Version parsed from `If-Match`.
-   * @param {ProjectRevisionRequest} body - Contract-validated editable fields.
-   * @param {Response} response - Express response receiving the updated ETag.
-   * @returns {Promise<AdminProjectDto>} Updated administration project representation.
-   */
   @Put(':id')
   public async revise(
     @Param('id') id: string,
     @IfMatchVersion() expectedVersion: number,
-    @Body(new ZodValidationPipe(ProjectRevisionRequestSchema)) body: ProjectRevisionRequest,
+    @Body(new ZodValidationPipe(ArticleRevisionRequestSchema)) body: ArticleRevisionRequest,
+    @Req() request: Request,
+    @Query(new ZodValidationPipe(PublicationKindQuerySchema)) query: PublicationKindQuery,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<AdminProjectDto> {
-    const result: ProjectChangeResult = await this.reviseProject.execute(
+  ): Promise<AdminArticleDto> {
+    const result: ArticleChangeResult = await this.reviseArticle.execute(
       id,
       expectedVersion,
-      toProjectRevision(body),
+      toArticleRevision(body),
+      this.kind(request, query),
     );
-    return this.respond(response, result.project, result.media, result.version);
+    return this.respond(request, response, result, result.version);
   }
 
-  /**
-   * Method publish
-   * @method publish
-   *
-   * @description
-   * Publishes the project at the supplied version and returns its new ETag.
-   *
-   * @param {string} id - Project identifier from the route.
-   * @param {number} expectedVersion - Version parsed from `If-Match`.
-   * @param {Response} response - Express response receiving the updated ETag.
-   * @returns {Promise<AdminProjectDto>} Published project representation.
-   */
   @Post(':id/publish')
   @HttpCode(HttpStatus.OK)
   public async publish(
     @Param('id') id: string,
     @IfMatchVersion() expectedVersion: number,
+    @Req() request: Request,
+    @Query(new ZodValidationPipe(PublicationKindQuerySchema)) query: PublicationKindQuery,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<AdminProjectDto> {
-    const result: ProjectChangeResult = await this.publishProject.execute(id, expectedVersion);
-    return this.respond(response, result.project, result.media, result.version);
+  ): Promise<AdminArticleDto> {
+    const result: ArticleChangeResult = await this.publishArticle.execute(
+      id,
+      expectedVersion,
+      this.kind(request, query),
+    );
+    return this.respond(request, response, result, result.version);
   }
 
-  /**
-   * Method unpublish
-   * @method unpublish
-   *
-   * @description
-   * Moves the project to draft state at the supplied version and returns its new ETag.
-   *
-   * @param {string} id - Project identifier from the route.
-   * @param {number} expectedVersion - Version parsed from `If-Match`.
-   * @param {Response} response - Express response receiving the updated ETag.
-   * @returns {Promise<AdminProjectDto>} Updated project representation.
-   */
   @Post(':id/unpublish')
   @HttpCode(HttpStatus.OK)
   public async unpublish(
     @Param('id') id: string,
     @IfMatchVersion() expectedVersion: number,
+    @Req() request: Request,
+    @Query(new ZodValidationPipe(PublicationKindQuerySchema)) query: PublicationKindQuery,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<AdminProjectDto> {
-    const result: ProjectChangeResult = await this.unpublishProject.execute(id, expectedVersion);
-    return this.respond(response, result.project, result.media, result.version);
+  ): Promise<AdminArticleDto> {
+    const result: ArticleChangeResult = await this.unpublishArticle.execute(
+      id,
+      expectedVersion,
+      this.kind(request, query),
+    );
+    return this.respond(request, response, result, result.version);
   }
 
-  /**
-   * Method respond
-   * @method respond
-   *
-   * @description
-   * Sets the project version ETag and converts the aggregate and its media into the administration
-   * DTO.
-   *
-   * @param {Response} response - Express response to update.
-   * @param {Project} project - Aggregate returned by the command or query.
-   * @param {readonly MediaRecord[]} media - Stored media the project references.
-   * @param {number} version - Version to publish; defaults to the aggregate version.
-   * @returns {AdminProjectDto} Project representation with missing publication fields.
-   */
   private respond(
+    request: Request,
     response: Response,
-    project: Project,
-    media: readonly MediaRecord[],
-    version: number = project.version,
-  ): AdminProjectDto {
+    { article, media }: AdminArticleView,
+    version: number = article.version,
+  ): AdminArticleDto {
     response.setHeader('ETag', versionEtag(version));
-    return toAdminProjectDto(project, media, version);
+    return this.presenter(request)(article, media, version);
   }
-  // #endregion
+
+  private presenter(request: Request): typeof toAdminArticleDto {
+    return legacyPath.test(request.path) ? toLegacyArticleDto : toAdminArticleDto;
+  }
+
+  private kind(request: Request, query: PublicationKindQuery): PublicationKind | undefined {
+    return legacyPath.test(request.path) ? query.kind : undefined;
+  }
 }

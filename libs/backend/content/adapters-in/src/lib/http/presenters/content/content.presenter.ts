@@ -1,26 +1,29 @@
 import type { MediaRecord, PublishedContent } from '@vfortin/content-application';
 import {
   type ContentLocale,
+  type ArticleDto,
   type ContentSnapshot,
   ContentSnapshotSchema,
   type PublicArticleBlockDto,
   type PublicArticleDocumentDto,
   type PublicLegalDocumentDto,
 } from '@vfortin/content-contracts';
-import type {
-  ArticleBlock,
-  ArticleDocument,
-  FaqEntry,
-  LegalDocument,
-  LocalizedProjectSeo,
-  LocalizedText,
-  ProfileFact,
-  ProfileLink,
-  Project,
-  ProjectProps,
-  SkillGroup,
-  SkillTech,
-  TimelineEntry,
+import {
+  PROJECTS_CATEGORY,
+  type ArticleBlock,
+  type ArticleDocument,
+  type FaqEntry,
+  type LegalDocument,
+  type LocalizedArticleSeo,
+  type LocalizedText,
+  type ProfileFact,
+  type ProfileLink,
+  type Article,
+  type ArticleProps,
+  type PublicationTaxon,
+  type SkillGroup,
+  type SkillTech,
+  type TimelineEntry,
 } from '@vfortin/content-domain';
 import { toPublicCodeBlock } from '@internal/content-adapters-in/lib/http/presenters/code-tokens/code-tokens.presenter';
 import {
@@ -117,6 +120,43 @@ export function toContentSnapshot(
 ): ContentSnapshot {
   const t: (text: LocalizedText) => string = (text: LocalizedText): string => text.in(locale);
 
+  const publicPublication = (article: Article): ArticleDto => {
+    const p: ArticleProps = article.snapshot();
+    const category: PublicationTaxon | null =
+      article.taxonomy.category ?? (article.kind === 'project' ? PROJECTS_CATEGORY : null);
+    if (category === null) throw new Error('Published article is missing its category.');
+    const cover: MediaRecord | undefined =
+      p.cover === null ? undefined : content.media.get(p.cover.media);
+    const seo: LocalizedArticleSeo = p.seo.in(locale);
+    return {
+      slug: p.slug.value,
+      title: t(p.title),
+      summary: t(p.summary),
+      lead: t(p.lead),
+      periodLabel: projectPeriodLabel(p.period, locale),
+      client: t(p.client),
+      role: t(p.role),
+      place: t(p.place),
+      siteUrl: p.siteUrl,
+      techs: [...p.techs],
+      featured: p.featured,
+      // A published project has both documents; French is the fallback of an English snapshot.
+      article: publicArticle(p.article[locale] ?? p.article.fr, content.media),
+      cover:
+        p.cover === null || cover === undefined
+          ? null
+          : { ...toPublicImage(cover), alt: p.cover.alt[locale] ?? p.cover.alt.fr },
+      // Custom search values of this locale only; the page falls back on its own title, summary
+      // and technologies.
+      seo: { ...seo, keywords: [...seo.keywords] },
+      taxonomy: {
+        category: { key: category.key, label: t(category.label) },
+        tags: article.taxonomy.tags.map((tag) => ({ key: tag.key, label: t(tag.label) })),
+      },
+    };
+  };
+  const publications: ArticleDto[] = content.articles.map(publicPublication);
+
   return ContentSnapshotSchema.parse({
     locale,
     revision: content.revision,
@@ -134,34 +174,12 @@ export function toContentSnapshot(
         (link: ProfileLink): ContentSnapshot['profile']['links'][number] => link.toProps(),
       ),
     },
-    projects: content.projects.map((project: Project): ContentSnapshot['projects'][number] => {
-      const p: ProjectProps = project.snapshot();
-      const cover: MediaRecord | undefined =
-        p.cover === null ? undefined : content.media.get(p.cover.media);
-      const seo: LocalizedProjectSeo = p.seo.in(locale);
-      return {
-        slug: p.slug.value,
-        title: t(p.title),
-        summary: t(p.summary),
-        lead: t(p.lead),
-        periodLabel: projectPeriodLabel(p.period, locale),
-        client: t(p.client),
-        role: t(p.role),
-        place: t(p.place),
-        siteUrl: p.siteUrl,
-        techs: [...p.techs],
-        featured: p.featured,
-        // A published project has both documents; French is the fallback of an English snapshot.
-        article: publicArticle(p.article[locale] ?? p.article.fr, content.media),
-        cover:
-          p.cover === null || cover === undefined
-            ? null
-            : { ...toPublicImage(cover), alt: p.cover.alt[locale] ?? p.cover.alt.fr },
-        // Custom search values of this locale only; the page falls back on its own title, summary
-        // and technologies.
-        seo: { ...seo, keywords: [...seo.keywords] },
-      };
-    }),
+    projects: publications.filter(
+      (article) => article.taxonomy.category.key === PROJECTS_CATEGORY.key,
+    ),
+    articles: publications.filter(
+      (article) => article.taxonomy.category.key !== PROJECTS_CATEGORY.key,
+    ),
     timeline: content.timeline.map((entry: TimelineEntry): ContentSnapshot['timeline'][number] => ({
       id: entry.id,
       kind: entry.kind,

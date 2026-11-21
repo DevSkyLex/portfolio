@@ -44,7 +44,7 @@ describe('DrizzleContentRepository (Postgres via PGlite)', (): void => {
     expect(content.revision).toBe(0);
     expect(content.profile.heroIntro.fr).toBe('Portfolio de Valentin Fortin.');
     expect(content.profile.heroIntro.en).toBe("Valentin Fortin's portfolio.");
-    expect(content.projects).toEqual([]);
+    expect(content.articles).toEqual([]);
     expect(content.timeline).toEqual([]);
     expect(content.skills).toEqual([]);
     expect(JSON.stringify(content.legal.privacy.body)).toContain('Brevo');
@@ -73,7 +73,7 @@ describe('DrizzleContentRepository (Postgres via PGlite)', (): void => {
     ).execute();
 
     expect(content.revision).toBe(1);
-    expect(content.projects.map((p): string => p.slug.value)).toEqual([
+    expect(content.articles.map((p): string => p.slug.value)).toEqual([
       'library-trails',
       'workshop-calendar',
       'neighborhood-atlas',

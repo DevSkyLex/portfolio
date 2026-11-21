@@ -181,12 +181,12 @@ const QUERIES: readonly { key: string; clicks: number; impressions: number; posi
  */
 const PAGES: readonly { path: string; weight: number }[] = [
   { path: '/', weight: 46 },
-  { path: '/projects/movah', weight: 17 },
-  { path: '/projects/crm-kodoka', weight: 12 },
+  { path: '/fr/articles/movah', weight: 17 },
+  { path: '/fr/articles/crm-kodoka', weight: 12 },
   { path: '/en/', weight: 9 },
-  { path: '/projects/rdi-manager', weight: 7 },
-  { path: '/projects/iotplatform', weight: 5 },
-  { path: '/en/projects/movah', weight: 4 },
+  { path: '/fr/articles/rdi-manager', weight: 7 },
+  { path: '/fr/articles/iotplatform', weight: 5 },
+  { path: '/en/articles/movah', weight: 4 },
 ];
 
 /**

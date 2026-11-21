@@ -1,11 +1,11 @@
 import {
   DomainError,
   LocalizedText,
-  Project,
+  Article,
   ProjectPeriod,
-  type ProjectProps,
-  type ProjectRevision,
-  ProjectSeo,
+  type ArticleProps,
+  type ArticleRevision,
+  ArticleSeo,
   Slug,
 } from '@vfortin/content-domain';
 import {
@@ -19,21 +19,21 @@ import type {
   Clock,
   MediaRecord,
   SiteBuildDispatcher,
-  ProjectRepository,
+  ArticleRepository,
   SiteBuildRequestRepository,
 } from '@internal/content-application/lib/ports/content/content.ports';
 import type { MockInstance } from 'vitest';
-import type { ProjectChangeResult } from '@internal/content-application/lib/use-cases/change-project/change-project';
+import type { ArticleChangeResult } from '@internal/content-application/lib/use-cases/change-article/change-article';
 import { DispatchSiteBuild } from '@internal/content-application/lib/use-cases/dispatch-site-build/dispatch-site-build.use-case';
 import {
-  type AdminProjectView,
-  GetAdminProject,
-} from '@internal/content-application/lib/use-cases/get-admin-project/get-admin-project.use-case';
-import { ListAdminProjects } from '@internal/content-application/lib/use-cases/list-admin-projects/list-admin-projects.use-case';
-import { PublishProject } from '@internal/content-application/lib/use-cases/publish-project/publish-project.use-case';
-import { CreateProject } from '@internal/content-application/lib/use-cases/create-project/create-project.use-case';
-import { ReviseProject } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
-import { UnpublishProject } from '@internal/content-application/lib/use-cases/unpublish-project/unpublish-project.use-case';
+  type AdminArticleView,
+  GetAdminArticle,
+} from '@internal/content-application/lib/use-cases/get-admin-article/get-admin-article.use-case';
+import { ListAdminArticles } from '@internal/content-application/lib/use-cases/list-admin-articles/list-admin-articles.use-case';
+import { PublishArticle } from '@internal/content-application/lib/use-cases/publish-article/publish-article.use-case';
+import { CreateArticle } from '@internal/content-application/lib/use-cases/create-article/create-article.use-case';
+import { ReviseArticle } from '@internal/content-application/lib/use-cases/revise-article/revise-article.use-case';
+import { UnpublishArticle } from '@internal/content-application/lib/use-cases/unpublish-article/unpublish-article.use-case';
 import {
   FixedClock,
   InMemoryMediaRepository,
@@ -76,17 +76,17 @@ const text: (fr: string, en?: string) => LocalizedText = (fr: string, en?: strin
  * @param {'draft' | 'published'} status - Initial publication state.
  * @param {boolean} en - Whether fixture text includes English translations; defaults to `true`.
  * @param {readonly string[]} figures - Media shown by figures of both documents.
- * @returns {Project} Rehydrated project aggregate.
+ * @returns {Article} Rehydrated project aggregate.
  */
 function project(
   id: string,
   status: 'draft' | 'published',
   en: boolean = true,
   figures: readonly string[] = [],
-): Project {
+): Article {
   const t: (value: string) => LocalizedText = (value: string): LocalizedText =>
     text(value, en ? `${value} (en)` : undefined);
-  return Project.rehydrate({
+  return Article.rehydrate({
     id,
     slug: Slug.of(id),
     title: t('Titre'),
@@ -106,7 +106,7 @@ function project(
       ? { fr: articleDoc('Texte', figures), en: articleDoc('Text', figures) }
       : { fr: articleDoc('Texte', figures) },
     cover: null,
-    seo: ProjectSeo.empty(),
+    seo: ArticleSeo.empty(),
   });
 }
 
@@ -118,14 +118,14 @@ function project(
  */
 interface ProjectTestHarness {
   readonly requests: { revision: number; status: string; attempts: number }[];
-  readonly stored: Map<string, Project>;
+  readonly stored: Map<string, Article>;
   readonly media: InMemoryMediaRepository;
-  readonly create: CreateProject;
-  readonly revise: ReviseProject;
-  readonly publish: PublishProject;
-  readonly unpublish: UnpublishProject;
-  readonly list: ListAdminProjects;
-  readonly get: GetAdminProject;
+  readonly create: CreateArticle;
+  readonly revise: ReviseArticle;
+  readonly publish: PublishArticle;
+  readonly unpublish: UnpublishArticle;
+  readonly list: ListAdminArticles;
+  readonly get: GetAdminArticle;
   readonly buildRequests: SiteBuildRequestRepository;
   readonly clock: Clock;
 }
@@ -138,32 +138,32 @@ interface ProjectTestHarness {
  * each test. Its fake transaction executes writes directly; database rollback behavior has separate
  * tests.
  *
- * @param {Project[]} initial - Initial aggregate state.
+ * @param {Article[]} initial - Initial aggregate state.
  * @param {readonly MediaRecord[]} media - Initial media rows.
  * @returns {ProjectTestHarness} Fake repositories, state, clock and configured use cases.
  */
-function setup(initial: Project[], media: readonly MediaRecord[] = []): ProjectTestHarness {
+function setup(initial: Article[], media: readonly MediaRecord[] = []): ProjectTestHarness {
   const versions: Map<string, number> = new Map(
-    initial.map((p: Project): [string, number] => [p.id, p.version]),
+    initial.map((p: Article): [string, number] => [p.id, p.version]),
   );
-  const stored: Map<string, Project> = new Map(
-    initial.map((p: Project): [string, Project] => [p.id, p]),
+  const stored: Map<string, Article> = new Map(
+    initial.map((p: Article): [string, Article] => [p.id, p]),
   );
   const requests: { revision: number; status: string; attempts: number }[] = [];
   let revision: number = 1;
-  const projects: ProjectRepository = {
-    list: async (): Promise<Project[]> => [...stored.values()],
-    get: async (id: string): Promise<Project | null> => {
-      const p: Project | undefined = stored.get(id);
-      return p ? Project.rehydrate({ ...p.snapshot(), version: versions.get(id) ?? 1 }) : null;
+  const projects: ArticleRepository = {
+    list: async (): Promise<Article[]> => [...stored.values()],
+    get: async (id: string): Promise<Article | null> => {
+      const p: Article | undefined = stored.get(id);
+      return p ? Article.rehydrate({ ...p.snapshot(), version: versions.get(id) ?? 1 }) : null;
     },
-    save: async (p: Project, expected: number): Promise<number> => {
+    save: async (p: Article, expected: number): Promise<number> => {
       if (versions.get(p.id) !== expected) throw new VersionMismatchError();
       versions.set(p.id, expected + 1);
       stored.set(p.id, p);
       return expected + 1;
     },
-    insert: async (p: Project): Promise<void> => {
+    insert: async (p: Article): Promise<void> => {
       versions.set(p.id, p.version);
       stored.set(p.id, p);
     },
@@ -205,12 +205,12 @@ function setup(initial: Project[], media: readonly MediaRecord[] = []): ProjectT
     requests,
     stored,
     media: mediaRepository,
-    create: new CreateProject(unitOfWork, { next: (): string => `new-${stored.size}` }),
-    revise: new ReviseProject(unitOfWork, clock),
-    publish: new PublishProject(unitOfWork, clock),
-    unpublish: new UnpublishProject(unitOfWork, clock),
-    list: new ListAdminProjects(projects, mediaRepository),
-    get: new GetAdminProject(projects, mediaRepository),
+    create: new CreateArticle(unitOfWork, { next: (): string => `new-${stored.size}` }),
+    revise: new ReviseArticle(unitOfWork, clock),
+    publish: new PublishArticle(unitOfWork, clock),
+    unpublish: new UnpublishArticle(unitOfWork, clock),
+    list: new ListAdminArticles(projects, mediaRepository),
+    get: new GetAdminArticle(projects, mediaRepository),
     buildRequests,
     clock,
   };
@@ -222,44 +222,44 @@ function setup(initial: Project[], media: readonly MediaRecord[] = []): ProjectT
  * @description
  * Copies a project's editable fields and replaces its title with complete bilingual text.
  *
- * @param {Project} p - Aggregate whose editable fields seed the revision.
+ * @param {Article} p - Aggregate whose editable fields seed the revision.
  * @param {string} title - French title for the revised project.
- * @param {Partial<ProjectRevision>} overrides - Other editable fields to replace.
- * @returns {ProjectRevision} Editable project fields with the supplied bilingual title.
+ * @param {Partial<ArticleRevision>} overrides - Other editable fields to replace.
+ * @returns {ArticleRevision} Editable project fields with the supplied bilingual title.
  */
 const revision = (
-  p: Project,
+  p: Article,
   title: string,
-  overrides: Partial<ProjectRevision> = {},
-): ProjectRevision => {
-  const s: ProjectProps = p.snapshot();
+  overrides: Partial<ArticleRevision> = {},
+): ArticleRevision => {
+  const s: ArticleProps = p.snapshot();
   return { ...s, title: text(title, `${title} (en)`), ...overrides };
 };
 
 describe('project administration', (): void => {
   it('creates a draft after the last project with a free slug from the French title', async (): Promise<void> => {
-    const existing: Project = Project.rehydrate({
+    const existing: Article = Article.rehydrate({
       ...project('etude-de-cas', 'published').snapshot(),
       position: 3,
     });
     const { create, stored, requests } = setup([existing]);
-    const result: ProjectChangeResult = await create.execute(
+    const result: ArticleChangeResult = await create.execute(
       revision(existing, 'Étude de cas', { title: text('Étude de cas') }),
     );
     expect(result).toMatchObject({ version: 1, revision: null, media: [] });
-    expect(result.project.snapshot()).toMatchObject({
+    expect(result.article.snapshot()).toMatchObject({
       id: 'new-1',
       status: 'draft',
       position: 4,
     });
-    expect(result.project.slug.value).toBe('etude-de-cas-2');
-    expect(stored.get('new-1')).toBe(result.project);
+    expect(result.article.slug.value).toBe('etude-de-cas-2');
+    expect(stored.get('new-1')).toBe(result.article);
     expect(requests).toEqual([]);
   });
 
   it('refuses to create a project referencing an unknown media', async (): Promise<void> => {
     const { create, stored } = setup([]);
-    const base: Project = project('p1', 'draft', true, [M[0]]);
+    const base: Article = project('p1', 'draft', true, [M[0]]);
     await expect(create.execute(revision(base, 'Titre'))).rejects.toBeInstanceOf(
       MediaNotFoundError,
     );
@@ -267,15 +267,15 @@ describe('project administration', (): void => {
   });
 
   it('edits a draft without rebuilding the site', async (): Promise<void> => {
-    const draft: Project = project('p1', 'draft');
+    const draft: Article = project('p1', 'draft');
     const { revise, requests } = setup([draft]);
-    const result: ProjectChangeResult = await revise.execute('p1', 1, revision(draft, 'Nouveau'));
+    const result: ArticleChangeResult = await revise.execute('p1', 1, revision(draft, 'Nouveau'));
     expect(result).toMatchObject({ version: 2, revision: null, media: [] });
     expect(requests).toEqual([]);
   });
 
   it('requests a rebuild when the public site changes', async (): Promise<void> => {
-    const published: Project = project('p1', 'published');
+    const published: Article = project('p1', 'published');
     const { revise, unpublish, requests } = setup([published]);
     await expect(revise.execute('p1', 1, revision(published, 'Nouveau'))).resolves.toMatchObject({
       revision: 2,
@@ -289,7 +289,7 @@ describe('project administration', (): void => {
   });
 
   it('rejects a stale version', async (): Promise<void> => {
-    const draft: Project = project('p1', 'draft');
+    const draft: Article = project('p1', 'draft');
     const { revise } = setup([draft]);
     await revise.execute('p1', 1, revision(draft, 'A'));
     await expect(revise.execute('p1', 1, revision(draft, 'B'))).rejects.toBeInstanceOf(
@@ -315,34 +315,34 @@ describe('project administration', (): void => {
   });
 
   it('lists every project in display order with its media, and reads one', async (): Promise<void> => {
-    const second: Project = Project.rehydrate({
+    const second: Article = Article.rehydrate({
       ...project('p2', 'draft', true, [M[1], M[2]]).snapshot(),
       position: 1,
     });
-    const first: Project = Project.rehydrate({
+    const first: Article = Article.rehydrate({
       ...project('p1', 'published', true, [M[0]]).snapshot(),
       position: 0,
     });
     const { list, get } = setup([second, first], [mediaRecord(M[0]), mediaRecord(M[1])]);
-    const views: AdminProjectView[] = await list.execute();
+    const views: AdminArticleView[] = await list.execute();
     expect(
-      views.map((view: AdminProjectView): [string, string[]] => [
-        view.project.id,
+      views.map((view: AdminArticleView): [string, string[]] => [
+        view.article.id,
         view.media.map((record: MediaRecord): string => record.id),
       ]),
     ).toEqual([
       ['p1', [M[0]]],
       ['p2', [M[1]]],
     ]);
-    const one: AdminProjectView = await get.execute('p2');
-    expect(one.project.id).toBe('p2');
+    const one: AdminArticleView = await get.execute('p2');
+    expect(one.article.id).toBe('p2');
     expect(one.media.map((record: MediaRecord): string => record.id)).toEqual([M[1]]);
   });
 
   it('saves the search texts of a published project, which never block it', async (): Promise<void> => {
-    const published: Project = project('p1', 'published');
+    const published: Article = project('p1', 'published');
     const { revise, get, requests } = setup([published]);
-    const seo: ProjectSeo = ProjectSeo.of({
+    const seo: ArticleSeo = ArticleSeo.of({
       title: { fr: 'Titre de recherche' },
       description: { en: 'Search description' },
       keywords: { fr: ['Flutter', 'suivi de séries'] },
@@ -350,18 +350,18 @@ describe('project administration', (): void => {
     await expect(
       revise.execute('p1', 1, revision(published, 'Titre', { seo })),
     ).resolves.toMatchObject({ version: 2, revision: 2 });
-    const read: AdminProjectView = await get.execute('p1');
-    expect(read.project.snapshot().seo.toProps()).toEqual({
+    const read: AdminArticleView = await get.execute('p1');
+    expect(read.article.snapshot().seo.toProps()).toEqual({
       title: { fr: 'Titre de recherche' },
       description: { en: 'Search description' },
       keywords: { fr: ['Flutter', 'suivi de séries'] },
     });
-    expect(read.project.missingFor(['fr', 'en'])).toEqual([]);
+    expect(read.article.missingFor(['fr', 'en'])).toEqual([]);
     expect(requests).toHaveLength(1);
   });
 
   it('keeps the identity and status of a project whatever the revision carries', async (): Promise<void> => {
-    const draft: Project = project('p1', 'draft');
+    const draft: Article = project('p1', 'draft');
     const { revise, stored } = setup([draft]);
     await revise.execute('p1', 1, {
       ...revision(draft, 'Nouveau'),
@@ -372,11 +372,11 @@ describe('project administration', (): void => {
   });
 });
 
-describe('ReviseProject', (): void => {
+describe('ReviseArticle', (): void => {
   it('refuses unknown media of the figures and the cover, before saving', async (): Promise<void> => {
-    const draft: Project = project('p1', 'draft');
+    const draft: Article = project('p1', 'draft');
     const { revise, stored } = setup([draft], [mediaRecord(M[0])]);
-    const rejection: Promise<ProjectChangeResult> = revise.execute(
+    const rejection: Promise<ArticleChangeResult> = revise.execute(
       'p1',
       1,
       revision(draft, 'Nouveau', {
@@ -393,13 +393,13 @@ describe('ReviseProject', (): void => {
   });
 
   it('unlinks the media it no longer references and relinks those it references again', async (): Promise<void> => {
-    const draft: Project = project('p1', 'draft', true, [M[0], M[1]]);
+    const draft: Article = project('p1', 'draft', true, [M[0], M[1]]);
     const earlier: Date = new Date('2026-10-20T00:00:00Z');
     const { revise, media, clock } = setup(
       [draft],
       [mediaRecord(M[0]), mediaRecord(M[1]), mediaRecord(M[2], { unlinkedAt: earlier })],
     );
-    const result: ProjectChangeResult = await revise.execute(
+    const result: ArticleChangeResult = await revise.execute(
       'p1',
       1,
       revision(draft, 'Nouveau', {
@@ -416,7 +416,7 @@ describe('ReviseProject', (): void => {
   });
 
   it('leaves the media untouched when the references do not change', async (): Promise<void> => {
-    const draft: Project = project('p1', 'draft', true, [M[0]]);
+    const draft: Article = project('p1', 'draft', true, [M[0]]);
     const { revise, media } = setup([draft], [mediaRecord(M[0])]);
     const markUnlinked: MockInstance<InMemoryMediaRepository['markUnlinked']> = vi.spyOn(
       media,
@@ -431,7 +431,7 @@ describe('ReviseProject', (): void => {
 
 describe('DispatchSiteBuild', (): void => {
   it('sends only the most recent revision', async (): Promise<void> => {
-    const published: Project = project('p1', 'published');
+    const published: Article = project('p1', 'published');
     const { revise, requests, buildRequests, clock } = setup([published]);
     await revise.execute('p1', 1, revision(published, 'A'));
     await revise.execute('p1', 2, revision(published, 'B'));
@@ -451,7 +451,7 @@ describe('DispatchSiteBuild', (): void => {
   });
 
   it('keeps the request pending if sending fails', async (): Promise<void> => {
-    const published: Project = project('p1', 'published');
+    const published: Article = project('p1', 'published');
     const { revise, requests, buildRequests, clock } = setup([published]);
     await revise.execute('p1', 1, revision(published, 'A'));
     const worker: DispatchSiteBuild = new DispatchSiteBuild(
@@ -464,7 +464,7 @@ describe('DispatchSiteBuild', (): void => {
   });
 
   it('records a non-Error rejection as text', async (): Promise<void> => {
-    const published: Project = project('p1', 'published');
+    const published: Article = project('p1', 'published');
     const { revise, buildRequests, clock } = setup([published]);
     await revise.execute('p1', 1, revision(published, 'A'));
     const markFailed: MockInstance<SiteBuildRequestRepository['markFailed']> = vi.spyOn(
@@ -478,5 +478,52 @@ describe('DispatchSiteBuild', (): void => {
     );
     await expect(worker.execute()).rejects.toBe('timeout');
     expect(markFailed).toHaveBeenCalledWith(2, 'timeout', new Date('2026-11-02T10:01:00Z'));
+  });
+});
+
+describe('article collection boundaries', (): void => {
+  it('creates an article with an independent position and a globally unique slug', async (): Promise<void> => {
+    const seed: Article = project('existing', 'draft');
+    const h: ProjectTestHarness = setup([seed]);
+    const article: ArticleChangeResult = await h.create.execute(
+      revision(seed, 'existing', {
+        taxonomy: {
+          category: { key: 'architecture', label: text('Architecture', 'Architecture') },
+          tags: [],
+        },
+      }),
+      'article',
+    );
+    expect(article.article.kind).toBe('article');
+    expect(article.article.position).toBe(0);
+    expect(article.article.slug.value).not.toBe('existing');
+    expect((await h.list.execute()).map((x) => x.article.id)).toEqual(
+      expect.arrayContaining(['existing', article.article.id]),
+    );
+    expect((await h.list.execute('project')).map((x) => x.article.id)).toEqual(['existing']);
+    expect((await h.list.execute('article')).map((x) => x.article.id)).toEqual([
+      article.article.id,
+    ]);
+    await expect(h.get.execute(article.article.id, 'project')).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+    await expect(h.publish.execute(article.article.id, 1, 'project')).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+    await expect(
+      h.revise.execute(article.article.id, 1, revision(seed, 'changed'), 'project'),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    await expect(h.unpublish.execute(article.article.id, 1, 'project')).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+    const published: ArticleChangeResult = await h.publish.execute(article.article.id, 1);
+    expect(published.article.isPublished()).toBe(true);
+    expect((await h.get.execute(article.article.id, 'article')).article.kind).toBe('article');
+    const hidden: ArticleChangeResult = await h.unpublish.execute(
+      article.article.id,
+      published.version,
+      'article',
+    );
+    expect(hidden.article.isPublished()).toBe(false);
   });
 });

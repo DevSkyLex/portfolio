@@ -1,21 +1,21 @@
-import type { Project } from '@vfortin/content-domain';
+import type { Article, PublicationKind } from '@vfortin/content-domain';
 import type {
   Clock,
   ContentUnitOfWork,
 } from '@internal/content-application/lib/ports/content/content.ports';
 import {
-  type ProjectChangeResult,
-  changeProject,
-} from '@internal/content-application/lib/use-cases/change-project/change-project';
+  type ArticleChangeResult,
+  changeArticle,
+} from '@internal/content-application/lib/use-cases/change-article/change-article';
 
 /**
- * Class UnpublishProject
- * @class UnpublishProject
+ * Class UnpublishArticle
+ * @class UnpublishArticle
  *
  * @description
  * Moves a project to draft state through the transactional change operation.
  */
-export class UnpublishProject {
+export class UnpublishArticle {
   // #region Constructor
   /**
    * Constructor
@@ -41,17 +41,22 @@ export class UnpublishProject {
    * @description
    * Sets the project to draft and advances the revision when it was previously public.
    *
-   * @param {string} id - Project identifier.
+   * @param {string} id - Article identifier.
    * @param {number} expectedVersion - Version read before the command.
-   * @returns {Promise<ProjectChangeResult>} Updated project and optional public content revision.
+   * @returns {Promise<ArticleChangeResult>} Updated project and optional public content revision.
    */
-  public execute(id: string, expectedVersion: number): Promise<ProjectChangeResult> {
-    return changeProject(
+  public execute(
+    id: string,
+    expectedVersion: number,
+    legacyKind?: PublicationKind,
+  ): Promise<ArticleChangeResult> {
+    return changeArticle(
       this.unitOfWork,
       this.clock,
       id,
       expectedVersion,
-      (project: Project): void => project.unpublish(),
+      (project: Article): void => project.unpublish(),
+      legacyKind,
     );
   }
   // #endregion

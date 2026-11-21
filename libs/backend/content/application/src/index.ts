@@ -26,7 +26,7 @@ export type {
   MediaUploadLimits,
   ProbedVideo,
   ProcessedImage,
-  ProjectRepository,
+  ArticleRepository,
   RemoteImageSource,
   SiteBuildDispatcher,
   SiteBuildRequestRepository,
@@ -41,29 +41,29 @@ export type {
   FaqUnitOfWork,
   MaintenanceRepository,
 } from '@internal/content-application/lib/ports/content/content.ports';
-export type { ProjectChangeResult } from '@internal/content-application/lib/use-cases/change-project/change-project';
+export type { ArticleChangeResult } from '@internal/content-application/lib/use-cases/change-article/change-article';
 export {
   BUILD_LEASE_MS,
   DispatchSiteBuild,
 } from '@internal/content-application/lib/use-cases/dispatch-site-build/dispatch-site-build.use-case';
 export {
-  GetAdminProject,
-  type AdminProjectView,
-} from '@internal/content-application/lib/use-cases/get-admin-project/get-admin-project.use-case';
+  GetAdminArticle,
+  type AdminArticleView,
+} from '@internal/content-application/lib/use-cases/get-admin-article/get-admin-article.use-case';
 export {
   GetPublishedContent,
   type PublishedContent,
 } from '@internal/content-application/lib/use-cases/get-published-content/get-published-content.use-case';
-export { ListAdminProjects } from '@internal/content-application/lib/use-cases/list-admin-projects/list-admin-projects.use-case';
+export { ListAdminArticles } from '@internal/content-application/lib/use-cases/list-admin-articles/list-admin-articles.use-case';
 export { PUBLISHED_LOCALES } from '@internal/content-application/lib/use-cases/published-locales/published-locales';
-export { PublishProject } from '@internal/content-application/lib/use-cases/publish-project/publish-project.use-case';
+export { PublishArticle } from '@internal/content-application/lib/use-cases/publish-article/publish-article.use-case';
 export {
   MEDIA_GRACE_MS,
   PurgeMedia,
 } from '@internal/content-application/lib/use-cases/purge-media/purge-media.use-case';
-export { CreateProject } from '@internal/content-application/lib/use-cases/create-project/create-project.use-case';
-export { ReviseProject } from '@internal/content-application/lib/use-cases/revise-project/revise-project.use-case';
-export { UnpublishProject } from '@internal/content-application/lib/use-cases/unpublish-project/unpublish-project.use-case';
+export { CreateArticle } from '@internal/content-application/lib/use-cases/create-article/create-article.use-case';
+export { ReviseArticle } from '@internal/content-application/lib/use-cases/revise-article/revise-article.use-case';
+export { UnpublishArticle } from '@internal/content-application/lib/use-cases/unpublish-article/unpublish-article.use-case';
 export { UploadMedia } from '@internal/content-application/lib/use-cases/upload-media/upload-media.use-case';
 export { ImportRemoteMedia } from '@internal/content-application/lib/use-cases/import-remote-media/import-remote-media.use-case';
 export {

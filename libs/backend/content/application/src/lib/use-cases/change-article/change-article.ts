@@ -1,4 +1,4 @@
-import type { Project } from '@vfortin/content-domain';
+import type { Article, PublicationKind } from '@vfortin/content-domain';
 import { NotFoundError } from '@internal/content-application/lib/errors/application-error';
 import type {
   Clock,
@@ -8,13 +8,13 @@ import type {
 } from '@internal/content-application/lib/ports/content/content.ports';
 
 /**
- * Interface ProjectChangeResult
- * @interface ProjectChangeResult
+ * Interface ArticleChangeResult
+ * @interface ArticleChangeResult
  *
  * @description
  * Result of an optimistic project update and its optional public content revision.
  */
-export interface ProjectChangeResult {
+export interface ArticleChangeResult {
   // #region Properties
   /**
    * Property project
@@ -23,7 +23,7 @@ export interface ProjectChangeResult {
    * @description
    * Updated aggregate after the transaction has saved it.
    */
-  readonly project: Project;
+  readonly article: Article;
 
   /**
    * Property version
@@ -55,19 +55,19 @@ export interface ProjectChangeResult {
 }
 
 /**
- * Type ProjectChange
- * @type ProjectChange
+ * Type ArticleChange
+ * @type ArticleChange
  *
  * @description
  * Mutation applied to the loaded aggregate inside the unit of work, before it is saved.
  */
-export type ProjectChange = (
-  project: Project,
+export type ArticleChange = (
+  project: Article,
   repositories: ContentRepositories,
 ) => void | Promise<void>;
 
 /**
- * Function changeProject
+ * Function changeArticle
  *
  * @description
  * Applies a project mutation with optimistic locking. If it was or becomes published, the
@@ -75,30 +75,31 @@ export type ProjectChange = (
  *
  * @param {ContentUnitOfWork} unitOfWork - Transaction boundary for the project and revision writes.
  * @param {Clock} clock - Source of the request timestamp.
- * @param {string} id - Project identifier to load.
+ * @param {string} id - Article identifier to load.
  * @param {number} expectedVersion - Version that must still be stored for the save to succeed.
- * @param {ProjectChange} change - Mutation applied to the loaded aggregate.
- * @returns {Promise<ProjectChangeResult>} Updated project, new version, optional public content revision
+ * @param {ArticleChange} change - Mutation applied to the loaded aggregate.
+ * @returns {Promise<ArticleChangeResult>} Updated project, new version, optional public content revision
  * and referenced media.
  */
-export function changeProject(
+export function changeArticle(
   unitOfWork: ContentUnitOfWork,
   clock: Clock,
   id: string,
   expectedVersion: number,
-  change: ProjectChange,
-): Promise<ProjectChangeResult> {
-  return unitOfWork.run(async (repositories: ContentRepositories): Promise<ProjectChangeResult> => {
+  change: ArticleChange,
+  legacyKind?: PublicationKind,
+): Promise<ArticleChangeResult> {
+  return unitOfWork.run(async (repositories: ContentRepositories): Promise<ArticleChangeResult> => {
     const { projects, buildRequests, media } = repositories;
-    const project: Project | null = await projects.get(id);
-    if (project === null) {
-      throw new NotFoundError('Project');
+    const project: Article | null = await projects.get(id);
+    if (project === null || (legacyKind !== undefined && project.kind !== legacyKind)) {
+      throw new NotFoundError('Article');
     }
     const wasPublished: boolean = project.isPublished();
     await change(project, repositories);
     const version: number = await projects.save(project, expectedVersion);
     const revision: number | null =
       wasPublished || project.isPublished() ? await buildRequests.request(clock.now()) : null;
-    return { project, version, revision, media: await media.existing(project.mediaIds()) };
+    return { article: project, version, revision, media: await media.existing(project.mediaIds()) };
   });
 }

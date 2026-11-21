@@ -1,22 +1,22 @@
-import type { Project } from '@vfortin/content-domain';
+import type { Article, PublicationKind } from '@vfortin/content-domain';
 import type {
   Clock,
   ContentUnitOfWork,
 } from '@internal/content-application/lib/ports/content/content.ports';
 import {
-  type ProjectChangeResult,
-  changeProject,
-} from '@internal/content-application/lib/use-cases/change-project/change-project';
+  type ArticleChangeResult,
+  changeArticle,
+} from '@internal/content-application/lib/use-cases/change-article/change-article';
 import { PUBLISHED_LOCALES } from '@internal/content-application/lib/use-cases/published-locales/published-locales';
 
 /**
- * Class PublishProject
- * @class PublishProject
+ * Class PublishArticle
+ * @class PublishArticle
  *
  * @description
  * Publishes a project through the transactional change operation and required locale rules.
  */
-export class PublishProject {
+export class PublishArticle {
   // #region Constructor
   /**
    * Constructor
@@ -42,17 +42,22 @@ export class PublishProject {
    * @description
    * Publishes the project if its translations are complete for every required locale.
    *
-   * @param {string} id - Project identifier.
+   * @param {string} id - Article identifier.
    * @param {number} expectedVersion - Version read before the command.
-   * @returns {Promise<ProjectChangeResult>} Updated project and queued public revision.
+   * @returns {Promise<ArticleChangeResult>} Updated project and queued public revision.
    */
-  public execute(id: string, expectedVersion: number): Promise<ProjectChangeResult> {
-    return changeProject(
+  public execute(
+    id: string,
+    expectedVersion: number,
+    legacyKind?: PublicationKind,
+  ): Promise<ArticleChangeResult> {
+    return changeArticle(
       this.unitOfWork,
       this.clock,
       id,
       expectedVersion,
-      (project: Project): void => project.publish(PUBLISHED_LOCALES),
+      (project: Article): void => project.publish(PUBLISHED_LOCALES),
+      legacyKind,
     );
   }
   // #endregion

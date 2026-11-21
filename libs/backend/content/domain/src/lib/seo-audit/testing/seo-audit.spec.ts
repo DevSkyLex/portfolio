@@ -1,17 +1,17 @@
-import { Project, type ProjectProps } from '@internal/content-domain/lib/project/project';
+import { Article, type ArticleProps } from '@internal/content-domain/lib/article/article';
 import {
   ArticleDocument,
   type ArticleBlock,
 } from '@internal/content-domain/lib/values/article-document/article-document';
 import { LocalizedText } from '@internal/content-domain/lib/values/localized-text/localized-text';
 import { ProjectPeriod } from '@internal/content-domain/lib/values/project-period/project-period';
-import { ProjectSeo } from '@internal/content-domain/lib/values/project-seo/project-seo';
+import { ArticleSeo } from '@internal/content-domain/lib/values/article-seo/article-seo';
 import { Slug } from '@internal/content-domain/lib/values/slug/slug';
 import {
-  type ProjectSeoAudit,
+  type ArticleSeoAudit,
   SEO_DESCRIPTION_MIN_LENGTH,
   SEO_TITLE_MIN_LENGTH,
-  auditProjectSeo,
+  auditArticleSeo,
   fallbackDescription,
 } from '@internal/content-domain/lib/seo-audit/seo-audit';
 
@@ -86,11 +86,11 @@ function doc(alts: readonly string[] = []): ArticleDocument {
  * Builds a published project with custom search texts and keywords in both languages, then applies
  * the overrides.
  *
- * @param {Partial<ProjectProps>} overrides - Fields replacing the defaults.
- * @returns {Project} Project.
+ * @param {Partial<ArticleProps>} overrides - Fields replacing the defaults.
+ * @returns {Article} Article.
  */
-function project(overrides: Partial<ProjectProps> = {}): Project {
-  return Project.rehydrate({
+function project(overrides: Partial<ArticleProps> = {}): Article {
+  return Article.rehydrate({
     id: 'p-1',
     slug: Slug.of('library-trails'),
     title: text('Library Trails', 'Library Trails'),
@@ -108,7 +108,7 @@ function project(overrides: Partial<ProjectProps> = {}): Project {
     version: 1,
     article: { fr: doc(), en: doc() },
     cover: { media: MEDIA[0], alt: { fr: 'Écran', en: 'Screen' } },
-    seo: ProjectSeo.of({
+    seo: ArticleSeo.of({
       title: {
         fr: 'Library Trails, suivi de séries et de films',
         en: 'Library Trails, a series and film tracker',
@@ -120,9 +120,23 @@ function project(overrides: Partial<ProjectProps> = {}): Project {
   });
 }
 
-describe('auditProjectSeo', (): void => {
+describe('auditArticleSeo', (): void => {
+  it('uses article detail paths for both localized audit pages', (): void => {
+    const audit: ArticleSeoAudit = auditArticleSeo(
+      project({
+        kind: 'article',
+        taxonomy: {
+          category: { key: 'architecture', label: text('Architecture', 'Architecture') },
+          tags: [],
+        },
+      }),
+    );
+    expect(audit.pages.fr.path).toBe('/fr/articles/library-trails');
+    expect(audit.pages.en.path).toBe('/en/articles/library-trails');
+  });
+
   it('reports nothing for complete metadata and lists what each page emits', (): void => {
-    const audit: ProjectSeoAudit = auditProjectSeo(project());
+    const audit: ArticleSeoAudit = auditArticleSeo(project());
     expect(audit.issues).toEqual([]);
     expect(audit).toMatchObject({
       projectId: 'p-1',
@@ -130,21 +144,21 @@ describe('auditProjectSeo', (): void => {
       title: 'Library Trails',
     });
     expect(audit.pages.fr).toEqual({
-      path: '/fr/projects/library-trails',
+      path: '/fr/articles/library-trails',
       title: 'Library Trails, suivi de séries et de films',
       description: SUMMARY_FR,
       keywords: ['suivi de séries'],
       keywordsSource: 'custom',
     });
-    expect(audit.pages.en.path).toBe('/en/projects/library-trails');
+    expect(audit.pages.en.path).toBe('/en/articles/library-trails');
   });
 
   it('reports the fallbacks the page applies and their lengths', (): void => {
-    const audit: ProjectSeoAudit = auditProjectSeo(
+    const audit: ArticleSeoAudit = auditArticleSeo(
       project({
         title: text('Atlas', 'Atlas'),
         summary: text('Suivi de séries.', `${'Series '.repeat(30)}tracker`),
-        seo: ProjectSeo.empty(),
+        seo: ArticleSeo.empty(),
       }),
     );
     expect(audit.pages.fr.title).toBe('Atlas — Valentin Fortin');
@@ -182,12 +196,26 @@ describe('auditProjectSeo', (): void => {
     ]);
   });
 
+  it('uses article tag keys when technologies have been migrated out of the legacy field', (): void => {
+    const audit: ArticleSeoAudit = auditArticleSeo(
+      project({
+        techs: [],
+        seo: ArticleSeo.empty(),
+        taxonomy: {
+          category: { key: 'engineering', label: text('Ingénierie', 'Engineering') },
+          tags: [{ key: 'flutter', label: text('Flutter', 'Flutter') }],
+        },
+      }),
+    );
+    expect(audit.pages.fr).toMatchObject({ keywords: ['flutter'], keywordsSource: 'techs' });
+  });
+
   it('reports a fallback title above 70 characters', (): void => {
     const long: string = 'Plateforme de supervision des capteurs connectés industriels';
-    const audit: ProjectSeoAudit = auditProjectSeo(
+    const audit: ArticleSeoAudit = auditArticleSeo(
       project({
         title: text(long, long),
-        seo: ProjectSeo.of({
+        seo: ArticleSeo.of({
           title: { en: 'Industrial sensor platform for factories' },
           description: {},
           keywords: {},
@@ -209,11 +237,11 @@ describe('auditProjectSeo', (): void => {
   });
 
   it('warns about a page without keywords, cover or alternative texts', (): void => {
-    const audit: ProjectSeoAudit = auditProjectSeo(
+    const audit: ArticleSeoAudit = auditArticleSeo(
       project({
         techs: [],
         cover: null,
-        seo: ProjectSeo.of({
+        seo: ArticleSeo.of({
           title: {
             fr: 'Library Trails, suivi de séries et de films',
             en: 'Library Trails, a series and film tracker',
@@ -235,7 +263,7 @@ describe('auditProjectSeo', (): void => {
   });
 
   it('reports a missing cover text and the untranslated English fields', (): void => {
-    const audit: ProjectSeoAudit = auditProjectSeo(
+    const audit: ArticleSeoAudit = auditArticleSeo(
       project({
         lead: text('Intro'),
         article: { fr: doc() },

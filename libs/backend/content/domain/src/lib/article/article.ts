@@ -6,26 +6,50 @@ import {
 import { Slug } from '@internal/content-domain/lib/values/slug/slug';
 import type { ArticleDocument } from '@internal/content-domain/lib/values/article-document/article-document';
 import type { ProjectPeriod } from '@internal/content-domain/lib/values/project-period/project-period';
-import type { ProjectSeo } from '@internal/content-domain/lib/values/project-seo/project-seo';
+import type { ArticleSeo } from '@internal/content-domain/lib/values/article-seo/article-seo';
 
 /**
- * Type ProjectStatus
- * @type ProjectStatus
+ * Type ArticleStatus
+ * @type ArticleStatus
  *
  * @description
  * Visibility state controlling whether a project appears in published content.
  */
-export type ProjectStatus = 'draft' | 'published';
+export type ArticleStatus = 'draft' | 'published';
+
+/** Legacy collection used by compatibility endpoints. */
+export type PublicationKind = 'project' | 'article';
+
+/** Stable taxonomy key and its independently translated display label. */
+export interface PublicationTaxon {
+  readonly key: string;
+  readonly label: LocalizedText;
+}
+
+/** One category and an ordered, unique set of tags for an editorial article. */
+export interface PublicationTaxonomy {
+  readonly category: PublicationTaxon | null;
+  readonly tags: readonly PublicationTaxon[];
+}
+
+/** Bounds shared by category and tag validation at the domain boundary. */
+export const PUBLICATION_TAXONOMY_LIMITS = { key: 80, label: 80, tags: 24 } as const;
+
+/** Category assigned to case studies saved before article taxonomy was introduced. */
+export const PROJECTS_CATEGORY: PublicationTaxon = Object.freeze({
+  key: 'projects',
+  label: LocalizedText.of('taxonomy.category.label', { fr: 'Projets', en: 'Projects' }),
+});
 
 /**
- * Interface ProjectArticle
- * @interface ProjectArticle
+ * Interface LocalizedArticleBody
+ * @interface LocalizedArticleBody
  *
  * @description
  * Case study as one rich document per language (D40): French is required, English is optional until
  * publication.
  */
-export interface ProjectArticle {
+export interface LocalizedArticleBody {
   // #region Properties
   /**
    * Property fr
@@ -48,14 +72,14 @@ export interface ProjectArticle {
 }
 
 /**
- * Interface ProjectCover
- * @interface ProjectCover
+ * Interface ArticleCover
+ * @interface ArticleCover
  *
  * @description
  * Cover image shown at the top of the article and on the home cards (D40): an uploaded media and its
  * alternative text, which a draft may still lack in either language.
  */
-export interface ProjectCover {
+export interface ArticleCover {
   // #region Properties
   /**
    * Property media
@@ -78,13 +102,18 @@ export interface ProjectCover {
 }
 
 /**
- * Interface ProjectProps
- * @interface ProjectProps
+ * Interface ArticleProps
+ * @interface ArticleProps
  *
  * @description
  * Complete persisted state used to rehydrate a project aggregate.
  */
-export interface ProjectProps {
+export interface ArticleProps {
+  /** Legacy rows without a collection kind belong to projects. */
+  readonly kind?: PublicationKind;
+
+  /** Article classification, absent on legacy projects. */
+  readonly taxonomy?: PublicationTaxonomy | undefined;
   // #region Properties
   /**
    * Property id
@@ -210,7 +239,7 @@ export interface ProjectProps {
    * @description
    * Draft or published visibility state.
    */
-  readonly status: ProjectStatus;
+  readonly status: ArticleStatus;
 
   /**
    * Property version
@@ -228,7 +257,7 @@ export interface ProjectProps {
    * @description
    * Localized body of the case study.
    */
-  readonly article: ProjectArticle;
+  readonly article: LocalizedArticleBody;
 
   /**
    * Property cover
@@ -237,7 +266,7 @@ export interface ProjectProps {
    * @description
    * Cover image, or `null` when the project shows the tinted placeholder.
    */
-  readonly cover: ProjectCover | null;
+  readonly cover: ArticleCover | null;
 
   /**
    * Property seo
@@ -246,20 +275,20 @@ export interface ProjectProps {
    * @description
    * Optional search title and description per language; never part of publication completeness.
    */
-  readonly seo: ProjectSeo;
+  readonly seo: ArticleSeo;
   // #endregion
 }
 
 /**
- * Type ProjectRevision
- * @type ProjectRevision
+ * Type ArticleRevision
+ * @type ArticleRevision
  *
  * @description
  * Administration-editable project content; identity, position and publication state use separate
  * domain operations.
  */
-export type ProjectRevision = Pick<
-  ProjectProps,
+export type ArticleRevision = Pick<
+  ArticleProps,
   | 'title'
   | 'summary'
   | 'lead'
@@ -268,12 +297,15 @@ export type ProjectRevision = Pick<
   | 'role'
   | 'place'
   | 'siteUrl'
-  | 'techs'
   | 'featured'
   | 'article'
   | 'cover'
   | 'seo'
->;
+  | 'taxonomy'
+> & {
+  /** Legacy technologies. Omission preserves them unless the revision supplies the new taxonomy. */
+  readonly techs?: readonly string[] | undefined;
+};
 
 /**
  * Constant TECH_KEY
@@ -283,14 +315,16 @@ export type ProjectRevision = Pick<
  */
 const TECH_KEY: RegExp = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+type StoredArticleProps = ArticleProps & { readonly taxonomy: PublicationTaxonomy };
+
 /**
- * Class Project
- * @class Project
+ * Class Article
+ * @class Article
  *
  * @description
- * Project aggregate that validates persisted values and protects publication completeness rules.
+ * Article aggregate that validates persisted values and protects publication completeness rules.
  */
-export class Project {
+export class Article {
   // #region Constructor
   /**
    * Constructor
@@ -299,9 +333,9 @@ export class Project {
    * @description
    * Creates the aggregate around persisted state; callers use `rehydrate` to validate invariants.
    *
-   * @param {ProjectProps} props - Aggregate state replaced only after validated domain operations.
+   * @param {StoredArticleProps} props - Aggregate state replaced only after validated domain operations.
    */
-  private constructor(private props: ProjectProps) {}
+  private constructor(private props: StoredArticleProps) {}
   // #endregion
 
   // #region Methods
@@ -313,16 +347,18 @@ export class Project {
    * Starts a new project as a draft at version 1. The revision is copied field by field, so that an
    * object carrying more (status, version…) sets nothing else.
    *
-   * @param {Pick<ProjectProps, 'id' | 'slug' | 'position'>} identity - Identifier, slug and position.
-   * @param {ProjectRevision} revision - Editable content of the new project.
-   * @returns {Project} New draft aggregate.
+   * @param {Pick<ArticleProps, 'id' | 'slug' | 'position' | 'kind'>} identity - Collection, identifier, slug and position.
+   * @param {ArticleRevision} revision - Editable content of the new project.
+   * @returns {Article} New draft aggregate.
    */
   public static create(
-    identity: Pick<ProjectProps, 'id' | 'slug' | 'position'>,
-    revision: ProjectRevision,
-  ): Project {
-    return Project.rehydrate({
+    identity: Pick<ArticleProps, 'id' | 'slug' | 'position' | 'kind'>,
+    revision: ArticleRevision,
+  ): Article {
+    return Article.rehydrate({
       id: identity.id,
+      kind: identity.kind ?? 'project',
+      taxonomy: revision.taxonomy,
       slug: identity.slug,
       position: identity.position,
       title: revision.title,
@@ -333,7 +369,7 @@ export class Project {
       role: revision.role,
       place: revision.place,
       siteUrl: revision.siteUrl,
-      techs: revision.techs,
+      techs: revision.techs ?? [],
       featured: revision.featured,
       article: revision.article,
       cover: revision.cover,
@@ -351,10 +387,17 @@ export class Project {
    * Rebuilds persisted state and rejects invalid positions, versions, HTTPS URL strings containing no whitespace, duplicate tech keys or a cover without media.
    * The returned aggregate copies the technology list to avoid retaining its mutable input array.
    *
-   * @param {ProjectProps} props - Persisted project state.
-   * @returns {Project} Rehydrated aggregate.
+   * @param {ArticleProps} props - Persisted project state.
+   * @returns {Article} Rehydrated aggregate.
    */
-  public static rehydrate(props: ProjectProps): Project {
+  public static rehydrate(props: ArticleProps): Article {
+    const kind: PublicationKind = props.kind ?? 'project';
+    if (kind !== 'project' && kind !== 'article') {
+      throw new InvalidValueError('kind', 'project or article expected');
+    }
+    const taxonomy: PublicationTaxonomy = validateTaxonomy(
+      props.taxonomy ?? { category: kind === 'project' ? PROJECTS_CATEGORY : null, tags: [] },
+    );
     if (!Number.isInteger(props.position) || props.position < 0) {
       throw new InvalidValueError('position', 'positive integer expected');
     }
@@ -373,10 +416,38 @@ export class Project {
     if (new Set(props.techs).size !== props.techs.length) {
       throw new InvalidValueError('techs', 'a tech appears twice');
     }
+    const tagKeys: Set<string> = new Set([
+      ...taxonomy.tags.map((tag) => tag.key),
+      ...props.techs.map(technologyTagKey),
+    ]);
+    if (tagKeys.size > PUBLICATION_TAXONOMY_LIMITS.tags) {
+      throw new InvalidValueError('taxonomy.tags', 'too many tags');
+    }
     if (props.cover !== null && props.cover.media.trim() === '') {
       throw new InvalidValueError('cover', 'a media identifier is expected');
     }
-    return new Project({ ...props, techs: [...props.techs] });
+    return new Article({ ...props, kind, taxonomy, techs: [...props.techs] });
+  }
+
+  /** Returns the collection owning this publication. */
+  public get kind(): PublicationKind {
+    return this.props.kind ?? 'project';
+  }
+
+  /** Exposes legacy technologies as tags, preserving explicit labels and order for matching keys. */
+  public get taxonomy(): PublicationTaxonomy {
+    const { category, tags } = this.props.taxonomy;
+    const merged: Map<string, PublicationTaxon> = new Map(tags.map((tag) => [tag.key, tag]));
+    for (const tech of this.props.techs) {
+      const key: string = technologyTagKey(tech);
+      if (merged.has(key)) continue;
+      const label: string = tech.slice(0, PUBLICATION_TAXONOMY_LIMITS.label);
+      merged.set(key, {
+        key,
+        label: LocalizedText.of('taxonomy.tags.label', { fr: label, en: label }),
+      });
+    }
+    return { category, tags: [...merged.values()] };
   }
 
   /**
@@ -386,7 +457,7 @@ export class Project {
    * @description
    * Returns the stable project identifier.
    *
-   * @returns {string} Project identifier.
+   * @returns {string} Article identifier.
    */
   public get id(): string {
     return this.props.id;
@@ -399,7 +470,7 @@ export class Project {
    * @description
    * Returns the validated public URL segment.
    *
-   * @returns {Slug} Project slug.
+   * @returns {Slug} Article slug.
    */
   public get slug(): Slug {
     return this.props.slug;
@@ -412,9 +483,9 @@ export class Project {
    * @description
    * Returns the current visibility state.
    *
-   * @returns {ProjectStatus} Draft or published status.
+   * @returns {ArticleStatus} Draft or published status.
    */
-  public get status(): ProjectStatus {
+  public get status(): ArticleStatus {
     return this.props.status;
   }
 
@@ -481,7 +552,19 @@ export class Project {
       role: this.props.role,
       place: this.props.place,
     };
+    const { category, tags }: PublicationTaxonomy = this.taxonomy;
+    if (category === null) {
+      missing.push('taxonomy.category');
+    }
     for (const locale of locales) {
+      if (category !== null && !category.label.isCompleteFor(locale)) {
+        missing.push(`taxonomy.category.label.${locale}`);
+      }
+      tags.forEach((tag: PublicationTaxon, index: number): void => {
+        if (!tag.label.isCompleteFor(locale)) {
+          missing.push(`taxonomy.tags.${index}.label.${locale}`);
+        }
+      });
       for (const [field, text] of Object.entries(texts)) {
         if (!text.isCompleteFor(locale)) {
           missing.push(`${field}.${locale}`);
@@ -494,7 +577,7 @@ export class Project {
       if (document !== undefined && document.figuresMissingAlt().length > 0) {
         missing.push(`article.${locale}.figures`);
       }
-      const cover: ProjectCover | null = this.props.cover;
+      const cover: ArticleCover | null = this.props.cover;
       if (cover !== null && (cover.alt[locale] ?? '').trim() === '') {
         missing.push(`cover.alt.${locale}`);
       }
@@ -552,7 +635,7 @@ export class Project {
     if (missing.length > 0) {
       throw new DomainError(
         'content.project-incomplete',
-        'The project is incomplete and cannot be published.',
+        'The article is incomplete and cannot be published.',
         missing,
       );
     }
@@ -567,15 +650,16 @@ export class Project {
    * Replaces editable fields while preserving identity, status, position and version. A published
    * project must remain complete for every supplied locale or the change is rejected.
    *
-   * @param {ProjectRevision} revision - New editable content.
+   * @param {ArticleRevision} revision - New editable content.
    * @param {readonly Locale[]} publishedLocales - Locales that published projects must satisfy.
    * @throws {DomainError} When a published project's required text would become incomplete.
    * @returns {void} Completes after replacing the editable project fields.
    */
-  public revise(revision: ProjectRevision, publishedLocales: readonly Locale[]): void {
+  public revise(revision: ArticleRevision, publishedLocales: readonly Locale[]): void {
     // Field by field: an object carrying more (id, status, version…) changes nothing else.
-    const next: Project = Project.rehydrate({
+    const next: Article = Article.rehydrate({
       ...this.props,
+      taxonomy: revision.taxonomy ?? this.props.taxonomy,
       title: revision.title,
       summary: revision.summary,
       lead: revision.lead,
@@ -584,7 +668,7 @@ export class Project {
       role: revision.role,
       place: revision.place,
       siteUrl: revision.siteUrl,
-      techs: revision.techs,
+      techs: revision.techs ?? (revision.taxonomy === undefined ? this.props.techs : []),
       featured: revision.featured,
       article: revision.article,
       cover: revision.cover,
@@ -595,7 +679,7 @@ export class Project {
       if (missing.length > 0) {
         throw new DomainError(
           'content.project-incomplete',
-          'A published project must stay complete; unpublish it before removing text.',
+          'A published article must stay complete; unpublish it before removing required fields.',
           missing,
         );
       }
@@ -623,10 +707,58 @@ export class Project {
    * @description
    * Returns the aggregate's persisted properties for adapters and presenters.
    *
-   * @returns {ProjectProps} Current project state.
+   * @returns {StoredArticleProps} Current stored state, with explicit tags separate from legacy technologies.
    */
-  public snapshot(): ProjectProps {
+  public snapshot(): StoredArticleProps {
     return this.props;
   }
   // #endregion
+}
+
+/** Maps historical keys with no length limit to stable keys fitting the taxonomy contract. */
+function technologyTagKey(tech: string): string {
+  if (tech.length <= PUBLICATION_TAXONOMY_LIMITS.key) return tech;
+  let hash: bigint = 0xcbf29ce484222325n;
+  for (const character of tech) {
+    hash = BigInt.asUintN(64, (hash ^ BigInt(character.charCodeAt(0))) * 0x100000001b3n);
+  }
+  const suffix: string = hash.toString(16);
+  const stem: string = tech
+    .slice(0, PUBLICATION_TAXONOMY_LIMITS.key - suffix.length - 1)
+    .replace(/-$/, '');
+  return `${stem}-${suffix}`;
+}
+
+/** Validates and copies article taxonomy without retaining caller-owned arrays. */
+function validateTaxonomy(taxonomy: PublicationTaxonomy): PublicationTaxonomy {
+  if (taxonomy.tags.length > PUBLICATION_TAXONOMY_LIMITS.tags) {
+    throw new InvalidValueError('taxonomy.tags', 'too many tags');
+  }
+  const entries: readonly PublicationTaxon[] =
+    taxonomy.category === null ? taxonomy.tags : [taxonomy.category, ...taxonomy.tags];
+  for (const taxon of entries) {
+    if (!TECH_KEY.test(taxon.key) || taxon.key.length > PUBLICATION_TAXONOMY_LIMITS.key) {
+      throw new InvalidValueError('taxonomy', 'a normalized category or tag key is required');
+    }
+    if (
+      Object.values(taxon.label.toProps()).some(
+        (label: string): boolean => label.length > PUBLICATION_TAXONOMY_LIMITS.label,
+      )
+    ) {
+      throw new InvalidValueError(
+        'taxonomy',
+        'category and tag labels are limited to 80 characters',
+      );
+    }
+  }
+  if (
+    new Set(taxonomy.tags.map((tag: PublicationTaxon): string => tag.key)).size !==
+    taxonomy.tags.length
+  ) {
+    throw new InvalidValueError('taxonomy.tags', 'a tag appears twice');
+  }
+  return {
+    category: taxonomy.category === null ? null : { ...taxonomy.category },
+    tags: taxonomy.tags.map((tag: PublicationTaxon): PublicationTaxon => ({ ...tag })),
+  };
 }

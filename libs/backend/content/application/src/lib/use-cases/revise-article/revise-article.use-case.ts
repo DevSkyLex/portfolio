@@ -1,4 +1,4 @@
-import type { Project, ProjectRevision } from '@vfortin/content-domain';
+import type { Article, ArticleRevision, PublicationKind } from '@vfortin/content-domain';
 import {
   CoverNotImageError,
   MediaNotFoundError,
@@ -10,20 +10,20 @@ import type {
   MediaRecord,
 } from '@internal/content-application/lib/ports/content/content.ports';
 import {
-  type ProjectChangeResult,
-  changeProject,
-} from '@internal/content-application/lib/use-cases/change-project/change-project';
+  type ArticleChangeResult,
+  changeArticle,
+} from '@internal/content-application/lib/use-cases/change-article/change-article';
 import { PUBLISHED_LOCALES } from '@internal/content-application/lib/use-cases/published-locales/published-locales';
 
 /**
- * Class ReviseProject
- * @class ReviseProject
+ * Class ReviseArticle
+ * @class ReviseArticle
  *
  * @description
  * Applies editable project fields using the aggregate's publication completeness rules, and keeps the
  * purge state of the media it references in step (D40).
  */
-export class ReviseProject {
+export class ReviseArticle {
   // #region Constructor
   /**
    * Constructor
@@ -53,22 +53,23 @@ export class ReviseProject {
    * of work, media no longer referenced start their purge grace period and media referenced again
    * leave it.
    *
-   * @param {string} id - Project identifier.
+   * @param {string} id - Article identifier.
    * @param {number} expectedVersion - Version read before the command.
-   * @param {ProjectRevision} revision - Editable fields to apply.
-   * @returns {Promise<ProjectChangeResult>} Updated project, its media and optional queued revision.
+   * @param {ArticleRevision} revision - Editable fields to apply.
+   * @returns {Promise<ArticleChangeResult>} Updated project, its media and optional queued revision.
    */
   public execute(
     id: string,
     expectedVersion: number,
-    revision: ProjectRevision,
-  ): Promise<ProjectChangeResult> {
-    return changeProject(
+    revision: ArticleRevision,
+    legacyKind?: PublicationKind,
+  ): Promise<ArticleChangeResult> {
+    return changeArticle(
       this.unitOfWork,
       this.clock,
       id,
       expectedVersion,
-      async (project: Project, { media }: ContentRepositories): Promise<void> => {
+      async (project: Article, { media }: ContentRepositories): Promise<void> => {
         const before: string[] = project.mediaIds();
         project.revise(revision, PUBLISHED_LOCALES);
         const after: string[] = project.mediaIds();
@@ -92,6 +93,7 @@ export class ReviseProject {
           await media.relink(added);
         }
       },
+      legacyKind,
     );
   }
   // #endregion

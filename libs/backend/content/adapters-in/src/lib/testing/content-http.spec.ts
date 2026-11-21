@@ -7,20 +7,20 @@ import { AdminAuthModule } from '@vfortin/backend-auth';
 import { PROBLEM_MAPPER, ProblemDetailsFilter } from '@vfortin/backend-http';
 import {
   DispatchSiteBuild,
-  GetAdminProject,
+  GetAdminArticle,
   GetPublishedContent,
-  ListAdminProjects,
+  ListAdminArticles,
   MediaMissingError,
   MediaNotFoundError,
   type MediaRecord,
   MediaTooLargeError,
   NotFoundError,
-  PublishProject,
+  PublishArticle,
   type PublishedContent,
   PurgeMedia,
-  ReviseProject,
-  CreateProject,
-  UnpublishProject,
+  ReviseArticle,
+  CreateArticle,
+  UnpublishArticle,
   UnsupportedMediaError,
   UploadMedia,
   VersionMismatchError,
@@ -32,6 +32,9 @@ import {
   PROJECT_SEO_LIMITS,
   type ProjectRevisionRequest,
   ProjectRevisionRequestSchema,
+  ArticleRevisionRequestSchema,
+  type AdminArticleDto,
+  type ArticleRevisionRequest,
   type ContentSnapshot,
 } from '@vfortin/content-contracts';
 import {
@@ -43,8 +46,8 @@ import {
   LocalizedText,
   MaintenanceMode,
   Period,
-  Project,
-  type ProjectRevision,
+  Article,
+  type ArticleRevision,
   Slug,
   TimelineEntry,
   profileLinks,
@@ -56,9 +59,9 @@ import { AdminContentController } from '@internal/content-adapters-in/lib/http/c
 import { AdminMediaController } from '@internal/content-adapters-in/lib/http/controllers/admin-media/admin-media.controller';
 import { MediaUploadInterceptor } from '@internal/content-adapters-in/lib/http/interceptors/media-upload/media-upload.interceptor';
 import {
-  toAdminProjectDto,
-  toProjectRevision,
-} from '@internal/content-adapters-in/lib/http/presenters/admin-project/admin-project.presenter';
+  toAdminArticleDto,
+  toArticleRevision,
+} from '@internal/content-adapters-in/lib/http/presenters/admin-article/admin-article.presenter';
 import { contentProblemMapper } from '@internal/content-adapters-in/lib/http/mappers/content-problem/content-problem.mapper';
 import { toContentSnapshot } from '@internal/content-adapters-in/lib/http/presenters/content/content.presenter';
 import { ContentController } from '@internal/content-adapters-in/lib/http/controllers/content/content.controller';
@@ -128,11 +131,13 @@ const [COVER, FIGURE] = FIXTURE.media.map((media: AdminFixture['media'][number])
  * Builds a valid project aggregate from the shared request fixture with a chosen persistence version.
  *
  * @param {number} version - Version stored on the generated aggregate; defaults to 3.
- * @returns {Project} Rehydrated project used by HTTP adapter tests.
+ * @returns {Article} Rehydrated project used by HTTP adapter tests.
  */
-function projectFromFixture(version: number = 3): Project {
-  return Project.rehydrate({
-    ...toProjectRevision(ProjectRevisionRequestSchema.parse(FIXTURE)),
+function projectFromFixture(version: number = 3): Article {
+  const request: ProjectRevisionRequest = ProjectRevisionRequestSchema.parse(FIXTURE);
+  return Article.rehydrate({
+    ...toArticleRevision(request),
+    techs: request.techs,
     id: FIXTURE.id,
     slug: Slug.of(FIXTURE.slug),
     status: FIXTURE.status,
@@ -203,7 +208,7 @@ const published = (media: readonly MediaRecord[] = [COVER, FIGURE]): PublishedCo
     ]),
     version: 1,
   },
-  projects: [projectFromFixture()],
+  articles: [projectFromFixture()],
   timeline: [
     TimelineEntry.rehydrate({
       id: 'bts',
@@ -245,21 +250,21 @@ describe('ContentController, AdminContentController and AdminMediaController', (
   let token: string;
   const useCases = {
     published: { execute: vi.fn<GetPublishedContent['execute']>() },
-    list: { execute: vi.fn<ListAdminProjects['execute']>() },
-    get: { execute: vi.fn<GetAdminProject['execute']>() },
-    create: { execute: vi.fn<CreateProject['execute']>() },
-    revise: { execute: vi.fn<ReviseProject['execute']>() },
-    publish: { execute: vi.fn<PublishProject['execute']>() },
-    unpublish: { execute: vi.fn<UnpublishProject['execute']>() },
+    list: { execute: vi.fn<ListAdminArticles['execute']>() },
+    get: { execute: vi.fn<GetAdminArticle['execute']>() },
+    create: { execute: vi.fn<CreateArticle['execute']>() },
+    revise: { execute: vi.fn<ReviseArticle['execute']>() },
+    publish: { execute: vi.fn<PublishArticle['execute']>() },
+    unpublish: { execute: vi.fn<UnpublishArticle['execute']>() },
     upload: { execute: vi.fn<UploadMedia['execute']>() },
   } satisfies {
     published: Pick<GetPublishedContent, 'execute'>;
-    list: Pick<ListAdminProjects, 'execute'>;
-    get: Pick<GetAdminProject, 'execute'>;
-    create: Pick<CreateProject, 'execute'>;
-    revise: Pick<ReviseProject, 'execute'>;
-    publish: Pick<PublishProject, 'execute'>;
-    unpublish: Pick<UnpublishProject, 'execute'>;
+    list: Pick<ListAdminArticles, 'execute'>;
+    get: Pick<GetAdminArticle, 'execute'>;
+    create: Pick<CreateArticle, 'execute'>;
+    revise: Pick<ReviseArticle, 'execute'>;
+    publish: Pick<PublishArticle, 'execute'>;
+    unpublish: Pick<UnpublishArticle, 'execute'>;
     upload: Pick<UploadMedia, 'execute'>;
   };
 
@@ -281,12 +286,12 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       controllers: [ContentController, AdminContentController, AdminMediaController],
       providers: [
         { provide: GetPublishedContent, useValue: useCases.published },
-        { provide: ListAdminProjects, useValue: useCases.list },
-        { provide: GetAdminProject, useValue: useCases.get },
-        { provide: CreateProject, useValue: useCases.create },
-        { provide: ReviseProject, useValue: useCases.revise },
-        { provide: PublishProject, useValue: useCases.publish },
-        { provide: UnpublishProject, useValue: useCases.unpublish },
+        { provide: ListAdminArticles, useValue: useCases.list },
+        { provide: GetAdminArticle, useValue: useCases.get },
+        { provide: CreateArticle, useValue: useCases.create },
+        { provide: ReviseArticle, useValue: useCases.revise },
+        { provide: PublishArticle, useValue: useCases.publish },
+        { provide: UnpublishArticle, useValue: useCases.unpublish },
         { provide: UploadMedia, useValue: useCases.upload },
         { provide: PROBLEM_MAPPER, useValue: contentProblemMapper },
         { provide: APP_FILTER, useClass: ProblemDetailsFilter },
@@ -448,9 +453,44 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       expect(response.body.code).toBe('auth.unauthorized');
     });
 
+    it('routes article queries to the article collection and rejects unknown kinds', async (): Promise<void> => {
+      useCases.list.execute.mockResolvedValue([]);
+      const response: request.Response = await admin(
+        server().get('/content/admin/projects?kind=article'),
+      );
+      expect(response.status).toBe(200);
+      expect(useCases.list.execute).toHaveBeenCalledWith('article');
+      useCases.list.execute.mockClear();
+      const invalid: request.Response = await admin(
+        server().get('/content/admin/projects?kind=unknown'),
+      );
+      expect(invalid.status).toBe(400);
+      expect(useCases.list.execute).not.toHaveBeenCalled();
+    });
+
+    it('lists the whole collection on the article path, ignoring a kind query', async (): Promise<void> => {
+      useCases.list.execute.mockResolvedValue([
+        { article: projectFromFixture(), media: [FIGURE, COVER] },
+      ]);
+      const response: request.Response = await admin(
+        server().get('/content/admin/articles?kind=article'),
+      );
+      expect(response.status).toBe(200);
+      // The article API reads every publication: the kind filter belongs to the legacy path.
+      expect(useCases.list.execute).toHaveBeenCalledWith(undefined);
+      expect(response.body).toMatchObject({
+        totalItems: 1,
+        // A project without taxonomy inherits the « Projets » category on the article API (D58).
+        member: [
+          { id: 'project-library-trails', version: 3, taxonomy: { category: { key: 'projects' } } },
+        ],
+      });
+      useCases.list.execute.mockClear();
+    });
+
     it('lists the projects with their version and media', async (): Promise<void> => {
       useCases.list.execute.mockResolvedValue([
-        { project: projectFromFixture(), media: [FIGURE, COVER] },
+        { article: projectFromFixture(), media: [FIGURE, COVER] },
       ]);
       const response: request.Response = await admin(server().get('/content/admin/projects'));
       expect(response.status).toBe(200);
@@ -463,7 +503,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
 
     it('serves a project with its version as ETag, matching the fixture', async (): Promise<void> => {
       useCases.get.execute.mockResolvedValue({
-        project: projectFromFixture(),
+        article: projectFromFixture(),
         media: [FIGURE, COVER],
       });
       const response: request.Response = await admin(
@@ -471,15 +511,19 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       );
       expect(response.status).toBe(200);
       expect(response.headers['etag']).toBe('"3"');
-      expect(AdminProjectDtoSchema.parse(response.body)).toEqual(
-        AdminProjectDtoSchema.parse(FIXTURE),
-      );
-      expect(useCases.get.execute).toHaveBeenCalledWith('project-library-trails');
+      expect(AdminProjectDtoSchema.parse(response.body)).toEqual({
+        ...AdminProjectDtoSchema.parse(FIXTURE),
+        taxonomy: {
+          category: { key: 'projects', label: { fr: 'Projets', en: 'Projects' } },
+          tags: [],
+        },
+      });
+      expect(useCases.get.execute).toHaveBeenCalledWith('project-library-trails', 'project');
     });
 
     it('creates a draft project and answers 201 with its ETag', async (): Promise<void> => {
       useCases.create.execute.mockResolvedValue({
-        project: projectFromFixture(),
+        article: projectFromFixture(),
         version: 1,
         revision: null,
         media: [COVER, FIGURE],
@@ -509,7 +553,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
 
     it('revises a project with the version read, and returns the new ETag', async (): Promise<void> => {
       useCases.revise.execute.mockResolvedValue({
-        project: projectFromFixture(),
+        article: projectFromFixture(),
         version: 4,
         revision: 5,
         media: [COVER, FIGURE],
@@ -538,11 +582,11 @@ describe('ContentController, AdminContentController and AdminMediaController', (
         async (
           _id: string,
           version: number,
-          revision: ProjectRevision,
-        ): Promise<Awaited<ReturnType<ReviseProject['execute']>>> => {
-          const project: Project = projectFromFixture(version);
+          revision: ArticleRevision,
+        ): Promise<Awaited<ReturnType<ReviseArticle['execute']>>> => {
+          const project: Article = projectFromFixture(version);
           project.revise(revision, ['fr']);
-          return { project, version: version + 1, revision: null, media: [COVER, FIGURE] };
+          return { article: project, version: version + 1, revision: null, media: [COVER, FIGURE] };
         },
       );
       const seo: ProjectRevisionRequest['seo'] = {
@@ -655,7 +699,7 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       ['unpublish', 'unpublish'],
     ] as const)('%ss with optimistic locking', async (path, useCase): Promise<void> => {
       useCases[useCase].execute.mockResolvedValue({
-        project: projectFromFixture(),
+        article: projectFromFixture(),
         version: 8,
         revision: 9,
         media: [],
@@ -668,12 +712,16 @@ describe('ContentController, AdminContentController and AdminMediaController', (
       expect(response.status).toBe(200);
       expect(response.headers['etag']).toBe('"8"');
       expect(response.body.media).toEqual([]);
-      expect(useCases[useCase].execute).toHaveBeenCalledWith('project-library-trails', 7);
+      expect(useCases[useCase].execute).toHaveBeenCalledWith(
+        'project-library-trails',
+        7,
+        'project',
+      );
     });
 
     it.each([
       [new VersionMismatchError(), 412, 'content.version-mismatch'],
-      [new NotFoundError('Project'), 404, 'content.not-found'],
+      [new NotFoundError('Article'), 404, 'content.not-found'],
       [
         new DomainError('content.project-incomplete', 'Incomplete.', ['title.en']),
         422,
@@ -776,19 +824,19 @@ describe('ContentController, AdminContentController and AdminMediaController', (
   });
 });
 
-describe('toAdminProjectDto, toProjectRevision and contentProblemMapper', (): void => {
+describe('toAdminArticleDto, toArticleRevision and contentProblemMapper', (): void => {
   it('lists the fields missing before publication', (): void => {
-    const draft: Project = Project.rehydrate({
+    const draft: Article = Article.rehydrate({
       ...projectFromFixture().snapshot(),
       title: t('Library Trails'),
       status: 'draft',
     });
-    expect(toAdminProjectDto(draft, []).missing).toEqual(['title.en', 'cover.alt.en']);
-    expect(toAdminProjectDto(draft, []).media).toEqual([]);
+    expect(toAdminArticleDto(draft, []).missing).toEqual(['title.en', 'cover.alt.en']);
+    expect(toAdminArticleDto(draft, []).media).toEqual([]);
   });
 
   it('keeps a missing translation absent in the revision, and maps a project without cover', (): void => {
-    const revision: ProjectRevision = toProjectRevision(
+    const revision: ArticleRevision = toArticleRevision(
       ProjectRevisionRequestSchema.parse({
         ...FIXTURE,
         title: { fr: 'Library Trails' },
@@ -799,41 +847,92 @@ describe('toAdminProjectDto, toProjectRevision and contentProblemMapper', (): vo
     expect(revision.title.toProps()).toEqual({ fr: 'Library Trails' });
     expect(revision.article.en).toBeUndefined();
     expect(revision.cover?.alt).toEqual({ fr: 'Accueil', en: 'Home' });
-    const withoutCover: Project = Project.rehydrate({
+    const withoutCover: Article = Article.rehydrate({
       ...projectFromFixture().snapshot(),
       ...revision,
+      techs: revision.techs ?? [],
       cover: null,
     });
-    expect(toAdminProjectDto(withoutCover, [FIGURE])).toMatchObject({
+    expect(toAdminArticleDto(withoutCover, [FIGURE])).toMatchObject({
       cover: null,
       article: { fr: { type: 'doc' } },
       media: [{ id: FIGURE.id }],
     });
-    expect(toAdminProjectDto(withoutCover, []).article).not.toHaveProperty('en');
+    expect(toAdminArticleDto(withoutCover, []).article).not.toHaveProperty('en');
   });
 
   it('presents a translated cover and keeps a cleared one cleared', (): void => {
-    const translated: Project = Project.rehydrate({
+    const translated: Article = Article.rehydrate({
       ...projectFromFixture().snapshot(),
       cover: { media: COVER.id, alt: { fr: 'Accueil', en: 'Home' } },
     });
-    expect(toAdminProjectDto(translated, [COVER]).cover).toEqual({
+    expect(toAdminArticleDto(translated, [COVER]).cover).toEqual({
       media: COVER.id,
       alt: { fr: 'Accueil', en: 'Home' },
     });
     expect(
-      toProjectRevision(ProjectRevisionRequestSchema.parse({ ...FIXTURE, cover: null })).cover,
+      toArticleRevision(ProjectRevisionRequestSchema.parse({ ...FIXTURE, cover: null })).cover,
     ).toBeNull();
   });
 
   it('leaves unknown errors to the filter', (): void => {
     expect(contentProblemMapper(new Error('other'))).toBeNull();
   });
+
+  it('carries the taxonomy and the English keywords of an article both ways', (): void => {
+    const request: ArticleRevisionRequest = ArticleRevisionRequestSchema.parse({
+      ...FIXTURE,
+      taxonomy: {
+        category: { key: 'notes', label: { fr: 'Notes', en: 'Notes' } },
+        tags: [{ key: 'angular', label: { fr: 'Angular' } }],
+      },
+      seo: {
+        ...FIXTURE.seo,
+        keywords: { fr: ['lecture'], en: ['reading'] },
+      },
+    });
+    const revision: ArticleRevision = toArticleRevision(request);
+    expect(revision.taxonomy?.category?.label.toProps()).toEqual({ fr: 'Notes', en: 'Notes' });
+    expect(revision.taxonomy?.tags[0]?.label.toProps()).toEqual({ fr: 'Angular' });
+    const article: Article = Article.rehydrate({
+      ...projectFromFixture().snapshot(),
+      ...revision,
+      techs: revision.techs ?? [],
+      kind: 'article',
+    });
+    const dto: AdminArticleDto = toAdminArticleDto(article, []);
+    expect(dto.kind).toBe('article');
+    expect(dto.taxonomy.category).toEqual({ key: 'notes', label: { fr: 'Notes', en: 'Notes' } });
+    // The stored tags come first; the fixture's legacy technologies follow.
+    expect(dto.taxonomy.tags[0]).toEqual({ key: 'angular', label: { fr: 'Angular' } });
+    expect(dto.seo.keywords).toEqual({ fr: ['lecture'], en: ['reading'] });
+  });
+
+  it('keeps a project without category or English keywords, and a revision without taxonomy', (): void => {
+    const uncategorized: ArticleRevision = toArticleRevision(
+      ArticleRevisionRequestSchema.parse({
+        ...FIXTURE,
+        taxonomy: { category: null, tags: [] },
+        seo: { ...FIXTURE.seo, keywords: { fr: [] } },
+      }),
+    );
+    expect(uncategorized.taxonomy).toEqual({ category: null, tags: [] });
+    const project: Article = Article.rehydrate({
+      ...projectFromFixture().snapshot(),
+      ...uncategorized,
+      techs: uncategorized.techs ?? [],
+    });
+    const dto: AdminArticleDto = toAdminArticleDto(project, []);
+    expect(dto).not.toHaveProperty('kind');
+    expect(dto.taxonomy.category).toBeNull();
+    expect(dto.seo.keywords).toEqual({ fr: [] });
+    expect(toArticleRevision(ProjectRevisionRequestSchema.parse(FIXTURE)).taxonomy).toBeUndefined();
+  });
 });
 
 describe('toContentSnapshot', (): void => {
   it('falls back to the French document and keeps a document of missing figures valid', (): void => {
-    const french: Project = Project.rehydrate({
+    const french: Article = Article.rehydrate({
       ...projectFromFixture().snapshot(),
       article: {
         fr: ArticleDocument.of('article.fr', {
@@ -845,7 +944,7 @@ describe('toContentSnapshot', (): void => {
     });
     const small: MediaRecord = { ...COVER, width: 900, hasSmall: false };
     const snapshot: ContentSnapshot = toContentSnapshot(
-      { ...published([small]), projects: [french] },
+      { ...published([small]), articles: [french] },
       'en',
     );
     expect(snapshot.projects[0]?.article).toEqual({

@@ -10,8 +10,15 @@ import {
   type ArticleBlock,
 } from '@internal/content-domain/lib/values/article-document/article-document';
 import { ProjectPeriod } from '@internal/content-domain/lib/values/project-period/project-period';
-import { ProjectSeo } from '@internal/content-domain/lib/values/project-seo/project-seo';
-import { Project, type ProjectProps } from '@internal/content-domain/lib/project/project';
+import { ArticleSeo } from '@internal/content-domain/lib/values/article-seo/article-seo';
+import {
+  Article,
+  PROJECTS_CATEGORY,
+  PUBLICATION_TAXONOMY_LIMITS,
+  type ArticleProps,
+  type PublicationTaxon,
+  type PublicationTaxonomy,
+} from '@internal/content-domain/lib/article/article';
 
 /**
  * Constant MEDIA
@@ -74,10 +81,10 @@ function doc(
  * @description
  * Builds a complete valid project state and applies selected overrides for aggregate rule tests.
  *
- * @param {Partial<ProjectProps>} overrides - State fields replacing the valid defaults.
- * @returns {ProjectProps} Project state suitable for rehydration.
+ * @param {Partial<ArticleProps>} overrides - State fields replacing the valid defaults.
+ * @returns {ArticleProps} Article state suitable for rehydration.
  */
-function projectProps(overrides: Partial<ProjectProps> = {}): ProjectProps {
+function projectProps(overrides: Partial<ArticleProps> = {}): ArticleProps {
   return {
     id: 'p-1',
     slug: Slug.of('library-trails'),
@@ -96,14 +103,14 @@ function projectProps(overrides: Partial<ProjectProps> = {}): ProjectProps {
     version: 1,
     article: { fr: doc('Paragraphe'), en: doc('Paragraph') },
     cover: null,
-    seo: ProjectSeo.empty(),
+    seo: ArticleSeo.empty(),
     ...overrides,
   };
 }
 
-describe('Project', (): void => {
+describe('Article', (): void => {
   it('publishes when every requested locale is complete', (): void => {
-    const project: Project = Project.rehydrate(projectProps());
+    const project: Article = Article.rehydrate(projectProps());
     project.publish(['fr', 'en']);
     expect(project.isPublished()).toBe(true);
     project.unpublish();
@@ -111,14 +118,14 @@ describe('Project', (): void => {
   });
 
   it('refuses English publication and lists the missing fields', (): void => {
-    const project: Project = Project.rehydrate(projectProps({ lead: text('Intro') }));
+    const project: Article = Article.rehydrate(projectProps({ lead: text('Intro') }));
     expect((): void => project.publish(['fr', 'en'])).toThrow(DomainError);
     expect(project.missingFor(['fr', 'en'])).toEqual(['lead.en']);
     expect(project.isPublished()).toBe(false);
   });
 
   it('publishes in French only even without a translation', (): void => {
-    const project: Project = Project.rehydrate(
+    const project: Article = Article.rehydrate(
       projectProps({ lead: text('Intro'), article: { fr: doc('Texte') } }),
     );
     project.publish(['fr']);
@@ -126,7 +133,7 @@ describe('Project', (): void => {
   });
 
   it('reports an empty or absent article document', (): void => {
-    const project: Project = Project.rehydrate(projectProps({ article: { fr: doc('  ') } }));
+    const project: Article = Article.rehydrate(projectProps({ article: { fr: doc('  ') } }));
     expect(project.missingFor(['fr', 'en'])).toEqual(['article.fr', 'article.en']);
     expect((): void => project.publish(['fr'])).toThrow(
       expect.objectContaining({ code: 'content.project-incomplete', details: ['article.fr'] }),
@@ -134,7 +141,7 @@ describe('Project', (): void => {
   });
 
   it('reports figures and a cover without alternative text, per locale', (): void => {
-    const project: Project = Project.rehydrate(
+    const project: Article = Article.rehydrate(
       projectProps({
         article: {
           fr: doc('', [{ media: MEDIA[1], alt: 'Écran' }]),
@@ -144,14 +151,14 @@ describe('Project', (): void => {
       }),
     );
     expect(project.missingFor(['fr', 'en'])).toEqual(['article.en.figures', 'cover.alt.en']);
-    const untranslated: Project = Project.rehydrate(
+    const untranslated: Article = Article.rehydrate(
       projectProps({ cover: { media: MEDIA[0], alt: { fr: '' } } }),
     );
     expect(untranslated.missingFor(['fr', 'en'])).toEqual(['cover.alt.fr', 'cover.alt.en']);
   });
 
   it('lists its media once, the cover first', (): void => {
-    const project: Project = Project.rehydrate(
+    const project: Article = Article.rehydrate(
       projectProps({
         article: {
           fr: doc('a', [
@@ -167,7 +174,7 @@ describe('Project', (): void => {
       }),
     );
     expect(project.mediaIds()).toEqual([MEDIA[0], MEDIA[1], MEDIA[2]]);
-    expect(Project.rehydrate(projectProps({ article: { fr: doc('a') } })).mediaIds()).toEqual([]);
+    expect(Article.rehydrate(projectProps({ article: { fr: doc('a') } })).mediaIds()).toEqual([]);
   });
 
   it.each([
@@ -178,14 +185,14 @@ describe('Project', (): void => {
     ['a duplicate tech', { techs: ['dart', 'dart'] }],
     ['a cover without media', { cover: { media: ' ', alt: { fr: 'a' } } }],
   ])('refuse %s', (_label, overrides): void => {
-    expect((): Project =>
-      Project.rehydrate(projectProps(overrides as Partial<ProjectProps>)),
+    expect((): Article =>
+      Article.rehydrate(projectProps(overrides as Partial<ArticleProps>)),
     ).toThrow(DomainError);
   });
 
   it('exposes its identity and keeps a copy of its techs', (): void => {
     const techs: string[] = ['flutter'];
-    const project: Project = Project.rehydrate(projectProps({ techs, position: 3, version: 2 }));
+    const project: Article = Article.rehydrate(projectProps({ techs, position: 3, version: 2 }));
     techs.push('dart');
     expect([project.id, project.slug.value, project.position, project.version]).toEqual([
       'p-1',
@@ -197,14 +204,14 @@ describe('Project', (): void => {
   });
 
   it('revises a draft freely, even into an incomplete text', (): void => {
-    const project: Project = Project.rehydrate(projectProps());
+    const project: Article = Article.rehydrate(projectProps());
     project.revise({ ...projectProps(), title: text('Nouveau') }, ['fr', 'en']);
     expect(project.snapshot().title.fr).toBe('Nouveau');
     expect(project.missingFor(['fr', 'en'])).toEqual(['title.en']);
   });
 
   it('keeps a published project complete', (): void => {
-    const project: Project = Project.rehydrate(projectProps({ status: 'published' }));
+    const project: Article = Article.rehydrate(projectProps({ status: 'published' }));
     expect((): void =>
       project.revise({ ...projectProps(), lead: text('Intro') }, ['fr', 'en']),
     ).toThrow(
@@ -234,8 +241,8 @@ describe('Project', (): void => {
   });
 
   it('revises the search texts without making them a publication requirement', (): void => {
-    const project: Project = Project.rehydrate(projectProps({ status: 'published' }));
-    const seo: ProjectSeo = ProjectSeo.of({
+    const project: Article = Article.rehydrate(projectProps({ status: 'published' }));
+    const seo: ArticleSeo = ArticleSeo.of({
       title: { fr: 'Library Trails, suivi de séries' },
       description: {},
       keywords: { fr: ['Flutter'] },
@@ -244,7 +251,7 @@ describe('Project', (): void => {
     expect(project.snapshot().seo.in('fr').title).toBe('Library Trails, suivi de séries');
     expect(project.snapshot().seo.in('fr').keywords).toEqual(['Flutter']);
     expect(project.missingFor(['fr', 'en'])).toEqual([]);
-    project.revise({ ...projectProps(), seo: ProjectSeo.empty() }, ['fr', 'en']);
+    project.revise({ ...projectProps(), seo: ArticleSeo.empty() }, ['fr', 'en']);
     expect(project.snapshot().seo.in('fr')).toEqual({
       title: null,
       description: null,
@@ -253,14 +260,14 @@ describe('Project', (): void => {
   });
 
   it('only revises the editable fields', (): void => {
-    const project: Project = Project.rehydrate(projectProps());
+    const project: Article = Article.rehydrate(projectProps());
     // @ts-expect-error Runtime boundary deliberately receives immutable fields and must ignore them.
     project.revise({ ...projectProps(), id: 'other', status: 'published', version: 9 }, ['fr']);
     expect(project.snapshot()).toMatchObject({ id: 'p-1', status: 'draft', version: 1 });
   });
 
   it('accepts an https link', (): void => {
-    const project: Project = Project.rehydrate(projectProps({ siteUrl: 'https://example.com' }));
+    const project: Article = Article.rehydrate(projectProps({ siteUrl: 'https://example.com' }));
     expect(project.snapshot().siteUrl).toBe('https://example.com');
   });
 });
@@ -283,5 +290,136 @@ describe('assertSkillGroup', (): void => {
       position: number;
     } = { ...group, techs: [{ key: 'git', language: null }] };
     expect(assertSkillGroup(filled)).toBe(filled);
+  });
+});
+
+describe('editorial article classification', (): void => {
+  it('treats legacy aggregates as projects and copies classification arrays', (): void => {
+    expect(Article.rehydrate(projectProps()).kind).toBe('project');
+    const tags: PublicationTaxon[] = [{ key: 'angular', label: text('Angular', 'Angular') }];
+    const article: Article = Article.rehydrate(
+      projectProps({
+        kind: 'article',
+        taxonomy: {
+          category: { key: 'architecture', label: text('Architecture', 'Architecture') },
+          tags,
+        },
+      }),
+    );
+    tags.length = 0;
+    expect(article.taxonomy.tags.map((tag) => tag.key)).toEqual(['angular', 'flutter', 'dart']);
+    expect(article.snapshot().taxonomy.tags).toHaveLength(1);
+    expect(article.missingFor(['fr', 'en'])).toEqual([]);
+  });
+
+  it('combines explicit tags and former technologies without preserving removed tags', (): void => {
+    const flutter: PublicationTaxon = { key: 'flutter', label: text('Flutter', 'Flutter') };
+    const article: Article = Article.rehydrate(
+      projectProps({ taxonomy: { category: PROJECTS_CATEGORY, tags: [flutter] } }),
+    );
+    expect(article.taxonomy.tags).toEqual([flutter, { key: 'dart', label: text('dart', 'dart') }]);
+
+    article.revise({ ...article.snapshot(), taxonomy: undefined, techs: undefined }, ['fr']);
+    expect(article.taxonomy.tags.map((tag) => tag.key)).toEqual(['flutter', 'dart']);
+
+    article.revise({ ...article.snapshot(), taxonomy: undefined, techs: ['kotlin'] }, ['fr']);
+    expect(article.taxonomy.tags.map((tag) => tag.key)).toEqual(['flutter', 'kotlin']);
+    expect(article.snapshot().taxonomy.tags).toEqual([flutter]);
+
+    article.revise(
+      {
+        ...article.snapshot(),
+        techs: undefined,
+        taxonomy: { category: PROJECTS_CATEGORY, tags: [flutter] },
+      },
+      ['fr'],
+    );
+    expect(article.taxonomy.tags).toEqual([flutter]);
+  });
+
+  it('retains the full historical tag and technology lists within the combined limit', (): void => {
+    const tags: PublicationTaxon[] = Array.from({ length: 12 }, (_, i) => ({
+      key: `topic-${i}`,
+      label: text(`Topic ${i}`, `Topic ${i}`),
+    }));
+    const techs: string[] = Array.from({ length: 12 }, (_, i) => `tech-${i}`);
+    const taxonomy: PublicationTaxonomy = { category: PROJECTS_CATEGORY, tags };
+    const article: Article = Article.rehydrate(projectProps({ taxonomy, techs }));
+    expect(article.taxonomy.tags).toHaveLength(PUBLICATION_TAXONOMY_LIMITS.tags);
+    expect(() => Article.rehydrate(projectProps({ taxonomy, techs: [...techs, 'extra'] }))).toThrow(
+      DomainError,
+    );
+  });
+
+  it('projects an overlong historical technology into a bounded tag without changing storage', (): void => {
+    const tech: string = 'long-technology-key-'.repeat(7) + 'name';
+    const article: Article = Article.rehydrate(projectProps({ techs: [tech] }));
+    const tag: PublicationTaxon | undefined = article.taxonomy.tags[0];
+    expect(tag?.key).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+    expect(tag?.key.length).toBeLessThanOrEqual(PUBLICATION_TAXONOMY_LIMITS.key);
+    expect(tag?.label.in('fr').length).toBeLessThanOrEqual(PUBLICATION_TAXONOMY_LIMITS.label);
+    expect(article.snapshot().techs).toEqual([tech]);
+    expect(Article.rehydrate(article.snapshot()).taxonomy.tags[0]?.key).toBe(tag?.key);
+  });
+
+  it('requires a translated category and translated tags before publishing an article', (): void => {
+    const article: Article = Article.rehydrate(projectProps({ kind: 'article' }));
+    expect(article.missingFor(['fr', 'en'])).toContain('taxonomy.category');
+    expect((): void => article.publish(['fr', 'en'])).toThrow(DomainError);
+    const classified: Article = Article.rehydrate(
+      projectProps({
+        kind: 'article',
+        taxonomy: {
+          category: { key: 'architecture', label: text('Architecture') },
+          tags: [{ key: 'angular', label: text('Angular') }],
+        },
+      }),
+    );
+    expect(classified.missingFor(['fr', 'en'])).toEqual([
+      'taxonomy.category.label.en',
+      'taxonomy.tags.0.label.en',
+    ]);
+  });
+
+  it('rejects invalid, duplicated, excessive and oversized taxonomy entries', (): void => {
+    const category: PublicationTaxon = {
+      key: 'architecture',
+      label: text('Architecture', 'Architecture'),
+    };
+    const taxonomies: PublicationTaxonomy[] = [
+      { category: { ...category, key: 'Invalid Key' }, tags: [] },
+      { category: { ...category, label: text('x'.repeat(81)) }, tags: [] },
+      { category, tags: [category, category] },
+      { category, tags: Array.from({ length: 25 }, (_, i) => ({ ...category, key: `tag-${i}` })) },
+    ];
+    for (const taxonomy of taxonomies) {
+      expect(() => Article.rehydrate(projectProps({ kind: 'article', taxonomy }))).toThrow(
+        DomainError,
+      );
+    }
+    expect(
+      Article.rehydrate(projectProps({ taxonomy: { category, tags: [] } })).taxonomy,
+    ).toMatchObject({ category });
+  });
+
+  it('preserves the article kind and rejects incomplete changes after publication', (): void => {
+    const article: Article = Article.rehydrate(
+      projectProps({
+        kind: 'article',
+        taxonomy: {
+          category: { key: 'architecture', label: text('Architecture', 'Architecture') },
+          tags: [],
+        },
+      }),
+    );
+    article.publish(['fr', 'en']);
+    expect(() =>
+      article.revise({ ...article.snapshot(), taxonomy: { category: null, tags: [] } }, [
+        'fr',
+        'en',
+      ]),
+    ).toThrow(DomainError);
+    expect(article.kind).toBe('article');
+    expect(article.taxonomy.category?.key).toBe('architecture');
   });
 });

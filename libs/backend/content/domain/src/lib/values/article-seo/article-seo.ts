@@ -107,14 +107,14 @@ export interface OptionalLocalizedKeywordsProps {
 }
 
 /**
- * Interface ProjectSeoProps
- * @interface ProjectSeoProps
+ * Interface ArticleSeoProps
+ * @interface ArticleSeoProps
  *
  * @description
  * Search title, description and keywords of a project per language; an absent value lets the public
  * page use the project title, summary or technologies instead.
  */
-export interface ProjectSeoProps {
+export interface ArticleSeoProps {
   // #region Properties
   /**
    * Property title
@@ -148,13 +148,13 @@ export interface ProjectSeoProps {
 }
 
 /**
- * Interface LocalizedProjectSeo
- * @interface LocalizedProjectSeo
+ * Interface LocalizedArticleSeo
+ * @interface LocalizedArticleSeo
  *
  * @description
  * Search texts and keywords of one language, `null` or empty where the administrator wrote none.
  */
-export interface LocalizedProjectSeo {
+export interface LocalizedArticleSeo {
   // #region Properties
   /**
    * Property title
@@ -265,15 +265,15 @@ function normalizeKeywords(value: OptionalLocalizedKeywordsProps): OptionalLocal
 }
 
 /**
- * Class ProjectSeo
- * @class ProjectSeo
+ * Class ArticleSeo
+ * @class ArticleSeo
  *
  * @description
  * Optional search texts and keywords of a project. They never take part in publication completeness,
  * and a missing English value does not fall back on French: the English page uses its own title,
  * summary and technologies.
  */
-export class ProjectSeo {
+export class ArticleSeo {
   // #region Constructor
   /**
    * Constructor
@@ -282,9 +282,9 @@ export class ProjectSeo {
    * @description
    * Stores values normalized by the `of` factory.
    *
-   * @param {ProjectSeoProps} props - Trimmed texts and keywords without empty languages.
+   * @param {ArticleSeoProps} props - Trimmed texts and keywords without empty languages.
    */
-  private constructor(private readonly props: ProjectSeoProps) {}
+  private constructor(private readonly props: ArticleSeoProps) {}
   // #endregion
 
   // #region Methods
@@ -297,11 +297,11 @@ export class ProjectSeo {
    * `InvalidValueError` for a title above `PROJECT_SEO_TITLE_MAX_LENGTH` or a description above
    * `PROJECT_SEO_DESCRIPTION_MAX_LENGTH` characters, or for keywords breaking their bounds.
    *
-   * @param {ProjectSeoProps} props - Raw search texts and keywords.
-   * @returns {ProjectSeo} Normalized value.
+   * @param {ArticleSeoProps} props - Raw search texts and keywords.
+   * @returns {ArticleSeo} Normalized value.
    */
-  public static of(props: ProjectSeoProps): ProjectSeo {
-    return new ProjectSeo({
+  public static of(props: ArticleSeoProps): ArticleSeo {
+    return new ArticleSeo({
       title: normalize('title', props.title, PROJECT_SEO_TITLE_MAX_LENGTH),
       description: normalize('description', props.description, PROJECT_SEO_DESCRIPTION_MAX_LENGTH),
       keywords: normalizeKeywords(props.keywords),
@@ -315,10 +315,10 @@ export class ProjectSeo {
    * @description
    * Returns the value of a project without any custom search text or keyword.
    *
-   * @returns {ProjectSeo} Empty search values.
+   * @returns {ArticleSeo} Empty search values.
    */
-  public static empty(): ProjectSeo {
-    return new ProjectSeo({ title: {}, description: {}, keywords: {} });
+  public static empty(): ArticleSeo {
+    return new ArticleSeo({ title: {}, description: {}, keywords: {} });
   }
 
   /**
@@ -330,9 +330,9 @@ export class ProjectSeo {
    * without falling back on another language.
    *
    * @param {Locale} locale - Snapshot locale.
-   * @returns {LocalizedProjectSeo} Search values of that language.
+   * @returns {LocalizedArticleSeo} Search values of that language.
    */
-  public in(locale: Locale): LocalizedProjectSeo {
+  public in(locale: Locale): LocalizedArticleSeo {
     return {
       title: this.props.title[locale] ?? null,
       description: this.props.description[locale] ?? null,
@@ -347,9 +347,9 @@ export class ProjectSeo {
    * @description
    * Returns copies of the stored texts and keywords, absent languages left out.
    *
-   * @returns {ProjectSeoProps} Serializable search values.
+   * @returns {ArticleSeoProps} Serializable search values.
    */
-  public toProps(): ProjectSeoProps {
+  public toProps(): ArticleSeoProps {
     const keywords: { fr?: readonly string[]; en?: readonly string[] } = {};
     for (const locale of LOCALES) {
       const list: readonly string[] | undefined = this.props.keywords[locale];

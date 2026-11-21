@@ -1,10 +1,10 @@
 import { DrizzleTimelineUnitOfWork } from '@internal/content-adapters-out/lib/persistence/repositories/timeline/drizzle-timeline.repositories';
-import type { ProfileDraft, Project, TimelineEntry } from '@vfortin/content-domain';
+import type { ProfileDraft, Article, TimelineEntry } from '@vfortin/content-domain';
 import {
   GetPublishedContent,
   DeleteTimelineEntry,
   ReviseProfile,
-  UnpublishProject,
+  UnpublishArticle,
   VersionMismatchError,
   type PublicationStatus,
   type PublishedContent,
@@ -69,7 +69,7 @@ describe('Grouped publication (migrated PGlite)', (): void => {
       before.profile.version,
       draft,
     );
-    await new UnpublishProject(new DrizzleContentUnitOfWork(handle.db), CLOCK).execute(
+    await new UnpublishArticle(new DrizzleContentUnitOfWork(handle.db), CLOCK).execute(
       'project-library-trails',
       1,
     );
@@ -82,7 +82,7 @@ describe('Grouped publication (migrated PGlite)', (): void => {
     );
     expect((await read()).timeline.map((item) => item.id)).toContain(entry.id);
     expect((await read()).profile.heroIntro.fr).toBe(before.profile.heroIntro.fr);
-    expect((await read()).projects.map((project) => project.id)).toContain(
+    expect((await read()).articles.map((project) => project.id)).toContain(
       'project-library-trails',
     );
     expect((await read()).legal.privacy.updatedAt).toBeInstanceOf(Date);
@@ -106,7 +106,7 @@ describe('Grouped publication (migrated PGlite)', (): void => {
     const after: PublishedContent = await read();
     expect(after.timeline.map((item) => item.id)).not.toContain(entry.id);
     expect(after.profile.heroIntro.fr).toBe('Nouvelle introduction');
-    expect(after.projects.map((project) => project.id)).not.toContain('project-library-trails');
+    expect(after.articles.map((project) => project.id)).not.toContain('project-library-trails');
     expect(await handle.db.select().from(siteBuildRequests)).toEqual([]);
     await expect(publication.publish(result.version, NOW)).rejects.toBeInstanceOf(
       VersionMismatchError,
@@ -166,7 +166,7 @@ describe('Grouped publication (migrated PGlite)', (): void => {
     await expect(
       new DrizzleContentUnitOfWork(handle.db).run(
         async ({ projects, buildRequests }): Promise<void> => {
-          const project: Project | null = await projects.get('project-library-trails');
+          const project: Article | null = await projects.get('project-library-trails');
           if (project === null) throw new Error('Missing fixture');
           project.unpublish();
           await projects.save(project, 1);

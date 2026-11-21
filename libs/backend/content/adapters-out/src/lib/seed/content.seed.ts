@@ -33,13 +33,13 @@ import {
  * Names, organisations, projects and career details do not describe a real person.
  */
 /**
- * Type ProjectRow
- * @type ProjectRow
+ * Type ArticleRow
+ * @type ArticleRow
  *
  * @description
  * Insert shape inferred from the projects Drizzle table for static seed data.
  */
-type ProjectRow = typeof projects.$inferInsert;
+type ArticleRow = typeof projects.$inferInsert;
 
 /**
  * Type TimelineRow
@@ -140,7 +140,7 @@ const ul = (...items: string[]): ArticleBlock => ({
 });
 
 /** Fictional published projects used by local development and automated acceptance. */
-export const SEED_PROJECTS: ProjectRow[] = [
+export const SEED_PROJECTS: ArticleRow[] = [
   {
     id: 'project-library-trails',
     slug: 'library-trails',

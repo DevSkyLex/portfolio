@@ -1,5 +1,5 @@
 import {
-  type Project,
+  type Article,
   type ReportWindow,
   SEO_RANGES,
   type SeoRange,
@@ -11,7 +11,7 @@ import {
 } from '@internal/content-application/lib/errors/application-error';
 import type {
   Clock,
-  ProjectRepository,
+  ArticleRepository,
 } from '@internal/content-application/lib/ports/content/content.ports';
 import {
   type AnalyticsReader,
@@ -252,20 +252,20 @@ export function failureOf(error: unknown): SeoSourceFailure {
  * of the first published project (featured ones first, then by position).
  *
  * @param {string} origin - Public origin without a trailing slash.
- * @param {readonly Project[]} projects - Stored projects, drafts included.
+ * @param {readonly Article[]} projects - Stored projects, drafts included.
  * @returns {string[]} Absolute URLs.
  */
-export function defaultWebVitalsUrls(origin: string, projects: readonly Project[]): string[] {
+export function defaultWebVitalsUrls(origin: string, projects: readonly Article[]): string[] {
   const [first] = projects
-    .filter((project: Project): boolean => project.isPublished())
+    .filter((project: Article): boolean => project.isPublished())
     .sort(
-      (a: Project, b: Project): number =>
+      (a: Article, b: Article): number =>
         Number(b.snapshot().featured) - Number(a.snapshot().featured) || a.position - b.position,
     );
   return [
     `${origin}/fr/`,
     `${origin}/en/`,
-    ...(first ? [`${origin}/fr/projects/${encodeURIComponent(first.slug.value)}`] : []),
+    ...(first ? [`${origin}/fr/articles/${encodeURIComponent(first.slug.value)}`] : []),
   ];
 }
 
@@ -304,14 +304,14 @@ export class RefreshSeoDashboard {
    *
    * @param {SeoReportStore} store - Report cache.
    * @param {SeoSources} sources - Google sources.
-   * @param {ProjectRepository} projects - Projects, for the default key URLs.
+   * @param {ArticleRepository} projects - Projects, for the default key URLs.
    * @param {Clock} clock - Time source.
    * @param {SeoRefreshOptions} options - Public site settings.
    */
   public constructor(
     private readonly store: SeoReportStore,
     private readonly sources: SeoSources,
-    private readonly projects: ProjectRepository,
+    private readonly projects: ArticleRepository,
     private readonly clock: Clock,
     private readonly options: SeoRefreshOptions,
   ) {}
