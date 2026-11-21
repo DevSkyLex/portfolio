@@ -2,6 +2,8 @@ export { AdminMediaController } from '@internal/content-adapters-in/lib/http/con
 export { AdminLegalController } from '@internal/content-adapters-in/lib/http/controllers/admin-legal/admin-legal.controller';
 export { AdminProfileController } from '@internal/content-adapters-in/lib/http/controllers/admin-profile/admin-profile.controller';
 export { AdminTimelineController } from '@internal/content-adapters-in/lib/http/controllers/admin-timeline/admin-timeline.controller';
+export { AdminMaintenanceController } from '@internal/content-adapters-in/lib/http/controllers/admin-maintenance/admin-maintenance.controller';
+export { AdminFaqController } from '@internal/content-adapters-in/lib/http/controllers/admin-faq/admin-faq.controller';
 export { AdminContentController } from '@internal/content-adapters-in/lib/http/controllers/admin-content/admin-content.controller';
 export { ContentController } from '@internal/content-adapters-in/lib/http/controllers/content/content.controller';
 export { contentProblemMapper } from '@internal/content-adapters-in/lib/http/mappers/content-problem/content-problem.mapper';

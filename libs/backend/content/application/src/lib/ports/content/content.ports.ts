@@ -1,6 +1,8 @@
 import type {
+  FaqEntry,
   LegalDocument,
   LegalDocumentKind,
+  MaintenanceMode,
   Profile,
   Project,
   SkillGroup,
@@ -51,6 +53,17 @@ export interface ContentRepository {
   listTimeline(): Promise<TimelineEntry[]>;
 
   /**
+   * Method listFaq
+   * @method listFaq
+   *
+   * @description
+   * Loads every FAQ entry, in no particular order.
+   *
+   * @returns {Promise<FaqEntry[]>} Stored FAQ entries.
+   */
+  listFaq(): Promise<FaqEntry[]>;
+
+  /**
    * Method listSkillGroups
    * @method listSkillGroups
    *
@@ -96,6 +109,18 @@ export interface ContentRepository {
    * @returns {Promise<number>} Current published-content revision.
    */
   currentRevision(): Promise<number>;
+
+  /**
+   * Method loadMaintenance
+   * @method loadMaintenance
+   *
+   * @description
+   * Reads the live maintenance setting, never a frozen publication batch: a switch applies to the
+   * next public request. A setting never written reads as `MaintenanceMode.initial()`.
+   *
+   * @returns {Promise<MaintenanceMode>} Current maintenance setting.
+   */
+  loadMaintenance(): Promise<MaintenanceMode>;
   // #endregion
 }
 
@@ -499,6 +524,233 @@ export interface TimelineUnitOfWork {
    * @returns {Promise<T>} Callback result after commit.
    */
   run<T>(work: (repositories: TimelineRepositories) => Promise<T>): Promise<T>;
+  // #endregion
+}
+
+/**
+ * Interface FaqEntryRepository
+ * @interface FaqEntryRepository
+ *
+ * @description
+ * FAQ entry reads and writes for the administration. Content writes are guarded by the entry's
+ * version; positions are written apart from the content, so a move never conflicts with an edit.
+ */
+export interface FaqEntryRepository {
+  // #region Methods
+  /**
+   * Method list
+   * @method list
+   *
+   * @description
+   * Loads every entry ordered by position, then identifier.
+   *
+   * @returns {Promise<FaqEntry[]>} Entries.
+   */
+  list(): Promise<FaqEntry[]>;
+
+  /**
+   * Method get
+   * @method get
+   *
+   * @description
+   * Loads one entry by identifier.
+   *
+   * @param {string} id - Entry identifier.
+   * @returns {Promise<FaqEntry | null>} Entry, or `null` when absent.
+   */
+  get(id: string): Promise<FaqEntry | null>;
+
+  /**
+   * Method insert
+   * @method insert
+   *
+   * @description
+   * Inserts a new entry with its version and position.
+   *
+   * @param {FaqEntry} entry - Entry to insert.
+   * @returns {Promise<void>} Completion after the insert.
+   */
+  insert(entry: FaqEntry): Promise<void>;
+
+  /**
+   * Method save
+   * @method save
+   *
+   * @description
+   * Writes the content of an entry (never its position) and increments its version, only if the
+   * stored version is still the expected one.
+   *
+   * @param {FaqEntry} entry - Entry to save.
+   * @param {number} expectedVersion - Version read before editing.
+   * @throws {VersionMismatchError} When the stored version differs.
+   * @returns {Promise<number>} New stored version.
+   */
+  save(entry: FaqEntry, expectedVersion: number): Promise<number>;
+
+  /**
+   * Method delete
+   * @method delete
+   *
+   * @description
+   * Deletes an entry only if its stored version is still the expected one.
+   *
+   * @param {string} id - Entry identifier.
+   * @param {number} expectedVersion - Version read before deleting.
+   * @throws {VersionMismatchError} When no row has that identifier and version.
+   * @returns {Promise<void>} Completion after the delete.
+   */
+  delete(id: string, expectedVersion: number): Promise<void>;
+
+  /**
+   * Method move
+   * @method move
+   *
+   * @description
+   * Writes the positions of the supplied entries, leaving their content and version untouched.
+   *
+   * @param {readonly FaqEntry[]} entries - Entries whose position changed.
+   * @returns {Promise<void>} Completion after the updates.
+   */
+  move(entries: readonly FaqEntry[]): Promise<void>;
+  // #endregion
+}
+
+/**
+ * Interface FaqListRepository
+ * @interface FaqListRepository
+ *
+ * @description
+ * Version of the FAQ list, the `If-Match` precondition of a reorder: creating, deleting and
+ * reordering entries increment it, editing an entry's content does not.
+ */
+export interface FaqListRepository {
+  // #region Methods
+  /**
+   * Method version
+   * @method version
+   *
+   * @description
+   * Reads the current list version (1 for a list never changed).
+   *
+   * @returns {Promise<number>} List version.
+   */
+  version(): Promise<number>;
+
+  /**
+   * Method bump
+   * @method bump
+   *
+   * @description
+   * Increments the list version, and with `expectedVersion` only if it still matches. Inside a unit
+   * of work the list row stays locked until commit, which serializes creations, deletions and moves
+   * (positions are computed after this call).
+   *
+   * @param {number | null} expectedVersion - Version read by the client, or `null` for no check.
+   * @throws {VersionMismatchError} When the stored version differs from `expectedVersion`.
+   * @returns {Promise<number>} New list version.
+   */
+  bump(expectedVersion: number | null): Promise<number>;
+  // #endregion
+}
+
+/**
+ * Interface FaqRepositories
+ * @interface FaqRepositories
+ *
+ * @description
+ * FAQ entry, list version and content revision repositories exposed inside one write transaction.
+ */
+export interface FaqRepositories {
+  // #region Properties
+  /**
+   * Property entries
+   * @readonly
+   *
+   * @description
+   * FAQ entries.
+   */
+  readonly entries: FaqEntryRepository;
+
+  /**
+   * Property lists
+   * @readonly
+   *
+   * @description
+   * List version.
+   */
+  readonly lists: FaqListRepository;
+
+  /**
+   * Property buildRequests
+   * @readonly
+   *
+   * @description
+   * Content revision incremented with every public FAQ change.
+   */
+  readonly buildRequests: SiteBuildRequestRepository;
+  // #endregion
+}
+
+/**
+ * Interface FaqUnitOfWork
+ * @interface FaqUnitOfWork
+ *
+ * @description
+ * Runs a FAQ change and its revision increment atomically.
+ */
+export interface FaqUnitOfWork {
+  // #region Methods
+  /**
+   * Method run
+   * @method run
+   * @template T - Result produced by the transaction callback.
+   *
+   * @description
+   * Executes the callback in a transaction: every write made through its repositories commits or
+   * rolls back together.
+   *
+   * @param {(repositories: FaqRepositories) => Promise<T>} work - Transaction operation.
+   * @returns {Promise<T>} Callback result after commit.
+   */
+  run<T>(work: (repositories: FaqRepositories) => Promise<T>): Promise<T>;
+  // #endregion
+}
+
+/**
+ * Interface MaintenanceRepository
+ * @interface MaintenanceRepository
+ *
+ * @description
+ * Singleton maintenance setting reads and optimistic-locking writes for the administration; it is
+ * outside the content revision, so a write needs no unit of work.
+ */
+export interface MaintenanceRepository {
+  // #region Methods
+  /**
+   * Method load
+   * @method load
+   *
+   * @description
+   * Loads the setting; a setting never written reads as `MaintenanceMode.initial()` (version 1).
+   *
+   * @returns {Promise<MaintenanceMode>} Stored setting with its version.
+   */
+  load(): Promise<MaintenanceMode>;
+
+  /**
+   * Method save
+   * @method save
+   *
+   * @description
+   * Writes the switch and the message and increments the version, only if the stored version is
+   * still the expected one (a missing row counting as version 1).
+   *
+   * @param {MaintenanceMode} mode - Revised setting.
+   * @param {number} expectedVersion - Version read before editing.
+   * @throws {VersionMismatchError} When the stored version differs.
+   * @returns {Promise<number>} New stored version.
+   */
+  save(mode: MaintenanceMode, expectedVersion: number): Promise<number>;
   // #endregion
 }
 

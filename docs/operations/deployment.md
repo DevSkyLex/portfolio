@@ -292,10 +292,10 @@ content-service, cached once a day (05:30 server time) and on request; the publi
 audience with GA4 after the visitor's consent. Every source is optional; a missing setting shows as
 `not-configured` with the variables to set, a Google error as `error` with its reason.
 
-Locally, `SEO_DEMO_DATA=true` (set in `docker/compose.dev.yml` and `apps/content-service/.env.example`)
-replaces each unconfigured source by demonstration figures (D52): the dashboard fills on the first
-« Actualiser », without any notice on screen. It changes nothing for a configured source; never set
-it in production.
+Locally, `SEO_FIXTURES=true` (set in `docker/compose.dev.yml` and `apps/content-service/.env.example`)
+serves each unconfigured source from the reports the content fixtures stored in the cache
+(`--profile fixtures run --rm content-fixtures`, D55); « Actualiser » leaves them in place. It changes nothing for a configured
+source; never set it, nor `FIXTURES_ALLOWED`, in production.
 
 | Setting                                | Where                                                                           |
 | -------------------------------------- | ------------------------------------------------------------------------------- |

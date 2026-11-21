@@ -65,12 +65,16 @@ bash docker/scripts/dev-secrets.sh
 npx nx run-many -t prune -p identity-service content-service contact-service
 npx nx build web
 docker compose -f docker/compose.dev.yml up --build -d --wait
-docker compose -f docker/compose.dev.yml --profile seed run --rm content-seed
+for job in identity-fixtures content-fixtures contact-fixtures; do
+  docker compose -f docker/compose.dev.yml --profile fixtures run --rm "$job"
+done
 ```
 
-The site is at <http://localhost:8080>, administration at <http://localhost:8080/admin/>, and Mailpit at <http://localhost:8025>. Seed content is intended for local development.
+The site is at <http://localhost:8080>, administration at <http://localhost:8080/admin/>, and Mailpit at <http://localhost:8025>.
 
-To create a local administrator, choose a password when prompted and enroll the one-time code using the URI printed by the bootstrap command:
+The `fixtures` profile loads the development fixtures through each service's CLI (`node cli.js fixtures`, D55): the seed content and SEO dashboard reports (content), the administrator `admin@localhost.test` with the test password of [`identity.fixtures.ts`](libs/backend/identity/adapters-out/src/lib/fixtures/identity.fixtures.ts) (identity), and an inbox of six messages (contact). Running it again resets the fixture data only. The CLIs refuse without `FIXTURES_ALLOWED=true`, which only the development stack sets.
+
+To create another local administrator instead, choose a password when prompted and enroll the one-time code using the URI printed by the bootstrap command:
 
 ```bash
 read -rs IDENTITY_BOOTSTRAP_PASSWORD && export IDENTITY_BOOTSTRAP_PASSWORD

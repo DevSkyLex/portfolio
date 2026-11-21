@@ -10,7 +10,10 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { migrateContact } from '@internal/contact-composition/lib/tasks/contact-database/contact-database.tasks';
+import {
+  loadContactFixtureData,
+  migrateContact,
+} from '@internal/contact-composition/lib/tasks/contact-database/contact-database.tasks';
 import { ContactModule } from '@internal/contact-composition/lib/contact.module';
 
 /**
@@ -69,5 +72,26 @@ describe('migrateContact', (): void => {
     await expect(
       migrateContact(`pglite:${join(root, 'db')}`, join(root, 'absent')),
     ).rejects.toThrow();
+  });
+});
+
+describe('loadContactFixtureData', (): void => {
+  let root: string;
+
+  beforeEach((): void => {
+    root = mkdtempSync(join(tmpdir(), 'contact-fixtures-'));
+  });
+
+  afterEach((): void => {
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it('loads the fixture inbox into a migrated database and closes it', async (): Promise<void> => {
+    const url: string = `pglite:${join(root, 'db')}`;
+    await migrateContact(url, MIGRATIONS);
+    const count: number = await loadContactFixtureData(url);
+    expect(count).toBeGreaterThan(0);
+    // The handle was closed: the same database opens again for a second load.
+    expect(await loadContactFixtureData(url)).toBe(count);
   });
 });

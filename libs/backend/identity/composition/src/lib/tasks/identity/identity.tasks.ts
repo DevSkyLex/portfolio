@@ -6,6 +6,7 @@ import {
   openIdentityDatabase,
   DrizzleAdminAccountRepository,
   type IdentityDatabaseHandle,
+  loadIdentityFixtures,
 } from '@vfortin/identity-adapters-out';
 import { BootstrapAdmin, type BootstrapResult } from '@vfortin/identity-application';
 
@@ -56,6 +57,27 @@ export async function bootstrapAdmin(
       new ScryptPasswordHasher(),
       new RandomIdGenerator(),
     ).execute(email, password);
+  } finally {
+    await database.close();
+  }
+}
+
+/**
+ * Function loadIdentityFixtureData
+ *
+ * @description
+ * Loads the identity development fixtures (D55): creates or resets the fixture administrator
+ * (`IDENTITY_FIXTURE_ADMIN`). The database handle is closed even when loading rejects.
+ *
+ * @param {string} databaseUrl - Connection URL for the identity database.
+ * @returns {Promise<{ readonly email: string }>} The fixture account.
+ */
+export async function loadIdentityFixtureData(
+  databaseUrl: string,
+): Promise<{ readonly email: string }> {
+  const database: IdentityDatabaseHandle = await openIdentityDatabase(databaseUrl);
+  try {
+    return await loadIdentityFixtures(database.db, new ScryptPasswordHasher());
   } finally {
     await database.close();
   }

@@ -361,7 +361,7 @@ function startPlanet2D(el: HTMLElement, cv: HTMLCanvasElement, opts: PlanetOptio
         let b: number = 0;
         let white: boolean = false;
         if (d > R + atm) {
-          if (hash2(col * 7 + 3, row * 13 + 1) > 0.994) b = 0.2 + 0.4 * hash2(row, col);
+          if (hash2(col * 7 + 3, row * 13 + 1) > 0.997) b = 0.2 + 0.4 * hash2(row, col);
         } else if (d > R) {
           const k0: number = 1 - (d - R) / atm;
           b = k0 * k0;
@@ -375,13 +375,15 @@ function startPlanet2D(el: HTMLElement, cv: HTMLCanvasElement, opts: PlanetOptio
           if (b > 1) b = 1;
           white = depth < 0.035 && n > 0.58;
         }
-        if (pointer) {
+        // The pointer lens lights the planet only: full on the disc, fading out through the atmosphere.
+        const onPlanet: number = d <= R ? 1 : d <= R + atm ? 1 - (d - R) / atm : 0;
+        if (pointer && onPlanet > 0) {
           const qx: number = px - pointer.x;
           const qy: number = py - pointer.y;
           const pd: number = Math.sqrt(qx * qx + qy * qy);
           if (pd < 120) {
             const k: number = 1 - pd / 120;
-            b = Math.min(1, b + k * k * 0.9);
+            b = Math.min(1, b + k * k * 0.9 * onPlanet);
           }
         }
         if (b < 0.05) continue;
@@ -495,7 +497,7 @@ const GL_SCENE: string = [
   '    float g = exp(-(r - 1.0) * 16.0);',
   '    col = aurora(hueT) * g;',
   '    vec2 cs = floor(px / 2.0);',
-  '    float s = step(0.9985, hash(cs));',
+  '    float s = step(0.99925, hash(cs));',
   '    col += uStar * s * (0.55 + 0.45 * sin(uTime * 1.7 + hash(cs + 7.0) * 6.2831)) * (1.0 - g);',
   '  }',
   '  float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));',
@@ -522,12 +524,16 @@ const GL_ASCII: string = [
   'uniform vec3 uLens;',
   'uniform float uDay;',
   'uniform float uFade;',
+  'uniform vec2 uPlanet;',
+  'uniform float uRadius;',
   'void main() {',
   '  vec2 px = vec2(vUv.x, 1.0 - vUv.y) * uView;',
   '  vec2 cell = floor(px / uCell);',
   '  vec2 center = (cell + 0.5) * uCell;',
   '  vec4 sc = texture2D(uScene, vec2(center.x / uView.x, 1.0 - center.y / uView.y));',
-  '  float lens = 1.0 - smoothstep(0.0, 130.0, length(center - uPointer));',
+  // The lens lights the planet only: full on the disc, fading out through the atmosphere.
+  '  float onPlanet = 1.0 - smoothstep(uRadius, uRadius * 1.075, length(center - uPlanet));',
+  '  float lens = (1.0 - smoothstep(0.0, 130.0, length(center - uPointer))) * onPlanet;',
   '  float lum = clamp(sc.a * (uDay > 0.5 ? 2.2 : 1.0) + lens * 0.55, 0.0, 0.999);',
   '  float idx = floor(lum * uCount);',
   '  vec2 inCell = fract(px / uCell);',
@@ -801,6 +807,8 @@ function startPlanetGL(
     gl.uniform3fv(a('uLens'), rgb01(lensC));
     gl.uniform1f(a('uDay'), day);
     gl.uniform1f(a('uFade'), opts.fixed ? 1 - 0.65 * state.scroll : 1);
+    gl.uniform2f(a('uPlanet'), g.x, g.y);
+    gl.uniform1f(a('uRadius'), g.R);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.activeTexture(gl.TEXTURE0);
   };

@@ -1,0 +1,132 @@
+<header
+  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface px-6 text-[13px] @max-[640px]:px-4"
+>
+  <ui-sidebar-trigger class="-ml-2" />
+  <a
+    class="inline-flex h-7 items-center gap-1.5 rounded-sm px-1.5 font-medium text-fg-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-surface-hover hover:text-fg focus-visible:outline-accent/55"
+    routerLink=".."
+  >
+    <ng-icon [svg]="icons.back" size="14" aria-hidden="true" />
+    <ng-container i18n="@@admin.faq.back">Toutes les questions</ng-container>
+  </a>
+  @if (entry() || creating()) {
+    <ng-icon class="shrink-0 text-fg-faint" [svg]="icons.chevron" size="14" aria-hidden="true" />
+    <span class="truncate font-medium text-fg" aria-current="page">{{ heading() }}</span>
+  }
+</header>
+
+<div class="flex flex-1 flex-col">
+  @if (values(); as initial) {
+    <ui-page-header>
+      <h1 uiPageHeaderTitle>{{ heading() }}</h1>
+      <!-- One node per branch: content projection only reaches a branch's single root (NG8011). -->
+      @if (entry(); as current) {
+        <p uiPageHeaderMeta i18n="@@admin.faq.editor.version">Version {{ current.version }}</p>
+      } @else {
+        <p uiPageHeaderMeta i18n="@@admin.faq.editor.newHint">Ajoutée à la fin de la FAQ.</p>
+      }
+      @if (entry()) {
+        <div uiPageHeaderActions>
+          <button
+            uiBtn
+            variant="ghost"
+            size="xs"
+            type="button"
+            [disabled]="store.writing()"
+            (click)="remove()"
+          >
+            <ng-icon class="text-danger-ink" [svg]="icons.remove" size="14" aria-hidden="true" />
+            <ng-container i18n="@@admin.faq.action.delete">Supprimer</ng-container>
+          </button>
+        </div>
+      }
+    </ui-page-header>
+
+    <div
+      class="mx-auto flex w-full max-w-[920px] min-w-0 flex-1 flex-col gap-6 px-6 py-6 @max-[640px]:px-4"
+    >
+      @if (store.conflict()) {
+        <div uiAlert variant="warning">
+          <ng-icon [svg]="icons.conflict" size="16" aria-hidden="true" />
+          <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.faq.editor.conflict">
+            La question a été modifiée ailleurs depuis son ouverture.
+          </p>
+          <div uiAlertDescription class="gap-2 text-[13px]/5">
+            <p i18n="@@admin.faq.editor.conflictHint">Recharger remplace vos modifications.</p>
+            <button
+              uiBtn
+              variant="secondary"
+              size="xs"
+              type="button"
+              i18n="@@admin.faq.action.reload"
+              (click)="reload()"
+            >
+              Recharger
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Stretched to the page bottom, so the save bar sticks to the viewport even on a short form. -->
+      <content-faq-entry-form
+        class="flex flex-1 flex-col"
+        [values]="initial"
+        [creating]="creating()"
+        [pending]="store.writing()"
+        [serverErrors]="store.writeError()?.fieldErrors ?? []"
+        (submitted)="save($event)"
+      />
+    </div>
+  } @else if (store.loadCallState().status === 'error') {
+    @let failure = store.loadCallState().error;
+    <div uiAlert variant="danger" class="mx-6 my-6 w-auto max-w-[920px] @max-[640px]:mx-4">
+      <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
+      @if (failure?.status === 404) {
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.faq.editor.missing">
+          Question introuvable
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p i18n="@@admin.faq.editor.missingHint">
+            Elle a peut-être été supprimée, ou son adresse est incorrecte.
+          </p>
+          <a uiBtn variant="secondary" size="xs" routerLink=".." i18n="@@admin.faq.back"
+            >Toutes les questions</a
+          >
+        </div>
+      } @else {
+        <p uiAlertTitle class="text-[13px]/5" i18n="@@admin.faq.editor.loadFailed">
+          Impossible de charger la question
+        </p>
+        <div uiAlertDescription class="gap-2 text-[13px]/5">
+          <p>{{ failure?.message }}</p>
+          <button
+            uiBtn
+            variant="secondary"
+            size="xs"
+            type="button"
+            i18n="@@admin.faq.action.retry"
+            (click)="reload()"
+          >
+            Réessayer
+          </button>
+        </div>
+      }
+    </div>
+  } @else {
+    <span class="sr-only" role="status" i18n="@@admin.faq.editor.loading"
+      >Chargement de la question…</span
+    >
+    <ui-page-header aria-hidden="true">
+      <div uiPageHeaderTitle><span uiSkeleton class="h-7 w-64"></span></div>
+      <div uiPageHeaderMeta><span uiSkeleton class="h-5 w-40"></span></div>
+    </ui-page-header>
+    <div
+      class="mx-auto flex w-full max-w-[920px] flex-col gap-6 px-6 py-6 @max-[640px]:px-4"
+      aria-hidden="true"
+    >
+      <span uiSkeleton class="h-5 w-40"></span>
+      <span uiSkeleton class="h-9 w-full"></span>
+      <span uiSkeleton class="h-40 w-full"></span>
+    </div>
+  }
+</div>

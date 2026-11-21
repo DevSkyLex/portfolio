@@ -1,5 +1,16 @@
-import type { ContentSnapshot, ProjectDto, TimelineEntryDto } from '@vfortin/content-contracts';
-import type { ProjectArticle, SiteContent, TimelineStep } from '@vfortin/content-web-model';
+import type {
+  ContentSnapshot,
+  FaqEntryDto,
+  ProjectDto,
+  TimelineEntryDto,
+} from '@vfortin/content-contracts';
+import type {
+  FaqEntry,
+  ProjectArticle,
+  SiteContent,
+  SiteMaintenance,
+  TimelineStep,
+} from '@vfortin/content-web-model';
 import { toArticle } from '@internal/content-web-data-access/lib/adapters/article/article.adapter';
 import { toLegalDocument } from '@internal/content-web-data-access/lib/adapters/legal-document/legal-document.adapter';
 import { toSiteLinks } from '@internal/content-web-data-access/lib/adapters/site-link/site-link.adapter';
@@ -104,6 +115,14 @@ function toProjectArticle(dto: ProjectDto): ProjectArticle {
 }
 
 /**
+ * Constant ONLINE
+ *
+ * @description
+ * Maintenance state of a snapshot that carries none: the site is online.
+ */
+const ONLINE: SiteMaintenance = { enabled: false, message: '' };
+
+/**
  * Function toSiteContent
  *
  * @description
@@ -123,9 +142,18 @@ export function toSiteContent(snapshot: ContentSnapshot): SiteContent {
       toTimelineStep(entry, snapshot.locale),
     ),
     skills: snapshot.skills,
+    // Only the prerender validates the snapshot (D10), which defaults the FAQ to none; a raw
+    // snapshot written before the FAQ reads the same way.
+    faq: ((snapshot as Partial<ContentSnapshot>).faq ?? []).map((entry: FaqEntryDto): FaqEntry => ({
+      id: entry.id,
+      question: entry.question,
+      answer: entry.answer,
+    })),
     legal: {
       notice: toLegalDocument(snapshot.legal.notice),
       privacy: toLegalDocument(snapshot.legal.privacy),
     },
+    // Defaulted by the validation too; a raw snapshot written before the maintenance mode is online.
+    maintenance: { ...((snapshot as Partial<ContentSnapshot>).maintenance ?? ONLINE) },
   };
 }

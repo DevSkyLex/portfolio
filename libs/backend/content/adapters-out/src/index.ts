@@ -14,6 +14,12 @@ export {
   DrizzleTimelineListRepository,
   DrizzleTimelineUnitOfWork,
 } from '@internal/content-adapters-out/lib/persistence/repositories/timeline/drizzle-timeline.repositories';
+export {
+  DrizzleFaqEntryRepository,
+  DrizzleFaqListRepository,
+  DrizzleFaqUnitOfWork,
+} from '@internal/content-adapters-out/lib/persistence/repositories/faq/drizzle-faq.repositories';
+export { DrizzleMaintenanceRepository } from '@internal/content-adapters-out/lib/persistence/repositories/maintenance/drizzle-maintenance.repository';
 export { DrizzleContentSnapshotReader } from '@internal/content-adapters-out/lib/persistence/repositories/content/drizzle-content.repositories';
 export { DrizzleMediaRepository } from '@internal/content-adapters-out/lib/persistence/repositories/media/drizzle-media.repository';
 export { DiskMediaStorage } from '@internal/content-adapters-out/lib/media/disk-media/disk-media.storage';
@@ -36,10 +42,10 @@ export {
   type GoogleAccessTokens,
 } from '@internal/content-adapters-out/lib/seo/google-credentials/google-service-account';
 export {
-  DemoAnalyticsReader,
-  DemoSearchConsoleReader,
-  DemoWebVitalsReader,
-} from '@internal/content-adapters-out/lib/seo/demo/demo-seo.readers';
+  FixtureAnalyticsReader,
+  FixtureSearchConsoleReader,
+  FixtureWebVitalsReader,
+} from '@internal/content-adapters-out/lib/seo/fixtures/fixture-seo.readers';
 export { GoogleSearchConsoleReader } from '@internal/content-adapters-out/lib/seo/search-console/search-console.reader';
 export { GoogleAnalyticsReader } from '@internal/content-adapters-out/lib/seo/analytics/google-analytics.reader';
 export { PageSpeedWebVitalsReader } from '@internal/content-adapters-out/lib/seo/page-speed/page-speed.reader';

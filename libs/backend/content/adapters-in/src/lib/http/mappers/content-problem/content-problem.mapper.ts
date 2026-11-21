@@ -18,13 +18,15 @@ import { DomainError } from '@vfortin/content-domain';
  *
  * @description
  * Domain codes whose `details` are contract field paths (`title.en`, `end`, `ids`,
- * `facts.0.label.en`, `body.en`): their problem
+ * `facts.0.label.en`, `body.en`, `question.en`): their problem
  * also carries `errors` per field, like a 400 `request.invalid`, so the admin forms attach them.
  */
 const FIELD_ERROR_CODES: ReadonlySet<string> = new Set<string>([
   'content.invalid-value',
   'content.timeline-entry-incomplete',
   'content.timeline-order-invalid',
+  'content.faq-entry-incomplete',
+  'content.faq-order-invalid',
   'content.profile-incomplete',
   'content.legal-document-incomplete',
 ]);

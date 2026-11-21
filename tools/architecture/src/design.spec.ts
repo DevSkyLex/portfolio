@@ -38,9 +38,11 @@ const TOKENS: ReadonlySet<string> = themeColourTokens(
  * @description
  * Files where centred text is inherent: calendar cells, the per-column alignment of the data table, and
  * the catalogue empty state (`uiEmpty`), centred by the owner's decision (D36 empty state revision).
- * Consumers of `uiEmpty` inherit its alignment and never centre text themselves.
+ * Consumers of `uiEmpty` inherit its alignment and never centre text themselves. The contact
+ * confirmation, which takes the place of the sent form, is centred at the owner's request.
  */
 const CENTRED_TEXT_ALLOWED: string[] = [
+  'libs/frontend/contact/feature/src/lib/ui/sections/contact-section/contact-section.component.html',
   'libs/frontend/ui/src/lib/calendar/calendar.component.html',
   'libs/frontend/ui/src/lib/data-table/constants/data-table.constants.ts',
   'libs/frontend/ui/src/lib/empty/constants/empty.variants.ts',

@@ -8,8 +8,8 @@
  * @type {readonly string[]}
  */
 export const PROJECT_VISUAL_TINTS = [
-  'bg-[color-mix(in_srgb,var(--fg)_5%,var(--surface-raised))]',
-  'bg-[color-mix(in_srgb,var(--fg)_3%,var(--surface-raised))]',
-  'bg-[color-mix(in_srgb,var(--fg)_8%,var(--surface-raised))]',
-  'bg-[color-mix(in_srgb,var(--fg)_6%,var(--surface-raised))]',
+  'bg-[color-mix(in_srgb,var(--ink)_5%,var(--surface-raised))]',
+  'bg-[color-mix(in_srgb,var(--ink)_3%,var(--surface-raised))]',
+  'bg-[color-mix(in_srgb,var(--ink)_8%,var(--surface-raised))]',
+  'bg-[color-mix(in_srgb,var(--ink)_6%,var(--surface-raised))]',
 ] as const;

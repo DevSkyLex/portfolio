@@ -47,3 +47,9 @@ export {
   maxAgeOf,
   type ClientMetadataFetcherOptions,
 } from '@internal/identity-adapters-out/lib/oauth/client-metadata-fetcher/client-metadata-fetcher';
+
+/** Development fixtures: the known administrator of the local stack (D55). */
+export {
+  IDENTITY_FIXTURE_ADMIN,
+  loadIdentityFixtures,
+} from '@internal/identity-adapters-out/lib/fixtures/identity.fixtures';

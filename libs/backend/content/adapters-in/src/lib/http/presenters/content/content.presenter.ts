@@ -10,6 +10,7 @@ import {
 import type {
   ArticleBlock,
   ArticleDocument,
+  FaqEntry,
   LegalDocument,
   LocalizedProjectSeo,
   LocalizedText,
@@ -183,9 +184,18 @@ export function toContentSnapshot(
       ),
       usage: t(group.usage),
     })),
+    faq: content.faq.map((entry: FaqEntry): ContentSnapshot['faq'][number] => ({
+      id: entry.id,
+      question: t(entry.question),
+      answer: t(entry.answer),
+    })),
     legal: {
       notice: publicLegal(content.legal.notice, locale),
       privacy: publicLegal(content.legal.privacy, locale),
+    },
+    maintenance: {
+      enabled: content.maintenance.enabled,
+      message: content.maintenance.messageIn(locale),
     },
   });
 }

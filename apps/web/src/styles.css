@@ -25,7 +25,8 @@
 @source '../../../libs/frontend/legal/feature';
 @source '../../../libs/frontend/shell/src';
 @source not '../../../libs/frontend/shell/src/lib/admin';
-@source '../../../libs/frontend/ui/src/lib/alert';
+@source '../../../libs/frontend/ui/src/lib/accordion';
+@source '../../../libs/frontend/ui/src/lib/boolean-attribute';
 @source '../../../libs/frontend/ui/src/lib/button';
 @source '../../../libs/frontend/ui/src/lib/class-names';
 @source '../../../libs/frontend/ui/src/lib/deco';
@@ -41,6 +42,7 @@
 @source '../../../libs/frontend/ui/src/lib/section-fx';
 @source '../../../libs/frontend/ui/src/lib/section-heading';
 @source '../../../libs/frontend/ui/src/lib/select';
+@source '../../../libs/frontend/ui/src/lib/sonner';
 @source '../../../libs/frontend/ui/src/lib/switch';
 @source '../../../libs/frontend/ui/src/lib/textarea';
 
@@ -54,6 +56,14 @@
     scrollbar-gutter: stable;
     /* The header compacts on scroll (72 → 56px): scroll anchoring would pull the page back by the difference. */
     overflow-anchor: none;
+  }
+
+  /* Anchor links glide to their section. The router restores reload and back positions with an explicit
+     instant scroll, which this rule does not affect; reduced motion keeps every jump instant. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
   /* Body copy of the mockup; on body so that rem-based utilities keep a 16px root. */
@@ -80,8 +90,8 @@
  */
 :root {
   /* Derived from the tokens, so both themes follow (D37). */
-  --sb: color-mix(in srgb, var(--fg) 24%, transparent);
-  --sb-hover: color-mix(in srgb, var(--fg) 36%, transparent);
+  --sb: var(--scrollbar);
+  --sb-hover: var(--scrollbar-hover);
   --sb-drag: color-mix(in srgb, var(--accent) 58%, transparent);
 }
 @supports (scrollbar-color: auto) {

@@ -10,20 +10,28 @@ import {
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { hasScopes } from '@vfortin/backend-auth';
 import {
+  CreateFaqEntry,
   CreateProject,
   CreateTimelineEntry,
+  DeleteFaqEntry,
   DeleteTimelineEntry,
+  GetAdminFaqEntry,
+  GetAdminMaintenance,
   GetAdminLegalDocument,
   GetAdminProfile,
   GetAdminProject,
   GetAdminTimelineEntry,
   ImportRemoteMedia,
+  ListAdminFaq,
   ListAdminProjects,
   ManagePublication,
   ListAdminTimeline,
   PublishProject,
+  ReorderFaq,
   ReorderTimeline,
+  ReviseFaqEntry,
   ReviseLegalDocument,
+  ReviseMaintenance,
   ReviseProfile,
   ReviseProject,
   ReviseTimelineEntry,
@@ -33,8 +41,11 @@ import {
 import {
   type AdminLegalDocumentDto,
   type AdminProjectDto,
+  FaqEntryRequestSchema,
+  FaqOrderRequestSchema,
   LegalDocumentKindSchema,
   LegalDocumentRevisionRequestSchema,
+  MaintenanceRequestSchema,
   ProjectCoverDtoSchema,
   ProfileRevisionRequestSchema,
   ProjectRevisionRequestSchema,
@@ -61,6 +72,15 @@ import {
   toAdminProfileDto,
   toProfileDraft,
 } from '@internal/content-adapters-in/lib/http/presenters/admin-site-texts/admin-site-texts.presenter';
+import {
+  toAdminMaintenanceDto,
+  toMaintenanceDraft,
+} from '@internal/content-adapters-in/lib/http/presenters/admin-maintenance/admin-maintenance.presenter';
+import {
+  toAdminFaqEntryDto,
+  toAdminFaqList,
+  toFaqEntryDraft,
+} from '@internal/content-adapters-in/lib/http/presenters/admin-faq/admin-faq.presenter';
 import {
   toAdminTimelineEntryDto,
   toAdminTimelineList,
@@ -272,6 +292,14 @@ export class ContentMcpTools {
     @Inject(ReviseTimelineEntry) reviseEntry: ReviseTimelineEntry,
     @Inject(ReorderTimeline) reorderTimeline: ReorderTimeline,
     @Inject(DeleteTimelineEntry) deleteEntry: DeleteTimelineEntry,
+    @Inject(ListAdminFaq) listFaq: ListAdminFaq,
+    @Inject(GetAdminFaqEntry) getFaqEntry: GetAdminFaqEntry,
+    @Inject(CreateFaqEntry) createFaqEntry: CreateFaqEntry,
+    @Inject(ReviseFaqEntry) reviseFaqEntry: ReviseFaqEntry,
+    @Inject(ReorderFaq) reorderFaq: ReorderFaq,
+    @Inject(DeleteFaqEntry) deleteFaqEntry: DeleteFaqEntry,
+    @Inject(GetAdminMaintenance) getMaintenance: GetAdminMaintenance,
+    @Inject(ReviseMaintenance) reviseMaintenance: ReviseMaintenance,
     @Inject(GetAdminProfile) getProfile: GetAdminProfile,
     @Inject(ReviseProfile) reviseProfile: ReviseProfile,
     @Inject(GetAdminLegalDocument) getLegal: GetAdminLegalDocument,
@@ -423,6 +451,78 @@ export class ContentMcpTools {
         z.strictObject({ kind: TimelineKindSchema, id: Id, expectedVersion: ExpectedVersion }),
         async ({ kind, id, expectedVersion }) =>
           toAdminTimelineList(await deleteEntry.execute(kind, id, expectedVersion)),
+      ),
+      tool(
+        'list_faq',
+        'Read the FAQ questions in display order and the list version used for reordering.',
+        Read,
+        z.strictObject({}),
+        async () => toAdminFaqList(await listFaq.execute()),
+      ),
+      tool(
+        'get_faq_entry',
+        'Read a bilingual FAQ question, its plain-text answer and its version.',
+        Read,
+        z.strictObject({ id: Id }),
+        async ({ id }) => toAdminFaqEntryDto(await getFaqEntry.execute(id)),
+      ),
+      tool(
+        'create_faq_entry',
+        'Add a bilingual FAQ question and plain-text answer after the last one. Immediately public; requires write and publish consent.',
+        PublicWrite,
+        z.strictObject({ entry: FaqEntryRequestSchema }),
+        async ({ entry }) => {
+          const result: Awaited<ReturnType<CreateFaqEntry['execute']>> =
+            await createFaqEntry.execute(toFaqEntryDraft(entry));
+          return toAdminFaqEntryDto(result.entry, result.version);
+        },
+      ),
+      tool(
+        'revise_faq_entry',
+        'Replace a FAQ question and answer at its current version. Immediately public; requires write and publish consent.',
+        PublicWrite,
+        z.strictObject({ id: Id, expectedVersion: ExpectedVersion, entry: FaqEntryRequestSchema }),
+        async ({ id, expectedVersion, entry }) => {
+          const result: Awaited<ReturnType<ReviseFaqEntry['execute']>> =
+            await reviseFaqEntry.execute(id, expectedVersion, toFaqEntryDraft(entry));
+          return toAdminFaqEntryDto(result.entry, result.version);
+        },
+      ),
+      tool(
+        'reorder_faq',
+        'Reorder the whole FAQ using its LIST version and every question id. Immediately public; requires write and publish consent.',
+        PublicWrite,
+        z.strictObject({
+          expectedVersion: ExpectedVersion,
+          ids: FaqOrderRequestSchema.shape.ids,
+        }),
+        async ({ expectedVersion, ids }) =>
+          toAdminFaqList(await reorderFaq.execute(expectedVersion, ids)),
+      ),
+      tool(
+        'delete_faq_entry',
+        'Permanently delete a FAQ question at its version. Immediately public; requires delete and publish consent. Returns the remaining list.',
+        ['content:delete', 'content:publish'],
+        z.strictObject({ id: Id, expectedVersion: ExpectedVersion }),
+        async ({ id, expectedVersion }) =>
+          toAdminFaqList(await deleteFaqEntry.execute(id, expectedVersion)),
+      ),
+      tool(
+        'get_maintenance',
+        'Read whether the public site shows its maintenance screen, the bilingual message (empty for the default line) and the version.',
+        Read,
+        z.strictObject({}),
+        async () => toAdminMaintenanceDto(await getMaintenance.execute()),
+      ),
+      tool(
+        'set_maintenance',
+        'Switch the public site maintenance screen on or off and set its bilingual message at the current version. Applies to the next public request (every public page answers 503 while on; the admin stays reachable); requires write and publish consent.',
+        PublicWrite,
+        z.strictObject({ expectedVersion: ExpectedVersion, maintenance: MaintenanceRequestSchema }),
+        async ({ expectedVersion, maintenance }) =>
+          toAdminMaintenanceDto(
+            await reviseMaintenance.execute(expectedVersion, toMaintenanceDraft(maintenance)),
+          ),
       ),
       tool(
         'get_profile',

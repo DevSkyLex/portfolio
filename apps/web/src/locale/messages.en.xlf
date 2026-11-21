@@ -718,30 +718,20 @@
           <context context-type="linenumber">18,20</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="contact.sent.body" datatype="html">
+        <source> Merci <x id="INTERPOLATION" equiv-text="{{ confirmation.name }}"/>. Je vous réponds à <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-fg&quot;&gt;"/><x id="INTERPOLATION_1" equiv-text="{{ confirmation.email }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> au plus vite. </source>
+        <target> Thank you <x id="INTERPOLATION" equiv-text="{{ confirmation.name }}"/>. I will reply to <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-fg&quot;&gt;"/><x id="INTERPOLATION_1" equiv-text="{{ confirmation.email }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> as soon as I can. </target>
+      </trans-unit>
+      <trans-unit id="contact.sent.again" datatype="html">
+        <source> Envoyer un autre message </source>
+        <target> Send another message </target>
+      </trans-unit>
       <trans-unit id="contact.sent.title" datatype="html">
         <source> Message envoyé </source>
         <target> Message sent </target>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section/contact-section.component.html</context>
           <context context-type="linenumber">60,62</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="contact.sent.body" datatype="html">
-        <source> Merci <x id="INTERPOLATION" equiv-text="{{ firstName() }}"/>. Je vous réponds à <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;font-mono text-data text-fg&quot;&gt;"/><x id="INTERPOLATION_1" equiv-text="{{ store.sentTo() }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
-              &gt;"/>. </source>
-        <target> Thank you <x id="INTERPOLATION" equiv-text="{{ firstName() }}"/>. I will reply to <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;font-mono text-data text-fg&quot;&gt;"/><x id="INTERPOLATION_1" equiv-text="{{ store.sentTo() }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
-              &gt;"/>. </target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section/contact-section.component.html</context>
-          <context context-type="linenumber">66,70</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="contact.sent.again" datatype="html">
-        <source> Écrire un autre message </source>
-        <target> Write another message </target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/contact/feature/src/lib/ui/sections/contact-section/contact-section.component.html</context>
-          <context context-type="linenumber">78,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.routeTitle" datatype="html">
@@ -5116,21 +5106,21 @@
           <context context-type="linenumber">183,184</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="section.about" datatype="html">
-        <source>À propos</source>
-        <target>About</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/about-section/about-section.component.ts</context>
-          <context context-type="linenumber">42,43</context>
-        </context-group>
+      <trans-unit id="hero.title" datatype="html">
+        <source>Développeur web fullstack</source>
+        <target>Fullstack web developer</target>
       </trans-unit>
-      <trans-unit id="about.photoPlaceholder" datatype="html">
-        <source>[Photo]</source>
-        <target>[Photo]</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/about-section/about-section.component.ts</context>
-          <context context-type="linenumber">65,67</context>
-        </context-group>
+      <trans-unit id="hero.greeting" datatype="html">
+        <source> Hello, moi c’est <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-accent&quot;&gt;"/>Valentin<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>. </source>
+        <target>Hey, I’m <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-accent&quot;&gt;"/>Valentin<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>.</target>
+      </trans-unit>
+      <trans-unit id="hero.subtitle" datatype="html">
+        <source> Je crée des applications web et mobiles, de l’interface jusqu’à l’API et la base de données. </source>
+        <target>I build web and mobile applications, from the interface to the API and the database.</target>
+      </trans-unit>
+      <trans-unit id="hero.contact" datatype="html">
+        <source>Me contacter</source>
+        <target>Contact me</target>
       </trans-unit>
       <trans-unit id="hero.projects" datatype="html">
         <source>Voir les projets</source>
@@ -5138,22 +5128,6 @@
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/hero-section/hero-section.component.html</context>
           <context context-type="linenumber">45,47</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="hero.cv" datatype="html">
-        <source>CV en PDF</source>
-        <target>Résumé (PDF)</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/hero-section/hero-section.component.html</context>
-          <context context-type="linenumber">48,50</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="hero.scroll" datatype="html">
-        <source>Aller aux projets</source>
-        <target>Go to the projects</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/sections/hero-section/hero-section.component.html</context>
-          <context context-type="linenumber">57,60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="timeline.education" datatype="html">
@@ -7277,14 +7251,6 @@
           <context context-type="linenumber">194,195</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="layout.cv" datatype="html">
-        <source>CV en PDF</source>
-        <target>Résumé (PDF)</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">217,218</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="layout.legalTitle" datatype="html">
         <source> Informations légales </source>
         <target>Legal information</target>
@@ -7351,14 +7317,6 @@
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
           <context context-type="linenumber">102</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="nav.about" datatype="html">
-        <source>À propos</source>
-        <target>About</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="nav.contact" datatype="html">
@@ -9237,6 +9195,454 @@
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/utils/seo-source-statuses/seo-source-statuses.utils.ts</context>
           <context context-type="linenumber">114</context>
         </context-group>
+      </trans-unit>
+      <trans-unit id="admin.faq.create" datatype="html">
+        <source>Nouvelle question</source>
+        <target>New question</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.list.label" datatype="html">
+        <source>Questions</source>
+        <target>Questions</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.row.moveHint" datatype="html">
+        <source>Glisser, ou flèches haut et bas</source>
+        <target>Drag, or up and down arrows</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.row.actionsTooltip" datatype="html">
+        <source>Actions</source>
+        <target>Actions</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.action.edit" datatype="html">
+        <source>Modifier</source>
+        <target>Edit</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.action.delete" datatype="html">
+        <source>Supprimer</source>
+        <target>Delete</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.list.loading" datatype="html">
+        <source>Chargement des questions…</source>
+        <target>Loading the questions…</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.empty" datatype="html">
+        <source>Aucune question</source>
+        <target>No questions</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.emptyHint" datatype="html">
+        <source> Les questions ajoutées ici apparaissent sur le site public, dans cet ordre. </source>
+        <target>Questions added here appear on the public site, in this order.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.row.actions" datatype="html">
+        <source>Actions pour « <x id="question" equiv-text="entry.question.fr"/> »</source>
+        <target>Actions for "<x id="question" equiv-text="entry.question.fr"/>"</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.row.move" datatype="html">
+        <source>Déplacer « <x id="question" equiv-text="entry.question.fr"/> »</source>
+        <target>Move "<x id="question" equiv-text="entry.question.fr"/>"</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.content" datatype="html">
+        <source> Contenu </source>
+        <target>Content</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.contentHint" datatype="html">
+        <source> Publié tel quel dans la FAQ du site, en français et en anglais : le sélecteur accolé à chaque champ change sa langue. La réponse est du texte simple ; ses retours à la ligne sont gardés. </source>
+        <target>Published as is in the site FAQ, in French and English: the selector joined to each field switches its language. The answer is plain text; its line breaks are kept.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.characters" datatype="html">
+        <source>Caractères : </source>
+        <target>Characters: </target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.status.unsaved" datatype="html">
+        <source>Modifications non enregistrées</source>
+        <target>Unsaved changes</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.status.new" datatype="html">
+        <source>Pas encore enregistrée</source>
+        <target>Not saved yet</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.status.saved" datatype="html">
+        <source>Tout est enregistré</source>
+        <target>All saved</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.discardLabel" datatype="html">
+        <source>Abandonner les modifications</source>
+        <target>Discard changes</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.discard" datatype="html">
+        <source> Abandonner </source>
+        <target>Discard</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.saving" datatype="html">
+        <source>Enregistrement…</source>
+        <target>Saving…</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.save" datatype="html">
+        <source>Enregistrer</source>
+        <target>Save</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.question" datatype="html">
+        <source>Question</source>
+        <target>Question</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.answer" datatype="html">
+        <source>Réponse</source>
+        <target>Answer</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.error.frRequired" datatype="html">
+        <source>Le texte français est obligatoire.</source>
+        <target>The French text is required.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.error.enRequired" datatype="html">
+        <source>Le texte anglais est obligatoire : la question est publiée dès son enregistrement.</source>
+        <target>The English text is required: the question is published as soon as it is saved.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.error.maxLength" datatype="html">
+        <source><x id="max" equiv-text="field.max"/> caractères maximum.</source>
+        <target><x id="max" equiv-text="field.max"/> characters maximum.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.summary" datatype="html">
+        <source>Corrigez les champs signalés, en français et en anglais, avant d’enregistrer.</source>
+        <target>Fix the flagged fields, in French and English, before saving.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.confirm.discard.title" datatype="html">
+        <source>Abandonner les modifications ?</source>
+        <target>Discard changes?</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.confirm.changesLost" datatype="html">
+        <source>Les modifications de cette question seront perdues.</source>
+        <target>The changes to this question will be lost.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.confirm.discard.confirm" datatype="html">
+        <source>Abandonner</source>
+        <target>Discard</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.confirm.keepEditing" datatype="html">
+        <source>Continuer la modification</source>
+        <target>Keep editing</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.inFrench" datatype="html">
+        <source><x id="label" equiv-text="label"/> en français</source>
+        <target><x id="label" equiv-text="label"/> in French</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.form.inEnglish" datatype="html">
+        <source><x id="label" equiv-text="label"/> en anglais</source>
+        <target><x id="label" equiv-text="label"/> in English</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.back" datatype="html">
+        <source>Toutes les questions</source>
+        <target>All questions</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.editor.version" datatype="html">
+        <source>Version <x id="INTERPOLATION" equiv-text="{{ current.version }}"/></source>
+        <target>Version <x id="INTERPOLATION" equiv-text="{{ current.version }}"/></target>
+      </trans-unit>
+      <trans-unit id="admin.faq.editor.newHint" datatype="html">
+        <source>Ajoutée à la fin de la FAQ.</source>
+        <target>Added at the end of the FAQ.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.editor.conflict" datatype="html">
+        <source> La question a été modifiée ailleurs depuis son ouverture. </source>
+        <target>The question was changed elsewhere since it was opened.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.editor.conflictHint" datatype="html">
+        <source>Recharger remplace vos modifications.</source>
+        <target>Reloading replaces your changes.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.action.reload" datatype="html">
+        <source> Recharger </source>
+        <target>Reload</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.editor.missing" datatype="html">
+        <source> Question introuvable </source>
+        <target>Question not found</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.editor.missingHint" datatype="html">
+        <source> Elle a peut-être été supprimée, ou son adresse est incorrecte. </source>
+        <target>It may have been deleted, or its address is wrong.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.editor.loadFailed" datatype="html">
+        <source> Impossible de charger la question </source>
+        <target>Could not load the question</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.action.retry" datatype="html">
+        <source> Réessayer </source>
+        <target>Retry</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.editor.loading" datatype="html">
+        <source>Chargement de la question…</source>
+        <target>Loading the question…</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.confirm.leave.title" datatype="html">
+        <source>Quitter sans enregistrer ?</source>
+        <target>Leave without saving?</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.confirm.leave.confirm" datatype="html">
+        <source>Quitter</source>
+        <target>Leave</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.toast.created" datatype="html">
+        <source>« <x id="question" equiv-text="created.question.fr"/> » ajoutée.</source>
+        <target>"<x id="question" equiv-text="created.question.fr"/>" added.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.toast.saved" datatype="html">
+        <source>Enregistré.</source>
+        <target>Saved.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.confirm.delete.title" datatype="html">
+        <source>Supprimer « <x id="question" equiv-text="entry.question.fr"/> » ?</source>
+        <target>Delete "<x id="question" equiv-text="entry.question.fr"/>"?</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.confirm.delete.description" datatype="html">
+        <source>Elle disparaîtra du site public à la prochaine reconstruction (quelques minutes). Cette action est définitive.</source>
+        <target>It will disappear from the public site at the next rebuild (a few minutes). This cannot be undone.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.action.cancel" datatype="html">
+        <source>Annuler</source>
+        <target>Cancel</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.toast.deleted" datatype="html">
+        <source>« <x id="question" equiv-text="entry.question.fr"/> » supprimée.</source>
+        <target>"<x id="question" equiv-text="entry.question.fr"/>" deleted.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.toast.incomplete" datatype="html">
+        <source>Complétez les deux langues.</source>
+        <target>Fill in both languages.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.toast.incompleteHint" datatype="html">
+        <source>Une question est publiée dès son enregistrement, en français et en anglais.</source>
+        <target>A question is published as soon as it is saved, in French and English.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.title.missing" datatype="html">
+        <source>Question introuvable</source>
+        <target>Question not found</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.section" datatype="html">
+        <source>FAQ</source>
+        <target>FAQ</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.orderHint" datatype="html">
+        <source> Le site public affiche les questions dans cet ordre. </source>
+        <target>The public site shows the questions in this order.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.loadFailed" datatype="html">
+        <source> Impossible de charger les questions </source>
+        <target>Could not load the questions</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.one" datatype="html">
+        <source>question</source>
+        <target>question</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.many" datatype="html">
+        <source>questions</source>
+        <target>questions</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.toast.moved" datatype="html">
+        <source>Ordre enregistré.</source>
+        <target>Order saved.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.toast.listChanged" datatype="html">
+        <source>La liste a été modifiée entre-temps : elle a été rechargée, recommencez.</source>
+        <target>The list was changed in the meantime: it has been reloaded, try again.</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.title.section" datatype="html">
+        <source>FAQ — Administration</source>
+        <target>FAQ — Admin</target>
+      </trans-unit>
+      <trans-unit id="admin.faq.title.entry" datatype="html">
+        <source><x id="name" equiv-text="name"/> — FAQ — Administration</source>
+        <target><x id="name" equiv-text="name"/> — FAQ — Admin</target>
+      </trans-unit>
+      <trans-unit id="section.faq" datatype="html">
+        <source>Questions fréquentes</source>
+        <target>Frequently asked questions</target>
+      </trans-unit>
+      <trans-unit id="admin.shell.nav.faq" datatype="html">
+        <source>FAQ</source>
+        <target>FAQ</target>
+      </trans-unit>
+      <trans-unit id="nav.faq" datatype="html">
+        <source>FAQ</source>
+        <target>FAQ</target>
+      </trans-unit>
+      <trans-unit id="tech.more" datatype="html">
+        <source>et <x id="COUNT" equiv-text="hidden.length"/> autres : <x id="NAMES" equiv-text="names"/></source>
+        <target>and <x id="COUNT" equiv-text="hidden.length"/> more: <x id="NAMES" equiv-text="names"/></target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.routeTitle" datatype="html">
+        <source>Maintenance — Administration</source>
+        <target>Maintenance — Admin</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.state" datatype="html">
+        <source> État du site </source>
+        <target>Site status</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.stateHint" datatype="html">
+        <source> Appliqué dès l’enregistrement, sans publication. </source>
+        <target>Applied as soon as it is saved, without publishing.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.enabled" datatype="html">
+        <source>Mode maintenance</source>
+        <target>Maintenance mode</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.enabledDescription" datatype="html">
+        <source> Toutes les pages publiques affichent l’écran de maintenance (HTTP 503, non indexé). L’administration reste accessible. </source>
+        <target>Every public page shows the maintenance screen (HTTP 503, not indexed). The admin stays reachable.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.messageSection" datatype="html">
+        <source> Message </source>
+        <target>Message</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.messageHint" datatype="html">
+        <source> Facultatif, affiché sous le titre de l’écran. Vide, l’écran affiche « Le site revient très vite. » ; sans texte anglais, le français est repris. </source>
+        <target>Optional, shown under the screen title. When empty, the screen shows “The site will be back shortly.”; without an English text, the French one is used.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.characters" datatype="html">
+        <source>Caractères : </source>
+        <target>Characters: </target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.status.unsaved" datatype="html">
+        <source>Modifications non enregistrées</source>
+        <target>Unsaved changes</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.status.saved" datatype="html">
+        <source>Tout est enregistré</source>
+        <target>Everything is saved</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.discardLabel" datatype="html">
+        <source>Abandonner les modifications</source>
+        <target>Discard changes</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.discard" datatype="html">
+        <source> Abandonner </source>
+        <target>Discard</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.saving" datatype="html">
+        <source>Enregistrement…</source>
+        <target>Saving…</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.save" datatype="html">
+        <source>Enregistrer</source>
+        <target>Save</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.message" datatype="html">
+        <source>Message</source>
+        <target>Message</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.error.maxLength" datatype="html">
+        <source><x id="max" equiv-text="MAINTENANCE_LIMITS.message"/> caractères maximum.</source>
+        <target><x id="max" equiv-text="MAINTENANCE_LIMITS.message"/> characters maximum.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.confirm.discard.title" datatype="html">
+        <source>Abandonner les modifications ?</source>
+        <target>Discard changes?</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.confirm.changesLost" datatype="html">
+        <source>Les modifications de la maintenance seront perdues.</source>
+        <target>Your changes to the maintenance setting will be lost.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.confirm.discard.confirm" datatype="html">
+        <source>Abandonner</source>
+        <target>Discard</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.confirm.keepEditing" datatype="html">
+        <source>Continuer la modification</source>
+        <target>Keep editing</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.inFrench" datatype="html">
+        <source>Message en français</source>
+        <target>Message in French</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.form.inEnglish" datatype="html">
+        <source>Message en anglais</source>
+        <target>Message in English</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.title" datatype="html">
+        <source>Maintenance</source>
+        <target>Maintenance</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.status.on" datatype="html">
+        <source>Activé</source>
+        <target>On</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.status.off" datatype="html">
+        <source>Désactivé</source>
+        <target>Off</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.version" datatype="html">
+        <source>Version <x id="INTERPOLATION" equiv-text="{{ setting.version }}"/></source>
+        <target>Version <x id="INTERPOLATION" equiv-text="{{ setting.version }}"/></target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.meta" datatype="html">
+        <source>Écran de maintenance du site public</source>
+        <target>Maintenance screen of the public site</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.conflict.title" datatype="html">
+        <source> La maintenance a été modifiée ailleurs depuis son ouverture. </source>
+        <target>The maintenance setting was changed elsewhere since you opened it.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.conflict.description" datatype="html">
+        <source> Recharger remplace vos modifications. </source>
+        <target>Reloading replaces your changes.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.conflict.reload" datatype="html">
+        <source> Recharger </source>
+        <target>Reload</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.loadError" datatype="html">
+        <source> Impossible de charger la maintenance </source>
+        <target>Could not load the maintenance setting</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.retry" datatype="html">
+        <source> Réessayer </source>
+        <target>Try again</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.loading" datatype="html">
+        <source>Chargement de la maintenance…</source>
+        <target>Loading the maintenance setting…</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.leave.title" datatype="html">
+        <source>Quitter sans enregistrer ?</source>
+        <target>Leave without saving?</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.leave.description" datatype="html">
+        <source>Les modifications de la maintenance seront perdues.</source>
+        <target>Your changes to the maintenance setting will be lost.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.leave.confirm" datatype="html">
+        <source>Quitter</source>
+        <target>Leave</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.leave.cancel" datatype="html">
+        <source>Continuer la modification</source>
+        <target>Keep editing</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.toast.saved" datatype="html">
+        <source>Maintenance enregistrée.</source>
+        <target>Maintenance saved.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.toast.on" datatype="html">
+        <source>Le site public affiche l’écran de maintenance.</source>
+        <target>The public site shows the maintenance screen.</target>
+      </trans-unit>
+      <trans-unit id="admin.maintenance.toast.off" datatype="html">
+        <source>Le site public est en ligne.</source>
+        <target>The public site is online.</target>
+      </trans-unit>
+      <trans-unit id="admin.shell.nav.maintenance" datatype="html">
+        <source>Maintenance</source>
+        <target>Maintenance</target>
+      </trans-unit>
+      <trans-unit id="maintenance.title" datatype="html">
+        <source> Site en maintenance </source>
+        <target>Under maintenance</target>
+      </trans-unit>
+      <trans-unit id="maintenance.default" datatype="html">
+        <source>Le site revient très vite.</source>
+        <target>The site will be back shortly.</target>
+      </trans-unit>
+      <trans-unit id="maintenance.documentTitle" datatype="html">
+        <source>Site en maintenance — Valentin Fortin</source>
+        <target>Under maintenance — Valentin Fortin</target>
       </trans-unit>
     </body>
   </file>

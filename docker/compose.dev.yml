@@ -193,10 +193,10 @@ services:
       CONTENT_DATABASE_URL_FILE: /run/secrets/content_database_url
       # Served by Nginx (/media/), as in production: CONTENT_MEDIA_SERVE stays off.
       CONTENT_MEDIA_DIR: /srv/media
-      # SEO dashboard (D47): no Google account locally, so demonstration figures fill its Google
-      # sections (D52); the dashboard says so.
+      # SEO dashboard (D47): no Google account locally, so its Google sections read the reports the
+      # fixtures stored in the cache (`--profile fixtures`, D55).
       SEO_SITE_ORIGIN: http://localhost:8080
-      SEO_DEMO_DATA: 'true'
+      SEO_FIXTURES: 'true'
       NODE_ENV: production
     secrets: [content_database_url]
     volumes: ['media:/srv/media']
@@ -266,6 +266,45 @@ services:
       <<: *auth
       CONTENT_DATABASE_URL_FILE: /run/secrets/content_migrator_url
     secrets: [content_migrator_url]
+
+  # Development fixtures (D55): seed content and SEO reports, the fixture administrator
+  # (admin@localhost.test) and an inbox. `docker compose -f docker/compose.dev.yml --profile fixtures
+  # run --rm <job>` loads them once the stack is up (`up --wait` fails on jobs that exit); each run
+  # resets the fixture data only.
+  identity-fixtures:
+    <<: [*job, *image-identity]
+    profiles: [fixtures]
+    command: ['node', 'cli.js', 'fixtures']
+    environment:
+      <<: *identity
+      IDENTITY_DATABASE_URL_FILE: /run/secrets/identity_database_url
+      FIXTURES_ALLOWED: 'true'
+    secrets: [identity_database_url]
+    depends_on: { identity-migrate: { condition: service_completed_successfully } }
+
+  content-fixtures:
+    <<: [*job, *image-content]
+    profiles: [fixtures]
+    command: ['node', 'cli.js', 'fixtures']
+    environment:
+      <<: *auth
+      CONTENT_DATABASE_URL_FILE: /run/secrets/content_migrator_url
+      SEO_SITE_ORIGIN: http://localhost:8080
+      FIXTURES_ALLOWED: 'true'
+    secrets: [content_migrator_url]
+    depends_on: { content-migrate: { condition: service_completed_successfully } }
+
+  contact-fixtures:
+    <<: [*job, *image-contact]
+    profiles: [fixtures]
+    command: ['node', 'cli.js', 'fixtures']
+    environment:
+      <<: [*auth, *contact]
+      CONTACT_DATABASE_URL_FILE: /run/secrets/contact_migrator_url
+      CONTACT_CLIENT_KEY_SECRET_FILE: /run/secrets/contact_client_key_secret
+      FIXTURES_ALLOWED: 'true'
+    secrets: [contact_migrator_url, contact_client_key_secret]
+    depends_on: { contact-migrate: { condition: service_completed_successfully } }
 
   identity-bootstrap:
     <<: [*job, *image-identity]

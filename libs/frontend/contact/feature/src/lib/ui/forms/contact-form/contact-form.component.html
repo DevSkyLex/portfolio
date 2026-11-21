@@ -5,32 +5,6 @@
   aria-label="Formulaire de contact"
   (submit)="send($event)"
 >
-  @if (invalidCount() > 0 || failure()) {
-    <div
-      uiAlert
-      variant="danger"
-      class="gap-y-0 rounded-none border-danger bg-surface-raised px-4 py-3.5"
-    >
-      <ng-icon [svg]="icons.alert" size="16" strokeWidth="2.25" aria-hidden="true" />
-      <p uiAlertTitle class="min-h-0 text-[15px]/5 font-medium" i18n="@@contact.failed">
-        Le message n'est pas parti.
-      </p>
-      <p uiAlertDescription class="block">
-        @if (invalidCount() === 1) {
-          <ng-container i18n="@@contact.failed.one"
-            >Un champ est à corriger ci-dessous.</ng-container
-          >
-        } @else if (invalidCount() > 1) {
-          <ng-container i18n="@@contact.failed.many"
-            >{{ invalidCount() }} champs sont à corriger ci-dessous.</ng-container
-          >
-        } @else {
-          {{ failure() }}
-        }
-      </p>
-    </div>
-  }
-
   <div class="grid gap-6 @min-[520px]:grid-cols-2">
     <ui-field
       i18n-label="@@contact.field.name"

@@ -5,11 +5,13 @@ import type {
   LegalDocumentKind,
   ProjectArticle,
   SiteContent,
+  SiteMaintenance,
 } from '@vfortin/content-web-model';
 import { toSiteContent } from '@internal/content-web-data-access/lib/adapters/content/content.adapter';
 import type { ContentSnapshots } from '@internal/content-web-data-access/lib/models/content-snapshots/content-snapshots.type';
 import type { ProjectNeighbours } from '@internal/content-web-data-access/lib/models/project-neighbours/project-neighbours.interface';
 import { SiteLinksService } from '@internal/content-web-data-access/lib/services/site-links/site-links.service';
+import { SiteSectionsService } from '@internal/content-web-data-access/lib/services/site-sections/site-sections.service';
 import { CONTENT_SNAPSHOT_VALIDATOR } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshot-validator.token';
 import { CONTENT_SNAPSHOTS } from '@internal/content-web-data-access/lib/tokens/content-snapshot/content-snapshots.token';
 import { articleOrder } from '@internal/content-web-data-access/lib/utils/article-order/article-order.utils';
@@ -68,6 +70,9 @@ export class SiteContentService {
     this.articles = articleOrder(this.content.projects);
     // The layout reads the links without the snapshot (error pages): hand them over once read.
     inject<SiteLinksService>(SiteLinksService).publish(this.content.profile.links);
+    inject<SiteSectionsService>(SiteSectionsService).publish(
+      this.content.faq.length > 0 ? ['faq'] : [],
+    );
   }
   // #endregion
 
@@ -150,6 +155,32 @@ export class SiteContentService {
    */
   public readonly skills: Signal<SiteContent['skills']> = computed<SiteContent['skills']>(
     () => this.content.skills,
+  );
+
+  /**
+   * Property faq
+   * @readonly
+   *
+   * @description
+   * Computed view of the active locale's questions, in editorial order.
+   *
+   * @type {Signal<readonly FaqEntry[]>}
+   */
+  public readonly faq: Signal<SiteContent['faq']> = computed<SiteContent['faq']>(
+    () => this.content.faq,
+  );
+
+  /**
+   * Property maintenance
+   * @readonly
+   *
+   * @description
+   * Maintenance state of the request's snapshot; the shell's maintenance route matches on it.
+   *
+   * @type {Signal<SiteMaintenance>}
+   */
+  public readonly maintenance: Signal<SiteMaintenance> = computed<SiteMaintenance>(
+    (): SiteMaintenance => this.content.maintenance,
   );
 
   /**

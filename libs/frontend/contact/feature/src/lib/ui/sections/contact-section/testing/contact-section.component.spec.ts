@@ -1,3 +1,4 @@
+import type { MockInstance } from 'vitest';
 import {
   type TestRequest,
   HttpTestingController,
@@ -7,6 +8,7 @@ import { LOCALE_ID } from '@angular/core';
 import { type ComponentFixture, DeferBlockState, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { ToastService } from '@vfortin/ui';
 import { ContactSectionComponent } from '@internal/contact-web-feature/lib/ui/sections/contact-section/contact-section.component';
 
 /**
@@ -108,9 +110,16 @@ describe('ContactSectionComponent', () => {
 
   it('refuses to send an incomplete form and flags each field', async () => {
     const { root, type, submit, backend }: Awaited<ReturnType<typeof setup>> = await setup();
+    const error: MockInstance<ToastService['error']> = vi.spyOn(
+      TestBed.inject(ToastService),
+      'error',
+    );
     await type('contact-email', 'camille@');
     await submit();
-    expect(root.querySelector('[role="alert"]')?.textContent).toContain('3 champs sont à corriger');
+    expect(error).toHaveBeenCalledWith("Le message n'est pas parti.", {
+      id: 'contact-form',
+      description: '3 champs sont à corriger ci-dessous.',
+    });
     const invalid: string[] = [...root.querySelectorAll('[aria-invalid="true"]')].map(
       (el) => el.id,
     );
@@ -121,9 +130,13 @@ describe('ContactSectionComponent', () => {
     backend.expectNone('/api/contact/messages');
   });
 
-  it('sends the message and confirms', async () => {
+  it('sends the message, replaces the form with a confirmation and brings back a blank form', async () => {
     const { fixture, root, type, submit, backend }: Awaited<ReturnType<typeof setup>> =
       await setup();
+    const success: MockInstance<ToastService['success']> = vi.spyOn(
+      TestBed.inject(ToastService),
+      'success',
+    );
     await type('contact-name', 'Camille Martin');
     await type('contact-email', 'camille@exemple.fr');
     await type('contact-message', 'Bonjour, je voudrais discuter d’un projet web.');
@@ -139,17 +152,20 @@ describe('ContactSectionComponent', () => {
     call.flush({ status: 'received' }, { status: 202, statusText: 'Accepted' });
     await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
-    expect(root.querySelector('[role="status"]')?.textContent).toContain('Merci Camille');
-    expect(root.querySelector('[role="status"]')?.textContent).toContain('camille@exemple.fr');
-    expect(document.activeElement?.id).toBe('contact-sent');
-    expect(root.querySelector('#contact-sent > span')?.className).toContain('text-success-ink');
+    expect(success).not.toHaveBeenCalled();
+    expect(root.querySelector('form')).toBeNull();
+    const confirmation: HTMLElement | null = root.querySelector('[role="status"]');
+    expect(confirmation?.textContent).toContain('Message envoyé');
+    expect(confirmation?.textContent?.replace(/\s+/g, ' ')).toContain(
+      'Merci Camille. Je vous réponds à camille@exemple.fr au plus vite.',
+    );
+    expect(document.activeElement?.id).toBe('contact-sent-title');
 
-    [...root.querySelectorAll('button')]
-      .find((b) => b.textContent?.includes('Écrire un autre message'))
-      ?.click();
-    await new Promise((resolve) => setTimeout(resolve));
+    confirmation?.querySelector<HTMLButtonElement>('button')?.click();
     await fixture.whenStable();
+    expect(root.querySelector('[role="status"]')).toBeNull();
     expect(root.querySelector<HTMLInputElement>('#contact-name')?.value).toBe('');
+    expect(root.querySelector<HTMLTextAreaElement>('#contact-message')?.value).toBe('');
     expect(document.activeElement?.id).toBe('contact-name');
   });
 
@@ -173,9 +189,13 @@ describe('ContactSectionComponent', () => {
     );
   });
 
-  it('shows the rate limit without a field error', async () => {
+  it('reports the rate limit in a toast without a field error', async () => {
     const { fixture, root, type, submit, backend }: Awaited<ReturnType<typeof setup>> =
       await setup();
+    const error: MockInstance<ToastService['error']> = vi.spyOn(
+      TestBed.inject(ToastService),
+      'error',
+    );
     await type('contact-name', 'Camille Martin');
     await type('contact-email', 'camille@exemple.fr');
     await type('contact-message', 'Bonjour, je voudrais discuter d’un projet web.');
@@ -185,6 +205,9 @@ describe('ContactSectionComponent', () => {
       .flush({ code: 'contact.rate-limited' }, { status: 429, statusText: 'Too Many Requests' });
     await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
-    expect(root.querySelector('[role="alert"]')?.textContent).toContain('Trop de tentatives');
+    expect(error).toHaveBeenCalledWith("Le message n'est pas parti.", {
+      description: expect.stringContaining('Trop de tentatives'),
+    });
+    expect(root.querySelector('[aria-invalid="true"]')).toBeNull();
   });
 });

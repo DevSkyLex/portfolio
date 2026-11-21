@@ -27,6 +27,22 @@ export {
 } from '@internal/content-web-feature-admin/lib/admin-timeline.routes';
 
 /**
+ * Export ADMIN_FAQ_ROUTES
+ *
+ * @description
+ * « FAQ » administration routes, mounted by the shell under `/admin/faq`.
+ */
+export { ADMIN_FAQ_ROUTES } from '@internal/content-web-feature-admin/lib/admin-faq.routes';
+
+/**
+ * Export ADMIN_MAINTENANCE_ROUTES
+ *
+ * @description
+ * « Maintenance » administration route, mounted by the shell under `/admin/maintenance`.
+ */
+export { ADMIN_MAINTENANCE_ROUTES } from '@internal/content-web-feature-admin/lib/admin-maintenance.routes';
+
+/**
  * Export ADMIN_INFORMATION_ROUTES, ADMIN_LEGAL_ROUTES
  *
  * @description

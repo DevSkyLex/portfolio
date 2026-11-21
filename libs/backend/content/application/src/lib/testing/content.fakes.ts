@@ -1,9 +1,13 @@
 import {
   ArticleDocument,
   type ArticleBlock,
+  FaqEntry,
+  type FaqEntryProps,
   LegalDocument,
   type LegalDocumentKind,
   type LegalDocumentProps,
+  MaintenanceMode,
+  type MaintenanceModeProps,
   type Profile,
   TimelineEntry,
   type TimelineEntryProps,
@@ -16,9 +20,14 @@ import {
 } from '@internal/content-application/lib/errors/application-error';
 import type {
   Clock,
+  FaqEntryRepository,
+  FaqListRepository,
+  FaqRepositories,
+  FaqUnitOfWork,
   IdGenerator,
   ImageProcessor,
   LegalDocumentRepository,
+  MaintenanceRepository,
   MediaFiles,
   MediaRecord,
   MediaRepository,
@@ -556,6 +565,217 @@ export class InMemoryTimeline implements TimelineUnitOfWork {
       this.requests.length = requests;
       throw error;
     }
+  }
+  // #endregion
+}
+
+/**
+ * Class InMemoryFaq
+ * @class InMemoryFaq
+ *
+ * @description
+ * FAQ entries, the list version and rebuild requests kept in memory, with a unit of work that
+ * restores them when its callback throws, as the database transaction would.
+ */
+export class InMemoryFaq implements FaqUnitOfWork {
+  // #region Properties
+  /**
+   * Property rows
+   * @readonly
+   *
+   * @description
+   * Stored entry state by identifier.
+   */
+  public readonly rows: Map<string, FaqEntryProps> = new Map();
+
+  /**
+   * Property listVersion
+   *
+   * @description
+   * Stored list version.
+   */
+  public listVersion: number = 1;
+
+  /**
+   * Property requests
+   * @readonly
+   *
+   * @description
+   * Rebuild revisions requested, in order.
+   */
+  public readonly requests: number[] = [];
+
+  /**
+   * Property entries
+   * @readonly
+   *
+   * @description
+   * Entry repository over `rows`.
+   */
+  public readonly entries: FaqEntryRepository = {
+    list: async (): Promise<FaqEntry[]> =>
+      [...this.rows.values()]
+        .map((row: FaqEntryProps): FaqEntry => FaqEntry.rehydrate(row))
+        .sort(FaqEntry.compare),
+    get: async (id: string): Promise<FaqEntry | null> => {
+      const row: FaqEntryProps | undefined = this.rows.get(id);
+      return row === undefined ? null : FaqEntry.rehydrate(row);
+    },
+    insert: async (entry: FaqEntry): Promise<void> => {
+      if (this.rows.has(entry.id)) throw new Error('duplicate id');
+      this.rows.set(entry.id, entry.snapshot());
+    },
+    save: async (entry: FaqEntry, expectedVersion: number): Promise<number> => {
+      const row: FaqEntryProps | undefined = this.rows.get(entry.id);
+      if (row === undefined || row.version !== expectedVersion) throw new VersionMismatchError();
+      const { question, answer } = entry.snapshot();
+      this.rows.set(entry.id, { ...row, question, answer, version: expectedVersion + 1 });
+      return expectedVersion + 1;
+    },
+    delete: async (id: string, expectedVersion: number): Promise<void> => {
+      if (this.rows.get(id)?.version !== expectedVersion) throw new VersionMismatchError();
+      this.rows.delete(id);
+    },
+    move: async (moved: readonly FaqEntry[]): Promise<void> => {
+      for (const entry of moved) {
+        const row: FaqEntryProps | undefined = this.rows.get(entry.id);
+        if (row !== undefined) this.rows.set(entry.id, { ...row, position: entry.position });
+      }
+    },
+  };
+
+  /**
+   * Property lists
+   * @readonly
+   *
+   * @description
+   * List version repository over `listVersion`.
+   */
+  public readonly lists: FaqListRepository = {
+    version: async (): Promise<number> => this.listVersion,
+    bump: async (expectedVersion: number | null): Promise<number> => {
+      if (expectedVersion !== null && this.listVersion !== expectedVersion) {
+        throw new VersionMismatchError();
+      }
+      this.listVersion++;
+      return this.listVersion;
+    },
+  };
+
+  /**
+   * Property buildRequests
+   * @readonly
+   *
+   * @description
+   * Outbox recording requested revisions; claims are not used by the FAQ.
+   */
+  public readonly buildRequests: SiteBuildRequestRepository = {
+    request: async (): Promise<number> => {
+      const revision: number = (this.requests.at(-1) ?? 1) + 1;
+      this.requests.push(revision);
+      return revision;
+    },
+    claimLatest: async (): Promise<null> => null,
+    markDispatched: async (): Promise<void> => undefined,
+    markFailed: async (): Promise<void> => undefined,
+  };
+  // #endregion
+
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Stores the initial entries.
+   *
+   * @param {readonly FaqEntry[]} initial - Entries present before the test.
+   */
+  public constructor(initial: readonly FaqEntry[] = []) {
+    for (const entry of initial) this.rows.set(entry.id, entry.snapshot());
+  }
+  // #endregion
+
+  // #region Methods
+  /**
+   * Method run
+   * @method run
+   * @template T - Callback result.
+   *
+   * @description
+   * Runs the callback and restores the state if it throws.
+   *
+   * @param {(repositories: FaqRepositories) => Promise<T>} work - Transaction operation.
+   * @returns {Promise<T>} Callback result.
+   */
+  public async run<T>(work: (repositories: FaqRepositories) => Promise<T>): Promise<T> {
+    const rows: Map<string, FaqEntryProps> = new Map(this.rows);
+    const version: number = this.listVersion;
+    const requests: number = this.requests.length;
+    try {
+      return await work({
+        entries: this.entries,
+        lists: this.lists,
+        buildRequests: this.buildRequests,
+      });
+    } catch (error) {
+      this.rows.clear();
+      for (const [id, row] of rows) this.rows.set(id, row);
+      this.listVersion = version;
+      this.requests.length = requests;
+      throw error;
+    }
+  }
+  // #endregion
+}
+
+/**
+ * Class InMemoryMaintenance
+ * @class InMemoryMaintenance
+ *
+ * @description
+ * Maintenance setting kept in memory, `null` until written, as the singleton row.
+ */
+export class InMemoryMaintenance implements MaintenanceRepository {
+  // #region Properties
+  /**
+   * Property row
+   *
+   * @description
+   * Stored state, or `null` for a setting never written.
+   */
+  public row: MaintenanceModeProps | null = null;
+  // #endregion
+
+  // #region Methods
+  /**
+   * Method load
+   * @method load
+   *
+   * @description
+   * Rehydrates the stored state, or the initial setting.
+   *
+   * @returns {Promise<MaintenanceMode>} Setting.
+   */
+  public async load(): Promise<MaintenanceMode> {
+    return this.row === null ? MaintenanceMode.initial() : MaintenanceMode.rehydrate(this.row);
+  }
+
+  /**
+   * Method save
+   * @method save
+   *
+   * @description
+   * Stores the state at the next version when the expected one matches (1 for no row).
+   *
+   * @param {MaintenanceMode} mode - Revised setting.
+   * @param {number} expectedVersion - Version read before editing.
+   * @returns {Promise<number>} New version.
+   */
+  public async save(mode: MaintenanceMode, expectedVersion: number): Promise<number> {
+    if ((this.row?.version ?? 1) !== expectedVersion) throw new VersionMismatchError();
+    this.row = { ...mode.snapshot(), version: expectedVersion + 1 };
+    return expectedVersion + 1;
   }
   // #endregion
 }

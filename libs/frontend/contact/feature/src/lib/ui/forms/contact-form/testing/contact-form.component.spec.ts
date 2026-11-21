@@ -1,5 +1,7 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { ToastService } from '@vfortin/ui';
+import type { Mock } from 'vitest';
 import { ContactFormComponent } from '@internal/contact-web-feature/lib/ui/forms/contact-form/contact-form.component';
 import type { ContactFormValues } from '@internal/contact-web-feature/lib/ui/forms/contact-form/models/contact-form-values.model';
 
@@ -18,8 +20,12 @@ async function setup(): Promise<{
   type: (id: string, value: string) => Promise<void>;
   submit: () => Promise<void>;
   fill: () => Promise<void>;
+  toastError: Mock;
 }> {
-  TestBed.configureTestingModule({ providers: [provideRouter([])] });
+  const toastError: Mock = vi.fn();
+  TestBed.configureTestingModule({
+    providers: [provideRouter([]), { provide: ToastService, useValue: { error: toastError } }],
+  });
   const fixture: ComponentFixture<ContactFormComponent> =
     TestBed.createComponent(ContactFormComponent);
   const emitted: ContactFormValues[] = [];
@@ -48,7 +54,7 @@ async function setup(): Promise<{
     await type('contact-email', 'camille@exemple.fr');
     await type('contact-message', 'Bonjour, je voudrais discuter d’un projet web.');
   };
-  return { fixture, root, emitted, type, submit, fill };
+  return { fixture, root, emitted, type, submit, fill, toastError };
 }
 
 describe('ContactFormComponent', () => {
@@ -69,15 +75,17 @@ describe('ContactFormComponent', () => {
     expect(root.querySelector('[data-slot="alert"]')).toBeNull();
   });
 
-  it('flags one field in a danger alert and counts the message length', async () => {
-    const { root, emitted, type, submit, fill }: Awaited<ReturnType<typeof setup>> = await setup();
+  it('flags one field in an error toast and counts the message length', async () => {
+    const { root, emitted, type, submit, fill, toastError }: Awaited<ReturnType<typeof setup>> =
+      await setup();
     await fill();
     await type('contact-company', 'x'.repeat(121));
     await submit();
     expect(emitted).toEqual([]);
-    const alert: Element | null = root.querySelector('[data-slot="alert"]');
-    expect(alert?.getAttribute('data-variant')).toBe('danger');
-    expect(alert?.textContent).toContain('Un champ est à corriger ci-dessous.');
+    expect(toastError).toHaveBeenCalledWith("Le message n'est pas parti.", {
+      id: 'contact-form',
+      description: 'Un champ est à corriger ci-dessous.',
+    });
     expect(root.querySelector('#contact-company-error')?.textContent).toContain(
       "Le nom de l'entreprise est trop long.",
     );
@@ -87,7 +95,7 @@ describe('ContactFormComponent', () => {
   });
 
   it('holds back the error of a field blurred by a press until the pointer is released', async () => {
-    const { fixture, root, type }: Awaited<ReturnType<typeof setup>> = await setup();
+    const { fixture, root, type, toastError }: Awaited<ReturnType<typeof setup>> = await setup();
     await type('contact-email', 'camille@');
     root
       .querySelector('button[type="submit"]')
@@ -95,13 +103,11 @@ describe('ContactFormComponent', () => {
     root.querySelector('#contact-email')?.dispatchEvent(new Event('blur'));
     await fixture.whenStable();
     expect(root.querySelector('#contact-email-error')).toBeNull();
-    expect(root.querySelector('[data-slot="alert"]')).toBeNull();
     document.dispatchEvent(new Event('pointerup'));
     await fixture.whenStable();
     expect(root.querySelector('#contact-email')?.getAttribute('aria-invalid')).toBe('true');
-    expect(root.querySelector('[data-slot="alert"]')?.textContent).toContain(
-      'Un champ est à corriger ci-dessous.',
-    );
+    // A blur alone is not a submission: no toast.
+    expect(toastError).not.toHaveBeenCalled();
   });
 
   it('keeps a server error on its field until the value changes', async () => {
@@ -119,12 +125,14 @@ describe('ContactFormComponent', () => {
     expect(root.querySelector('#contact-email')?.getAttribute('aria-invalid')).toBeNull();
   });
 
-  it('shows a whole-request failure and the pending state', async () => {
-    const { fixture, root }: Awaited<ReturnType<typeof setup>> = await setup();
+  it('reports a whole-request failure in a toast and shows the pending state', async () => {
+    const { fixture, root, toastError }: Awaited<ReturnType<typeof setup>> = await setup();
     fixture.componentRef.setInput('failure', 'Trop de tentatives.');
     fixture.componentRef.setInput('pending', true);
     await fixture.whenStable();
-    expect(root.querySelector('[data-slot="alert"]')?.textContent).toContain('Trop de tentatives.');
+    expect(toastError).toHaveBeenCalledWith("Le message n'est pas parti.", {
+      description: 'Trop de tentatives.',
+    });
     const button: HTMLButtonElement | null =
       root.querySelector<HTMLButtonElement>('button[type="submit"]');
     expect(button?.disabled).toBe(true);

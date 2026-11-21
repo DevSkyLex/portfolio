@@ -1,5 +1,4 @@
 import {
-  type Signal,
   type WritableSignal,
   ChangeDetectionStrategy,
   Component,
@@ -7,14 +6,11 @@ import {
   Injector,
   LOCALE_ID,
   afterNextRender,
-  computed,
   inject,
   input,
   signal,
   type InputSignal,
 } from '@angular/core';
-import { NgIcon } from '@ng-icons/core';
-import { lucideCheck } from '@ng-icons/lucide';
 import {
   ContactFormStore,
   type ContactFormStoreType,
@@ -29,6 +25,8 @@ import {
   SectionFxDirective,
   SectionHeadingComponent,
 } from '@vfortin/ui';
+import { NgIcon } from '@ng-icons/core';
+import { lucideCheck } from '@ng-icons/lucide';
 import { CONTACT_DECO } from '@internal/contact-web-feature/lib/ui/sections/contact-section/constants/contact-deco.constants';
 import {
   CONTACT_LINK_CLASS,
@@ -44,15 +42,15 @@ import type { ContactFormValues } from '@internal/contact-web-feature/lib/ui/for
  * @class ContactSectionComponent
  *
  * @description
- * Home contact section: contact details beside the contact form, then the confirmation once the
- * message is sent. It owns a scoped store, so pending, success and failure state is isolated to this
+ * Home contact section: contact details beside the contact form. A sent message replaces the form
+ * with a confirmation, which can bring back a blank form; failures stay in toasts. It owns a scoped store, so pending, success and failure state is isolated to this
  * section instance; the shell defers and hydrates it on viewport (D16, D22).
  */
 @Component({
   selector: 'contact-section',
   imports: [
-    ContactLinkIconComponent,
     ButtonDirective,
+    ContactLinkIconComponent,
     ContactFormComponent,
     DecoComponent,
     NgIcon,
@@ -136,15 +134,54 @@ export class ContactSectionComponent {
   protected readonly deco: typeof CONTACT_DECO = CONTACT_DECO;
 
   /**
+   * Property sent
+   * @readonly
+   *
+   * @description
+   * First name and address of the last sent message while its confirmation replaces the form,
+   * `null` while the form is shown.
+   *
+   * @type {WritableSignal<{ readonly name: string; readonly email: string } | null>}
+   */
+  protected readonly sent: WritableSignal<{
+    readonly name: string;
+    readonly email: string;
+  } | null> = signal<{ readonly name: string; readonly email: string } | null>(null);
+
+  /**
+   * Property formHeight
+   * @readonly
+   *
+   * @description
+   * Height in pixels of the form when it was sent: the confirmation keeps it, so the page below does
+   * not jump up. `null` before the first sending.
+   *
+   * @type {WritableSignal<number | null>}
+   */
+  protected readonly formHeight: WritableSignal<number | null> = signal<number | null>(null);
+
+  /**
    * Property icons
    * @readonly
    *
    * @description
-   * Icons of the contact links and of the confirmation.
+   * Icon of the confirmation panel.
+   *
+   * @type {{ readonly sent: typeof lucideCheck }}
    */
-  protected readonly icons: { readonly check: typeof lucideCheck } = {
-    check: lucideCheck,
-  } as const;
+  protected readonly icons: { readonly sent: typeof lucideCheck } = { sent: lucideCheck } as const;
+
+  /**
+   * Property generation
+   * @readonly
+   *
+   * @description
+   * Instance number of the form: incremented when the visitor writes another message, so that a blank
+   * form replaces the sent one.
+   *
+   * @type {WritableSignal<number>}
+   */
+  protected readonly generation: WritableSignal<number> = signal<number>(0);
 
   /**
    * Property reveal
@@ -192,29 +229,6 @@ export class ContactSectionComponent {
     readonly ServerFieldError[]
   >([]);
 
-  /**
-   * Property sentName
-   * @readonly
-   *
-   * @description
-   * Name of the last submitted message, used in the confirmation copy.
-   *
-   * @type {WritableSignal<string>}
-   */
-  private readonly sentName: WritableSignal<string> = signal<string>('');
-
-  /**
-   * Property firstName
-   * @readonly
-   *
-   * @description
-   * First whitespace-delimited part of the sent name, used in the confirmation copy.
-   *
-   * @type {Signal<string>}
-   */
-  protected readonly firstName: Signal<string> = computed<string>(
-    () => this.sentName().trim().split(/\s+/)[0] ?? '',
-  );
   // #endregion
 
   // #region Methods
@@ -223,33 +237,36 @@ export class ContactSectionComponent {
    * @method send
    *
    * @description
-   * Sends the form values in the page locale, returns server field errors to the form and moves the
-   * focus to the confirmation once the form disappears.
+   * Sends the form values in the page locale and returns server field errors to the form. Once sent,
+   * a confirmation replaces the form and takes the focus, so assistive technologies announce it.
    *
    * @param {ContactFormValues} values - Valid values emitted by the form.
    *
    * @returns {Promise<void>} Resolves once the request completes.
    */
   protected async send(values: ContactFormValues): Promise<void> {
-    this.sentName.set(values.name);
     this.serverErrors.set(await this.store.send({ ...values, locale: this.locale }));
-
-    // The form disappears: focus moves to the confirmation, otherwise it would fall back to the page.
-    if (this.store.sent()) {
-      this.focus('#contact-sent');
-    }
+    if (!this.store.sent()) return;
+    const name: string = values.name.trim().split(/\s+/)[0] ?? '';
+    this.formHeight.set(
+      this.host.nativeElement.querySelector<HTMLElement>('contact-form form')?.offsetHeight ?? null,
+    );
+    this.sent.set({ name, email: this.store.sentTo() ?? values.email });
+    this.store.reset();
+    this.serverErrors.set([]);
+    this.focus('#contact-sent-title');
   }
 
   /**
-   * Method writeAnother
-   * @method writeAnother
+   * Method again
+   * @method again
    *
    * @description
-   * Clears the submission state, which brings back a blank form, and focuses its name field.
+   * Brings back a blank form in place of the confirmation, focused on its first field.
    */
-  protected writeAnother(): void {
-    this.store.reset();
-    this.serverErrors.set([]);
+  protected again(): void {
+    this.sent.set(null);
+    this.generation.update((n: number): number => n + 1);
     this.focus('#contact-name');
   }
 

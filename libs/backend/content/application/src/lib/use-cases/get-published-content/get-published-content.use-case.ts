@@ -1,6 +1,8 @@
 import {
+  FaqEntry,
   type LegalDocument,
   type LegalDocumentKind,
+  type MaintenanceMode,
   type Profile,
   type Project,
   type SkillGroup,
@@ -17,7 +19,7 @@ import type {
  * @interface PublishedContent
  *
  * @description
- * Single consistent revision of public profile, projects, timeline and skill groups.
+ * Single consistent revision of public profile, projects, timeline, skill groups and FAQ.
  */
 export interface PublishedContent {
   // #region Properties
@@ -68,6 +70,15 @@ export interface PublishedContent {
   readonly skills: readonly SkillGroup[];
 
   /**
+   * Property faq
+   * @readonly
+   *
+   * @description
+   * FAQ entries in their editorial order (`FaqEntry.compare`).
+   */
+  readonly faq: readonly FaqEntry[];
+
+  /**
    * Property media
    * @readonly
    *
@@ -85,6 +96,16 @@ export interface PublishedContent {
    * Legal notice and privacy policy, read from the same snapshot.
    */
   readonly legal: Readonly<Record<LegalDocumentKind, LegalDocument>>;
+
+  /**
+   * Property maintenance
+   * @readonly
+   *
+   * @description
+   * Live maintenance setting, read on every call: it is not part of the revision the cache is keyed
+   * on, nor of a frozen publication batch.
+   */
+  readonly maintenance: MaintenanceMode;
   // #endregion
 }
 
@@ -127,22 +148,26 @@ export class GetPublishedContent {
    * @description
    * Returns cached content when the revision is unchanged; otherwise reads and sorts all public
    * collections, then the media of the published projects, in one transaction before replacing the
-   * cache.
+   * cache. The maintenance setting is read every time, in the same transaction.
    *
    * @returns {Promise<PublishedContent>} Consistent public content for the current revision.
    */
   public async execute(): Promise<PublishedContent> {
     const content: PublishedContent = await this.reader.read(
       async (repository: ContentRepository): Promise<PublishedContent> => {
-        const revision: number = await repository.currentRevision();
+        const [revision, maintenance] = await Promise.all([
+          repository.currentRevision(),
+          repository.loadMaintenance(),
+        ]);
         if (this.cached?.revision === revision) {
-          return this.cached;
+          return { ...this.cached, maintenance };
         }
-        const [profile, projects, timeline, skills, legal] = await Promise.all([
+        const [profile, projects, timeline, skills, faq, legal] = await Promise.all([
           repository.loadProfile(),
           repository.listProjects(),
           repository.listTimeline(),
           repository.listSkillGroups(),
+          repository.listFaq(),
           repository.loadLegalDocuments(),
         ]);
         const published: Project[] = projects
@@ -159,10 +184,12 @@ export class GetPublishedContent {
           skills: [...skills].sort(
             (a: SkillGroup, b: SkillGroup): number => a.position - b.position,
           ),
+          faq: [...faq].sort(FaqEntry.compare),
           media: new Map(
             media.map((record: MediaRecord): [string, MediaRecord] => [record.id, record]),
           ),
           legal,
+          maintenance,
         };
       },
     );

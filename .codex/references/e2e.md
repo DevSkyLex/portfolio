@@ -33,7 +33,7 @@ CI runs both built-site and isolated-stack acceptance with the same Nx targets.
 
 ## Writing specs
 
-- Locate by role and accessible name, then section ids (`#projects`, `#journey`, `#about`, `#contact`);
+- Locate by role and accessible name, then section ids (`#projects`, `#journey`, `#skills`, `#contact`);
   never by class. Check French at `/`, English at `/en/`, document language and titles.
 - Keep Axe WCAG 2 A/AA checks, failing serious/critical violations without excluding real controls.
 - Interact with the contact section after it is visible and hydrated. Public startup probes block the

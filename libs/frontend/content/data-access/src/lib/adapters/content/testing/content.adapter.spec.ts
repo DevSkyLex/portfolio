@@ -40,6 +40,7 @@ const project = (seo: ProjectDto['seo'], siteUrl: string | null = null): Project
 const snapshot = (projects: ProjectDto[]): ContentSnapshot => ({
   locale: 'fr',
   revision: 7,
+  maintenance: { enabled: false, message: '' },
   profile: {
     heroIntro: 'Intro',
     aboutStatement: 'Phrase',
@@ -55,6 +56,7 @@ const snapshot = (projects: ProjectDto[]): ContentSnapshot => ({
   projects,
   timeline: [],
   skills: [],
+  faq: [],
   legal: {
     notice: {
       updatedOn: '2026-11-02',
@@ -99,6 +101,30 @@ describe('toSiteContent', (): void => {
     expect(
       toSiteContent({ ...older, profile: profile as ContentSnapshot['profile'] }).profile.links,
     ).toEqual([]);
+  });
+
+  it('keeps the questions in editorial order, and reads a raw snapshot without FAQ as having none', (): void => {
+    const faq: ContentSnapshot['faq'] = [
+      { id: 'b', question: 'Êtes-vous disponible ?', answer: 'Oui.\nDès janvier.' },
+      { id: 'a', question: 'Où travaillez-vous ?', answer: 'À distance.' },
+    ];
+    expect(toSiteContent({ ...snapshot([]), faq }).faq).toEqual(faq);
+
+    const older: Partial<ContentSnapshot> = { ...snapshot([]) };
+    delete older.faq;
+    expect(toSiteContent(older as ContentSnapshot).faq).toEqual([]);
+  });
+
+  it('keeps the maintenance state, and reads a raw snapshot without it as online', (): void => {
+    const on: ContentSnapshot['maintenance'] = { enabled: true, message: 'Retour à 14 h.' };
+    expect(toSiteContent({ ...snapshot([]), maintenance: on }).maintenance).toEqual(on);
+
+    const older: Partial<ContentSnapshot> = { ...snapshot([]) };
+    delete older.maintenance;
+    expect(toSiteContent(older as ContentSnapshot).maintenance).toEqual({
+      enabled: false,
+      message: '',
+    });
   });
 
   it('splits each legal document at its level-2 headings and keeps its date', (): void => {

@@ -28,7 +28,7 @@ import {
   withComponentInputBinding,
 } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { provideContentSnapshots } from '@vfortin/content-web-data-access';
+import { SiteSectionsService, provideContentSnapshots } from '@vfortin/content-web-data-access';
 import { AdminLayoutComponent } from '@internal/web-shell/lib/admin/layouts/admin-layout/admin-layout.component';
 import { IDENTITY_SECURITY_ROUTES } from '@vfortin/identity-web-feature';
 import { ADMIN_PROTECTED_ROUTES } from '@internal/web-shell/lib/admin/admin-protected.routes';
@@ -135,6 +135,21 @@ describe('SiteLayoutComponent', () => {
     expect(button?.getAttribute('aria-expanded')).toBe('false');
     expect(doc.documentElement.style.overflow).toBe('');
     expect(doc.activeElement).toBe(button);
+  });
+
+  it('links the FAQ, before the contact, only while the snapshot holds a question', async () => {
+    const harness: RouterTestingHarness = await RouterTestingHarness.create('/legal-notice');
+    const doc: Document = harness.fixture.nativeElement.ownerDocument as Document;
+    const fragments = (): string[] =>
+      [...doc.querySelectorAll<HTMLAnchorElement>('#footer-nav + ul a')].map(
+        (link: HTMLAnchorElement): string => link.getAttribute('href') ?? '',
+      );
+    expect(fragments()).toEqual(['/#projects', '/#journey', '/#skills', '/#contact']);
+
+    TestBed.inject(SiteSectionsService).publish(['faq']);
+    await harness.fixture.whenStable();
+    expect(fragments()).toEqual(['/#projects', '/#journey', '/#skills', '/#faq', '/#contact']);
+    expect(doc.querySelector('#footer-nav + ul a[href="/#faq"]')?.textContent?.trim()).toBe('FAQ');
   });
 
   it('makes the skip link an explicit keyboard stop before the public navigation', async () => {
@@ -532,8 +547,10 @@ describe('admin area', () => {
       'projects',
       'experiences',
       'education',
+      'faq',
       'information',
       'legal',
+      'maintenance',
       'messages',
       'security',
     ]);

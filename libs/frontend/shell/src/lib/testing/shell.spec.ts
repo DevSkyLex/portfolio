@@ -142,12 +142,12 @@ describe('shell', () => {
     const nav: (string | null)[] = [...root.querySelectorAll('header nav a')].map((a) =>
       a.getAttribute('href'),
     );
-    expect(nav).toEqual(['/#projects', '/#journey', '/#skills', '/#about', '/#contact']);
+    expect(nav).toEqual(['/#projects', '/#journey', '/#skills', '/#contact']);
     expect(root.querySelector('main #projects')).not.toBeNull();
 
     // Deferred contact section (@defer): its anchor exists before the code loads.
     expect(root.querySelector('main #contact')).not.toBeNull();
-    expect(root.querySelector('h1 .sr-only')?.textContent).toBe('Valentin Fortin');
+    expect(root.querySelector('h1 .sr-only')?.textContent).toBe('Développeur web fullstack');
   });
 
   it('ends the pages with the footer columns, language and theme menus', async () => {

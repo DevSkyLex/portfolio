@@ -1,5 +1,5 @@
 import { LOCALE_ID } from '@angular/core';
-import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { DeferBlockState, TestBed, type ComponentFixture } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
 import {
   NavigationEnd,
@@ -9,7 +9,11 @@ import {
   type Event as RouterEvent,
   type Route,
 } from '@angular/router';
-import { provideContentSnapshots, provideSiteOrigin } from '@vfortin/content-web-data-access';
+import {
+  CONTENT_SNAPSHOTS,
+  provideContentSnapshots,
+  provideSiteOrigin,
+} from '@vfortin/content-web-data-access';
 import { Subject } from 'rxjs';
 import type { MockInstance } from 'vitest';
 import { CONTENT_ROUTES } from '@internal/content-web-feature/lib/content.routes';
@@ -233,8 +237,30 @@ describe('ContentSectionsComponent', (): void => {
     ).toEqual(['LIBRARY-TRAILS', 'CRM', 'SOLO']);
     expect(
       [...root.querySelectorAll(':scope > * > section')].map((s: Element): string => s.id),
-    ).toEqual(['projects', 'journey', 'skills', 'about']);
-    expect(root.querySelector('dl dt')?.textContent?.trim()).toBe('Basé à');
+    ).toEqual(['projects', 'journey', 'skills']);
+    // The about section is gone: the profile facts are no longer rendered on the page.
+    expect(root.querySelector('dl')).toBeNull();
+  });
+
+  it('ends with the FAQ section once the snapshot holds a question', async (): Promise<void> => {
+    const faq: { id: string; question: string; answer: string }[] = [
+      { id: 'availability', question: 'Êtes-vous disponible ?', answer: 'Oui.' },
+    ];
+    TestBed.overrideProvider(CONTENT_SNAPSHOTS, {
+      useValue: { fr: { ...snapshot, faq }, en: { ...snapshot, locale: 'en', faq } },
+    });
+    const fixture: ComponentFixture<ContentSectionsComponent> =
+      TestBed.createComponent(ContentSectionsComponent);
+    await fixture.whenStable();
+    const root: HTMLElement = fixture.nativeElement;
+    // Until its code loads, the deferred FAQ keeps its anchor in a placeholder.
+    expect(root.querySelector('div#faq')).not.toBeNull();
+    // The FAQ block is the last one: the sections above defer their own visuals.
+    await (await fixture.getDeferBlocks()).at(-1)?.render(DeferBlockState.Complete);
+    expect(
+      [...root.querySelectorAll(':scope > * > section')].map((s: Element): string => s.id),
+    ).toEqual(['projects', 'journey', 'skills', 'faq']);
+    expect(root.querySelector('#faq h2')?.textContent?.trim()).toBe('Questions fréquentes');
   });
 
   it('shows the cover of a project on its card', async (): Promise<void> => {

@@ -45,3 +45,9 @@ export {
   RandomIdGenerator,
   SystemClock,
 } from '@internal/contact-adapters-out/lib/system/system.adapters';
+
+/** Development fixtures: the inbox of the local stack (D55). */
+export {
+  CONTACT_MESSAGE_FIXTURES,
+  loadContactFixtures,
+} from '@internal/contact-adapters-out/lib/fixtures/contact.fixtures';

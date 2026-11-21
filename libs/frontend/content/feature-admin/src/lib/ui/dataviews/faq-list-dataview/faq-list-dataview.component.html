@@ -1,0 +1,102 @@
+@if (entries().length > 0) {
+  <ol
+    class="mx-auto flex w-full max-w-[920px] flex-col px-6 py-4 @max-[640px]:px-4"
+    role="list"
+    uiSortableList
+    aria-label="Questions"
+    i18n-aria-label="@@admin.faq.list.label"
+    [disabled]="writing()"
+    (moved)="move($event)"
+  >
+    @for (entry of entries(); track entry.id; let i = $index) {
+      <li
+        class="flex items-start gap-2 border-b border-border bg-surface py-3"
+        data-slot="faq-row"
+        [uiSortableItem]="i"
+      >
+        <button
+          uiBtn
+          uiSortableHandle
+          variant="ghost"
+          size="icon-sm"
+          type="button"
+          class="text-fg-faint hover:text-fg"
+          uiTooltip="Glisser, ou flèches haut et bas"
+          i18n-uiTooltip="@@admin.faq.row.moveHint"
+          [attr.aria-label]="moveLabel(entry)"
+          [attr.data-entry-handle]="entry.id"
+          [disabled]="writing()"
+        >
+          <ng-icon [svg]="icons.grip" size="16" aria-hidden="true" />
+        </button>
+        <div class="flex min-w-0 flex-1 flex-col gap-0.5 pt-1">
+          <a
+            class="truncate text-[14px]/5 font-medium text-fg outline-2 outline-offset-2 outline-transparent focus-visible:rounded-xs focus-visible:outline-accent/55"
+            [routerLink]="[entry.id]"
+            >{{ entry.question.fr }}</a
+          >
+          <p class="truncate text-[13px]/5 text-fg-muted">{{ entry.answer.fr }}</p>
+        </div>
+        <button
+          uiBtn
+          variant="ghost"
+          size="icon-sm"
+          type="button"
+          uiTooltip="Actions"
+          i18n-uiTooltip="@@admin.faq.row.actionsTooltip"
+          align="end"
+          [attr.aria-label]="actionsLabel(entry)"
+          [attr.data-entry-actions]="entry.id"
+          [uiDropdownMenuTrigger]="actions"
+        >
+          <ng-icon [svg]="icons.more" size="16" aria-hidden="true" />
+        </button>
+        <ng-template #actions>
+          <div uiDropdownMenuContent class="min-w-44">
+            <a uiDropdownMenuItem [routerLink]="[entry.id]">
+              <ng-icon [svg]="icons.edit" size="14" aria-hidden="true" />
+              <ng-container i18n="@@admin.faq.action.edit">Modifier</ng-container>
+            </a>
+            <div uiDropdownMenuSeparator></div>
+            <button
+              uiDropdownMenuItem
+              type="button"
+              [disabled]="writing()"
+              (triggered)="deleteRequested.emit(entry)"
+            >
+              <ng-icon class="text-danger-ink" [svg]="icons.remove" size="14" aria-hidden="true" />
+              <ng-container i18n="@@admin.faq.action.delete">Supprimer</ng-container>
+            </button>
+          </div>
+        </ng-template>
+      </li>
+    }
+  </ol>
+} @else if (loading()) {
+  <span class="sr-only" role="status" i18n="@@admin.faq.list.loading"
+    >Chargement des questions…</span
+  >
+  <div
+    class="mx-auto flex w-full max-w-[920px] flex-col gap-3 px-6 py-4 @max-[640px]:px-4"
+    aria-hidden="true"
+  >
+    <span uiSkeleton class="h-12 w-full"></span>
+    <span uiSkeleton class="h-12 w-full"></span>
+    <span uiSkeleton class="h-12 w-full"></span>
+  </div>
+} @else {
+  <div uiEmpty layout="fill">
+    <div uiEmptyHeader>
+      <div uiEmptyMedia variant="icon">
+        <ng-icon [svg]="icons.empty" size="16" />
+      </div>
+      <p uiEmptyTitle i18n="@@admin.faq.empty">Aucune question</p>
+      <p uiEmptyDescription i18n="@@admin.faq.emptyHint">
+        Les questions ajoutées ici apparaissent sur le site public, dans cet ordre.
+      </p>
+    </div>
+    <div uiEmptyContent>
+      <a uiBtn size="xs" routerLink="new" i18n="@@admin.faq.create">Nouvelle question</a>
+    </div>
+  </div>
+}

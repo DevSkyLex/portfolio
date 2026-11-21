@@ -151,6 +151,49 @@ export const SkillGroupDtoSchema = z.object({
 export type SkillGroupDto = z.infer<typeof SkillGroupDtoSchema>;
 
 /**
+ * Constant FaqEntryDtoSchema
+ *
+ * @description
+ * Validates one question of the public FAQ and its plain-text answer, in the snapshot locale.
+ */
+export const FaqEntryDtoSchema = z.object({
+  id: Text,
+  question: Text,
+  answer: Text,
+});
+
+/**
+ * Type FaqEntryDto
+ * @type FaqEntryDto
+ *
+ * @description
+ * Localized FAQ entry included in the public snapshot, in editorial order.
+ */
+export type FaqEntryDto = z.infer<typeof FaqEntryDtoSchema>;
+
+/**
+ * Constant MaintenanceDtoSchema
+ *
+ * @description
+ * Validates the public maintenance state in the snapshot locale: whether every public page shows the
+ * maintenance screen, and its message (English falling back on French; empty for the screen's default
+ * line).
+ */
+export const MaintenanceDtoSchema = z.object({
+  enabled: z.boolean(),
+  message: z.string().check(z.maxLength(500)),
+});
+
+/**
+ * Type MaintenanceDto
+ * @type MaintenanceDto
+ *
+ * @description
+ * Localized maintenance state included in the public snapshot.
+ */
+export type MaintenanceDto = z.infer<typeof MaintenanceDtoSchema>;
+
+/**
  * Constant ProfileDtoSchema
  *
  * @description
@@ -180,7 +223,9 @@ export type ProfileDto = z.infer<typeof ProfileDtoSchema>;
  * @description
  * Validates the complete localized public payload, including its non-negative revision and all content
  * sections. The legal documents are required: a site build from a service older than them fails at
- * prerender and keeps the previous release online rather than publishing empty legal pages.
+ * prerender and keeps the previous release online rather than publishing empty legal pages. The FAQ
+ * defaults to no entry and the maintenance state to disabled, so that a snapshot written before them
+ * still builds.
  */
 export const ContentSnapshotSchema = z.object({
   locale: ContentLocaleSchema,
@@ -189,7 +234,9 @@ export const ContentSnapshotSchema = z.object({
   projects: z.array(ProjectDtoSchema),
   timeline: z.array(TimelineEntryDtoSchema),
   skills: z.array(SkillGroupDtoSchema),
+  faq: z._default(z.array(FaqEntryDtoSchema), []),
   legal: LegalDocumentsSchema,
+  maintenance: z._default(MaintenanceDtoSchema, { enabled: false, message: '' }),
 });
 
 /**

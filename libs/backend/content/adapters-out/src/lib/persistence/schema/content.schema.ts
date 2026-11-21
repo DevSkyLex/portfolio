@@ -2,6 +2,7 @@ import type {
   ArticleDocumentProps,
   LegalDocumentKind,
   LocalizedTextProps,
+  MaintenanceMessage,
   ProfileLinkKind,
   ProjectPeriodProps,
   ProjectSeoProps,
@@ -216,6 +217,49 @@ export const timelineLists = contentSchema.table('timeline_lists', {
 });
 
 /**
+ * Constant faqEntries
+ *
+ * @description
+ * Drizzle table storing the questions of the public FAQ and their plain-text answers, their editorial
+ * order (`position`, from 0) and the optimistic-lock version of their content.
+ */
+export const faqEntries = contentSchema.table('faq_entries', {
+  id: text('id').primaryKey(),
+  question: jsonb('question').$type<Text>().notNull(),
+  answer: jsonb('answer').$type<Text>().notNull(),
+  position: integer('position').notNull().default(0),
+  version: integer('version').notNull().default(1),
+});
+
+/**
+ * Constant faqList
+ *
+ * @description
+ * Singleton row `id = 1` holding the version of the FAQ list: creations, deletions and moves bump it,
+ * and a reorder quotes it in `If-Match`. Updating the row also serializes those writes. A missing row
+ * reads as version 1, so the migration writes none.
+ */
+export const faqList = contentSchema.table('faq_list', {
+  id: integer('id').primaryKey(),
+  version: integer('version').notNull().default(1),
+});
+
+/**
+ * Constant maintenance
+ *
+ * @description
+ * Singleton row `id = 1` holding the public site's maintenance switch, its message per locale and its
+ * optimistic-lock version. It is outside the content revision and the publication batches: the public
+ * snapshot reads it live. A missing row reads as disabled at version 1, so the migration writes none.
+ */
+export const maintenance = contentSchema.table('maintenance', {
+  id: integer('id').primaryKey(),
+  enabled: boolean('enabled').notNull().default(false),
+  message: jsonb('message').$type<MaintenanceMessage>().notNull(),
+  version: integer('version').notNull().default(1),
+});
+
+/**
  * Constant skillGroups
  *
  * @description
@@ -325,6 +369,8 @@ export interface FrozenContentRows {
   readonly profile: (typeof profile.$inferSelect)[];
   readonly timeline: (typeof timelineEntries.$inferSelect)[];
   readonly skills: (typeof skillGroups.$inferSelect)[];
+  /** Absent from a batch frozen before the FAQ existed: the snapshot then reads the live rows. */
+  readonly faq?: (typeof faqEntries.$inferSelect)[];
   readonly legal: (Omit<typeof legalDocuments.$inferSelect, 'updatedAt'> & { updatedAt: string })[];
   readonly media: (Omit<typeof media.$inferSelect, 'createdAt' | 'unlinkedAt'> & {
     createdAt: string;
@@ -395,6 +441,9 @@ export const contentTables = {
   projects,
   timelineEntries,
   timelineLists,
+  faqEntries,
+  faqList,
+  maintenance,
   skillGroups,
   profile,
   legalDocuments,

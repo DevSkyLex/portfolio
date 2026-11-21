@@ -1,4 +1,4 @@
-import { migrateContact } from '@vfortin/contact-composition';
+import { loadContactFixtureData, migrateContact } from '@vfortin/contact-composition';
 import { join } from 'node:path';
 import {
   type ContactServiceConfig,
@@ -28,8 +28,17 @@ async function run(command: string | undefined): Promise<void> {
       );
       console.log('Contact service migrations applied.');
       return;
+    case 'fixtures': {
+      // Development data only: the production stack never sets this flag (D55).
+      if (process.env['FIXTURES_ALLOWED'] !== 'true') {
+        throw new Error('Fixtures are development data: set FIXTURES_ALLOWED=true to load them.');
+      }
+      const count: number = await loadContactFixtureData(config.CONTACT_DATABASE_URL);
+      console.log(`Contact fixtures loaded: ${count} inbox messages.`);
+      return;
+    }
     default:
-      throw new Error(`Unknown command "${command ?? ''}": migrate.`);
+      throw new Error(`Unknown command "${command ?? ''}": migrate or fixtures.`);
   }
 }
 

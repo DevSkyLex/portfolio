@@ -9,8 +9,11 @@ test.describe('public site', (): void => {
   }): Promise<void> => {
     await page.goto('/');
     await expect(page).toHaveTitle('Valentin Fortin — Développeur web fullstack');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Valentin Fortin');
-    for (const id of ['projects', 'journey', 'skills', 'about', 'contact']) {
+    await expect(page.getByText('Hello, moi c’est Valentin.')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Développeur web fullstack',
+    );
+    for (const id of ['projects', 'journey', 'skills', 'contact']) {
       await expect(page.locator(`#${id}`)).toBeAttached();
     }
   });
@@ -167,7 +170,8 @@ test.describe('public site', (): void => {
     await message.fill('');
     await form.getByLabel('Adresse e-mail').fill('camille@');
     await form.getByRole('button', { name: 'Envoyer le message' }).click();
-    await expect(form.getByRole('alert').first()).toContainText(/champs sont à corriger/);
+    // Invalid fields are summed up in a toast of the site layout, outside the form.
+    await expect(page.getByText(/champs sont à corriger/)).toBeVisible();
     await expect(form.getByLabel('Nom')).toHaveAttribute('aria-invalid', 'true');
     await expect(form.getByLabel('Message')).toHaveAttribute('aria-invalid', 'true');
     await expect(form.getByLabel('Nom')).toBeFocused();

@@ -41,6 +41,11 @@ export const ADMIN_PROTECTED_ROUTES: Routes = [
           import('@vfortin/content-web-feature-admin').then((m) => m.ADMIN_EDUCATION_ROUTES),
       },
       {
+        path: 'faq',
+        loadChildren: () =>
+          import('@vfortin/content-web-feature-admin').then((m) => m.ADMIN_FAQ_ROUTES),
+      },
+      {
         path: 'information',
         loadChildren: () =>
           import('@vfortin/content-web-feature-admin').then((m) => m.ADMIN_INFORMATION_ROUTES),
@@ -49,6 +54,11 @@ export const ADMIN_PROTECTED_ROUTES: Routes = [
         path: 'legal',
         loadChildren: () =>
           import('@vfortin/content-web-feature-admin').then((m) => m.ADMIN_LEGAL_ROUTES),
+      },
+      {
+        path: 'maintenance',
+        loadChildren: () =>
+          import('@vfortin/content-web-feature-admin').then((m) => m.ADMIN_MAINTENANCE_ROUTES),
       },
       {
         path: 'messages',

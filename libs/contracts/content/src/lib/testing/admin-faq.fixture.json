@@ -1,0 +1,32 @@
+{
+  "version": 3,
+  "totalItems": 2,
+  "member": [
+    {
+      "id": "availability",
+      "position": 0,
+      "version": 2,
+      "question": {
+        "fr": "Es-tu disponible pour de nouveaux projets ?",
+        "en": "Are you available for new projects?"
+      },
+      "answer": {
+        "fr": "[À COMPLÉTER]",
+        "en": "[TO BE COMPLETED]"
+      }
+    },
+    {
+      "id": "contact",
+      "position": 1,
+      "version": 1,
+      "question": {
+        "fr": "Comment te contacter ?",
+        "en": "How can I contact you?"
+      },
+      "answer": {
+        "fr": "[À COMPLÉTER]",
+        "en": "[TO BE COMPLETED]"
+      }
+    }
+  ]
+}
