@@ -1190,7 +1190,7 @@ third-party player (no cookies, no consent, no CSP exception).
 - **One figure node**: a figure references an image or a video; the media decides. Alternative text,
   caption, the media references of a project, the purge and the MCP Markdown (`![alt](media:<id>)`)
   stay the same for both. A cover must be an image (`content.cover-not-image`, 422).
-- **Upload**: the same endpoint accepts an MP4 up to 50 MiB (images stay at 10 MiB; Nginx allows 51m).
+- **Upload**: the same endpoint accepts an MP4 up to 50 MiB (images stay at 10 MiB; Nginx allows 51m and streams the body to the service, `proxy_request_buffering off`, since its 32 MiB `/var/cache/nginx` tmpfs could not hold a large video).
   `Mp4VideoProbe` reads the `ftyp` box (AVIF and HEIF brands remain images) and the track header of
   the first video track for the display size, rotation applied; the file is kept as sent, without
   transcoding, so the owner compresses it beforehand. The `media.kind` column (migration
