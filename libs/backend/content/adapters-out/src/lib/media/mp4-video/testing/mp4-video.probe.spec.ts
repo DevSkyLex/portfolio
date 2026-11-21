@@ -121,4 +121,58 @@ describe('Mp4VideoProbe', (): void => {
     );
     expect((): unknown => probe.probe(mp4('isom'))).toThrow(UnsupportedMediaError);
   });
+
+  it('reads 64-bit and open-ended box sizes and a version 1 track header', (): void => {
+    const ftyp: Uint8Array = box('ftyp', ascii('isom'), new Uint8Array(4));
+    // Version 1 header: 64-bit times, so the matrix starts at 52.
+    const payload: Uint8Array = new Uint8Array(96);
+    const view: DataView = new DataView(payload.buffer);
+    view.setUint8(0, 1);
+    view.setInt32(52, 0x10000);
+    view.setUint32(88, 640 * 65536);
+    view.setUint32(92, 360 * 65536);
+    const moov: Uint8Array = box('moov', track(box('tkhd', payload), 'vide'));
+    // The same moov behind a 64-bit size: size 1, then the size on 8 bytes.
+    const large: Uint8Array = new Uint8Array(moov.length + 8);
+    const largeView: DataView = new DataView(large.buffer);
+    largeView.setUint32(0, 1);
+    large.set(ascii('moov'), 4);
+    largeView.setBigUint64(8, BigInt(moov.length + 8));
+    large.set(moov.subarray(8), 16);
+    expect(probe.probe(new Uint8Array([...ftyp, ...large]))).toEqual({ width: 640, height: 360 });
+    // Size 0: the box runs to the end of the file.
+    const open: Uint8Array = moov.slice();
+    new DataView(open.buffer).setUint32(0, 0);
+    expect(probe.probe(new Uint8Array([...ftyp, ...open]))).toEqual({ width: 640, height: 360 });
+  });
+
+  it('stops at truncated or malformed boxes and skips tracks it cannot read', (): void => {
+    const ftyp: Uint8Array = box('ftyp', ascii('isom'), new Uint8Array(4));
+    // A 64-bit size whose header is cut short, then a size smaller than its header.
+    const cut: Uint8Array = new Uint8Array(12);
+    new DataView(cut.buffer).setUint32(0, 1);
+    cut.set(ascii('moov'), 4);
+    expect((): unknown => probe.probe(new Uint8Array([...ftyp, ...cut]))).toThrow(
+      UnsupportedMediaError,
+    );
+    const tiny: Uint8Array = new Uint8Array(8);
+    new DataView(tiny.buffer).setUint32(0, 4);
+    expect((): unknown => probe.probe(new Uint8Array([...ftyp, ...tiny]))).toThrow(
+      UnsupportedMediaError,
+    );
+    // An ftyp too short to hold a brand is not an MP4.
+    expect(probe.probe(box('ftyp', new Uint8Array(2)))).toBeNull();
+    // Tracks without media, with a short handler, without or with a short header are skipped.
+    const hdlr: Uint8Array = box('hdlr', new Uint8Array(8), ascii('vide'), new Uint8Array(13));
+    const file: Uint8Array = mp4(
+      'isom',
+      box('trak', tkhd(320, 240)),
+      box('trak', tkhd(320, 240), box('mdia', box('hdlr', ascii('vide')))),
+      box('trak', box('mdia', hdlr)),
+      box('trak', box('tkhd', new Uint8Array(40)), box('mdia', hdlr)),
+      track(tkhd(0, 0), 'vide'),
+      track(tkhd(320, 240), 'vide'),
+    );
+    expect(probe.probe(file)).toEqual({ width: 320, height: 240 });
+  });
 });
