@@ -36,51 +36,52 @@
       </div>
 
       <div class="@container relative z-1 [--rd:80ms]" [class]="reveal" uiReveal>
-        @if (store.sent()) {
+        @if (sent(); as confirmation) {
           <div
-            class="flex flex-col items-start gap-6 py-8 outline-none"
-            id="contact-sent"
+            class="flex flex-col items-center justify-center gap-6 rounded-xl border border-border p-8 text-center @max-[520px]:p-6"
             role="status"
-            tabindex="-1"
+            [style.min-height.px]="formHeight()"
           >
             <span
-              class="grid size-14 place-items-center rounded-full border border-success text-success-ink transition-[opacity,scale] duration-(--dur-roll) ease-orbit motion-reduce:transition-none starting:scale-60 starting:opacity-0 [&_path]:transition-[stroke-dashoffset] [&_path]:delay-200 [&_path]:duration-(--dur-roll) [&_path]:ease-orbit [&_path]:[stroke-dasharray:24] motion-reduce:[&_path]:transition-none starting:[&_path]:[stroke-dashoffset:24]"
+              class="grid size-14 place-items-center rounded-full bg-success/12 text-success-ink"
               aria-hidden="true"
             >
-              <ng-icon [svg]="icons.check" size="24" strokeWidth="1.875" />
+              <ng-icon [svg]="icons.sent" size="26" strokeWidth="2.25" />
             </span>
-            <h3
-              class="animate-fade-up font-display text-d3 text-fg [animation-delay:80ms] motion-reduce:animate-none"
-              i18n="@@contact.sent.title"
-            >
-              Message envoyé
-            </h3>
-            <p
-              class="animate-fade-up text-body text-fg-muted [animation-delay:160ms] motion-reduce:animate-none"
-              i18n="@@contact.sent.body"
-            >
-              Merci {{ firstName() }}. Je vous réponds à
-              <span class="font-mono text-data text-fg">{{ store.sentTo() }}</span
-              >.
-            </p>
+            <div class="flex flex-col items-center gap-2">
+              <h3
+                class="font-display text-2xl font-semibold tracking-[-0.01em] text-fg outline-none"
+                id="contact-sent-title"
+                tabindex="-1"
+                i18n="@@contact.sent.title"
+              >
+                Message envoyé
+              </h3>
+              <p class="max-w-measure text-body text-fg-muted" i18n="@@contact.sent.body">
+                Merci {{ confirmation.name }}. Je vous réponds à
+                <span class="text-fg">{{ confirmation.email }}</span> au plus vite.
+              </p>
+            </div>
             <button
-              class="animate-fade-up [animation-delay:240ms] motion-reduce:animate-none"
               uiBtn
               variant="secondary"
               type="button"
-              (click)="writeAnother()"
+              (click)="again()"
               i18n="@@contact.sent.again"
             >
-              Écrire un autre message
+              Envoyer un autre message
             </button>
           </div>
         } @else {
-          <contact-form
-            [pending]="store.sending()"
-            [failure]="store.error()?.message ?? null"
-            [serverErrors]="serverErrors()"
-            (submitted)="send($event)"
-          />
+          <!-- One pass per generation: writing another message brings back a blank form (a new instance). -->
+          @for (generation of [generation()]; track generation) {
+            <contact-form
+              [pending]="store.sending()"
+              [failure]="store.error()?.message ?? null"
+              [serverErrors]="serverErrors()"
+              (submitted)="send($event)"
+            />
+          }
         }
       </div>
     </div>

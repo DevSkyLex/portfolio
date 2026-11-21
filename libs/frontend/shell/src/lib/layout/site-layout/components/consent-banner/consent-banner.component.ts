@@ -15,6 +15,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgIcon } from '@ng-icons/core';
+import { lucideCookie } from '@ng-icons/lucide';
 import {
   ButtonDirective,
   DialogDescriptionDirective,
@@ -47,6 +49,7 @@ import { ConsentService } from '@internal/web-shell/lib/consent/consent.service'
     DialogFooterDirective,
     DialogHeaderDirective,
     DialogTitleDirective,
+    NgIcon,
     RouterLink,
     SwitchDirective,
   ],
@@ -55,6 +58,17 @@ import { ConsentService } from '@internal/web-shell/lib/consent/consent.service'
 })
 export class ConsentBannerComponent {
   // #region Properties
+  /**
+   * Property cookieIcon
+   * @readonly
+   *
+   * @description
+   * Decorative pictogram beside the banner title.
+   *
+   * @type {string}
+   */
+  protected readonly cookieIcon: string = lucideCookie;
+
   /**
    * Property consent
    * @readonly

@@ -582,8 +582,10 @@ describe('AdminLayoutComponent', () => {
       'Projets',
       'Expériences',
       'Formations',
+      'FAQ',
       'Informations',
       'Légal',
+      'Maintenance',
       'Messages',
       'Sécurité',
     ]);
@@ -592,13 +594,15 @@ describe('AdminLayoutComponent', () => {
       '/admin/projects',
       '/admin/experiences',
       '/admin/education',
+      '/admin/faq',
       '/admin/information',
       '/admin/legal',
+      '/admin/maintenance',
       '/admin/messages',
       '/admin/security',
     ]);
     expect(entries[0]?.querySelector('ng-icon')).not.toBeNull();
-    expect(entries[7]?.querySelector('ng-icon')).not.toBeNull();
+    expect(entries[9]?.querySelector('ng-icon')).not.toBeNull();
 
     press('k', { ctrlKey: true });
     backend.expectOne('/api/content/admin/projects').flush({ member: [], totalItems: 0 });

@@ -41,7 +41,7 @@ Trace recording is disabled for authentication bodies. See `apps/web-e2e/README.
 Exemplar: `apps/web-e2e/src/public-site.spec.ts`.
 
 - Locate by role and accessible name (`getByRole('heading', { level: 1 })`), then section ids
-  (`#projects`, `#journey`, `#about`, `#contact`); never by class.
+  (`#projects`, `#journey`, `#skills`, `#contact`); never by class.
 - French at `/`, English at `/en/` (check `html[lang]` and the title).
 - Distinguish standalone public/client-validation checks from authenticated `@stack` acceptance; do
   not claim real API/cookie coverage from mocked or no-service tests.

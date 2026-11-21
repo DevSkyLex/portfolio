@@ -10,7 +10,10 @@ import {
 } from '@angular/core/testing';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { provideContentSnapshots } from '@vfortin/content-web-data-access';
+import {
+  provideContentSnapshotLoader,
+  provideContentSnapshots,
+} from '@vfortin/content-web-data-access';
 import { APP_ROUTES } from '@internal/web-shell/lib/app.routes';
 
 registerLocaleData(localeFr);
@@ -141,6 +144,14 @@ describe('site texts from the snapshot', (): void => {
   });
 
   it('leave the links out of an error page rendered without the snapshot', async (): Promise<void> => {
+    // Every public URL reads the snapshot for the maintenance route (D56); here it cannot be read.
+    TestBed.configureTestingModule({
+      providers: [
+        provideContentSnapshotLoader((): Promise<never> =>
+          Promise.reject(new Error('upstream down')),
+        ),
+      ],
+    });
     const harness: RouterTestingHarness = await RouterTestingHarness.create('/error/404');
     const doc: Document = harness.fixture.nativeElement.ownerDocument as Document;
     expect(doc.querySelector('#site-menu')?.textContent).not.toContain('@');

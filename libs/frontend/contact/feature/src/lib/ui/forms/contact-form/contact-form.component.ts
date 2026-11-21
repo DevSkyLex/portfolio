@@ -17,6 +17,7 @@ import {
   linkedSignal,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   type FieldState,
@@ -33,19 +34,17 @@ import {
 } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
-import { lucideCircleAlert, lucideSend } from '@ng-icons/lucide';
+import { lucideSend } from '@ng-icons/lucide';
 import { CONTACT_FORM_LIMITS } from '@internal/contact-web-feature/lib/ui/forms/contact-form/constants/contact-form-limits.constants';
 import type { ContactFormServerError } from '@internal/contact-web-feature/lib/ui/forms/contact-form/models/contact-form-server-error.interface';
 import {
-  AlertDescriptionDirective,
-  AlertDirective,
-  AlertTitleDirective,
   ButtonDirective,
   FieldComponent,
   InputDirective,
   SelectComponent,
   SelectOptionComponent,
   TextareaDirective,
+  ToastService,
 } from '@vfortin/ui';
 import { CONTACT_FORM_FIELDS } from '@internal/contact-web-feature/lib/ui/forms/contact-form/constants/contact-form-fields.constants';
 import { CONTACT_FORM_MESSAGES } from '@internal/contact-web-feature/lib/ui/forms/contact-form/constants/contact-form-messages.constants';
@@ -55,20 +54,29 @@ import type { ContactFormValues } from '@internal/contact-web-feature/lib/ui/for
 import { CONTACT_SUBJECT_OPTIONS } from '@internal/contact-web-feature/lib/ui/forms/contact-form/options/contact-subject-options.constants';
 
 /**
+ * Function CONTACT_FAILED_TITLE
+ *
+ * @description
+ * Title of the toast of a refused submission, localized at call time.
+ *
+ * @returns {string} Localized title.
+ */
+const CONTACT_FAILED_TITLE: () => string = (): string =>
+  $localize`:@@contact.failed:Le message n'est pas parti.`;
+
+/**
  * Component ContactFormComponent
  * @class ContactFormComponent
  *
  * @description
- * Public contact form: owns its Signal Form, the error summary and the invisible honeypot (D15).
+ * Public contact form: owns its Signal Form and the invisible honeypot (D15); a refused submission
+ * is reported in a toast, the fields to fix keeping their own messages.
  * Valid values leave through `submitted`; the section sends them and returns the server field errors,
  * which stay on their fields until the value changes.
  */
 @Component({
   selector: 'contact-form',
   imports: [
-    AlertDescriptionDirective,
-    AlertDirective,
-    AlertTitleDirective,
     ButtonDirective,
     FieldComponent,
     FormField,
@@ -108,8 +116,8 @@ export class ContactFormComponent {
    * @readonly
    *
    * @description
-   * Message of a whole-request failure (rate limit, network), shown in the error summary when no
-   * field is to be corrected.
+   * Message of a whole-request failure (rate limit, network), reported in a toast when no field is to
+   * be corrected.
    *
    * @type {InputSignal<string | null>}
    */
@@ -188,12 +196,20 @@ export class ContactFormComponent {
    * @readonly
    *
    * @description
-   * Icons of the error summary and the submit button.
+   * Icon of the submit button.
    */
-  protected readonly icons: {
-    readonly alert: typeof lucideCircleAlert;
-    readonly send: typeof lucideSend;
-  } = { alert: lucideCircleAlert, send: lucideSend } as const;
+  protected readonly icons: { readonly send: typeof lucideSend } = { send: lucideSend } as const;
+
+  /**
+   * Property toasts
+   * @readonly
+   *
+   * @description
+   * Catalogue toasts; the site layout mounts the toaster that shows them.
+   *
+   * @type {ToastService}
+   */
+  private readonly toasts: ToastService = inject<ToastService>(ToastService);
 
   /**
    * Property sentValues
@@ -301,19 +317,6 @@ export class ContactFormComponent {
     });
 
   /**
-   * Property invalidCount
-   * @readonly
-   *
-   * @description
-   * Number of contact fields currently returning a visible validation error.
-   *
-   * @type {Signal<number>}
-   */
-  protected readonly invalidCount: Signal<number> = computed<number>(
-    () => CONTACT_FORM_FIELDS.filter((name) => this.error(name) !== null).length,
-  );
-
-  /**
    * Property length
    * @readonly
    *
@@ -331,12 +334,25 @@ export class ContactFormComponent {
    * @constructor
    *
    * @description
-   * Moves the focus to the first flagged control whenever the server returns field errors.
+   * Reports a refused submission in a toast: the fields the server flagged (focusing the first one),
+   * or the whole-request failure when no field is to be corrected.
    */
   public constructor() {
     effect(() => {
-      if (this.serverErrors().some((error) => this.isField(error.field))) {
+      const fields: number = new Set(
+        this.serverErrors()
+          .map((error) => error.field)
+          .filter((field) => this.isField(field)),
+      ).size;
+      if (fields > 0) {
+        untracked(() => this.reportInvalid(fields));
         this.focusFirstError();
+      }
+    });
+    effect(() => {
+      const failure: string | null = this.failure();
+      if (failure && !this.serverErrors().some((error) => this.isField(error.field))) {
+        untracked(() => this.toasts.error(CONTACT_FAILED_TITLE(), { description: failure }));
       }
     });
   }
@@ -416,7 +432,12 @@ export class ContactFormComponent {
         this.sentValues.set(values);
         this.submitted.emit(values);
       },
-      onInvalid: () => this.focusFirstError(),
+      onInvalid: () => {
+        this.reportInvalid(
+          CONTACT_FORM_FIELDS.filter((name) => this.contactForm[name]().errors().length > 0).length,
+        );
+        this.focusFirstError();
+      },
     });
   }
 
@@ -442,6 +463,25 @@ export class ContactFormComponent {
       return null;
     }
     return { kind: 'server', message: CONTACT_FORM_MESSAGES[name] };
+  }
+
+  /**
+   * Method reportInvalid
+   * @method reportInvalid
+   *
+   * @description
+   * Shows the error toast of a submission held back by fields to fix, replacing the previous one.
+   *
+   * @param {number} count - Number of fields to fix.
+   */
+  private reportInvalid(count: number): void {
+    this.toasts.error(CONTACT_FAILED_TITLE(), {
+      id: 'contact-form',
+      description:
+        count === 1
+          ? $localize`:@@contact.failed.one:Un champ est à corriger ci-dessous.`
+          : $localize`:@@contact.failed.many:${count}:INTERPOLATION: champs sont à corriger ci-dessous.`,
+    });
   }
 
   /**

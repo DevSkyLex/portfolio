@@ -81,7 +81,7 @@ describe('ProjectCardComponent', (): void => {
     const visual: HTMLElement = await render(null, false);
     expect(visual.querySelector('img')).toBeNull();
     expect(visual.querySelector(':scope > div')?.className).toContain(
-      'bg-[color-mix(in_srgb,var(--fg)_6%,var(--surface-raised))]',
+      'bg-[color-mix(in_srgb,var(--ink)_6%,var(--surface-raised))]',
     );
   });
 });

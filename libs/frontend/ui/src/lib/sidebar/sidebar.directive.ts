@@ -351,7 +351,7 @@ export class SidebarContentDirective {
   protected readonly classes: Signal<string> = computed<string>((): string =>
     cn(
       'flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]/sidebar:overflow-hidden',
-      '[scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--fg)_24%,transparent)_transparent]',
+      '[scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--ink)_24%,transparent)_transparent]',
       this.class(),
     ),
   );

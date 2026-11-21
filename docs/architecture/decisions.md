@@ -129,7 +129,10 @@ each HTML response (`apps/web/src/server/csp-nonce`), with a random nonce when t
 
 ## D21 — Self-hosted fonts
 
-Geist (headings and text) and Geist Mono (details) come from `@fontsource-variable/*`, served by the site; they replaced the mockup's Unbounded, Host Grotesk and Martian Mono, judged hard to read: no request to a third-party service (no IP address transfer to Google Fonts).
+Geist (text) and Geist Mono (details) come from `@fontsource-variable/*`, served by the site; they replaced the mockup's Unbounded, Host Grotesk and Martian Mono, judged hard to read: no request to a third-party service (no IP address transfer to Google Fonts).
+Headings revision: display headings (`font-display`) use Bricolage Grotesque, at the owner's request after a
+comparison of six heading faces, with Geist as fallback; only its weight-axis files are served (41 kB latin)
+rather than the optical-size build (131 kB).
 
 Revision (2026-11-03): `apps/web/src/fonts.css` declares the latin and latin-ext faces only (the copy is French and English; the packages' cyrillic, vietnamese and box-drawing faces cost about 2 kB of initial CSS under the D31 budget). The build writes the font files to `/assets/` (`outputPath.media`), because `/media/` belongs to uploaded images (D40) and Nginx answers 404 for any other name there.
 
@@ -559,6 +562,18 @@ checkboxes and radios keep `border-strong`.
 Admin audit 3 revision: status badges become neutral (no fill, `border` hairline, `fg-muted` label),
 the status hue moving to their dot or icon (D37 badge revision); text keeps 4.5:1 and the coloured glyph
 3:1 or more on every surface in both themes.
+
+Brand surface revision: the surfaces take the background of the logo and brand assets
+(`branding/generate.py`) instead of near-neutral greys, at the owner's request: dark `surface` `#05050b`,
+`surface-raised` `#0e0e19`, `surface-sunk` `#020207`; light `surface-raised` `#f6f6fa` and `surface-sunk`
+`#eeeef4`, `surface` staying white. `fg-faint` keeps 5.0:1 or more on every surface, `fg-muted` 7.4:1.
+Borders and the light fills take the same cast at equal lightness so no grey reads apart from the
+surfaces: dark `border` `#212130`, `border-strong` `#606072` (3.1:1 or more on every surface); light
+`border` `#e4e4ec`, `border-strong` `#7a7a8c`, `fill-hover` `#2c2c3a`, `fill-disabled` `#e6e6ee`. The text
+inks follow at equal contrast: dark `fg` `#ececf2`, `fg-muted` `#a0a0b0`, `fg-faint` `#808092`; light `fg`
+`#13131a`, `fg-muted` `#4a4a58`, `fg-faint` `#636374` (4.95:1 or more on every surface). The hover and selected
+states mix a blue `--ink` (`#b4b4ff` dark at 6 % and 8 %, `#2a2a8a` light at 5 % and 8 %) instead of `fg`, which
+read as neutral grey.
 
 ## D42 — Project SEO
 
@@ -1046,6 +1061,9 @@ The setup marks such a source `demo` and the dashboard DTO carries `demo: true`;
 figures like real ones, without a notice (the owner asked for none). A configured source always keeps
 its Google adapter; production never sets the flag.
 
+Superseded by D55 (2026-11-06): the stand-in readers no longer serve the dashboard live; the same
+generators run once as fixtures that store their reports in the cache.
+
 ## D53 — Technology catalogue and deferred logos
 
 The technology tags of projects, the timeline and the skills come from a catalogue of 280 canonical keys
@@ -1103,3 +1121,44 @@ times, without semantics) cost tokens and invited invalid documents.
   until referenced, purged after seven days, D40) and return the id for `cover.media` or a figure. The
   address policy and the guarded transport moved from identity to `@vfortin/backend-http`, shared by
   identity's metadata fetcher (D45, unchanged behaviour) and the image download.
+
+## D55 — Development fixtures through the services' APIs
+
+The owner wants local data loaded as backend fixtures rather than figures made up while serving
+(2026-11-06). Each service CLI has a `fixtures` command, refused unless `FIXTURES_ALLOWED=true`, which
+only `docker/compose.dev.yml` sets on its `fixtures` profile jobs (`identity-fixtures`,
+`content-fixtures`, `contact-fixtures`); the production stack has neither the jobs nor the flag.
+
+- **identity**: `loadIdentityFixtures` creates `admin@localhost.test` with the published test
+  password of `IDENTITY_FIXTURE_ADMIN`, or resets that account (password, no second factor, no lock).
+- **content**: `loadContentFixtures` loads the seed content (it replaces the current content), then
+  runs one `RefreshSeoDashboard` whose sources are the D52 generators (`Fixture*Reader`), so the
+  reports reach the cache through the production refresh and store; the ten-minute guard is lifted
+  for that run. With `SEO_FIXTURES=true`, an unconfigured source is `{ fixtures: true }`: no reader,
+  the dashboard shows the cached reports (`demo: true` in the DTO) and a refresh keeps them.
+- **contact**: `loadContactFixtures` writes six inbox messages (every subject, both languages, every
+  status), dated from the loading time, without notification job; existing ones are reset.
+
+Every run resets the fixture data only and leaves other rows in place (the content seed aside).
+
+## D56 — Public maintenance mode
+
+The owner switches the public site into maintenance from « Maintenance » in the admin
+(`/admin/maintenance`, 2026-11-20). The setting is a singleton row of the content context
+(`content.maintenance`: `enabled`, a message per locale of at most 500 characters, English falling back
+on French, an optimistic version), read and revised through `GET`/`PUT /api/content/admin/maintenance`
+with `If-Match` (428/412), and by the MCP tools `get_maintenance` / `set_maintenance`. The seed switches
+it off.
+
+- **Not published content**: a revision advances no content revision and no publication batch holds it;
+  the public snapshot reads the row live in its read transaction (`ContentRepository.loadMaintenance`,
+  outside the revision cache of `GetPublishedContent` and of a frozen batch).
+- **Read where the SSR already reads**: the snapshot carries `maintenance: { enabled, message }` per
+  locale (defaulted to off, so an older snapshot parses) rather than a second public endpoint: the SSR
+  fetches the snapshot once per request anyway, validates it and hands it to the browser through
+  TransferState, so the server and the hydrating client match the same route.
+- **Routing**: `APP_ROUTES` declares a `**` route with `maintenanceGuard` (`canMatch`) after the admin
+  area and before the site layout. While enabled every public URL renders `MaintenancePageComponent`
+  (site mark, heading, message or default line, the public e-mail) without header or footer, answered
+  503 with `Retry-After: 3600` and `X-Robots-Tag: noindex`; the admin area never reaches the route. An
+  unreadable snapshot leaves the site routes to answer as before.

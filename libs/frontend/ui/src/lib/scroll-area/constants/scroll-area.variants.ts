@@ -13,12 +13,12 @@ import { cva, type VariantProps } from 'class-variance-authority';
 export const scrollAreaVariants = cva(
   [
     'relative overscroll-contain rounded-md',
-    '[scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--fg)_24%,transparent)_transparent]',
-    'hover:[scrollbar-color:color-mix(in_srgb,var(--fg)_36%,transparent)_transparent]',
+    '[scrollbar-width:thin] [scrollbar-color:var(--scrollbar)_transparent]',
+    'hover:[scrollbar-color:var(--scrollbar-hover)_transparent]',
     '[&::-webkit-scrollbar]:size-3 [&::-webkit-scrollbar]:bg-transparent [&::-webkit-scrollbar-button]:hidden',
     '[&::-webkit-scrollbar-thumb]:min-h-12 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-3',
-    '[&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-fg/24 [&::-webkit-scrollbar-thumb]:bg-clip-padding',
-    '[&::-webkit-scrollbar-thumb:active]:bg-accent/55 [&::-webkit-scrollbar-thumb:hover]:bg-fg/36',
+    '[&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-(--scrollbar) [&::-webkit-scrollbar-thumb]:bg-clip-padding',
+    '[&::-webkit-scrollbar-thumb:active]:bg-accent/55 [&::-webkit-scrollbar-thumb:hover]:bg-(--scrollbar-hover)',
     'outline-2 outline-offset-2 outline-transparent focus-visible:outline-fg/55',
   ],
   {

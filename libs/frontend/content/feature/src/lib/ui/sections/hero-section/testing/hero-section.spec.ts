@@ -102,26 +102,32 @@ describe('HeroSectionComponent', (): void => {
     });
   });
 
-  it('spells the name letter by letter, each after a dot, a cross or a square', async (): Promise<void> => {
+  it('greets with the first name, then spells the job title letter by letter after round glyphs', async (): Promise<void> => {
     const fixture: ComponentFixture<HeroSectionComponent> =
       TestBed.createComponent(HeroSectionComponent);
     await fixture.whenStable();
     const root: HTMLElement = fixture.nativeElement;
-    expect(root.querySelector('h1 .sr-only')?.textContent).toBe('Valentin Fortin');
+    expect(root.querySelector('h1 .sr-only')?.textContent).toBe('Développeur web fullstack');
     const slots: HTMLElement[] = [...root.querySelectorAll<HTMLElement>('.animate-slot-up')];
     expect(slots.map((s: HTMLElement): string => s.textContent?.trim()).join('')).toBe(
-      'ValentinFortin',
+      'Développeurwebfullstack',
     );
     expect(slots.map((s: HTMLElement): string => s.style.getPropertyValue('--k'))).toEqual(
-      Array.from({ length: 14 }, (_: unknown, k: number): string => String(k)),
+      Array.from({ length: 23 }, (_: unknown, k: number): string => String(k)),
     );
     const glyphs: string[] = slots.map(
       (s: HTMLElement): string => s.querySelector('ui-glyph')?.className ?? '',
     );
     expect(glyphs[0]).toContain('rounded-[50%]');
-    expect(glyphs[1]).toContain('linear-gradient');
-    expect(glyphs[8]).toContain('text-aurora-pink');
-    expect(root.querySelector('p')?.textContent?.trim()).toBe('Intro du hero.');
+    expect(glyphs.every((g: string): boolean => g.includes('rounded-[50%]'))).toBe(true);
+    expect(glyphs[11]).toContain('text-aurora-pink');
+    const texts: (string | undefined)[] = [...root.querySelectorAll('p')].map(
+      (p: HTMLParagraphElement): string | undefined => p.textContent?.trim(),
+    );
+    expect(texts).toEqual([
+      'Hello, moi c’est Valentin.',
+      'Je crée des applications web et mobiles, de l’interface jusqu’à l’API et la base de données.',
+    ]);
   });
 
   it('pins the square-form planet behind the page, raised and scaled down', async (): Promise<void> => {

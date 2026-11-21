@@ -1,50 +1,35 @@
 @if (consent.bannerVisible()) {
   <section
     #banner
-    class="fixed inset-x-3 bottom-3 z-40 flex animate-fade-up flex-col gap-4 rounded-xl border border-border bg-surface-raised p-5 text-fg shadow-float motion-reduce:animate-none @min-[640px]:inset-x-auto @min-[640px]:right-6 @min-[640px]:bottom-6 @min-[640px]:w-[440px]"
+    class="fixed inset-x-3 bottom-3 z-40 flex animate-fade-up flex-col gap-4 rounded-xl border border-border bg-surface-raised/80 p-5 text-fg shadow-float backdrop-blur-[18px] backdrop-saturate-160 motion-reduce:animate-none @min-[640px]:inset-x-auto @min-[640px]:right-6 @min-[640px]:bottom-6 @min-[640px]:w-[460px]"
     aria-labelledby="consent-title"
     aria-describedby="consent-text"
   >
     <div class="flex flex-col gap-2">
       <h2
-        class="font-sans text-[16px]/6 font-semibold text-fg"
+        class="flex items-center gap-2 font-sans text-[16px]/6 font-semibold text-fg"
         id="consent-title"
-        i18n="@@consent.title"
       >
-        Cookies
+        <ng-icon class="text-fg-muted" [svg]="cookieIcon" size="18" aria-hidden="true" />
+        <span i18n="@@consent.title">Cookies</span>
       </h2>
-      <p class="text-[14px]/[22px] text-fg-muted" id="consent-text" i18n="@@consent.text">
-        Avec votre accord, ce site mesure son audience avec Google Analytics. Rien n’est déposé ni
-        envoyé à Google tant que vous n’avez pas choisi.
+      <p class="text-[14px]/[22px] text-fg-muted" id="consent-text">
+        <span i18n="@@consent.text"
+          >Avec votre accord, ce site mesure son audience avec Google Analytics. Rien n’est déposé
+          ni envoyé à Google tant que vous n’avez pas choisi.</span
+        >
+        <a
+          class="ms-1 text-fg underline decoration-border-hover underline-offset-3 transition-[text-decoration-color] duration-(--dur-pop) ease-orbit hover:decoration-current focus-visible:decoration-current"
+          routerLink="/privacy"
+          i18n="@@consent.privacyLink"
+          >Politique de confidentialité</a
+        >
       </p>
-      <a
-        class="self-start text-[14px]/[22px] text-fg underline decoration-border-hover underline-offset-3 transition-[text-decoration-color] duration-(--dur-pop) ease-orbit hover:decoration-current focus-visible:decoration-current"
-        routerLink="/privacy"
-        i18n="@@consent.privacyLink"
-        >Politique de confidentialité</a
-      >
     </div>
-    <div class="flex flex-wrap gap-2">
-      <button
-        uiBtn
-        variant="secondary"
-        size="sm"
-        type="button"
-        (click)="choose(false)"
-        i18n="@@consent.rejectAll"
-      >
-        Tout refuser
-      </button>
-      <button
-        uiBtn
-        variant="secondary"
-        size="sm"
-        type="button"
-        (click)="choose(true)"
-        i18n="@@consent.acceptAll"
-      >
-        Tout accepter
-      </button>
+    <!-- Refusing and accepting carry the same weight (D48); customizing stands apart on the left. -->
+    <div
+      class="flex flex-wrap items-center justify-between gap-2 @max-[400px]:flex-col @max-[400px]:items-stretch"
+    >
       <button
         uiBtn
         variant="ghost"
@@ -55,6 +40,28 @@
       >
         Personnaliser
       </button>
+      <div class="flex gap-2 @max-[400px]:[&>*]:flex-1">
+        <button
+          uiBtn
+          variant="secondary"
+          size="sm"
+          type="button"
+          (click)="choose(false)"
+          i18n="@@consent.rejectAll"
+        >
+          Tout refuser
+        </button>
+        <button
+          uiBtn
+          variant="secondary"
+          size="sm"
+          type="button"
+          (click)="choose(true)"
+          i18n="@@consent.acceptAll"
+        >
+          Tout accepter
+        </button>
+      </div>
     </div>
   </section>
 }

@@ -9,6 +9,7 @@ import {
   type ElementRef,
   LOCALE_ID,
   afterNextRender,
+  computed,
   inject,
   signal,
   viewChild,
@@ -16,7 +17,6 @@ import {
 import { NgIcon } from '@ng-icons/core';
 import { flagFr, flagGb } from '@ng-icons/flag-icons';
 import {
-  lucideFileDown,
   lucideMail,
   lucideMenu,
   lucideMonitor,
@@ -25,7 +25,11 @@ import {
   lucideX,
 } from '@ng-icons/lucide';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { PageSeoService, SiteLinksService } from '@vfortin/content-web-data-access';
+import {
+  PageSeoService,
+  SiteLinksService,
+  SiteSectionsService,
+} from '@vfortin/content-web-data-access';
 import {
   type DecoGlyph,
   ButtonDirective,
@@ -35,6 +39,8 @@ import {
   type MenuSelectOption,
   SECTION_FX_CONTENT,
   SectionFxDirective,
+  ToastService,
+  ToasterComponent,
 } from '@vfortin/ui';
 import {
   SPY_BOTTOM,
@@ -48,6 +54,7 @@ import { leafRoute } from '@internal/web-shell/lib/layout/site-layout/utils/leaf
 import { ConsentService } from '@internal/web-shell/lib/consent/consent.service';
 import { ConsentBannerComponent } from '@internal/web-shell/lib/layout/site-layout/components/consent-banner/consent-banner.component';
 import { ProfileIconComponent } from '@internal/web-shell/lib/layout/site-layout/components/profile-icon/profile-icon.component';
+import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/components/site-logo/site-logo.component';
 import type { ThemeMode } from '@internal/web-shell/lib/theme/models/theme-mode/theme-mode.type';
 import { ThemeService } from '@internal/web-shell/lib/theme/theme.service';
 
@@ -75,6 +82,8 @@ import { ThemeService } from '@internal/web-shell/lib/theme/theme.service';
     RouterLinkActive,
     RouterOutlet,
     SectionFxDirective,
+    SiteLogoComponent,
+    ToasterComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './site-layout.component.html',
@@ -88,25 +97,59 @@ import { ThemeService } from '@internal/web-shell/lib/theme/theme.service';
 export class SiteLayoutComponent {
   // #region Properties
   /**
+   * Property sections
+   * @readonly
+   *
+   * @description
+   * Optional home sections the content snapshot fills, none on a page rendered without it.
+   *
+   * @type {SiteSectionsService}
+   */
+  private readonly sections: SiteSectionsService = inject<SiteSectionsService>(SiteSectionsService);
+
+  /**
    * Property nav
    * @readonly
    *
    * @description
-   * Localized in-page sections and colors used by the header progress indicator.
+   * Localized in-page sections and the hue underlining the current one in the header, in page order; the
+   * FAQ is listed only while the snapshot holds a question (its section renders nothing otherwise).
    *
-   * @type {readonly NavItem[]}
+   * @type {Signal<readonly NavItem[]>}
    */
-  protected readonly nav: readonly NavItem[] = [
-    { fragment: 'projects', label: $localize`:@@nav.projects:Projets`, hue: 'var(--aurora-pink)' },
-    {
-      fragment: 'journey',
-      label: $localize`:@@nav.timeline:Parcours`,
-      hue: 'var(--aurora-violet)',
+  protected readonly nav: Signal<readonly NavItem[]> = computed<readonly NavItem[]>(
+    (): readonly NavItem[] => {
+      const optional: readonly string[] = this.sections.optional();
+      return [
+        {
+          fragment: 'projects',
+          label: $localize`:@@nav.projects:Projets`,
+          hue: 'var(--aurora-pink)',
+        },
+        {
+          fragment: 'journey',
+          label: $localize`:@@nav.timeline:Parcours`,
+          hue: 'var(--aurora-violet)',
+        },
+        {
+          fragment: 'skills',
+          label: $localize`:@@nav.skills:Compétences`,
+          hue: 'var(--aurora-blue)',
+        },
+        {
+          fragment: 'faq',
+          label: $localize`:@@nav.faq:FAQ`,
+          hue: 'var(--aurora-blue)',
+          optional: true,
+        },
+        {
+          fragment: 'contact',
+          label: $localize`:@@nav.contact:Contact`,
+          hue: 'var(--aurora-cyan)',
+        },
+      ].filter((item: NavItem): boolean => !item.optional || optional.includes(item.fragment));
     },
-    { fragment: 'skills', label: $localize`:@@nav.skills:Compétences`, hue: 'var(--aurora-blue)' },
-    { fragment: 'about', label: $localize`:@@nav.about:À propos`, hue: 'var(--aurora-cyan)' },
-    { fragment: 'contact', label: $localize`:@@nav.contact:Contact`, hue: 'var(--aurora-cyan)' },
-  ];
+  );
 
   /**
    * Property links
@@ -125,20 +168,18 @@ export class SiteLayoutComponent {
    * @readonly
    *
    * @description
-   * Icon registry for navigation, contact links, language flags, and download actions.
+   * Icon registry for navigation, contact links and language flags.
    */
   protected readonly icons: {
     readonly menu: typeof lucideMenu;
     readonly close: typeof lucideX;
     readonly mail: typeof lucideMail;
-    readonly cv: typeof lucideFileDown;
     readonly flagFr: typeof flagFr;
     readonly flagGb: typeof flagGb;
   } = {
     menu: lucideMenu,
     close: lucideX,
     mail: lucideMail,
-    cv: lucideFileDown,
     flagFr,
     flagGb,
   } as const;
@@ -255,6 +296,32 @@ export class SiteLayoutComponent {
    * @type {ConsentService}
    */
   protected readonly consent: ConsentService = inject<ConsentService>(ConsentService);
+
+  /**
+   * Property toasts
+   * @readonly
+   *
+   * @description
+   * Catalogue toasts raised by the public sections (the contact form).
+   *
+   * @type {ToastService}
+   */
+  private readonly toasts: ToastService = inject<ToastService>(ToastService);
+
+  /**
+   * Property toasting
+   * @readonly
+   *
+   * @description
+   * Whether a toast has been shown: the toaster is a deferred block loaded with the first one, so it
+   * stays out of the initial bundle. It sits here, outside the sections, because a transformed ancestor
+   * (their reveal and section effects) would turn its fixed position into a scrolling one.
+   *
+   * @type {Signal<boolean>}
+   */
+  protected readonly toasting: Signal<boolean> = computed<boolean>(
+    () => this.toasts.toasts().length > 0,
+  );
 
   /**
    * Property locale
@@ -439,7 +506,7 @@ export class SiteLayoutComponent {
         this.spy(view);
         const style: CSSStyleDeclaration = this.header().nativeElement.style;
         style.setProperty('--hp', max > 0 ? Math.min(1, Math.max(0, y / max)).toFixed(4) : '0');
-        const current: NavItem | undefined = this.nav.find(
+        const current: NavItem | undefined = this.nav().find(
           (item) => item.fragment === this.active(),
         );
         style.setProperty('--hc', current?.hue ?? 'var(--fg-faint)');
@@ -543,7 +610,7 @@ export class SiteLayoutComponent {
     if (root.scrollHeight <= view.innerHeight + 40) return;
     const top: number = view.innerHeight * SPY_TOP;
     const bottom: number = view.innerHeight * SPY_BOTTOM;
-    for (const item of this.nav) {
+    for (const item of this.nav()) {
       const rect: DOMRect | undefined = this.document
         .getElementById(item.fragment)
         ?.getBoundingClientRect();

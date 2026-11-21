@@ -108,7 +108,7 @@ describe('content visuals', (): void => {
     );
     expect(link?.className).toContain('grid-rows-subgrid');
     expect(link?.style.getPropertyValue('--rd')).toBe('80ms');
-    expect(link?.querySelector('div > div')?.className).toContain('var(--fg)_3%');
+    expect(link?.querySelector('div > div')?.className).toContain('var(--ink)_3%');
   });
 
   it('splits the statement into words ranked for the reading progress', async (): Promise<void> => {

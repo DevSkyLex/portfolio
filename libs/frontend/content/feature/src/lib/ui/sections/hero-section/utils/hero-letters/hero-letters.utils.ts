@@ -6,23 +6,22 @@ import type { HeroLetter } from '@internal/content-web-feature/lib/ui/sections/h
  * Function heroLetters
  *
  * @description
- * Splits the hero name into letters with their stagger index, glyph shape and aurora colour; the index runs
- * across the words with the first word's length as the stride, the shapes cycle on that index and the colours
- * restart with each word.
+ * Splits the hero title into letters with their stagger index, glyph shape and aurora colour; the index runs
+ * through every letter in reading order, the shapes cycle on that index and the colours restart with each word.
  *
- * @param {readonly string[]} words - Words of the displayed name.
+ * @param {readonly string[]} words - Words of the displayed title.
  *
  * @returns {readonly (readonly HeroLetter[])[]} Letters grouped by word.
  */
 export function heroLetters(words: readonly string[]): readonly (readonly HeroLetter[])[] {
-  const stride: number = words[0]?.length ?? 0;
-  return words.map((word: string, w: number) =>
+  let next: number = 0;
+  return words.map((word: string) =>
     [...word].map((char: string, i: number) => {
-      const k: number = w * stride + i;
+      const k: number = next++;
       return {
         char,
         k,
-        shape: HERO_GLYPH_SHAPES[k % 3] ?? 'dot',
+        shape: HERO_GLYPH_SHAPES[k % HERO_GLYPH_SHAPES.length] ?? 'dot',
         color: HERO_LETTER_COLORS[i % 4] ?? HERO_LETTER_COLORS[0],
       };
     }),

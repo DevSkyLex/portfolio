@@ -17,9 +17,12 @@ function fakeContext(): { context: CanvasRenderingContext2D; calls: Map<string, 
       get: (_: object, key: string | symbol): unknown =>
         values.has(key)
           ? values.get(key)
-          : (): undefined => {
+          : (): unknown => {
               calls.set(String(key), (calls.get(String(key)) ?? 0) + 1);
-              return undefined;
+              // The lines and bands are stroked with gradients.
+              return key === 'createLinearGradient'
+                ? { addColorStop: (): void => undefined }
+                : undefined;
             },
       set: (_: object, key: string | symbol, value): boolean => {
         values.set(key, value);
@@ -127,6 +130,8 @@ describe('mountParallelScene', (): void => {
         }
       },
     );
+    // jsdom has no Path2D; the education markers build theirs from the logo outlines.
+    vi.stubGlobal('Path2D', class {});
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback): number => {
       frames.push(callback);
       return frames.length;
@@ -160,7 +165,7 @@ describe('mountParallelScene', (): void => {
     expect(sec.hasAttribute('data-live')).toBe(true);
     run(3);
     expect(states(sec)).not.toContain('P');
-    expect(calls.get('fillRect')).toBeGreaterThan(0);
+    expect(calls.get('stroke')).toBeGreaterThan(0);
 
     // Halfway down the pinned section: later steps, earlier ones behind.
     top = -2700;
@@ -195,12 +200,12 @@ describe('mountParallelScene', (): void => {
     const sec: HTMLElement = section();
     const stop: (() => void) | null = mountParallelScene(sec);
     run(1);
-    const before: number = calls.get('fillRect') ?? 0;
+    const before: number = calls.get('stroke') ?? 0;
     document.documentElement.setAttribute('data-theme', 'light');
     await Promise.resolve();
     window.dispatchEvent(new Event('resize'));
     run(1, 100);
-    expect(calls.get('fillRect') ?? 0).toBeGreaterThan(before);
+    expect(calls.get('stroke') ?? 0).toBeGreaterThan(before);
     stop?.();
     document.documentElement.removeAttribute('data-theme');
   });

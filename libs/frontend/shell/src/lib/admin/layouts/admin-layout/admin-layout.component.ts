@@ -35,7 +35,6 @@ import {
   CountBadgeComponent,
   ButtonDirective,
   DropdownMenuImports,
-  GlyphComponent,
   KbdDirective,
   ModifierKeyService,
   type OverlaySide,
@@ -68,6 +67,7 @@ import {
   SIDEBAR_COMPACT_WIDTH,
   SIDEBAR_ITEM,
 } from '@internal/web-shell/lib/admin/layouts/admin-layout/constants/sidebar-item.constants';
+import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/components/site-logo/site-logo.component';
 
 /**
  * Component AdminLayoutComponent
@@ -95,7 +95,7 @@ import {
     ButtonDirective,
     DropdownMenuImports,
     CommandPaletteComponent,
-    GlyphComponent,
+    SiteLogoComponent,
     KbdDirective,
     NgIcon,
     RouterLink,
@@ -163,18 +163,13 @@ import {
           class="flex h-full flex-col gap-3 px-3 py-3 @max-[1024px]:min-h-12 @max-[1024px]:flex-row @max-[1024px]:flex-wrap @max-[1024px]:items-center @max-[1024px]:gap-x-2 @max-[1024px]:gap-y-1 @max-[1024px]:border-b @max-[1024px]:border-border @max-[1024px]:px-4 @max-[1024px]:py-1.75"
         >
           <a
-            class="flex h-9 items-center gap-2.5 rounded-md px-1 outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:bg-surface-hover focus-visible:outline-accent/55 @max-[1024px]:h-8 @max-[1024px]:flex-none @max-[1024px]:rounded-sm"
+            class="flex h-9 items-center gap-2.5 rounded-md px-1 outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit group-data-collapsed/sidebar:justify-center group-data-collapsed/sidebar:px-0 hover:bg-surface-hover focus-visible:outline-accent/55 @max-[1024px]:h-8 @max-[1024px]:flex-none @max-[1024px]:rounded-sm"
             routerLink="/admin"
             uiTooltip="Valentin Fortin"
             tooltipPosition="right"
             [tooltipDisabled]="!rail()"
           >
-            <span
-              class="grid size-7 shrink-0 place-items-center rounded-xs bg-aurora-violet text-[24px] text-on-fill"
-              aria-hidden="true"
-            >
-              <ui-glyph shape="cross" />
-            </span>
+            <app-site-logo class="size-7" />
             <span
               class="truncate text-[14px] font-semibold whitespace-nowrap text-fg group-data-collapsed/sidebar:sr-only"
               >Valentin Fortin</span
@@ -231,7 +226,7 @@ import {
                 </span>
                 @if (link.path === messagesPath && inboxSummary.count(); as unread) {
                   <ui-count-badge
-                    class="ml-auto group-data-collapsed/sidebar:absolute group-data-collapsed/sidebar:top-0.5 group-data-collapsed/sidebar:right-0.5 group-data-collapsed/sidebar:ml-0 group-data-collapsed/sidebar:h-4 group-data-collapsed/sidebar:min-w-4 group-data-collapsed/sidebar:px-1 group-data-collapsed/sidebar:text-[10px]/3"
+                    class="ml-auto group-data-collapsed/sidebar:absolute group-data-collapsed/sidebar:top-1 group-data-collapsed/sidebar:right-1 group-data-collapsed/sidebar:ml-0 group-data-collapsed/sidebar:size-2 group-data-collapsed/sidebar:min-w-0 group-data-collapsed/sidebar:overflow-hidden group-data-collapsed/sidebar:rounded-full group-data-collapsed/sidebar:bg-accent group-data-collapsed/sidebar:p-0 group-data-collapsed/sidebar:text-transparent"
                     [count]="unread"
                     ><span class="sr-only"> {{ unreadLabel(unread) }}</span></ui-count-badge
                   >

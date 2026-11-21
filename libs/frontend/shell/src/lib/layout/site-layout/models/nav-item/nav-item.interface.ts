@@ -39,5 +39,17 @@ export interface NavItem {
    * @type {string}
    */
   readonly hue: string;
+
+  /**
+   * Property optional
+   * @readonly
+   *
+   * @description
+   * Whether the section renders only when the content snapshot fills it (`SiteSectionsService`), so
+   * that the link is left out otherwise.
+   *
+   * @type {boolean | undefined}
+   */
+  readonly optional?: boolean;
   // #endregion
 }

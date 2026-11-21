@@ -738,22 +738,27 @@ export class DataTableComponent<T> {
     () => {
       const facets: readonly DataTableFacet<T>[] = this.facets();
       const selected: Readonly<Record<string, readonly string[]>> = this.state().facets;
-      return facets.map((facet) => {
-        const pool: readonly T[] = this.searched().filter((row) =>
-          matchesFacets(row, facets, selected, facet.id),
-        );
-        const checked: readonly string[] = selected[facet.id] ?? [];
-        return {
-          id: facet.id,
-          label: facet.label,
-          ...(facet.icon ? { icon: facet.icon } : {}),
-          options: facetOptions(facet, this.data(), this.collator).map((option) => ({
-            ...option,
-            count: pool.filter((row) => facetValues(facet, row).includes(option.value)).length,
-            selected: checked.includes(option.value),
-          })),
-        };
-      });
+      return (
+        facets
+          .map((facet) => {
+            const pool: readonly T[] = this.searched().filter((row) =>
+              matchesFacets(row, facets, selected, facet.id),
+            );
+            const checked: readonly string[] = selected[facet.id] ?? [];
+            return {
+              id: facet.id,
+              label: facet.label,
+              ...(facet.icon ? { icon: facet.icon } : {}),
+              options: facetOptions(facet, this.data(), this.collator).map((option) => ({
+                ...option,
+                count: pool.filter((row) => facetValues(facet, row).includes(option.value)).length,
+                selected: checked.includes(option.value),
+              })),
+            };
+          })
+          // A facet with nothing to pick (no row carries a value) would open an empty menu: left out.
+          .filter((facet) => facet.options.length > 0)
+      );
     },
   );
 
@@ -1128,7 +1133,7 @@ export class DataTableComponent<T> {
       'relative w-full',
       this.stickyHeader() && !this.scrolls()
         ? 'overflow-x-clip'
-        : '[scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--fg)_24%,transparent)_transparent] overflow-x-auto',
+        : '[scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,var(--ink)_24%,transparent)_transparent] overflow-x-auto',
       this.stickyHeader() &&
         this.scrolls() &&
         'max-h-[calc(100dvh-var(--data-table-sticky-top,0px))] overflow-y-auto overscroll-x-contain',

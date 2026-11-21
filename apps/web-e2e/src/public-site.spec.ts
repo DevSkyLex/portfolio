@@ -10,7 +10,7 @@ test.describe('public site', (): void => {
     await page.goto('/');
     await expect(page).toHaveTitle('Valentin Fortin — Développeur web fullstack');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Valentin Fortin');
-    for (const id of ['projects', 'journey', 'skills', 'about', 'contact']) {
+    for (const id of ['projects', 'journey', 'skills', 'contact']) {
       await expect(page.locator(`#${id}`)).toBeAttached();
     }
   });

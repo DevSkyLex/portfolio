@@ -10,9 +10,9 @@ import type { ProjectTint } from '@internal/content-web-ui/lib/project-card/mode
  * @type {Readonly<Record<ProjectTint, string>>}
  */
 export const PROJECT_TINT_CLASSES: Readonly<Record<ProjectTint, string>> = {
-  1: 'bg-[color-mix(in_srgb,var(--fg)_6%,var(--surface-raised))]',
-  2: 'bg-[color-mix(in_srgb,var(--fg)_3%,var(--surface-raised))]',
-  3: 'bg-[color-mix(in_srgb,var(--fg)_8%,var(--surface-raised))]',
-  4: 'bg-[color-mix(in_srgb,var(--fg)_4%,var(--surface-raised))]',
-  5: 'bg-[color-mix(in_srgb,var(--fg)_5%,var(--surface-raised))]',
+  1: 'bg-[color-mix(in_srgb,var(--ink)_6%,var(--surface-raised))]',
+  2: 'bg-[color-mix(in_srgb,var(--ink)_3%,var(--surface-raised))]',
+  3: 'bg-[color-mix(in_srgb,var(--ink)_8%,var(--surface-raised))]',
+  4: 'bg-[color-mix(in_srgb,var(--ink)_4%,var(--surface-raised))]',
+  5: 'bg-[color-mix(in_srgb,var(--ink)_5%,var(--surface-raised))]',
 };

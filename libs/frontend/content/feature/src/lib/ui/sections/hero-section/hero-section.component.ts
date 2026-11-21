@@ -8,10 +8,8 @@ import {
   viewChild,
   type Signal,
 } from '@angular/core';
-import { SiteContentService } from '@vfortin/content-web-data-access';
 import { AsciiPlanetComponent } from '@vfortin/content-web-ui';
 import { ButtonDirective, GlyphComponent, ScrollFrameService } from '@vfortin/ui';
-import { HERO_NAME } from '@internal/content-web-feature/lib/ui/sections/hero-section/constants/hero-name.constants';
 import type { HeroLetter } from '@internal/content-web-feature/lib/ui/sections/hero-section/models/hero-letter/hero-letter.interface';
 import { heroLetters } from '@internal/content-web-feature/lib/ui/sections/hero-section/utils/hero-letters/hero-letters.utils';
 
@@ -20,7 +18,7 @@ import { heroLetters } from '@internal/content-web-feature/lib/ui/sections/hero-
  * @class HeroSectionComponent
  *
  * @description
- * Renders the animated name, pinned planet, localized introduction, and calls to action; scroll progress drives the hero exit when motion is allowed.
+ * Renders the greeting, the animated job title, the pinned planet and the call to action; scroll progress drives the hero exit when motion is allowed.
  */
 @Component({
   selector: 'content-hero-section',
@@ -32,26 +30,27 @@ import { heroLetters } from '@internal/content-web-feature/lib/ui/sections/hero-
 export class HeroSectionComponent {
   // #region Properties
   /**
-   * Property content
+   * Property title
    * @readonly
    *
    * @description
-   * Locale-specific profile content supplying the hero introduction.
+   * Job title displayed large, localized; assistive technologies read it whole from the heading's hidden
+   * text.
    *
-   * @type {SiteContentService}
+   * @type {string}
    */
-  protected readonly content: SiteContentService = inject<SiteContentService>(SiteContentService);
+  protected readonly title: string = $localize`:@@hero.title:Développeur web fullstack`;
 
   /**
    * Property words
    * @readonly
    *
    * @description
-   * Name characters paired with stagger indexes, cycling glyph shapes and aurora colors for the template.
+   * Title characters paired with stagger indexes, glyph shapes and aurora colors for the template.
    *
    * @type {readonly (readonly HeroLetter[])[]}
    */
-  protected readonly words: readonly (readonly HeroLetter[])[] = heroLetters(HERO_NAME);
+  protected readonly words: readonly (readonly HeroLetter[])[] = heroLetters(this.title.split(' '));
 
   /**
    * Property hero

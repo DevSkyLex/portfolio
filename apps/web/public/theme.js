@@ -18,4 +18,11 @@
   setTimeout(() => {
     if (!root.hasAttribute('data-app')) root.removeAttribute('data-js');
   }, 4000);
+  // The header is see-through only at the top of the page. Kept here, not in the layout, so a reload
+  // or back navigation that restores the scroll position is right before hydration; without
+  // JavaScript the attribute never appears and the header stays opaque.
+  const top = () => root.toggleAttribute('data-at-top', scrollY <= 8);
+  top();
+  addEventListener('scroll', top, { passive: true });
+  addEventListener('pageshow', top);
 })();
