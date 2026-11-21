@@ -26,7 +26,11 @@ describe('DiskMediaStorage', (): void => {
 
   it('writes both renditions under the media name, world-readable, without temporary files', async (): Promise<void> => {
     const storage: DiskMediaStorage = new DiskMediaStorage(directory);
-    await storage.put(ID, { full: new Uint8Array([1, 2, 3]), small: new Uint8Array([4]) });
+    await storage.put(ID, {
+      kind: 'image',
+      full: new Uint8Array([1, 2, 3]),
+      small: new Uint8Array([4]),
+    });
     expect(readdirSync(directory).sort()).toEqual([`${ID}-960.webp`, `${ID}.webp`]);
     expect([...readFileSync(join(directory, `${ID}.webp`))]).toEqual([1, 2, 3]);
     if (process.platform !== 'win32') {
@@ -39,7 +43,7 @@ describe('DiskMediaStorage', (): void => {
 
   it('writes only the full rendition when there is no small one', async (): Promise<void> => {
     const storage: DiskMediaStorage = new DiskMediaStorage(directory);
-    await storage.put(ID, { full: new Uint8Array([1]), small: null });
+    await storage.put(ID, { kind: 'image', full: new Uint8Array([1]), small: null });
     expect(readdirSync(directory)).toEqual([`${ID}.webp`]);
   });
 
@@ -48,15 +52,23 @@ describe('DiskMediaStorage', (): void => {
     const failing: Uint8Array = new Uint8Array([1]);
     // A full rendition writeFile rejects, once the small rendition is already written.
     await expect(
-      storage.put(ID, { full: 42 as unknown as Uint8Array, small: failing }),
+      storage.put(ID, { kind: 'image', full: 42 as unknown as Uint8Array, small: failing }),
     ).rejects.toThrow();
     expect(existsSync(join(directory, `${ID}-960.webp`))).toBe(false);
+  });
+
+  it('writes a video as an MP4 and removes it with the other files', async (): Promise<void> => {
+    const storage: DiskMediaStorage = new DiskMediaStorage(directory);
+    await storage.put(ID, { kind: 'video', full: new Uint8Array([7, 8]), small: null });
+    expect(readdirSync(directory)).toEqual([`${ID}.mp4`]);
+    await storage.remove(ID);
+    expect(readdirSync(directory)).toEqual([]);
   });
 
   it('refuses an identifier that is not a media UUID', async (): Promise<void> => {
     const storage: DiskMediaStorage = new DiskMediaStorage(directory);
     await expect(
-      storage.put('../escape', { full: new Uint8Array([1]), small: null }),
+      storage.put('../escape', { kind: 'image', full: new Uint8Array([1]), small: null }),
     ).rejects.toThrow('Invalid media identifier');
   });
 });

@@ -113,6 +113,7 @@
           {
             "type": "figure",
             "attrs": {
+              "kind": "image",
               "src": "/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp",
               "small": "/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90-960.webp",
               "width": 1200,

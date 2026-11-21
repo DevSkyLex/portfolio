@@ -69,6 +69,7 @@ const record = (id: string, index: number): MediaRecord => ({
   height: 800,
   bytes: 5000,
   sha256: String(index).repeat(64),
+  kind: 'image',
   hasSmall: index % 2 === 0,
   createdAt: new Date('2026-09-30T00:00:00Z'),
   unlinkedAt: OLD,

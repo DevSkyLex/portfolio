@@ -1,5 +1,8 @@
 import type { Project, ProjectRevision } from '@vfortin/content-domain';
-import { MediaNotFoundError } from '@internal/content-application/lib/errors/application-error';
+import {
+  CoverNotImageError,
+  MediaNotFoundError,
+} from '@internal/content-application/lib/errors/application-error';
 import type {
   Clock,
   ContentRepositories,
@@ -69,13 +72,13 @@ export class ReviseProject {
         const before: string[] = project.mediaIds();
         project.revise(revision, PUBLISHED_LOCALES);
         const after: string[] = project.mediaIds();
-        const found: Set<string> = new Set(
-          (await media.existing(after)).map((record: MediaRecord): string => record.id),
-        );
+        const records: MediaRecord[] = await media.existing(after);
+        const found: Set<string> = new Set(records.map((record: MediaRecord): string => record.id));
         const unknown: string[] = after.filter((mediaId: string): boolean => !found.has(mediaId));
         if (unknown.length > 0) {
           throw new MediaNotFoundError(unknown);
         }
+        assertImageCover(project.coverMedia(), records);
         const removed: string[] = before.filter(
           (mediaId: string): boolean => !after.includes(mediaId),
         );
@@ -92,4 +95,23 @@ export class ReviseProject {
     );
   }
   // #endregion
+}
+
+/**
+ * Function assertImageCover
+ *
+ * @description
+ * Rejects a cover that points to a video (D57); figures accept both kinds.
+ *
+ * @param {string | null} cover - Cover media identifier, or `null`.
+ * @param {readonly MediaRecord[]} records - Stored media the project references.
+ * @throws {CoverNotImageError} When the cover media is a video.
+ */
+export function assertImageCover(cover: string | null, records: readonly MediaRecord[]): void {
+  if (
+    cover !== null &&
+    records.some((record: MediaRecord): boolean => record.id === cover && record.kind === 'video')
+  ) {
+    throw new CoverNotImageError();
+  }
 }

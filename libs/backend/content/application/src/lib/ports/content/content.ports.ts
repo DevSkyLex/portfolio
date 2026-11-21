@@ -971,6 +971,15 @@ export interface IdGenerator {
 export interface MediaRecord {
   // #region Properties
   /**
+   * Property kind
+   * @readonly
+   *
+   * @description
+   * `image` (WebP renditions) or `video` (the uploaded MP4, D57); only an image can be a cover.
+   */
+  readonly kind: MediaKind;
+
+  /**
    * Property id
    * @readonly
    *
@@ -1002,7 +1011,7 @@ export interface MediaRecord {
    * @readonly
    *
    * @description
-   * Size in bytes of the full WebP.
+   * Size in bytes of the full WebP, or of the MP4 of a video.
    */
   readonly bytes: number;
 
@@ -1042,6 +1051,98 @@ export interface MediaRecord {
    * it; `null` while referenced. The purge counts its grace period from this time.
    */
   readonly unlinkedAt: Date | null;
+  // #endregion
+}
+
+/**
+ * Type MediaKind
+ * @type MediaKind
+ *
+ * @description
+ * What a media holds: a re-encoded image or an MP4 video stored as sent (D57).
+ */
+export type MediaKind = 'image' | 'video';
+
+/**
+ * Interface ProbedVideo
+ * @interface ProbedVideo
+ *
+ * @description
+ * Display size read from the header of an MP4 video, rotation applied.
+ */
+export interface ProbedVideo {
+  // #region Properties
+  /**
+   * Property width
+   * @readonly
+   *
+   * @description
+   * Display width in pixels.
+   */
+  readonly width: number;
+
+  /**
+   * Property height
+   * @readonly
+   *
+   * @description
+   * Display height in pixels.
+   */
+  readonly height: number;
+  // #endregion
+}
+
+/**
+ * Interface VideoProbe
+ * @interface VideoProbe
+ *
+ * @description
+ * Recognizes an uploaded MP4 video and reads its display size without decoding it (D57).
+ */
+export interface VideoProbe {
+  // #region Methods
+  /**
+   * Method probe
+   * @method probe
+   *
+   * @description
+   * Tells whether the bytes are an MP4 video (ISO base media with a video track); still images in
+   * the same container (AVIF, HEIF) are not videos.
+   *
+   * @param {Uint8Array} bytes - Uploaded bytes.
+   * @throws {UnsupportedMediaError} When the bytes are an MP4 without a readable video track.
+   * @returns {ProbedVideo | null} Display size, or `null` when the bytes are not an MP4 video.
+   */
+  probe(bytes: Uint8Array): ProbedVideo | null;
+  // #endregion
+}
+
+/**
+ * Interface MediaUploadLimits
+ * @interface MediaUploadLimits
+ *
+ * @description
+ * Largest accepted upload per kind of media, in bytes; the HTTP layer accepts the larger one.
+ */
+export interface MediaUploadLimits {
+  // #region Properties
+  /**
+   * Property imageBytes
+   * @readonly
+   *
+   * @description
+   * Largest image.
+   */
+  readonly imageBytes: number;
+
+  /**
+   * Property videoBytes
+   * @readonly
+   *
+   * @description
+   * Largest MP4 video.
+   */
+  readonly videoBytes: number;
   // #endregion
 }
 
@@ -1222,16 +1323,25 @@ export interface ImageProcessor {
  * @interface MediaFiles
  *
  * @description
- * WebP files of one media.
+ * Files of one media: WebP renditions of an image, or the MP4 of a video.
  */
 export interface MediaFiles {
   // #region Properties
+  /**
+   * Property kind
+   * @readonly
+   *
+   * @description
+   * Kind of media, which decides the file extension.
+   */
+  readonly kind: MediaKind;
+
   /**
    * Property full
    * @readonly
    *
    * @description
-   * Full-size WebP, stored as `<id>.webp`.
+   * Full-size WebP stored as `<id>.webp`, or the video stored as `<id>.mp4`.
    */
   readonly full: Uint8Array;
 

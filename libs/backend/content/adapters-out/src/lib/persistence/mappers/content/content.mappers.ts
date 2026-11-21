@@ -139,6 +139,7 @@ export function toProject(row: ProjectRow): Project {
 export function toMediaRecord(row: MediaRow): MediaRecord {
   return {
     id: row.id,
+    kind: row.kind,
     width: row.width,
     height: row.height,
     bytes: row.bytes,

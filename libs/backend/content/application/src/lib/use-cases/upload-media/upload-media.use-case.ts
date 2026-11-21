@@ -1,4 +1,7 @@
-import { MediaMissingError } from '@internal/content-application/lib/errors/application-error';
+import {
+  MediaMissingError,
+  MediaTooLargeError,
+} from '@internal/content-application/lib/errors/application-error';
 import type {
   Clock,
   IdGenerator,
@@ -6,7 +9,10 @@ import type {
   MediaRecord,
   MediaRepository,
   MediaStorage,
+  MediaUploadLimits,
+  ProbedVideo,
   ProcessedImage,
+  VideoProbe,
 } from '@internal/content-application/lib/ports/content/content.ports';
 
 /**
@@ -14,8 +20,8 @@ import type {
  * @class UploadMedia
  *
  * @description
- * Stores an uploaded image (D40): re-encoded by the image processor, written to the media storage,
- * then recorded. Uploads run one at a time in the process, which bounds the memory of decoding and
+ * Stores an uploaded image (D40), re-encoded by the image processor, or an MP4 video (D57), kept as
+ * sent once its header is read; the files are written to the media storage, then recorded. Uploads run one at a time in the process, which bounds the memory of decoding and
  * keeps the SHA-256 check free of races between two identical uploads.
  */
 export class UploadMedia {
@@ -42,6 +48,8 @@ export class UploadMedia {
    * @param {MediaStorage} storage - Media files.
    * @param {IdGenerator} ids - Random media identifiers.
    * @param {Clock} clock - Upload time source.
+   * @param {VideoProbe} videos - MP4 recognition and display size.
+   * @param {MediaUploadLimits} limits - Largest image and video.
    */
   public constructor(
     private readonly media: MediaRepository,
@@ -49,6 +57,8 @@ export class UploadMedia {
     private readonly storage: MediaStorage,
     private readonly ids: IdGenerator,
     private readonly clock: Clock,
+    private readonly videos: VideoProbe,
+    private readonly limits: MediaUploadLimits,
   ) {}
   // #endregion
 
@@ -99,20 +109,33 @@ export class UploadMedia {
       await this.media.markUnlinked([existing.id], now);
       return { ...existing, unlinkedAt: now };
     }
-    const image: ProcessedImage = await this.processor.process(bytes);
+    const video: ProbedVideo | null = this.videos.probe(bytes);
+    if (video === null && bytes.byteLength > this.limits.imageBytes) {
+      throw new MediaTooLargeError();
+    }
+    if (video !== null && bytes.byteLength > this.limits.videoBytes) {
+      throw new MediaTooLargeError(
+        `The video exceeds ${Math.floor(this.limits.videoBytes / 1024 / 1024)} MiB.`,
+      );
+    }
+    const image: ProcessedImage | null =
+      video === null ? await this.processor.process(bytes) : null;
+    const full: Uint8Array = image?.full ?? bytes;
+    const small: Uint8Array | null = image?.small ?? null;
     const now: Date = this.clock.now();
     const record: MediaRecord = {
       id: this.ids.next(),
-      width: image.width,
-      height: image.height,
-      bytes: image.full.byteLength,
+      kind: video === null ? 'image' : 'video',
+      width: image?.width ?? video?.width ?? 0,
+      height: image?.height ?? video?.height ?? 0,
+      bytes: full.byteLength,
       sha256,
-      hasSmall: image.small !== null,
+      hasSmall: small !== null,
       createdAt: now,
       unlinkedAt: now,
     };
     // Files first: a row never points to missing files, an orphan file is removed right away.
-    await this.storage.put(record.id, { full: image.full, small: image.small });
+    await this.storage.put(record.id, { kind: record.kind, full, small });
     try {
       await this.media.insert(record);
     } catch (error: unknown) {

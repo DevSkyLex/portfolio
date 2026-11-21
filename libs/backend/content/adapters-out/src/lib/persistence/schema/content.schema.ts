@@ -173,6 +173,10 @@ export const projects = contentSchema.table('projects', {
  */
 export const media = contentSchema.table('media', {
   id: uuid('id').primaryKey(),
+  // `image` or `video` (D57); rows uploaded before videos are images.
+  kind: text('kind', { enum: ['image', 'video'] })
+    .notNull()
+    .default('image'),
   width: integer('width').notNull(),
   height: integer('height').notNull(),
   bytes: integer('bytes').notNull(),
@@ -409,7 +413,7 @@ export const seoReports = contentSchema.table(
   'seo_reports',
   {
     source: text('source', { enum: ['search-console', 'analytics', 'web-vitals'] }).notNull(),
-    range: text('range', { enum: ['7d', '28d', '90d', 'all'] }).notNull(),
+    range: text('range', { enum: ['7d', '28d', '90d', '365d', 'all'] }).notNull(),
     data: jsonb('data').$type<unknown>(),
     fetchedAt: timestamp('fetched_at', { withTimezone: true, mode: 'date' }),
     failure: jsonb('failure').$type<SeoSourceFailure>(),

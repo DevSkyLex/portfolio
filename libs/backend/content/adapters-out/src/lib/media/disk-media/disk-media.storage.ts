@@ -38,11 +38,11 @@ export class DiskMediaStorage implements MediaStorage {
    * @method put
    *
    * @description
-   * Writes `<id>-960.webp` (when present) then `<id>.webp`, each as a `.tmp` file renamed into
+   * Writes `<id>-960.webp` (when present) then `<id>.webp` or `<id>.mp4` (D57), each as a `.tmp` file renamed into
    * place, so a reader never sees a partial file; on failure, removes whatever was written.
    *
    * @param {string} id - Media identifier.
-   * @param {MediaFiles} files - WebP bytes.
+   * @param {MediaFiles} files - WebP bytes of an image, or the MP4 of a video.
    * @returns {Promise<void>} Completion once both files are in place.
    */
   public async put(id: string, files: MediaFiles): Promise<void> {
@@ -51,7 +51,7 @@ export class DiskMediaStorage implements MediaStorage {
       if (files.small !== null) {
         await this.write(this.path(id, '-960.webp'), files.small);
       }
-      await this.write(this.path(id, '.webp'), files.full);
+      await this.write(this.path(id, files.kind === 'video' ? '.mp4' : '.webp'), files.full);
     } catch (error: unknown) {
       await this.remove(id);
       throw error;
@@ -70,8 +70,8 @@ export class DiskMediaStorage implements MediaStorage {
    */
   public async remove(id: string): Promise<void> {
     await Promise.all(
-      ['.webp', '-960.webp', '.webp.tmp', '-960.webp.tmp'].map((suffix: string): Promise<void> =>
-        rm(this.path(id, suffix), { force: true }),
+      ['.webp', '-960.webp', '.mp4', '.webp.tmp', '-960.webp.tmp', '.mp4.tmp'].map(
+        (suffix: string): Promise<void> => rm(this.path(id, suffix), { force: true }),
       ),
     );
   }

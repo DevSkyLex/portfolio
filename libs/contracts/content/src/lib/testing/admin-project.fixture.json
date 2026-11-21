@@ -188,12 +188,14 @@
   "media": [
     {
       "id": "8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f",
+      "kind": "image",
       "src": "/media/8c9d0e1f-2a3b-4c5d-8e6f-7a8b9c0d1e2f.webp",
       "width": 2400,
       "height": 1350
     },
     {
       "id": "3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90",
+      "kind": "image",
       "src": "/media/3f2b8c1e-7a4d-4e2f-9b1a-0c5d6e7f8a90.webp",
       "width": 1200,
       "height": 900

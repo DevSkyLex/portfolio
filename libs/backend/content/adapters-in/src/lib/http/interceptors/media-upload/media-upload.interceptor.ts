@@ -23,12 +23,24 @@ import type { Observable } from 'rxjs';
 export const MEDIA_MAX_BYTES: number = MEDIA_UPLOAD_LIMITS.bytes;
 
 /**
+ * Constant MEDIA_VIDEO_MAX_BYTES
+ *
+ * @description
+ * Largest accepted MP4 video (`MEDIA_UPLOAD_LIMITS.videoBytes`, D57), for the composition; Multer
+ * reads up to this size and the use case holds images to `MEDIA_MAX_BYTES`.
+ *
+ * @type {number}
+ */
+export const MEDIA_VIDEO_MAX_BYTES: number = MEDIA_UPLOAD_LIMITS.videoBytes;
+
+/**
  * Class MediaUploadInterceptor
  * @class MediaUploadInterceptor
  *
  * @description
  * Reads the multipart upload into memory with Multer (D40): one part, the file field only, at most
- * `MEDIA_UPLOAD_LIMITS.bytes`. Multer stops reading at the first limit; its errors become the media
+ * `MEDIA_UPLOAD_LIMITS.videoBytes` (images are held to their own limit by the use case). Multer stops
+ * reading at the first limit; its errors become the media
  * problems (`content.media-too-large`, `content.media-missing`). Guards run before interceptors, so
  * `@AdminOnly` rejects an anonymous upload before a byte of it is parsed.
  */
@@ -44,7 +56,7 @@ export class MediaUploadInterceptor implements NestInterceptor {
    * what an image is, not the client-declared type.
    */
   private readonly files: NestInterceptor = new (FileInterceptor(MEDIA_UPLOAD_LIMITS.field, {
-    limits: { fileSize: MEDIA_UPLOAD_LIMITS.bytes, files: 1, fields: 0, parts: 1 },
+    limits: { fileSize: MEDIA_UPLOAD_LIMITS.videoBytes, files: 1, fields: 0, parts: 1 },
   }))();
   // #endregion
 
@@ -73,7 +85,9 @@ export class MediaUploadInterceptor implements NestInterceptor {
         throw new MediaTooLargeError();
       }
       if (error instanceof BadRequestException) {
-        throw new MediaMissingError(`Send one image in the "file" field (${error.message}).`);
+        throw new MediaMissingError(
+          `Send one image or MP4 video in the "file" field (${error.message}).`,
+        );
       }
       throw error;
     }

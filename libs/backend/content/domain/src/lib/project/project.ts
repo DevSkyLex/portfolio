@@ -503,6 +503,19 @@ export class Project {
   }
 
   /**
+   * Method coverMedia
+   * @method coverMedia
+   *
+   * @description
+   * Media shown as the cover, which must be an image (D57).
+   *
+   * @returns {string | null} Cover media identifier, or `null` without a cover.
+   */
+  public coverMedia(): string | null {
+    return this.props.cover?.media ?? null;
+  }
+
+  /**
    * Method mediaIds
    * @method mediaIds
    *

@@ -571,7 +571,7 @@ export class ContentMcpTools {
       ),
       tool(
         'upload_media',
-        'Store an image for a project cover or an article figure, from a public https URL (preferred) or base64 bytes. The server decodes and re-encodes it as WebP (metadata removed) and returns its id: use it in cover.media or as ![alt](media:<id> "caption") in the article, then save the project. Unreferenced images are deleted after seven days. The same bytes twice return the same id. Requires write consent.',
+        'Store an image for a project cover or an article figure, from a public https URL (preferred) or base64 bytes; base64 bytes may also be an MP4 video (at most 50 MiB) for an article figure, never a cover. The server decodes and re-encodes an image as WebP (metadata removed), keeps a video as sent, and returns its id: use it in cover.media or as ![alt](media:<id> "caption") in the article, then save the project. Unreferenced images are deleted after seven days. The same bytes twice return the same id. Requires write consent.',
         Write,
         UploadMediaInput,
         async (input) => {

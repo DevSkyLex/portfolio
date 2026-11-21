@@ -514,9 +514,15 @@ export const PublicImageSchema = z.object({
  * Constant PublicFigureSchema
  *
  * @description
- * Figure attributes in the public snapshot: the resolved image with its localized texts.
+ * Figure attributes in the public snapshot: the resolved image or MP4 video (D57) with its localized
+ * texts; a video has no 960 px rendition.
  */
-export const PublicFigureSchema = z.extend(PublicImageSchema, {
+export const PublicFigureSchema = z.object({
+  kind: z.enum(['image', 'video']),
+  src: z.string().check(z.regex(/^\/media\/[0-9a-f-]{36}\.(?:webp|mp4)$/)),
+  small: z.nullable(z.string().check(z.regex(/^\/media\/[0-9a-f-]{36}-960\.webp$/))),
+  width: z.int().check(z.positive()),
+  height: z.int().check(z.positive()),
   alt: z.string(),
   caption: z.string(),
 });

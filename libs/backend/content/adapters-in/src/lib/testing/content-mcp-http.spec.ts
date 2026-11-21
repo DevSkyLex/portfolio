@@ -474,6 +474,7 @@ Un site **rapide**.
       height: 900,
       bytes: 1234,
       sha256: 'a'.repeat(64),
+      kind: 'image',
       hasSmall: true,
       createdAt: new Date('2026-11-06T00:00:00Z'),
       unlinkedAt: new Date('2026-11-06T00:00:00Z'),
@@ -485,6 +486,7 @@ Un site **rapide**.
     });
     expect(byUrl.body.result.structuredContent).toEqual({
       id: record.id,
+      kind: 'image',
       src: `/media/${record.id}.webp`,
       width: 1600,
       height: 900,
