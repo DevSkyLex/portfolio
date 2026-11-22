@@ -215,19 +215,16 @@
             [clearOnSelect]="true"
             [disabled]="pending() || taxonomyValues().tags.length >= tagLimit"
             (focusin)="taxonomyRequested.emit()"
+            [entries]="tagEntries()"
             (valueChange)="chooseTag($event)"
           >
-            @for (tag of availableTags(); track tag.key) {
-              <ui-combobox-option
-                [value]="tag.key"
-                [keywords]="[tag.key, tag.label.fr, tag.label.en]"
-              >
-                <span class="inline-flex items-center gap-2">
-                  <content-tech-icon class="size-3.5" [tech]="tag.key" />
-                  {{ taxonomyLabel(tag) }}
-                </span>
-              </ui-combobox-option>
-            }
+            <!-- Hundreds of catalogue technologies: the list is virtualized, rows drawn here. -->
+            <ng-template uiComboboxItem [uiComboboxItemOf]="tagEntries()" let-entry>
+              <span class="inline-flex items-center gap-2">
+                <content-tech-icon class="size-3.5" [tech]="entry.value" />
+                {{ entry.label }}
+              </span>
+            </ng-template>
           </ui-combobox>
         </ui-field>
         <button

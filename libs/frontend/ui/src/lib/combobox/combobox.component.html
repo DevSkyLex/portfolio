@@ -42,7 +42,12 @@
   (detach)="close()"
 >
   <!-- Pressing inside the list keeps the focus in the field. -->
-  <div [class]="panelClasses()" data-slot="combobox-content" (mousedown)="$event.preventDefault()">
+  <div
+    [class]="panelClasses()"
+    [class.overflow-y-hidden]="virtual()"
+    data-slot="combobox-content"
+    (mousedown)="$event.preventDefault()"
+  >
     <div
       role="listbox"
       class="flex flex-col"
@@ -50,7 +55,46 @@
       [attr.aria-label]="ariaLabel() ?? null"
       [attr.aria-labelledby]="ariaLabelledby() ?? null"
     >
-      <ng-content />
+      @if (virtual()) {
+        <!-- [entries]: only the rows in view exist; the viewport scrolls, the panel does not. -->
+        <cdk-virtual-scroll-viewport
+          class="w-full overscroll-contain"
+          data-slot="combobox-viewport"
+          [itemSize]="rowHeight()"
+          [style.height]="viewportHeight()"
+        >
+          <div
+            *cdkVirtualFor="let option of items(); trackBy: trackChoice"
+            role="option"
+            data-slot="combobox-option"
+            [id]="option.id"
+            [class]="rowClasses()"
+            [attr.aria-selected]="isSelected(option.value())"
+            [attr.aria-disabled]="option.isDisabled() || null"
+            [attr.data-active]="isActive(option) ? '' : null"
+            [uiComboboxRow]="option"
+          >
+            <span class="min-w-0 flex-1 truncate">
+              @if (itemTemplate(); as row) {
+                <ng-container
+                  [ngTemplateOutlet]="row.template"
+                  [ngTemplateOutletContext]="{ $implicit: option.entry }"
+                />
+              } @else {
+                {{ option.text() }}
+              }
+            </span>
+            <ng-icon
+              class="invisible group-aria-selected:visible"
+              [svg]="icons.check"
+              size="16"
+              aria-hidden="true"
+            />
+          </div>
+        </cdk-virtual-scroll-viewport>
+      } @else {
+        <ng-content />
+      }
     </div>
     @if (!items().length) {
       <p role="status" class="px-2.5 py-2 text-sm text-fg-faint" data-slot="combobox-empty">

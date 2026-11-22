@@ -67,8 +67,9 @@ import {
   ButtonDirective,
   CheckboxComponent,
   ComboboxComponent,
-  ComboboxOptionComponent,
+  ComboboxItemTemplateDirective,
   ConfirmDialogService,
+  type ComboboxEntry,
   EMPTY_IMPORTS,
   FieldComponent,
   FieldErrorDirective,
@@ -179,7 +180,7 @@ const LOCALIZED_FIELDS: readonly LocalizedField[] = [
     ButtonDirective,
     CheckboxComponent,
     ComboboxComponent,
-    ComboboxOptionComponent,
+    ComboboxItemTemplateDirective,
     EMPTY_IMPORTS,
     FieldComponent,
     FieldErrorDirective,
@@ -220,6 +221,14 @@ export class ProjectFormComponent {
       const chosen: Set<string> = new Set(this.tagKeys());
       return this.tagChoices().filter((tag) => !chosen.has(tag.key));
     });
+  /** The tags still to choose as combobox entries, searched by key and both labels. */
+  protected readonly tagEntries: Signal<readonly ComboboxEntry<string>[]> = computed(() =>
+    this.availableTags().map((tag): ComboboxEntry<string> => ({
+      value: tag.key,
+      label: this.taxonomyLabel(tag),
+      keywords: [tag.key, tag.label.fr, tag.label.en],
+    })),
+  );
   // #region Properties
   /**
    * Property values
