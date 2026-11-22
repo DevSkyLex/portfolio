@@ -36,8 +36,11 @@
       <ng-container i18n="@@layout.menuClose">Fermer</ng-container>
     </button>
   </div>
-  <nav class="relative wrap pt-6" i18n-aria-label="@@layout.nav" aria-label="Navigation principale">
-    <!-- The sections of the home page, the articles page, then the contact, as in the header. -->
+  <nav class="relative wrap pt-2" i18n-aria-label="@@layout.nav" aria-label="Navigation principale">
+    <!--
+      The sections of the home page, then the articles page set apart as in the header's rule, then the
+      contact as the menu's action.
+    -->
     <ol class="group/menu" role="list">
       @for (item of homeSections(); track item.fragment; let i = $index) {
         <li
@@ -45,53 +48,139 @@
           [style.animation-delay.ms]="90 + i * 45"
         >
           <a
-            class="relative flex items-baseline gap-4 border-b border-border py-[18px] text-fg transition-colors duration-200 ease-orbit group-has-[[aria-current=true]]/menu:text-fg-muted after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-fill after:opacity-0 aria-[current=true]:text-fg aria-[current=true]:after:opacity-100"
+            class="relative flex items-center justify-between gap-4 border-b border-border py-4 text-fg transition-colors duration-200 ease-orbit group-has-[[aria-current=true]]/menu:text-fg-muted after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-fill after:opacity-0 aria-[current=true]:text-fg aria-[current=true]:after:opacity-100"
             routerLink="/"
             [fragment]="item.fragment"
             [attr.aria-current]="active() === item.fragment ? 'true' : null"
             (click)="closeMenu()"
           >
-            <span class="font-display text-d2 font-semibold">{{ item.label }}</span>
+            <span class="font-display text-d2-sm font-semibold">{{ item.label }}</span>
           </a>
         </li>
       }
       <li
-        class="animate-menu-in motion-reduce:animate-none"
+        class="mt-6 animate-menu-in motion-reduce:animate-none"
         [style.animation-delay.ms]="90 + homeSections().length * 45"
       >
         <a
-          class="relative flex items-baseline gap-4 border-b border-border py-[18px] text-fg transition-colors duration-200 ease-orbit group-has-[[aria-current=true]]/menu:text-fg-muted after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-fill after:opacity-0 aria-[current=true]:text-fg aria-[current=true]:after:opacity-100"
+          class="relative flex items-center justify-between gap-4 border-b border-border py-4 text-fg transition-colors duration-200 ease-orbit group-has-[[aria-current=true]]/menu:text-fg-muted after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-fill after:opacity-0 aria-[current=true]:text-fg aria-[current=true]:after:opacity-100"
           routerLink="/articles"
           routerLinkActive="text-fg"
           [ariaCurrentWhenActive]="true"
           (click)="closeMenu()"
         >
-          <span class="font-display text-d2 font-semibold">{{ articlesLabel }}</span>
+          <span class="font-display text-d2-sm font-semibold">{{ articlesLabel }}</span>
+          <ng-icon
+            class="shrink-0 text-fg-muted"
+            [svg]="icons.arrow"
+            size="20"
+            aria-hidden="true"
+          />
         </a>
       </li>
-      @if (contact(); as item) {
-        <li
-          class="animate-menu-in motion-reduce:animate-none"
-          [style.animation-delay.ms]="90 + (homeSections().length + 1) * 45"
-        >
-          <a
-            class="relative flex items-baseline gap-4 border-b border-border py-[18px] text-fg transition-colors duration-200 ease-orbit group-has-[[aria-current=true]]/menu:text-fg-muted after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-fill after:opacity-0 aria-[current=true]:text-fg aria-[current=true]:after:opacity-100"
-            routerLink="/"
-            [fragment]="item.fragment"
-            [attr.aria-current]="active() === item.fragment ? 'true' : null"
-            (click)="closeMenu()"
-          >
-            <span class="font-display text-d2 font-semibold">{{ item.label }}</span>
-          </a>
-        </li>
-      }
     </ol>
+    @if (contact(); as item) {
+      <a
+        class="mt-6 w-full animate-menu-in motion-reduce:animate-none"
+        uiBtn
+        variant="primary"
+        size="md"
+        routerLink="/"
+        [fragment]="item.fragment"
+        [style.animation-delay.ms]="90 + (homeSections().length + 1) * 45"
+        [attr.aria-current]="active() === item.fragment ? 'true' : null"
+        (click)="closeMenu()"
+      >
+        <ng-icon [svg]="icons.mail" size="16" aria-hidden="true" />{{ item.label }}
+      </a>
+    }
   </nav>
-  @if (links.email(); as email) {
-    <div class="relative wrap mt-auto flex flex-col gap-6 py-12">
-      <p class="font-mono text-data text-fg">{{ email.label }}</p>
+  <!--
+    A modal dialog sits in the top layer, above the overlays of the footer's menu selects: language and
+    theme are inline toggles here.
+  -->
+  <div class="relative wrap mt-auto flex flex-col gap-5 pt-10 pb-8">
+    @if (links.email() || links.profiles().length) {
+      <ul class="flex flex-col" role="list">
+        @if (links.email(); as email) {
+          <li>
+            <a [class]="link" [href]="email.href"
+              ><ng-icon
+                class="mr-2.5 shrink-0"
+                [svg]="icons.mail"
+                size="16"
+                strokeWidth="1.5"
+                aria-hidden="true"
+              />{{ email.label }}</a
+            >
+          </li>
+        }
+        @for (profile of links.profiles(); track profile.href) {
+          <li>
+            <a [class]="link" [href]="profile.href">
+              @defer (on immediate; hydrate never) {
+                <app-profile-icon class="mr-2.5 size-4 shrink-0" [kind]="profile.kind" />
+              } @placeholder {
+                <span class="mr-2.5 inline-block size-4 shrink-0" aria-hidden="true"></span>
+              }
+              {{ profile.label }}</a
+            >
+          </li>
+        }
+      </ul>
+    }
+    <div class="flex flex-wrap gap-3">
+      <div
+        class="inline-flex rounded-lg border border-border p-[3px]"
+        role="group"
+        i18n-aria-label="@@layout.language"
+        aria-label="Langue"
+      >
+        @for (option of languages; track option.value) {
+          <button
+            class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-sm px-3 text-[14px] font-medium text-fg-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:text-fg focus-visible:outline-accent/55 aria-pressed:bg-surface-selected aria-pressed:text-fg"
+            type="button"
+            [attr.lang]="option.lang"
+            [attr.aria-pressed]="locale === option.value"
+            (click)="switchLanguage(option.value)"
+          >
+            <span
+              class="flex h-3 w-4 shrink-0 items-center overflow-hidden rounded-2xs"
+              aria-hidden="true"
+            >
+              <ng-icon [svg]="option.value === 'fr' ? icons.flagFr : icons.flagGb" size="16" />
+            </span>
+            {{ option.label }}
+          </button>
+        }
+      </div>
+      <div
+        class="inline-flex rounded-lg border border-border p-[3px]"
+        role="group"
+        i18n-aria-label="@@layout.theme"
+        aria-label="Thème"
+      >
+        @for (option of themes; track option.value) {
+          <button
+            #themeOption
+            class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-sm px-3 text-[14px] font-medium text-fg-muted outline-2 outline-offset-0 outline-transparent transition-colors duration-(--dur-pop) ease-orbit hover:text-fg focus-visible:outline-accent/55 aria-pressed:bg-surface-selected aria-pressed:text-fg"
+            type="button"
+            [attr.aria-pressed]="theme.mode() === option.value"
+            (click)="theme.set(option.value, themeOption)"
+          >
+            <ng-icon
+              class="shrink-0"
+              [svg]="themeIcons[option.value]"
+              size="16"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            />
+            {{ option.label }}
+          </button>
+        }
+      </div>
     </div>
-  }
+  </div>
 </dialog>
 
 <!-- The administrator's preview through a maintenance (D56 revision): visitors get the 503 screen. -->
@@ -111,7 +200,7 @@
       <p class="min-w-0 flex-1">
         <span class="font-semibold" i18n="@@layout.maintenancePreview.title"
           >Mode maintenance actif.</span
-        >&ngsp;<span i18n="@@layout.maintenancePreview.body"
+        >&ngsp;<span class="@max-[640px]:hidden" i18n="@@layout.maintenancePreview.body"
           >Les visiteurs voient l’écran de maintenance ; vous voyez le site car vous êtes connecté
           en administrateur.</span
         >

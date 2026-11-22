@@ -22,7 +22,7 @@ import { SKILLS_DECO } from '@internal/content-web-feature/lib/ui/sections/skill
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section
-      class="@container relative bg-surface pt-40 shadow-[0_-1px_0_var(--surface)]"
+      class="@container relative bg-surface pt-40 shadow-[0_-1px_0_var(--surface)] @max-[768px]:pt-24"
       id="skills"
       uiSectionFx
       aria-labelledby="skills-title"

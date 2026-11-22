@@ -445,6 +445,35 @@ describe('AdminLayoutComponent', () => {
     expect(skip?.getAttribute('href')).toBe(`#${root.querySelector('main')?.id}`);
   });
 
+  it('unfolds the narrow menu from its button and folds it on navigation or a wide window', async () => {
+    const query: FakeMediaQuery = stubWidth(true);
+    const { fixture, root } = await setup();
+    const menu: HTMLElement | null = root.querySelector('#admin-menu');
+    const button: () => HTMLButtonElement | null = (): HTMLButtonElement | null =>
+      root.querySelector<HTMLButtonElement>('button[aria-controls="admin-menu"]');
+    expect(menu?.className).toContain('@max-[1024px]:not-data-open:hidden');
+    expect(menu?.querySelector('nav')).not.toBeNull();
+    expect(button()?.getAttribute('aria-expanded')).toBe('false');
+    expect(menu?.hasAttribute('data-open')).toBe(false);
+
+    button()?.click();
+    await fixture.whenStable();
+    expect(button()?.getAttribute('aria-expanded')).toBe('true');
+    expect(menu?.hasAttribute('data-open')).toBe(true);
+
+    await TestBed.inject(Router).navigateByUrl('/admin/login');
+    await fixture.whenStable();
+    expect(menu?.hasAttribute('data-open')).toBe(false);
+
+    button()?.click();
+    await fixture.whenStable();
+    query.matches = false;
+    query.listener?.({ matches: false });
+    await fixture.whenStable();
+    expect(button()).toBeNull();
+    expect(menu?.hasAttribute('data-open')).toBe(false);
+  });
+
   it('renders no separator below the narrow breakpoint', async () => {
     const query: FakeMediaQuery = stubWidth(true);
     const { fixture, root } = await setup();
@@ -711,13 +740,14 @@ describe('AdminLayoutComponent', () => {
     ).toEqual(['Ctrl', 'K']);
     entry('Rechercher')?.dispatchEvent(new FocusEvent('focusout'));
     await fixture.whenStable();
-    expect(await tip(entry('Voir le site'))).toBe('Voir le site');
-    expect(await tip(entry('Se déconnecter'))).toBe('Se déconnecter');
+    // The secondary entries keep their labels in the narrow menu, without a tooltip.
+    expect(await tip(entry('Voir le site'))).toBeNull();
+    expect(await tip(entry('Se déconnecter'))).toBeNull();
 
     query.matches = false;
     query.listener?.({ matches: false });
     await fixture.whenStable();
-    expect(await tip(entry('Se déconnecter'))).toBeNull();
+    expect(await tip(entry('Rechercher'))).toBeNull();
 
     fixture.destroy();
     expect(query.listener).toBeNull();

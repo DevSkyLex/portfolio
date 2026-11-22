@@ -34,7 +34,7 @@ import {
   template: `
     @if (content.faq().length > 0) {
       <section
-        class="@container relative bg-surface pt-40 shadow-[0_-1px_0_var(--surface)]"
+        class="@container relative bg-surface pt-40 shadow-[0_-1px_0_var(--surface)] @max-[768px]:pt-24"
         id="faq"
         uiSectionFx
         aria-labelledby="faq-title"

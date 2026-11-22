@@ -23,11 +23,13 @@ import { flagFr, flagGb } from '@ng-icons/flag-icons';
 import {
   lucideExternalLink,
   lucideLogOut,
+  lucideMenu,
   lucideMonitor,
   lucideMoon,
   lucideRotateCw,
   lucideSearch,
   lucideSun,
+  lucideX,
 } from '@ng-icons/lucide';
 import { AdminInboxSummaryPort } from '@vfortin/contact-web-data-access/summary';
 import { AdminProjectNavigationPort } from '@vfortin/content-web-data-access/navigation';
@@ -160,8 +162,8 @@ import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/co
       >
         <!--
           The padding sits inside: on the panel itself it would add to its size. Below 1024 px one
-          48 px bar holds the workspace, the search, the sections and the site and logout entries;
-          below 640 px the sections take a second row.
+          48 px bar holds the workspace, the search and a menu button that unfolds the sections and the
+          secondary entries below it, labelled, as a full-width list.
         -->
         <div
           class="flex h-full flex-col gap-3 px-3 py-3 @max-[1024px]:min-h-12 @max-[1024px]:flex-row @max-[1024px]:flex-wrap @max-[1024px]:items-center @max-[1024px]:gap-x-2 @max-[1024px]:gap-y-1 @max-[1024px]:border-b @max-[1024px]:border-border @max-[1024px]:px-4 @max-[1024px]:py-1.75"
@@ -181,7 +183,7 @@ import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/co
           </a>
 
           <button
-            class="${SIDEBAR_ITEM} mb-2 cursor-pointer border border-border-field group-data-collapsed/sidebar:px-[7px] hover:border-border-hover @max-[1024px]:mb-0 @max-[1024px]:border-0"
+            class="${SIDEBAR_ITEM} mb-2 cursor-pointer border border-border-field group-data-collapsed/sidebar:px-[7px] hover:border-border-hover @max-[1024px]:mb-0 @max-[1024px]:ml-auto @max-[1024px]:border-0"
             type="button"
             [attr.aria-keyshortcuts]="modifier.ariaKeys(['Mod', 'K'])"
             uiTooltip="Rechercher"
@@ -207,194 +209,221 @@ import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/co
             }
           </button>
 
-          <nav
-            class="flex flex-1 flex-col gap-px @max-[1024px]:flex-row @max-[640px]:order-last @max-[640px]:basis-full"
-            aria-label="Administration"
-            i18n-aria-label="@@admin.shell.nav.label"
-          >
-            @for (link of links; track link.path) {
-              <!-- In the rail, the unread count becomes a 16 px solid badge on the icon's corner. -->
-              <a
-                class="${SIDEBAR_ITEM} relative aria-[current=page]:bg-surface-selected aria-[current=page]:text-fg"
-                [routerLink]="link.path"
-                routerLinkActive
-                ariaCurrentWhenActive="page"
-                [uiTooltip]="link.label"
-                tooltipPosition="right"
-                [tooltipDisabled]="!rail()"
-              >
-                <ng-icon [svg]="link.icon" size="16" aria-hidden="true" />
-                <!-- The trailing space keeps the label apart from the count in the accessible name. -->
-                <span class="whitespace-nowrap group-data-collapsed/sidebar:sr-only"
-                  >{{ link.label }}
-                </span>
-                @if (link.path === messagesPath && inboxSummary.count(); as unread) {
-                  <ui-count-badge
-                    class="ml-auto group-data-collapsed/sidebar:absolute group-data-collapsed/sidebar:top-1 group-data-collapsed/sidebar:right-1 group-data-collapsed/sidebar:ml-0 group-data-collapsed/sidebar:size-2 group-data-collapsed/sidebar:min-w-0 group-data-collapsed/sidebar:overflow-hidden group-data-collapsed/sidebar:rounded-full group-data-collapsed/sidebar:bg-accent group-data-collapsed/sidebar:p-0 group-data-collapsed/sidebar:text-transparent"
-                    [count]="unread"
-                    ><span class="sr-only"> {{ unreadLabel(unread) }}</span></ui-count-badge
-                  >
-                }
-              </a>
-            }
-          </nav>
-          @if (projectNavigation.callState().error) {
-            <p
-              role="alert"
-              class="text-xs text-danger-ink group-data-collapsed/sidebar:sr-only @max-[1024px]:order-last"
-              i18n="@@admin.shell.projectsUnavailable"
-            >
-              Recherche d’articles indisponible.
-            </p>
+          @if (narrow()) {
             <button
-              uiBtn
-              variant="ghost"
-              size="xs"
+              class="${SIDEBAR_ITEM} cursor-pointer"
               type="button"
-              class="self-start group-data-collapsed/sidebar:w-8 group-data-collapsed/sidebar:px-0 @max-[1024px]:order-last"
-              uiTooltip="Réessayer les articles"
-              i18n-uiTooltip="@@admin.shell.projectsRetry"
-              tooltipPosition="right"
-              [tooltipDisabled]="!rail()"
-              (click)="loadProjects()"
+              aria-controls="admin-menu"
+              [attr.aria-expanded]="menuOpen()"
+              (click)="toggleMenu()"
             >
-              <ng-icon
-                class="hidden group-data-collapsed/sidebar:block"
-                [svg]="icons.retry"
-                size="14"
-                aria-hidden="true"
-              />
-              <span class="group-data-collapsed/sidebar:sr-only" i18n="@@admin.shell.projectsRetry"
-                >Réessayer les articles</span
-              >
+              <ng-icon [svg]="menuOpen() ? icons.close : icons.menu" size="16" aria-hidden="true" />
+              <span class="whitespace-nowrap" i18n="@@admin.shell.menu">Menu</span>
             </button>
           }
 
-          <div class="flex flex-col gap-px @max-[1024px]:ml-auto @max-[1024px]:flex-row">
-            <!-- The site's own preference (ThemeService): one choice for the admin and the public pages. -->
-            <button
-              #themeTrigger
-              class="${SIDEBAR_ITEM} cursor-pointer"
-              type="button"
-              align="start"
-              uiTooltip="Thème"
-              i18n-uiTooltip="@@layout.theme"
-              [tooltipPosition]="tooltipSide()"
-              [tooltipDisabled]="!iconOnly()"
-              [uiDropdownMenuTrigger]="themeMenu"
-              [attr.aria-label]="themeLabel()"
+          <!--
+            Above 1024 px the wrapper is transparent to the sidebar's column. Below, it is the menu
+            unfolded under the bar: hidden until the menu button opens it, closed by each navigation.
+          -->
+          <div
+            id="admin-menu"
+            class="contents @max-[1024px]:flex @max-[1024px]:basis-full @max-[1024px]:flex-col @max-[1024px]:gap-2 @max-[1024px]:pt-1 @max-[1024px]:pb-2 @max-[1024px]:not-data-open:hidden"
+            [attr.data-open]="menuOpen() ? '' : null"
+          >
+            <nav
+              class="flex flex-1 flex-col gap-px"
+              aria-label="Administration"
+              i18n-aria-label="@@admin.shell.nav.label"
             >
-              <ng-icon [svg]="themeIcons[theme.mode()]" size="16" aria-hidden="true" />
-              <span
-                class="whitespace-nowrap group-data-collapsed/sidebar:sr-only @max-[1024px]:sr-only"
-                i18n="@@layout.theme"
-                >Thème</span
-              >
-            </button>
-            <ng-template #themeMenu>
-              <div uiDropdownMenuContent class="min-w-40">
-                <div
-                  uiDropdownMenuRadioGroup
-                  [value]="theme.mode()"
-                  (valueChange)="setTheme($event, themeTrigger)"
+              @for (link of links; track link.path) {
+                <!-- In the rail, the unread count becomes a 16 px solid badge on the icon's corner. -->
+                <a
+                  class="${SIDEBAR_ITEM} relative aria-[current=page]:bg-surface-selected aria-[current=page]:text-fg"
+                  [routerLink]="link.path"
+                  routerLinkActive
+                  ariaCurrentWhenActive="page"
+                  [uiTooltip]="link.label"
+                  tooltipPosition="right"
+                  [tooltipDisabled]="!rail()"
                 >
-                  @for (option of themes; track option.value) {
-                    <button uiDropdownMenuRadioItem type="button" [value]="option.value">
-                      <ui-dropdown-menu-item-indicator />
-                      <ng-icon [svg]="themeIcons[option.value]" size="14" aria-hidden="true" />
-                      {{ option.label }}
-                    </button>
+                  <ng-icon [svg]="link.icon" size="16" aria-hidden="true" />
+                  <!-- The trailing space keeps the label apart from the count in the accessible name. -->
+                  <span class="whitespace-nowrap group-data-collapsed/sidebar:sr-only"
+                    >{{ link.label }}
+                  </span>
+                  @if (link.path === messagesPath && inboxSummary.count(); as unread) {
+                    <ui-count-badge
+                      class="ml-auto group-data-collapsed/sidebar:absolute group-data-collapsed/sidebar:top-1 group-data-collapsed/sidebar:right-1 group-data-collapsed/sidebar:ml-0 group-data-collapsed/sidebar:size-2 group-data-collapsed/sidebar:min-w-0 group-data-collapsed/sidebar:overflow-hidden group-data-collapsed/sidebar:rounded-full group-data-collapsed/sidebar:bg-accent group-data-collapsed/sidebar:p-0 group-data-collapsed/sidebar:text-transparent"
+                      [count]="unread"
+                      ><span class="sr-only"> {{ unreadLabel(unread) }}</span></ui-count-badge
+                    >
                   }
+                </a>
+              }
+            </nav>
+            @if (projectNavigation.callState().error) {
+              <p
+                role="alert"
+                class="text-xs text-danger-ink group-data-collapsed/sidebar:sr-only"
+                i18n="@@admin.shell.projectsUnavailable"
+              >
+                Recherche d’articles indisponible.
+              </p>
+              <button
+                uiBtn
+                variant="ghost"
+                size="xs"
+                type="button"
+                class="self-start group-data-collapsed/sidebar:w-8 group-data-collapsed/sidebar:px-0"
+                uiTooltip="Réessayer les articles"
+                i18n-uiTooltip="@@admin.shell.projectsRetry"
+                tooltipPosition="right"
+                [tooltipDisabled]="!rail()"
+                (click)="loadProjects()"
+              >
+                <ng-icon
+                  class="hidden group-data-collapsed/sidebar:block"
+                  [svg]="icons.retry"
+                  size="14"
+                  aria-hidden="true"
+                />
+                <span
+                  class="group-data-collapsed/sidebar:sr-only"
+                  i18n="@@admin.shell.projectsRetry"
+                  >Réessayer les articles</span
+                >
+              </button>
+            }
+
+            <div
+              class="flex flex-col gap-px @max-[1024px]:border-t @max-[1024px]:border-border @max-[1024px]:pt-2"
+            >
+              <!-- The site's own preference (ThemeService): one choice for the admin and the public pages. -->
+              <button
+                #themeTrigger
+                class="${SIDEBAR_ITEM} cursor-pointer"
+                type="button"
+                align="start"
+                uiTooltip="Thème"
+                i18n-uiTooltip="@@layout.theme"
+                tooltipPosition="right"
+                [tooltipDisabled]="!rail()"
+                [uiDropdownMenuTrigger]="themeMenu"
+                [attr.aria-label]="themeLabel()"
+              >
+                <ng-icon [svg]="themeIcons[theme.mode()]" size="16" aria-hidden="true" />
+                <span
+                  class="whitespace-nowrap group-data-collapsed/sidebar:sr-only"
+                  i18n="@@layout.theme"
+                  >Thème</span
+                >
+              </button>
+              <ng-template #themeMenu>
+                <div uiDropdownMenuContent class="min-w-40">
+                  <div
+                    uiDropdownMenuRadioGroup
+                    [value]="theme.mode()"
+                    (valueChange)="setTheme($event, themeTrigger)"
+                  >
+                    @for (option of themes; track option.value) {
+                      <button uiDropdownMenuRadioItem type="button" [value]="option.value">
+                        <ui-dropdown-menu-item-indicator />
+                        <ng-icon [svg]="themeIcons[option.value]" size="14" aria-hidden="true" />
+                        {{ option.label }}
+                      </button>
+                    }
+                  </div>
                 </div>
-              </div>
-            </ng-template>
-            <!--
+              </ng-template>
+              <!--
               Each locale is a separate build (French at /fr/, English at /en/): choosing the other one
               loads the same admin address from it.
             -->
-            <button
-              class="${SIDEBAR_ITEM} cursor-pointer"
-              type="button"
-              align="start"
-              uiTooltip="Langue"
-              i18n-uiTooltip="@@layout.language"
-              [tooltipPosition]="tooltipSide()"
-              [tooltipDisabled]="!iconOnly()"
-              [uiDropdownMenuTrigger]="languageMenu"
-              [attr.aria-label]="languageLabel()"
-            >
-              <span
-                class="flex h-3 w-4 shrink-0 items-center overflow-hidden rounded-2xs"
-                aria-hidden="true"
+              <button
+                class="${SIDEBAR_ITEM} cursor-pointer"
+                type="button"
+                align="start"
+                uiTooltip="Langue"
+                i18n-uiTooltip="@@layout.language"
+                tooltipPosition="right"
+                [tooltipDisabled]="!rail()"
+                [uiDropdownMenuTrigger]="languageMenu"
+                [attr.aria-label]="languageLabel()"
               >
-                <ng-icon [svg]="flags[locale]" size="16" />
-              </span>
-              <span
-                class="whitespace-nowrap group-data-collapsed/sidebar:sr-only @max-[1024px]:sr-only"
-                i18n="@@layout.language"
-                >Langue</span
-              >
-            </button>
-            <ng-template #languageMenu>
-              <div uiDropdownMenuContent class="min-w-40">
-                <div
-                  uiDropdownMenuRadioGroup
-                  [value]="locale"
-                  (valueChange)="switchLanguage($event)"
+                <span
+                  class="flex h-3 w-4 shrink-0 items-center overflow-hidden rounded-2xs"
+                  aria-hidden="true"
                 >
-                  @for (option of languages; track option.value) {
-                    <button
-                      uiDropdownMenuRadioItem
-                      type="button"
-                      [value]="option.value"
-                      [attr.lang]="option.value"
-                    >
-                      <ui-dropdown-menu-item-indicator />
-                      <span
-                        class="flex h-3 w-4 shrink-0 items-center overflow-hidden rounded-2xs"
-                        aria-hidden="true"
+                  <ng-icon [svg]="flags[locale]" size="16" />
+                </span>
+                <span
+                  class="whitespace-nowrap group-data-collapsed/sidebar:sr-only"
+                  i18n="@@layout.language"
+                  >Langue</span
+                >
+              </button>
+              <ng-template #languageMenu>
+                <div uiDropdownMenuContent class="min-w-40">
+                  <div
+                    uiDropdownMenuRadioGroup
+                    [value]="locale"
+                    (valueChange)="switchLanguage($event)"
+                  >
+                    @for (option of languages; track option.value) {
+                      <button
+                        uiDropdownMenuRadioItem
+                        type="button"
+                        [value]="option.value"
+                        [attr.lang]="option.value"
                       >
-                        <ng-icon [svg]="flags[option.value]" size="16" />
-                      </span>
-                      {{ option.label }}
-                    </button>
-                  }
+                        <ui-dropdown-menu-item-indicator />
+                        <span
+                          class="flex h-3 w-4 shrink-0 items-center overflow-hidden rounded-2xs"
+                          aria-hidden="true"
+                        >
+                          <ng-icon [svg]="flags[option.value]" size="16" />
+                        </span>
+                        {{ option.label }}
+                      </button>
+                    }
+                  </div>
                 </div>
-              </div>
-            </ng-template>
-            <a
-              class="${SIDEBAR_ITEM}"
-              [href]="siteHref"
-              target="_blank"
-              rel="noopener"
-              uiTooltip="Voir le site"
-              i18n-uiTooltip="@@admin.shell.viewSite"
-              [tooltipPosition]="tooltipSide()"
-              [tooltipDisabled]="!iconOnly()"
-            >
-              <ng-icon [svg]="icons.site" size="16" aria-hidden="true" />
-              <span
-                class="whitespace-nowrap group-data-collapsed/sidebar:sr-only @max-[1024px]:sr-only"
-                i18n="@@admin.shell.viewSite"
-                >Voir le site</span
+              </ng-template>
+              <a
+                class="${SIDEBAR_ITEM}"
+                [href]="siteHref"
+                target="_blank"
+                rel="noopener"
+                uiTooltip="Voir le site"
+                i18n-uiTooltip="@@admin.shell.viewSite"
+                tooltipPosition="right"
+                [tooltipDisabled]="!rail()"
               >
-            </a>
-            <button
-              class="${SIDEBAR_ITEM} cursor-pointer"
-              type="button"
-              uiTooltip="Se déconnecter"
-              i18n-uiTooltip="@@admin.shell.logout"
-              [tooltipPosition]="tooltipSide()"
-              [tooltipDisabled]="!iconOnly()"
-              (click)="logout()"
-            >
-              <ng-icon [svg]="icons.logout" size="16" aria-hidden="true" />
-              <span
-                class="whitespace-nowrap group-data-collapsed/sidebar:sr-only @max-[1024px]:sr-only"
-                i18n="@@admin.shell.logout"
-                >Se déconnecter</span
+                <ng-icon [svg]="icons.site" size="16" aria-hidden="true" />
+                <span
+                  class="whitespace-nowrap group-data-collapsed/sidebar:sr-only"
+                  i18n="@@admin.shell.viewSite"
+                  >Voir le site</span
+                >
+              </a>
+              <button
+                class="${SIDEBAR_ITEM} cursor-pointer"
+                type="button"
+                uiTooltip="Se déconnecter"
+                i18n-uiTooltip="@@admin.shell.logout"
+                tooltipPosition="right"
+                [tooltipDisabled]="!rail()"
+                (click)="logout()"
               >
-            </button>
+                <ng-icon [svg]="icons.logout" size="16" aria-hidden="true" />
+                <span
+                  class="whitespace-nowrap group-data-collapsed/sidebar:sr-only"
+                  i18n="@@admin.shell.logout"
+                  >Se déconnecter</span
+                >
+              </button>
+            </div>
           </div>
         </div>
 
@@ -542,6 +571,17 @@ export class AdminLayoutComponent {
   protected readonly narrow: WritableSignal<boolean> = signal<boolean>(false);
 
   /**
+   * Property menuOpen
+   * @readonly
+   *
+   * @description
+   * Whether the narrow top bar's menu is unfolded; each navigation and a wide window close it.
+   *
+   * @type {WritableSignal<boolean>}
+   */
+  protected readonly menuOpen: WritableSignal<boolean> = signal<boolean>(false);
+
+  /**
    * Property sidebarState
    * @readonly
    *
@@ -569,8 +609,8 @@ export class AdminLayoutComponent {
    * @readonly
    *
    * @description
-   * Whether the search, site and logout entries show their icon only (top bar or rail) and then carry
-   * a tooltip.
+   * Whether the search entry shows its icon only (top bar or rail) and then carries a tooltip; the
+   * secondary entries keep their labels in the narrow menu and carry one in the rail only.
    *
    * @type {Signal<boolean>}
    */
@@ -715,12 +755,16 @@ export class AdminLayoutComponent {
    * Lucide icons of the sidebar actions.
    */
   protected readonly icons: {
+    readonly close: typeof lucideX;
     readonly logout: typeof lucideLogOut;
+    readonly menu: typeof lucideMenu;
     readonly retry: typeof lucideRotateCw;
     readonly search: typeof lucideSearch;
     readonly site: typeof lucideExternalLink;
   } = {
+    close: lucideX,
     logout: lucideLogOut,
+    menu: lucideMenu,
     retry: lucideRotateCw,
     search: lucideSearch,
     site: lucideExternalLink,
@@ -849,6 +893,7 @@ export class AdminLayoutComponent {
         takeUntilDestroyed(),
       )
       .subscribe(() => {
+        this.menuOpen.set(false);
         void this.inboxSummary.refresh();
       });
     effect((onCleanup): void => {
@@ -883,7 +928,19 @@ export class AdminLayoutComponent {
    * Opens the command palette from the sidebar's search entry.
    */
   protected openPalette(): void {
+    this.menuOpen.set(false);
     this.palette().open();
+  }
+
+  /**
+   * Method toggleMenu
+   * @method toggleMenu
+   *
+   * @description
+   * Unfolds or folds the narrow top bar's menu.
+   */
+  protected toggleMenu(): void {
+    this.menuOpen.update((open: boolean): boolean => !open);
   }
 
   /**
@@ -1153,8 +1210,10 @@ export class AdminLayoutComponent {
       return;
     }
     this.narrow.set(query.matches);
-    const listener: (event: MediaQueryListEvent) => void = (event: MediaQueryListEvent): void =>
+    const listener: (event: MediaQueryListEvent) => void = (event: MediaQueryListEvent): void => {
       this.narrow.set(event.matches);
+      if (!event.matches) this.menuOpen.set(false);
+    };
     query.addEventListener('change', listener);
     destroyRef.onDestroy(() => query.removeEventListener('change', listener));
   }
