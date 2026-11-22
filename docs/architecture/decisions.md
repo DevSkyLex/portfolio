@@ -229,8 +229,9 @@ framed and list rows keep their hairlines inside their card, while forms and set
 gutter with their hairline dividers, across the full container width with no narrower column (the
 920 px column of the settings page revision is gone, 2026-11-21); the sortable rows (« Repères », « Liens », FAQ questions) are cards 8 px apart; the side panels
 (dashboard details, project properties) stay panels. The bar, the page header and the content share one
-container: centred at 80 rem with a gutter of at least 24 px (16 px below 640 px), computed as
-`max(1.5rem, (100% - 80rem) / 2 + 1.5rem)`. The dashboard has no side panel: its window
+container: centred at 96 rem with a gutter of at least 32 px (16 px below 640 px), computed as
+`max(2rem, (100% - 96rem) / 2 + 2rem)` (2026-11-22: from 80 rem and 24 px, whose margins grew to
+~230 px at 1920 px). The dashboard has no side panel: its window
 controls and « Détails » sheet sit in the header and each tab shows its figure cards (2026-11-21, with a
 one-year window, `365d`, added to the three others; Search Console keeps 16 months, so the previous
 year it compares with is only partly covered). A page with a side panel (project and timeline entry
@@ -1181,6 +1182,14 @@ it off.
   (site mark, heading, message or default line, the public e-mail) without header or footer, answered
   503 with `Retry-After: 3600` and `X-Robots-Tag: noindex`; the admin area never reaches the route. An
   unreadable snapshot leaves the site routes to answer as before.
+- **Administrator preview** (2026-11-22, owner request): the admin layout marks its browser in local
+  storage (`portfolio.admin.present`, value `1`, no credential) once signed in and removes the mark on
+  logout. The server still renders the maintenance screen (503) for every request; after hydration the
+  screen asks `MaintenancePreviewService` whether the browser is marked and, if so, reloads the route,
+  which `maintenanceGuard` now lets through to the site. The site layout then shows a status banner above
+  the header (« Mode maintenance actif », with a link to `/admin/maintenance`). The mark is no security
+  boundary: forging it only reveals pages the maintenance hides from view, never admin data; an expired
+  session keeps the mark until the next logout.
 
 ## D57 — MP4 videos in article figures
 

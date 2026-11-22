@@ -1,5 +1,5 @@
 <header
-  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] text-[13px] @max-[640px]:px-4"
+  class="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface px-[max(2rem,calc((100%_-_96rem)/2_+_2rem))] text-[13px] @max-[640px]:px-4"
 >
   <ui-sidebar-trigger class="-ml-2" />
   <a
@@ -43,7 +43,7 @@
     </ui-page-header>
 
     <div
-      class="flex w-full min-w-0 flex-1 flex-col gap-4 px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
+      class="flex w-full min-w-0 flex-1 flex-col gap-4 px-[max(2rem,calc((100%_-_96rem)/2_+_2rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
     >
       @if (store.conflict()) {
         <div uiAlert variant="warning">
@@ -80,7 +80,7 @@
   } @else if (store.loadCallState().status === 'error') {
     @let failure = store.loadCallState().error;
     <div
-      class="flex w-full min-w-0 flex-col gap-4 px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
+      class="flex w-full min-w-0 flex-col gap-4 px-[max(2rem,calc((100%_-_96rem)/2_+_2rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
     >
       <div uiAlert variant="danger" class="w-auto">
         <ng-icon [svg]="icons.error" size="16" aria-hidden="true" />
@@ -125,7 +125,7 @@
       <div uiPageHeaderMeta><span uiSkeleton class="h-5 w-40"></span></div>
     </ui-page-header>
     <div
-      class="flex w-full min-w-0 flex-col gap-4 px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
+      class="flex w-full min-w-0 flex-col gap-4 px-[max(2rem,calc((100%_-_96rem)/2_+_2rem))] py-6 @max-[640px]:px-4 @max-[640px]:py-4"
       aria-hidden="true"
     >
       <div class="flex flex-col gap-6">

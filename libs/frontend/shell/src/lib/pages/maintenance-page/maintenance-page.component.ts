@@ -1,8 +1,16 @@
-import { ChangeDetectionStrategy, Component, RESPONSE_INIT, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  RESPONSE_INIT,
+  afterNextRender,
+  inject,
+} from '@angular/core';
+import { Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { NgIcon } from '@ng-icons/core';
 import { lucideMail } from '@ng-icons/lucide';
 import { SiteContentService, SiteLinksService } from '@vfortin/content-web-data-access';
+import { MaintenancePreviewService } from '@internal/web-shell/lib/maintenance-preview/maintenance-preview.service';
 import { SiteLogoComponent } from '@internal/web-shell/lib/layout/site-layout/components/site-logo/site-logo.component';
 
 /**
@@ -108,7 +116,8 @@ export class MaintenancePageComponent {
    * @constructor
    *
    * @description
-   * Sets the document title and, during SSR, the 503 status and its headers before rendering.
+   * Sets the document title and, during SSR, the 503 status and its headers before rendering. In the
+   * browser, after hydration, the administrator's browser leaves for the requested page (preview).
    */
   public constructor() {
     inject<Title>(Title).setTitle(
@@ -124,6 +133,15 @@ export class MaintenancePageComponent {
       headers.set('X-Robots-Tag', 'noindex');
       response.headers = headers;
     }
+    // After hydration only: the first render matches the server's, then the site replaces it.
+    const preview: MaintenancePreviewService =
+      inject<MaintenancePreviewService>(MaintenancePreviewService);
+    const router: Router = inject<Router>(Router);
+    afterNextRender((): void => {
+      if (preview.startIfAdmin()) {
+        void router.navigateByUrl(router.url, { onSameUrlNavigation: 'reload', replaceUrl: true });
+      }
+    });
   }
   // #endregion
 }

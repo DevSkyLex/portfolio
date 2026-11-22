@@ -26,7 +26,7 @@ import { cn } from '@internal/ui/lib/class-names/class-names.utils';
   host: { '[class]': 'classes()', 'data-slot': 'page-header' },
   template: `
     <div
-      class="flex flex-wrap items-start gap-x-6 gap-y-3 px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] pt-5 pb-4 @max-[640px]:px-4"
+      class="flex flex-wrap items-start gap-x-6 gap-y-3 px-[max(2rem,calc((100%_-_96rem)/2_+_2rem))] pt-5 pb-4 @max-[640px]:px-4"
     >
       <div class="flex min-w-0 flex-[1_1_20rem] flex-col gap-1.5">
         <ng-content select="[uiPageHeaderTitle]" />

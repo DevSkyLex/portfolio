@@ -2,7 +2,11 @@ import type {
   AdminProject,
   PublicationTaxonomyDraft,
 } from '@vfortin/content-web-data-access/admin';
-import { articleTags, publicationTagKey } from '@vfortin/content-web-data-access/admin';
+import {
+  PROJECT_ARTICLE_CATEGORY,
+  articleTags,
+  publicationTagKey,
+} from '@vfortin/content-web-data-access/admin';
 import { TECHS, publicationTags, techDefinition, techKey } from '@vfortin/content-web-ui';
 import type { ContentLocale } from '@internal/content-web-feature-admin/lib/models/content-locale/content-locale.type';
 
@@ -34,6 +38,23 @@ export function localizedArticleTags(
   return publicationTags(
     articleTags(article).map(({ key, label }) => ({ key, label: label[locale] || label.fr })),
   );
+}
+
+/**
+ * Category of an admin list row in a language, or `null` when it has none: a project answered without
+ * any taxonomy (the legacy project API) belongs to « Projets », as in the editor (D58).
+ */
+export function localizedArticleCategory(
+  article: Pick<AdminProject, 'taxonomy' | 'kind'>,
+  locale: ContentLocale,
+): { readonly key: string; readonly label: string } | null {
+  const category: NonNullable<AdminProject['taxonomy']>['category'] =
+    article.taxonomy?.category ??
+    (article.taxonomy === undefined && article.kind !== 'article'
+      ? PROJECT_ARTICLE_CATEGORY
+      : null);
+  if (!category) return null;
+  return { key: category.key, label: category.label[locale] || category.label.fr };
 }
 
 /** Resolves a manually entered known technology onto its catalogue key before saving. */

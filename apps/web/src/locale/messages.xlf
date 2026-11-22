@@ -875,7 +875,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">164,166</context>
+          <context context-type="linenumber">174,176</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
@@ -894,7 +894,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">153,155</context>
+          <context context-type="linenumber">163,165</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-project-edit-page/admin-project-edit-page.component.html</context>
@@ -1163,79 +1163,90 @@
         <source>Article</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
-          <context context-type="linenumber">31</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.projects.heading.category" datatype="html">
+        <source>Catégorie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
+          <context context-type="linenumber">62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.heading.slug" datatype="html">
         <source>Slug</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.heading.status" datatype="html">
         <source>Statut</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
-          <context context-type="linenumber">51</context>
+          <context context-type="linenumber">65</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">18</context>
+          <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.heading.featured" datatype="html">
         <source>Mis en avant</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">75</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">29</context>
+          <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.heading.completeness" datatype="html">
         <source>Complétude</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">84</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">39</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.heading.tags" datatype="html">
         <source>Tags</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
-          <context context-type="linenumber">79</context>
+          <context context-type="linenumber">93</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">53</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.heading.version" datatype="html">
         <source>Version</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
-          <context context-type="linenumber">88</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.heading.actions" datatype="html">
         <source>Actions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-columns.constants.ts</context>
-          <context context-type="linenumber">99</context>
+          <context context-type="linenumber">113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.status.published" datatype="html">
         <source>Publié</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">23</context>
+          <context context-type="linenumber">32</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/project-properties-panel/project-properties-panel.component.html</context>
@@ -1243,14 +1254,14 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">48,50</context>
+          <context context-type="linenumber">58,60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.status.draft" datatype="html">
         <source>Brouillon</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">33</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/project-properties-panel/project-properties-panel.component.html</context>
@@ -1258,32 +1269,32 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">50,54</context>
+          <context context-type="linenumber">60,64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.featured.yes" datatype="html">
         <source>Oui</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">33</context>
+          <context context-type="linenumber">42</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">58,59</context>
+          <context context-type="linenumber">68,69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.featured.no" datatype="html">
         <source>Non</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">34</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.completeness.complete" datatype="html">
         <source>Complet</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">53</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/components/project-properties-panel/project-properties-panel.component.html</context>
@@ -1291,14 +1302,14 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">84,87</context>
+          <context context-type="linenumber">94,97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.completeness.incomplete" datatype="html">
         <source>À compléter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/constants/project-table-facets.constants.ts</context>
-          <context context-type="linenumber">47</context>
+          <context context-type="linenumber">56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.project.section.presentation" datatype="html">
@@ -2392,7 +2403,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">78,79</context>
+          <context context-type="linenumber">88,89</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.dashboard.analytics.traffic" datatype="html">
@@ -3274,63 +3285,63 @@
         <source>, mis en avant</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">59,62</context>
+          <context context-type="linenumber">69,72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.row.menu" datatype="html">
         <source>Actions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">126</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.row.edit" datatype="html">
         <source>Modifier</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">138,140</context>
+          <context context-type="linenumber">148,150</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.row.viewPage" datatype="html">
         <source>Voir la page</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">143,145</context>
+          <context context-type="linenumber">153,155</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.articles.empty.title" datatype="html">
         <source>Aucun article</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">177,178</context>
+          <context context-type="linenumber">187,188</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.articles.empty.description" datatype="html">
         <source> Créez un article, classez-le dans une catégorie et publiez-le quand il est prêt. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">179,183</context>
+          <context context-type="linenumber">189,193</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.selection.label" datatype="html">
         <source>Actions sur la sélection</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">187,188</context>
+          <context context-type="linenumber">197,198</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.selection.clear" datatype="html">
         <source>Effacer la sélection</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.html</context>
-          <context context-type="linenumber">189,190</context>
+          <context context-type="linenumber">199,200</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.articles.title" datatype="html">
         <source>Articles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">108</context>
+          <context context-type="linenumber">111</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/pages/admin-projects-page/admin-projects-page.component.ts</context>
@@ -3341,56 +3352,56 @@
         <source>Rechercher un article</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">310</context>
+          <context context-type="linenumber">332</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.table.noResults" datatype="html">
         <source>Aucun article trouvé</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">311</context>
+          <context context-type="linenumber">333</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.table.noResultsHint" datatype="html">
         <source>Aucun article ne correspond à la recherche ou aux filtres.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">312</context>
+          <context context-type="linenumber">334</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.table.loading" datatype="html">
         <source>Chargement des articles…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">313</context>
+          <context context-type="linenumber">335</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.selection.count.one" datatype="html">
         <source><x id="count" equiv-text="count"/> sélectionné</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">339</context>
+          <context context-type="linenumber">361</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.selection.count.other" datatype="html">
         <source><x id="count" equiv-text="count"/> sélectionnés</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">340</context>
+          <context context-type="linenumber">362</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.selection.escapeKey" datatype="html">
         <source>Échap</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">352</context>
+          <context context-type="linenumber">374</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.projects.row.actionsLabel" datatype="html">
         <source>Actions pour « <x id="title" equiv-text="project.title.fr"/> »</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature-admin/src/lib/ui/dataviews/project-list-dataview/project-list-dataview.component.ts</context>
-          <context context-type="linenumber">503</context>
+          <context context-type="linenumber">525</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.timeline.row.actionsTooltip" datatype="html">
@@ -6993,56 +7004,56 @@
         <source>Aucun contenu à afficher.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/content-list-page/content-list-page.component.ts</context>
-          <context context-type="linenumber">91,93</context>
+          <context context-type="linenumber">96,98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="collection.home" datatype="html">
         <source>Accueil</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/content-list-page/content-list-page.component.ts</context>
-          <context context-type="linenumber">110</context>
+          <context context-type="linenumber">115</context>
         </context-group>
       </trans-unit>
       <trans-unit id="articles.searchLabel" datatype="html">
         <source>Rechercher des articles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/content-list-page/content-list-page.component.ts</context>
-          <context context-type="linenumber">114</context>
+          <context context-type="linenumber">119</context>
         </context-group>
       </trans-unit>
       <trans-unit id="section.articles" datatype="html">
         <source>Articles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/content-list-page/content-list-page.component.ts</context>
-          <context context-type="linenumber">116</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="articles.category" datatype="html">
         <source>Catégorie</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/content-list-page/content-list-page.component.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="articles.tag" datatype="html">
         <source>Tag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/content-list-page/content-list-page.component.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">146</context>
         </context-group>
       </trans-unit>
       <trans-unit id="articles.resultOne" datatype="html">
         <source>1 article</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/content-list-page/content-list-page.component.ts</context>
-          <context context-type="linenumber">196</context>
+          <context context-type="linenumber">201</context>
         </context-group>
       </trans-unit>
       <trans-unit id="articles.resultCount" datatype="html">
         <source><x id="COUNT" equiv-text="count"/> articles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/content/feature/src/lib/ui/pages/content-list-page/content-list-page.component.ts</context>
-          <context context-type="linenumber">197</context>
+          <context context-type="linenumber">202</context>
         </context-group>
       </trans-unit>
       <trans-unit id="project.toc" datatype="html">
@@ -8397,11 +8408,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">336,337</context>
+          <context context-type="linenumber">368,369</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">365,366</context>
+          <context context-type="linenumber">397,398</context>
         </context-group>
       </trans-unit>
       <trans-unit id="legal.privacy.title" datatype="html">
@@ -8415,55 +8426,55 @@
         <source>Rechercher</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">124</context>
+          <context context-type="linenumber">126</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.nav.label" datatype="html">
         <source>Administration</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">137,138</context>
+          <context context-type="linenumber">139,140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.theme" datatype="html">
         <source>Thème</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">145</context>
+          <context context-type="linenumber">147</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">198,199</context>
+          <context context-type="linenumber">200,201</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">241</context>
+          <context context-type="linenumber">273</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.language" datatype="html">
         <source>Langue</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">155</context>
+          <context context-type="linenumber">157</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">210</context>
+          <context context-type="linenumber">212</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">220</context>
+          <context context-type="linenumber">252</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.viewSite" datatype="html">
         <source>Voir le site</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">156</context>
+          <context context-type="linenumber">158</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">219</context>
+          <context context-type="linenumber">221</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/components/command-palette/command-palette.component.html</context>
@@ -8474,11 +8485,11 @@
         <source>Se déconnecter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">165</context>
+          <context context-type="linenumber">167</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">227,229</context>
+          <context context-type="linenumber">229,231</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/components/command-palette/command-palette.component.html</context>
@@ -8489,121 +8500,121 @@
         <source>Redimensionner la barre latérale</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">168</context>
+          <context context-type="linenumber">170</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.skip" datatype="html">
         <source> Aller au contenu </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">181,182</context>
+          <context context-type="linenumber">183,184</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.searchEllipsis" datatype="html">
         <source>Rechercher…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">188,189</context>
+          <context context-type="linenumber">190,191</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.projectsRetry" datatype="html">
         <source>Réessayer les articles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">231</context>
+          <context context-type="linenumber">233</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">256,257</context>
+          <context context-type="linenumber">258,259</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.projectsUnavailable" datatype="html">
         <source> Recherche d’articles indisponible. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">243,245</context>
+          <context context-type="linenumber">245,247</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.themeSystem" datatype="html">
         <source>Système</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">800</context>
+          <context context-type="linenumber">806</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">243</context>
+          <context context-type="linenumber">251</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.themeDark" datatype="html">
         <source>Sombre</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">801</context>
+          <context context-type="linenumber">807</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">244</context>
+          <context context-type="linenumber">252</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.themeLight" datatype="html">
         <source>Clair</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">802</context>
+          <context context-type="linenumber">808</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">245</context>
+          <context context-type="linenumber">253</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.inboxUnavailable" datatype="html">
         <source>Nombre de messages indisponible.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">850</context>
+          <context context-type="linenumber">858</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.inboxRetry" datatype="html">
         <source>Réessayer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">853</context>
+          <context context-type="linenumber">861</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.themeLabel" datatype="html">
         <source>Thème : <x id="mode" equiv-text="mode"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">941</context>
+          <context context-type="linenumber">949</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.unread.one" datatype="html">
         <source>non lu</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">958</context>
+          <context context-type="linenumber">966</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.unread.other" datatype="html">
         <source>non lus</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">959</context>
+          <context context-type="linenumber">967</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.languageLabel" datatype="html">
         <source>Langue : <x id="language" equiv-text="language"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">975</context>
+          <context context-type="linenumber">983</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.logoutFailed" datatype="html">
         <source>La déconnexion n’a pas été confirmée. Réessayez.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/admin/layouts/admin-layout/admin-layout.component.ts</context>
-          <context context-type="linenumber">1027</context>
+          <context context-type="linenumber">1036</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.shell.palette.placeholder" datatype="html">
@@ -9160,116 +9171,137 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">116,119</context>
+          <context context-type="linenumber">148,151</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.maintenancePreview.title" datatype="html">
+        <source>Mode maintenance actif.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
+          <context context-type="linenumber">113,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.maintenancePreview.body" datatype="html">
+        <source>Les visiteurs voient l’écran de maintenance ; vous voyez le site car vous êtes connecté en administrateur.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
+          <context context-type="linenumber">115,119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="layout.maintenancePreview.manage" datatype="html">
+        <source>Gérer la maintenance</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
+          <context context-type="linenumber">123,130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.menuOpen" datatype="html">
         <source>Menu</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">174,176</context>
+          <context context-type="linenumber">206,208</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.tagline" datatype="html">
         <source> Développeur web fullstack à Blois. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">200,202</context>
+          <context context-type="linenumber">232,234</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.footerNavTitle" datatype="html">
         <source> Navigation </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">263,265</context>
+          <context context-type="linenumber">295,297</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.elsewhere" datatype="html">
         <source>Ailleurs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">282,283</context>
+          <context context-type="linenumber">314,315</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.legalTitle" datatype="html">
         <source> Informations légales </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">304,306</context>
+          <context context-type="linenumber">336,338</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.legal" datatype="html">
         <source>Mentions légales</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">314,316</context>
+          <context context-type="linenumber">346,348</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">354,356</context>
+          <context context-type="linenumber">386,388</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.privacyPolicy" datatype="html">
         <source>Politique de confidentialité</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">324,326</context>
+          <context context-type="linenumber">356,358</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.privacy" datatype="html">
         <source>Confidentialité</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">356,357</context>
+          <context context-type="linenumber">388,389</context>
         </context-group>
       </trans-unit>
       <trans-unit id="layout.top" datatype="html">
         <source>Haut de page</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
-          <context context-type="linenumber">371,373</context>
+          <context context-type="linenumber">403,405</context>
         </context-group>
       </trans-unit>
       <trans-unit id="nav.projects" datatype="html">
         <source>Projets</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">128</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="nav.timeline" datatype="html">
         <source>Parcours</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="nav.skills" datatype="html">
         <source>Compétences</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="nav.faq" datatype="html">
         <source>FAQ</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">143</context>
+          <context context-type="linenumber">145</context>
         </context-group>
       </trans-unit>
       <trans-unit id="nav.contact" datatype="html">
         <source>Contact</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">149</context>
+          <context context-type="linenumber">151</context>
         </context-group>
       </trans-unit>
       <trans-unit id="nav.articles" datatype="html">
         <source>Articles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.ts</context>
-          <context context-type="linenumber">169</context>
+          <context context-type="linenumber">171</context>
         </context-group>
       </trans-unit>
       <trans-unit id="error.404.title" datatype="html">
@@ -9367,21 +9399,21 @@
         <source> Site en maintenance </source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/maintenance-page/maintenance-page.component.ts</context>
-          <context context-type="linenumber">44,46</context>
+          <context context-type="linenumber">52,54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="maintenance.default" datatype="html">
         <source>Le site revient très vite.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/maintenance-page/maintenance-page.component.ts</context>
-          <context context-type="linenumber">50,52</context>
+          <context context-type="linenumber">58,60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="maintenance.documentTitle" datatype="html">
         <source>Site en maintenance — Valentin Fortin</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/shell/src/lib/pages/maintenance-page/maintenance-page.component.ts</context>
-          <context context-type="linenumber">115</context>
+          <context context-type="linenumber">124</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ui.chart.xHeader" datatype="html">
@@ -9559,7 +9591,7 @@
         <source><x id="INTERPOLATION" equiv-text="{{ filter.facetLabel }}"/> :</source>
         <context-group purpose="location">
           <context context-type="sourcefile">libs/frontend/ui/src/lib/data-table/components/data-table-filter-bar/data-table-filter-bar.component.html</context>
-          <context context-type="linenumber">47,48</context>
+          <context context-type="linenumber">45,46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ui.data-table.search-placeholder" datatype="html">

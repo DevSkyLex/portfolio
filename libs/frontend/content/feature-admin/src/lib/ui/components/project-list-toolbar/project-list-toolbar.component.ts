@@ -18,7 +18,7 @@ import { SidebarTriggerComponent } from '@vfortin/ui';
   host: { class: 'contents' },
   template: `
     <header
-      class="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-[max(1.5rem,calc((100%_-_80rem)/2_+_1.5rem))] text-[13px] @max-[640px]:px-4"
+      class="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-[max(2rem,calc((100%_-_96rem)/2_+_2rem))] text-[13px] @max-[640px]:px-4"
     >
       <ui-sidebar-trigger class="-ml-2" />
       <span class="font-medium text-fg" aria-current="page">{{ label() }}</span>

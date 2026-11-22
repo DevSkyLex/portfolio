@@ -17,6 +17,7 @@ import {
 import { NgIcon } from '@ng-icons/core';
 import { flagFr, flagGb } from '@ng-icons/flag-icons';
 import {
+  lucideConstruction,
   lucideMail,
   lucideMenu,
   lucideMonitor,
@@ -49,6 +50,7 @@ import {
 import { SITE_DESCRIPTION } from '@internal/web-shell/lib/layout/site-layout/constants/site-description.constants';
 import { FOOTER_GLYPHS } from '@internal/web-shell/lib/layout/site-layout/constants/footer-glyphs.constants';
 import type { Language } from '@internal/web-shell/lib/layout/site-layout/models/language/language.type';
+import { MaintenancePreviewService } from '@internal/web-shell/lib/maintenance-preview/maintenance-preview.service';
 import type { NavItem } from '@internal/web-shell/lib/layout/site-layout/models/nav-item/nav-item.interface';
 import { leafRoute } from '@internal/web-shell/lib/layout/site-layout/utils/leaf-route/leaf-route.utils';
 import { ConsentService } from '@internal/web-shell/lib/consent/consent.service';
@@ -180,6 +182,10 @@ export class SiteLayoutComponent {
    */
   protected readonly links: SiteLinksService = inject<SiteLinksService>(SiteLinksService);
 
+  /** The administrator's preview through a maintenance, which shows a banner above the header. */
+  protected readonly maintenancePreview: MaintenancePreviewService =
+    inject<MaintenancePreviewService>(MaintenancePreviewService);
+
   /**
    * Property icons
    * @readonly
@@ -188,12 +194,14 @@ export class SiteLayoutComponent {
    * Icon registry for navigation, contact links and language flags.
    */
   protected readonly icons: {
+    readonly maintenance: typeof lucideConstruction;
     readonly menu: typeof lucideMenu;
     readonly close: typeof lucideX;
     readonly mail: typeof lucideMail;
     readonly flagFr: typeof flagFr;
     readonly flagGb: typeof flagGb;
   } = {
+    maintenance: lucideConstruction,
     menu: lucideMenu,
     close: lucideX,
     mail: lucideMail,

@@ -1266,6 +1266,10 @@
           <context context-type="linenumber">28</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="admin.projects.heading.category" datatype="html">
+        <source>Catégorie</source>
+        <target>Category</target>
+      </trans-unit>
       <trans-unit id="admin.projects.heading.completeness" datatype="html">
         <source>Complétude</source>
         <target>Completeness</target>
@@ -7090,6 +7094,18 @@
           <context context-type="sourcefile">libs/frontend/shell/src/lib/layout/site-layout/site-layout.component.html</context>
           <context context-type="linenumber">7,12</context>
         </context-group>
+      </trans-unit>
+      <trans-unit id="layout.maintenancePreview.title" datatype="html">
+        <source>Mode maintenance actif.</source>
+        <target>Maintenance mode is on.</target>
+      </trans-unit>
+      <trans-unit id="layout.maintenancePreview.body" datatype="html">
+        <source>Les visiteurs voient l’écran de maintenance ; vous voyez le site car vous êtes connecté en administrateur.</source>
+        <target>Visitors see the maintenance screen; you see the site because you are signed in as the administrator.</target>
+      </trans-unit>
+      <trans-unit id="layout.maintenancePreview.manage" datatype="html">
+        <source>Gérer la maintenance</source>
+        <target>Manage maintenance</target>
       </trans-unit>
       <trans-unit id="layout.menu" datatype="html">
         <source>Menu</source>

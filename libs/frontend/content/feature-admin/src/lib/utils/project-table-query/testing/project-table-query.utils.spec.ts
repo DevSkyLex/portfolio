@@ -58,6 +58,7 @@ describe('projectTableQuery', (): void => {
       facets: {
         completude: ['a-completer'],
         statut: ['publie', 'brouillon'],
+        categorie: ['notes'],
         tag: ['architecture'],
       },
       sort: [
@@ -75,6 +76,7 @@ describe('projectTableQuery', (): void => {
       statut: 'publie,brouillon',
       accueil: null,
       completude: 'a-completer',
+      categorie: 'notes',
       tag: 'architecture',
     });
     expect(
@@ -88,7 +90,7 @@ describe('projectTableQuery', (): void => {
       ),
     ).toEqual({ ...state, sort: [{ column: 'titre', direction: 'asc' }] });
     expect(Object.values(projectTableQuery({ ...DATA_TABLE_INITIAL_STATE, search: '  ' }))).toEqual(
-      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
     );
   });
 });

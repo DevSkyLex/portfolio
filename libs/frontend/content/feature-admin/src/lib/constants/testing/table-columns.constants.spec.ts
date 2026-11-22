@@ -70,9 +70,11 @@ describe('PROJECT_TABLE_COLUMNS', (): void => {
     }
   });
 
-  it('sorts by the French title, the slug, the status and the version', (): void => {
+  it('sorts by the French title, the category, the slug, the status and the version', (): void => {
+    // A project answered without taxonomy belongs to « Projets ».
     expect(sortValues(PROJECT_TABLE_COLUMNS, project({}))).toEqual({
       titre: 'Atlas',
+      categorie: 'Projets',
       slug: 'atlas',
       statut: 'draft',
       version: 3,
@@ -81,12 +83,21 @@ describe('PROJECT_TABLE_COLUMNS', (): void => {
 });
 
 describe('PROJECT_TABLE_FACETS', (): void => {
-  it('files an article under its status, feature flag, completeness and tags', (): void => {
+  it('files an article under its status, feature flag, completeness, category and tags', (): void => {
     const value = (row: AdminProject): string[] =>
       PROJECT_TABLE_FACETS.map((facet: DataTableFacet<AdminProject>): string =>
         String(facet.value(row)),
       );
-    expect(value(project({}))).toEqual(['brouillon', 'non', 'complet', '']);
+    expect(value(project({}))).toEqual(['brouillon', 'non', 'complet', 'projects', '']);
+    expect(
+      value(
+        project({
+          taxonomy: { category: { key: 'notes', label: { fr: 'Notes', en: 'Notes' } }, tags: [] },
+        }),
+      ),
+    ).toEqual(['brouillon', 'non', 'complet', 'notes', '']);
+    // An article without category is filed under none.
+    expect(value(project({ kind: 'article' }))[3]).toBe('');
     expect(
       value(
         project({
@@ -100,7 +111,7 @@ describe('PROJECT_TABLE_FACETS', (): void => {
           },
         }),
       ),
-    ).toEqual(['publie', 'oui', 'a-completer', 'architecture,postgresql']);
+    ).toEqual(['publie', 'oui', 'a-completer', '', 'architecture,postgresql']);
   });
 });
 

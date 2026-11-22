@@ -1,5 +1,6 @@
 import type { AdminProject } from '@vfortin/content-web-data-access/admin';
 import {
+  lucideFolderTree,
   lucideCircleDot,
   lucideFolder,
   lucideHistory,
@@ -9,6 +10,7 @@ import {
   lucideStar,
 } from '@ng-icons/lucide';
 import type { DataTableColumn } from '@vfortin/ui';
+import { localizedArticleCategory } from '@internal/content-web-feature-admin/lib/utils/article-tags/article-tags.utils';
 
 /**
  * Constant PROJECT_TABLE_COLUMNS
@@ -36,12 +38,24 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
     minWidth: 120,
   },
   {
+    id: 'categorie',
+    header: $localize`:@@admin.projects.heading.category:Catégorie`,
+    icon: lucideFolderTree,
+    sortable: true,
+    sortValue: (project: AdminProject): string =>
+      localizedArticleCategory(project, 'fr')?.label ?? '',
+    class: '@max-[760px]:hidden',
+    width: 144,
+    minWidth: 64,
+    maxWidth: 280,
+  },
+  {
     id: 'slug',
     header: $localize`:@@admin.projects.heading.slug:Slug`,
     icon: lucideLink,
     sortable: true,
     sortValue: (project: AdminProject): string => project.slug,
-    class: '@max-[760px]:hidden',
+    class: '@max-[1600px]:hidden',
     width: 160,
     minWidth: 64,
     maxWidth: 320,
@@ -89,7 +103,7 @@ export const PROJECT_TABLE_COLUMNS: readonly DataTableColumn<AdminProject>[] = [
     icon: lucideHistory,
     sortable: true,
     sortValue: (project: AdminProject): number => project.version,
-    class: '@max-[760px]:hidden',
+    class: '@max-[1600px]:hidden',
     width: 112,
     minWidth: 48,
     maxWidth: 160,
