@@ -1,7 +1,9 @@
+import type { MockInstance } from 'vitest';
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { FormField, form, type FieldTree } from '@angular/forms/signals';
 import { ComboboxOptionComponent } from '@internal/ui/lib/combobox/components/combobox-option/combobox-option.component';
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { ComboboxComponent } from '@internal/ui/lib/combobox/combobox.component';
 import { ComboboxItemTemplateDirective } from '@internal/ui/lib/combobox/directives/combobox-item-template/combobox-item-template.directive';
 import type { ComboboxEntry } from '@internal/ui/lib/combobox/models/combobox/combobox-entry.interface';
@@ -297,6 +299,31 @@ describe('ComboboxComponent with entries', () => {
     await fixture.whenStable();
     expect(fixture.componentInstance.value).toBe('tech-299');
     expect(field.value).toBe('Tech 299');
+  });
+
+  it('measures the viewport again when one match grows to the whole list', async () => {
+    const measure: MockInstance<() => void> = vi.spyOn(
+      CdkVirtualScrollViewport.prototype,
+      'checkViewportSize',
+    );
+    try {
+      const fixture: ComponentFixture<VirtualHostComponent> =
+        TestBed.createComponent(VirtualHostComponent);
+      await fixture.whenStable();
+      const field: HTMLInputElement = fixture.nativeElement.querySelector('#tech');
+      type(field, 'finale');
+      await fixture.whenStable();
+      const viewport = (): string =>
+        document.querySelector<HTMLElement>('[data-slot="combobox-viewport"]')?.style.height ?? '';
+      expect(viewport()).toContain('32px');
+      measure.mockClear();
+      type(field, '');
+      await fixture.whenStable();
+      expect(viewport()).toContain('9600px');
+      expect(measure).toHaveBeenCalled();
+    } finally {
+      measure.mockRestore();
+    }
   });
 
   it('chooses a row with the pointer and skips a disabled one', async () => {

@@ -249,13 +249,18 @@ export class ComboboxComponent<T = unknown>
    * @constructor
    *
    * @description
-   * Keeps the active row of a virtualized list within the viewport, scrolling it by the least amount:
-   * an off-screen row does not exist, so the base class cannot scroll it into view.
+   * Measures the virtual viewport again whenever its height changes, then keeps the active row of a
+   * virtualized list within it, scrolling by the least amount: an off-screen row does not exist, so
+   * the base class cannot scroll it into view.
    */
   public constructor() {
     super();
     afterRenderEffect((): void => {
       const viewport: CdkVirtualScrollViewport | undefined = this.viewport();
+      // The CDK measures its viewport once: a new height (one match, then the whole catalogue) is
+      // measured again once rendered, so the rows fill it and the scrolling below reads its size.
+      this.viewportHeight();
+      viewport?.checkViewportSize();
       const active: ComboboxChoice | null = this.activeItem();
       if (!viewport || !active) return;
       const index: number = this.items().indexOf(active);
