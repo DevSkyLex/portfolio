@@ -67,7 +67,11 @@ import { toggleValue } from '@internal/ui/lib/data-table/utils/data-table-facets
       [class]="'w-60 gap-0 p-[3px] text-[13px]'"
       [ariaLabel]="labels().facetPanel(facet().label)"
     >
-      <fieldset class="flex min-w-0 flex-col">
+      <!-- Nine rows at most, then the options scroll; « Effacer » stays visible below them. -->
+      <fieldset
+        class="flex max-h-[min(18rem,50dvh)] min-w-0 flex-col overflow-y-auto overscroll-contain"
+        data-slot="data-table-facet-options"
+      >
         <legend class="sr-only">{{ facet().label }}</legend>
         @for (option of facet().options; track option.value) {
           <!-- Rows enter in cascade, like menu options (menuOptionVariants cascade). -->

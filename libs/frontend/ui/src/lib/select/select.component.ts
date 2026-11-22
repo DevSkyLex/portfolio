@@ -763,6 +763,8 @@ export class SelectComponent<T = unknown> implements FormValueControl<T | null>,
     if (jump) pill.style.transition = 'none';
     pill.style.translate = `0 ${active.offsetTop}px`;
     pill.style.height = `${active.offsetHeight}px`;
+    // A long list scrolls: the active option stays in view as the arrows move it.
+    active.scrollIntoView?.({ block: 'nearest' });
     if (jump) {
       void pill.offsetHeight;
       pill.style.transition = '';

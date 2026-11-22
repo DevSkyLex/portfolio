@@ -285,7 +285,8 @@ export abstract class ComboboxBase<I extends ComboboxItem> {
    * Combines shared popup styles with caller-provided panel classes.
    */
   protected readonly panelClasses: Signal<string> = computed<string>(() =>
-    cn(menuPanelVariants({ scroll: true }), 'min-w-0', this.panelClass()),
+    // As wide as the field: the overlay pane takes its width, the panel fills the pane.
+    cn(menuPanelVariants({ scroll: true }), 'w-full min-w-0', this.panelClass()),
   );
 
   /**

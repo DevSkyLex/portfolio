@@ -15,8 +15,14 @@ export const menuPanelVariants = cva(
   ],
   {
     variants: {
-      /** Listboxes scroll; menus grow (their submenus are separate overlays). */
-      scroll: { true: 'max-h-80 overflow-y-auto overscroll-contain', false: '' },
+      /**
+       * Listboxes scroll past 320 px (eight 40 px options), or half the viewport when it is smaller;
+       * menus grow (their submenus are separate overlays).
+       */
+      scroll: {
+        true: 'max-h-[min(20rem,50dvh)] overflow-y-auto overscroll-contain',
+        false: '',
+      },
     },
     defaultVariants: { scroll: false },
   },

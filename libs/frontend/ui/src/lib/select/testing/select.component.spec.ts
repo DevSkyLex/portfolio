@@ -188,9 +188,28 @@ describe('SelectComponent', (): void => {
     expect(nth(options(), 2).hasAttribute('data-active')).toBe(true);
     expect(nth(options(), 1).getAttribute('aria-disabled')).toBe('true');
 
-    key(trigger, 'End');
-    await fixture.whenStable();
-    expect(trigger.getAttribute('aria-activedescendant')).toBe(nth(options(), 3).id);
+    // A long list scrolls: the active option is brought into view inside the capped listbox.
+    const scrolled: HTMLElement[] = [];
+    const scrollIntoView: unknown = (Element.prototype as { scrollIntoView?: unknown })
+      .scrollIntoView;
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      value(this: HTMLElement): void {
+        scrolled.push(this);
+      },
+    });
+    try {
+      key(trigger, 'End');
+      await fixture.whenStable();
+      expect(trigger.getAttribute('aria-activedescendant')).toBe(nth(options(), 3).id);
+      expect(scrolled).toContain(nth(options(), 3));
+    } finally {
+      Object.defineProperty(Element.prototype, 'scrollIntoView', {
+        configurable: true,
+        value: scrollIntoView,
+      });
+    }
+    expect(listbox?.className).toContain('overflow-y-auto');
     expect(document.activeElement).toBe(trigger);
   });
 
