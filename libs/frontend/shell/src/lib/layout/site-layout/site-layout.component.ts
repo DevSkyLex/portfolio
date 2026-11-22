@@ -17,6 +17,7 @@ import {
 import { NgIcon } from '@ng-icons/core';
 import { flagFr, flagGb } from '@ng-icons/flag-icons';
 import {
+  lucideArrowRight,
   lucideConstruction,
   lucideMail,
   lucideMenu,
@@ -194,6 +195,7 @@ export class SiteLayoutComponent {
    * Icon registry for navigation, contact links and language flags.
    */
   protected readonly icons: {
+    readonly arrow: typeof lucideArrowRight;
     readonly maintenance: typeof lucideConstruction;
     readonly menu: typeof lucideMenu;
     readonly close: typeof lucideX;
@@ -201,6 +203,7 @@ export class SiteLayoutComponent {
     readonly flagFr: typeof flagFr;
     readonly flagGb: typeof flagGb;
   } = {
+    arrow: lucideArrowRight,
     maintenance: lucideConstruction,
     menu: lucideMenu,
     close: lucideX,

@@ -6482,6 +6482,10 @@
           <context context-type="linenumber">58,60</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="admin.shell.menu" datatype="html">
+        <source>Menu</source>
+        <target>Menu</target>
+      </trans-unit>
       <trans-unit id="admin.shell.logout" datatype="html">
         <source>Se déconnecter</source>
         <target>Sign out</target>

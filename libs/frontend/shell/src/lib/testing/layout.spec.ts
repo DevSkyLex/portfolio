@@ -1,4 +1,4 @@
-import type { Mock } from 'vitest';
+import type { Mock, MockInstance } from 'vitest';
 import type { ThemeMode } from '@internal/web-shell/lib/theme/models/theme-mode/theme-mode.type';
 
 import { provideAdminInboxSummary } from '@vfortin/contact-web-data-access/summary';
@@ -261,6 +261,31 @@ describe('SiteLayoutComponent', () => {
     expect(doc.querySelector('#site-menu')?.hasAttribute('open')).toBe(false);
     expect(button?.getAttribute('aria-expanded')).toBe('false');
     expect(doc.documentElement.style.overflow).toBe('');
+  });
+
+  it('offers the language and the theme as inline toggles in the modal menu', async () => {
+    const harness: RouterTestingHarness = await RouterTestingHarness.create('/legal-notice');
+    const doc: Document = harness.fixture.nativeElement.ownerDocument as Document;
+    const set: MockInstance<ThemeService['set']> = vi
+      .spyOn(TestBed.inject(ThemeService), 'set')
+      .mockImplementation(() => undefined);
+    const group: (label: string) => HTMLButtonElement[] = (label: string): HTMLButtonElement[] => [
+      ...doc.querySelectorAll<HTMLButtonElement>(
+        `#site-menu [role="group"][aria-label="${label}"] button`,
+      ),
+    ];
+    expect(group('Langue').map((option) => option.getAttribute('aria-pressed'))).toEqual([
+      'true',
+      'false',
+    ]);
+    expect(group('Thème').map((option) => option.textContent?.trim())).toEqual([
+      'Système',
+      'Sombre',
+      'Clair',
+    ]);
+    const light: HTMLButtonElement | undefined = group('Thème')[2];
+    light?.click();
+    expect(set).toHaveBeenCalledWith('light', light);
   });
 });
 

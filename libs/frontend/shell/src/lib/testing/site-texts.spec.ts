@@ -126,7 +126,15 @@ describe('site texts from the snapshot', (): void => {
       ['https://github.com/exemple', 'GitHub'],
       ['https://www.malt.fr/profile/exemple', 'Mon profil Malt'],
     ]);
-    expect(doc.querySelector('#site-menu')?.textContent).toContain('hello@exemple.fr');
+    expect(
+      [
+        ...doc.querySelectorAll('#site-menu a[href^="mailto:"], #site-menu a[href^="https://"]'),
+      ].map((link: Element) => [link.getAttribute('href'), link.textContent?.trim()]),
+    ).toEqual([
+      ['mailto:hello@exemple.fr', 'hello@exemple.fr'],
+      ['https://github.com/exemple', 'GitHub'],
+      ['https://www.malt.fr/profile/exemple', 'Mon profil Malt'],
+    ]);
     // The layout's consent banner block comes first (D48); it renders nothing before a choice is read.
     const blocks: DeferBlockFixture[] = await harness.fixture.getDeferBlocks();
     for (const block of blocks) await block.render(DeferBlockState.Complete);
