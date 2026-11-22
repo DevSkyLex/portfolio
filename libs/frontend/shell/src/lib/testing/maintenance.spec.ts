@@ -181,6 +181,23 @@ describe('maintenance mode', (): void => {
     vi.restoreAllMocks();
   });
 
+  it('still serves the site when reading the storage itself throws', async (): Promise<void> => {
+    // Blocked site data: the localStorage getter throws a SecurityError before any method runs.
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation((): never => {
+      throw new DOMException('denied', 'SecurityError');
+    });
+    try {
+      setup(snapshot({ enabled: false, message: '' }));
+      const preview: MaintenancePreviewService = TestBed.inject(MaintenancePreviewService);
+      expect(preview.startIfAdmin()).toBe(false);
+      expect((): void => preview.markAdmin()).not.toThrow();
+      const harness: RouterTestingHarness = await RouterTestingHarness.create('/');
+      expect(harness.routeNativeElement?.ownerDocument.querySelector('header nav')).not.toBeNull();
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   it('keeps the administration reachable', async (): Promise<void> => {
     setup(snapshot({ enabled: true, message: '' }));
     const harness: RouterTestingHarness = await RouterTestingHarness.create();

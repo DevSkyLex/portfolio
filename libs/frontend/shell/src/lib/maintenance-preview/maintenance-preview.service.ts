@@ -23,8 +23,8 @@ import { ADMIN_PRESENCE_STORAGE_KEY } from '@internal/web-shell/lib/maintenance-
 @Injectable({ providedIn: 'root' })
 export class MaintenancePreviewService {
   // #region Properties
-  private readonly storage: Storage | null = isPlatformBrowser(inject<object>(PLATFORM_ID))
-    ? (inject<Document>(DOCUMENT).defaultView?.localStorage ?? null)
+  private readonly view: Window | null = isPlatformBrowser(inject<object>(PLATFORM_ID))
+    ? inject<Document>(DOCUMENT).defaultView
     : null;
 
   private readonly previewing: WritableSignal<boolean> = signal<boolean>(false);
@@ -34,10 +34,22 @@ export class MaintenancePreviewService {
   // #endregion
 
   // #region Methods
+  /**
+   * Local storage of the browser, or `null` during SSR or where reading it throws (a `SecurityError`
+   * when site data is blocked): the guard builds this service on every public navigation.
+   */
+  private storage(): Storage | null {
+    try {
+      return this.view?.localStorage ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   /** Marks this browser as the administrator's, from the signed-in admin layout. */
   public markAdmin(): void {
     try {
-      this.storage?.setItem(ADMIN_PRESENCE_STORAGE_KEY, '1');
+      this.storage()?.setItem(ADMIN_PRESENCE_STORAGE_KEY, '1');
     } catch {
       // Storage refused (private mode, quota): the maintenance screen simply stays.
     }
@@ -46,7 +58,7 @@ export class MaintenancePreviewService {
   /** Removes the mark on logout and ends a running preview. */
   public unmarkAdmin(): void {
     try {
-      this.storage?.removeItem(ADMIN_PRESENCE_STORAGE_KEY);
+      this.storage()?.removeItem(ADMIN_PRESENCE_STORAGE_KEY);
     } catch {
       // Nothing was stored.
     }
@@ -61,7 +73,7 @@ export class MaintenancePreviewService {
   public startIfAdmin(): boolean {
     let marked: boolean = false;
     try {
-      marked = this.storage?.getItem(ADMIN_PRESENCE_STORAGE_KEY) === '1';
+      marked = this.storage()?.getItem(ADMIN_PRESENCE_STORAGE_KEY) === '1';
     } catch {
       marked = false;
     }
