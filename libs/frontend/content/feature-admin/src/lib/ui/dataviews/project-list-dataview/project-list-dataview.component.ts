@@ -62,7 +62,10 @@ import { missingLabel } from '@internal/content-web-feature-admin/lib/utils/miss
 import { orderProjects } from '@internal/content-web-feature-admin/lib/utils/order-projects/order-projects.utils';
 import { matchesProjectSearch } from '@internal/content-web-feature-admin/lib/utils/project-search/project-search.utils';
 import { projectPublicPath } from '@internal/content-web-feature-admin/lib/utils/project-public-path/project-public-path.utils';
-import { localizedArticleTags } from '@internal/content-web-feature-admin/lib/utils/article-tags/article-tags.utils';
+import {
+  localizedArticleCategory,
+  localizedArticleTags,
+} from '@internal/content-web-feature-admin/lib/utils/article-tags/article-tags.utils';
 
 /**
  * Component ProjectListDataviewComponent
@@ -258,10 +261,29 @@ export class ProjectListDataviewComponent {
     }
     const options: DataTableFacetOption[] = [...labels].map(([value, label]) => ({ value, label }));
     options.sort((left, right) => left.label.localeCompare(right.label, this.localeId));
+    const categories: Map<string, string> = new Map();
+    for (const row of this.rows()) {
+      const category: ReturnType<typeof localizedArticleCategory> = this.categoryFor(row);
+      if (category && !categories.has(category.key)) categories.set(category.key, category.label);
+    }
+    const categoryOptions: DataTableFacetOption[] = [...categories].map(([value, label]) => ({
+      value,
+      label,
+    }));
+    categoryOptions.sort((left, right) => left.label.localeCompare(right.label, this.localeId));
     return PROJECT_TABLE_FACETS.map((facet) =>
-      facet.id === 'tag' ? { ...facet, options } : facet,
+      facet.id === 'tag'
+        ? { ...facet, options }
+        : facet.id === 'categorie'
+          ? { ...facet, options: categoryOptions }
+          : facet,
     );
   });
+
+  /** Category of a row in the admin language, `null` without one. */
+  protected categoryFor(project: AdminProject): ReturnType<typeof localizedArticleCategory> {
+    return localizedArticleCategory(project, this.localeId.startsWith('en') ? 'en' : 'fr');
+  }
 
   protected tagsFor(project: AdminProject): ReturnType<typeof localizedArticleTags> {
     return localizedArticleTags(project, this.localeId.startsWith('en') ? 'en' : 'fr');

@@ -32,6 +32,16 @@
     </div>
   </ng-template>
 
+  <ng-template uiDataTableCell="categorie" [uiDataTableCellRows]="rows()" let-project>
+    @if (categoryFor(project); as category) {
+      <span class="block truncate text-fg-muted" [title]="category.label">{{
+        category.label
+      }}</span>
+    } @else {
+      <ui-data-table-empty-cell />
+    }
+  </ng-template>
+
   <ng-template uiDataTableCell="slug" [uiDataTableCellRows]="rows()" let-project>
     <!-- A filled badge, unlike the outlined statuses: the slug is an identifier, not a state. -->
     <span
