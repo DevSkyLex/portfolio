@@ -6,6 +6,7 @@ import {
   Component,
   DestroyRef,
   LOCALE_ID,
+  afterNextRender,
   computed,
   effect,
   inject,
@@ -14,6 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MaintenancePreviewService } from '@internal/web-shell/lib/maintenance-preview/maintenance-preview.service';
 import { Meta } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
@@ -449,6 +451,10 @@ export class AdminLayoutComponent {
    */
   private readonly session: AdminSessionPort = inject<AdminSessionPort>(AdminSessionPort);
 
+  /** Marks this browser as the administrator's for the public maintenance preview (D56 revision). */
+  private readonly maintenancePreview: MaintenancePreviewService =
+    inject<MaintenancePreviewService>(MaintenancePreviewService);
+
   /**
    * Property toasts
    * @readonly
@@ -830,6 +836,8 @@ export class AdminLayoutComponent {
    */
   public constructor() {
     inject<Meta>(Meta).updateTag({ name: 'robots', content: 'noindex, nofollow' });
+    // Signed in: the public site may preview itself through a maintenance (D56 revision).
+    afterNextRender((): void => this.maintenancePreview.markAdmin());
     this.sidebarState.connect(
       this.narrow.asReadonly(),
       computed<string | null>((): string | null => this.sidebarPanel()?.id ?? null),
@@ -1021,6 +1029,7 @@ export class AdminLayoutComponent {
    */
   protected async logout(): Promise<void> {
     if (await this.session.logout()) {
+      this.maintenancePreview.unmarkAdmin();
       await this.router.navigateByUrl('/admin/login');
     } else {
       this.toasts.error(
