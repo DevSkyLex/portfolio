@@ -11,4 +11,6 @@ Range.prototype.getClientRects = (): DOMRectList =>
   ({ length: 0, item: (): null => null, [Symbol.iterator]: [][Symbol.iterator] }) as DOMRectList;
 Range.prototype.getBoundingClientRect = (): DOMRect => new DOMRect();
 Element.prototype.scrollIntoView = (): void => undefined;
+// The tag search is a virtualized combobox (CDK virtual scroll), which scrolls its viewport.
+Element.prototype.scrollTo = (): void => undefined;
 document.elementFromPoint = (): Element | null => null;

@@ -61,6 +61,8 @@ export * from '@internal/ui/lib/class-names/class-names.utils';
 export * from '@internal/ui/lib/collapsible/collapsible.directive';
 export * from '@internal/ui/lib/combobox/components/combobox-option/combobox-option.component';
 export * from '@internal/ui/lib/combobox/combobox.component';
+export * from '@internal/ui/lib/combobox/directives/combobox-item-template/combobox-item-template.directive';
+export * from '@internal/ui/lib/combobox/models/combobox/combobox-entry.interface';
 export * from '@internal/ui/lib/command/components/command-group/command-group.component';
 export * from '@internal/ui/lib/command/components/command-input/command-input.component';
 export * from '@internal/ui/lib/command/directives/command-item/command-item.directive';

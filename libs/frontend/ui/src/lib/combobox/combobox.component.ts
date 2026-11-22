@@ -1,14 +1,23 @@
 import { CdkConnectedOverlay } from '@angular/cdk/overlay';
 import {
+  CdkFixedSizeVirtualScroll,
+  CdkVirtualForOf,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
+import { NgTemplateOutlet } from '@angular/common';
+import {
   ChangeDetectionStrategy,
   Component,
+  afterRenderEffect,
   computed,
+  contentChild,
   contentChildren,
   forwardRef,
   input,
   linkedSignal,
   model,
   signal,
+  viewChild,
   type InputSignal,
   type ModelSignal,
   type Signal,
@@ -16,33 +25,72 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { NgIcon } from '@ng-icons/core';
-import { lucideChevronDown } from '@ng-icons/lucide';
+import { lucideCheck, lucideChevronDown } from '@ng-icons/lucide';
+import { cn } from '@internal/ui/lib/class-names/class-names.utils';
 import { InputDirective } from '@internal/ui/lib/input/input.directive';
+import { menuOptionVariants } from '@internal/ui/lib/menu-panel/constants/menu-option.variants';
 import { normalizeText } from '@internal/ui/lib/menu-panel/utils/menu-panel/menu-panel.utils';
 import { ComboboxBase } from '@internal/ui/lib/combobox/directives/combobox-base/combobox-base';
+import { ComboboxRowDirective } from '@internal/ui/lib/combobox/directives/combobox-row/combobox-row.directive';
+import { ComboboxItemTemplateDirective } from '@internal/ui/lib/combobox/directives/combobox-item-template/combobox-item-template.directive';
 import { ComboboxOptionComponent } from '@internal/ui/lib/combobox/components/combobox-option/combobox-option.component';
 import { COMBOBOX_HOST } from '@internal/ui/lib/combobox/tokens/combobox/combobox.token';
+import type { ComboboxChoice } from '@internal/ui/lib/combobox/models/combobox/combobox-choice.interface';
+import type { ComboboxEntry } from '@internal/ui/lib/combobox/models/combobox/combobox-entry.interface';
 import type { ComboboxHost } from '@internal/ui/lib/combobox/models/combobox/combobox-host.interface';
 import type { ComboboxItem } from '@internal/ui/lib/combobox/models/combobox/combobox-item.interface';
+
+/**
+ * Constant ROW_HEIGHTS
+ *
+ * @description
+ * Fixed height in pixels of a virtualized row per control size, the `min-h-*` of
+ * `menuOptionVariants`, so the virtual scroll can place rows without measuring them.
+ */
+const ROW_HEIGHTS: Readonly<Record<'sm' | 'md' | 'lg', number>> = { sm: 32, md: 40, lg: 48 };
+
+/**
+ * Constant ROW_CLASSES
+ *
+ * @description
+ * Literal height class of a virtualized row per control size (Tailwind needs whole class names).
+ */
+const ROW_CLASSES: Readonly<Record<'sm' | 'md' | 'lg', string>> = {
+  sm: 'h-8',
+  md: 'h-10',
+  lg: 'h-12',
+};
 
 /**
  * Class ComboboxComponent
  *
  * @description
- * Filters combobox options by label and keywords, ignoring case and accents, and exposes the chosen option value as a form control.
+ * Filters combobox options by label and keywords, ignoring case and accents, and exposes the chosen
+ * option value as a form control. Options are projected `ui-combobox-option`s, or, for long lists,
+ * `[entries]` given as data: the list is then virtualized (CDK virtual scroll), only the rows in view
+ * exist, each drawn by the optional `ng-template uiComboboxItem`.
  *
  * @template T - Value type represented by each option.
  */
 @Component({
   selector: 'ui-combobox',
-  imports: [NgIcon, CdkConnectedOverlay, InputDirective],
+  imports: [
+    NgIcon,
+    NgTemplateOutlet,
+    CdkConnectedOverlay,
+    CdkFixedSizeVirtualScroll,
+    CdkVirtualForOf,
+    CdkVirtualScrollViewport,
+    ComboboxRowDirective,
+    InputDirective,
+  ],
   templateUrl: './combobox.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: COMBOBOX_HOST, useExisting: forwardRef(() => ComboboxComponent) }],
   host: { class: 'relative block', 'data-slot': 'combobox' },
 })
 export class ComboboxComponent<T = unknown>
-  extends ComboboxBase<ComboboxOptionComponent>
+  extends ComboboxBase<ComboboxChoice>
   implements FormValueControl<T | null>, ComboboxHost
 {
   // #region Properties
@@ -56,6 +104,14 @@ export class ComboboxComponent<T = unknown>
 
   /** Clears the selection after emitting it, for pickers that add items to a separate list. */
   public readonly clearOnSelect: InputSignal<boolean> = input<boolean>(false);
+
+  /**
+   * Options given as data: the list is virtualized and the projected options are ignored. `null`
+   * (the default) keeps the projected `ui-combobox-option`s.
+   */
+  public readonly entries: InputSignal<readonly ComboboxEntry<T>[] | null> = input<
+    readonly ComboboxEntry<T>[] | null
+  >(null);
 
   /**
    * Property emptyText
@@ -81,10 +137,14 @@ export class ComboboxComponent<T = unknown>
    * Property icons
    *
    * @description
-   * Supplies the chevron icon rendered by the control.
+   * Supplies the chevron of the control and the check of a selected virtualized row.
    */
-  protected readonly icons: { readonly chevron: typeof lucideChevronDown } = {
+  protected readonly icons: {
+    readonly chevron: typeof lucideChevronDown;
+    readonly check: typeof lucideCheck;
+  } = {
     chevron: lucideChevronDown,
+    check: lucideCheck,
   } as const;
 
   /**
@@ -96,6 +156,33 @@ export class ComboboxComponent<T = unknown>
   private readonly options: Signal<readonly ComboboxOptionComponent<unknown>[]> = contentChildren<
     ComboboxOptionComponent<unknown>
   >(ComboboxOptionComponent, { descendants: true });
+
+  /** Row template of the virtualized list, when the consumer gives one. */
+  protected readonly itemTemplate: Signal<ComboboxItemTemplateDirective | undefined> =
+    contentChild<ComboboxItemTemplateDirective>(ComboboxItemTemplateDirective);
+
+  /** Whether the options come from `[entries]` and the list is virtualized. */
+  protected readonly virtual: Signal<boolean> = computed<boolean>(() => this.entries() !== null);
+
+  /** Rows built from `[entries]`, with ids stable for one list. */
+  private readonly entryChoices: Signal<readonly ComboboxChoice[]> = computed<
+    readonly ComboboxChoice[]
+  >(() => {
+    const prefix: string = `${this.listboxId()}-entry-`;
+    return (this.entries() ?? []).map((entry: ComboboxEntry<T>, index: number): ComboboxChoice => ({
+      id: `${prefix}${index}`,
+      entry,
+      value: (): unknown => entry.value,
+      keywords: (): readonly string[] => entry.keywords ?? [],
+      text: (): string => entry.label,
+      isDisabled: (): boolean => !!entry.disabled,
+    }));
+  });
+
+  /** Every option of the control, data rows or projected options. */
+  private readonly choices: Signal<readonly ComboboxChoice[]> = computed<readonly ComboboxChoice[]>(
+    () => (this.virtual() ? this.entryChoices() : this.options()),
+  );
 
   /**
    * Property query
@@ -111,10 +198,9 @@ export class ComboboxComponent<T = unknown>
    * @description
    * Resolves the option matching the current model value.
    */
-  private readonly selectedOption: Signal<ComboboxOptionComponent<unknown> | null> =
-    computed<ComboboxOptionComponent<unknown> | null>(
-      () => this.options().find((option) => this.isSelected(option.value())) ?? null,
-    );
+  private readonly selectedOption: Signal<ComboboxChoice | null> = computed<ComboboxChoice | null>(
+    () => this.choices().find((option) => this.isSelected(option.value())) ?? null,
+  );
 
   /**
    * Property text
@@ -130,11 +216,63 @@ export class ComboboxComponent<T = unknown>
    * Property items
    *
    * @description
-   * Provides the visible options in their projected order.
+   * Provides the visible options in their order.
    */
-  protected readonly items: Signal<ComboboxOptionComponent<unknown>[]> = computed<
-    ComboboxOptionComponent<unknown>[]
-  >(() => this.options().filter((option) => this.isVisible(option)));
+  protected readonly items: Signal<ComboboxChoice[]> = computed<ComboboxChoice[]>(() =>
+    this.choices().filter((option) => this.isVisible(option)),
+  );
+
+  /** Height of one virtualized row, by control size. */
+  protected readonly rowHeight: Signal<number> = computed<number>(() => ROW_HEIGHTS[this.size()]);
+
+  /**
+   * Height of the virtual viewport: the rows it holds, capped below the panel's own limit (its 6 px of
+   * padding and 2 px of border included); the panel does not scroll in this mode, the viewport does.
+   */
+  protected readonly viewportHeight: Signal<string> = computed<string>(
+    () => `min(${this.items().length * this.rowHeight()}px, calc(min(20rem, 50dvh) - 8px))`,
+  );
+
+  /** Classes of a virtualized row: an option of the size of the control, at a fixed height. */
+  protected readonly rowClasses: Signal<string> = computed<string>(() =>
+    cn(menuOptionVariants({ size: this.size(), cascade: false }), ROW_CLASSES[this.size()]),
+  );
+
+  /** Virtual viewport of the open list, in `[entries]` mode. */
+  private readonly viewport: Signal<CdkVirtualScrollViewport | undefined> =
+    viewChild<CdkVirtualScrollViewport>(CdkVirtualScrollViewport);
+  // #endregion
+
+  // #region Constructor
+  /**
+   * Constructor
+   * @constructor
+   *
+   * @description
+   * Measures the virtual viewport again whenever its height changes, then keeps the active row of a
+   * virtualized list within it, scrolling by the least amount: an off-screen row does not exist, so
+   * the base class cannot scroll it into view.
+   */
+  public constructor() {
+    super();
+    afterRenderEffect((): void => {
+      const viewport: CdkVirtualScrollViewport | undefined = this.viewport();
+      // The CDK measures its viewport once: a new height (one match, then the whole catalogue) is
+      // measured again once rendered, so the rows fill it and the scrolling below reads its size.
+      this.viewportHeight();
+      viewport?.checkViewportSize();
+      const active: ComboboxChoice | null = this.activeItem();
+      if (!viewport || !active) return;
+      const index: number = this.items().indexOf(active);
+      if (index < 0) return;
+      const height: number = this.rowHeight();
+      const top: number = index * height;
+      const offset: number = viewport.measureScrollOffset();
+      const size: number = viewport.getViewportSize();
+      if (top < offset) viewport.scrollToOffset(top);
+      else if (top + height > offset + size) viewport.scrollToOffset(top + height - size);
+    });
+  }
   // #endregion
 
   // #region Methods
@@ -150,7 +288,7 @@ export class ComboboxComponent<T = unknown>
   public isVisible(item: ComboboxItem): boolean {
     const query: string = normalizeText(this.query());
     if (!query) return true;
-    const option: ComboboxOptionComponent<unknown> = item as ComboboxOptionComponent;
+    const option: ComboboxChoice = item as ComboboxChoice;
     return [option.text(), ...option.keywords()].some((word) =>
       normalizeText(word).includes(query),
     );
@@ -168,6 +306,11 @@ export class ComboboxComponent<T = unknown>
   public isSelected(value: unknown): boolean {
     const current: T | null = this.value();
     return current !== null && current !== undefined && this.compareWith()(value, current);
+  }
+
+  /** Identity of a virtualized row for `cdkVirtualFor`. */
+  protected trackChoice(_index: number, choice: ComboboxChoice): string {
+    return choice.id;
   }
 
   /**
@@ -208,10 +351,10 @@ export class ComboboxComponent<T = unknown>
    * @description
    * Stores the selected option, restores its label, and clears the filter query.
    *
-   * @param {ComboboxOptionComponent} option - Selected option.
+   * @param {ComboboxChoice} option - Selected option.
    * @returns {void}
    */
-  protected commit(option: ComboboxOptionComponent): void {
+  protected commit(option: ComboboxChoice): void {
     this.value.set(option.value() as T);
     if (this.clearOnSelect()) {
       this.clear();

@@ -99,4 +99,18 @@ describe('DataTableFilterBarComponent', (): void => {
     expect(classes('[data-slot="data-table-facet-filter"] button')).toContain('h-11');
     expect(classes('[data-slot="data-table-filter-chip"]')).toContain('h-8');
   });
+
+  it('scrolls a long facet instead of growing its popover', async (): Promise<void> => {
+    const fixture: ComponentFixture<FilterHostComponent> =
+      TestBed.createComponent(FilterHostComponent);
+    await fixture.whenStable();
+    const root: HTMLElement = fixture.nativeElement;
+    root.querySelector<HTMLButtonElement>('[data-slot="data-table-facet-filter"] button')?.click();
+    await fixture.whenStable();
+    const options: HTMLElement | null = document.querySelector(
+      '[data-slot="data-table-facet-options"]',
+    );
+    expect(options?.className).toContain('max-h-[min(18rem,50dvh)]');
+    expect(options?.className).toContain('overflow-y-auto');
+  });
 });
