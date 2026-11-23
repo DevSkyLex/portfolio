@@ -11,22 +11,20 @@ import type { ArticleCodeTokenKind } from '@vfortin/content-web-model';
  * `codeBlock` is a whole code box (the editor's `<pre>`); the public page frames its code in
  * `codeFrame`, a header row (language, copy button and status) above `codePre`. `codeTokens` colours
  * the highlighted runs by kind with text tokens of 4.5:1 or more on `surface-raised` in both themes
- * (the light aurora cyan, 4.3:1, is left out). Code boxes span the whole article column; the text keeps
- * its reading measure.
+ * (the light aurora cyan, 4.3:1, is left out).
  */
 export const ARTICLE_TYPOGRAPHY = {
   flow: 'flex flex-col gap-4',
   h2: 'scroll-mt-28 font-display text-[32px]/[38px] font-semibold tracking-[-0.02em] text-balance text-fg @max-[768px]/page:text-[26px]/8',
   h3: 'scroll-mt-28 pt-2 font-display text-[22px]/[28px] font-semibold tracking-[-0.01em] text-balance text-fg',
-  paragraph: 'max-w-measure text-body',
-  bulletList: 'flex max-w-measure flex-col gap-3',
+  paragraph: 'text-body',
+  bulletList: 'flex flex-col gap-3',
   bulletItem:
     'relative pl-[22px] text-body text-fg before:absolute before:top-[11px] before:left-0.5 before:size-1.5 before:bg-aurora-violet',
-  orderedList: 'flex max-w-measure list-decimal flex-col gap-3 pl-6 marker:text-fg-muted',
+  orderedList: 'flex list-decimal flex-col gap-3 pl-6 marker:text-fg-muted',
   orderedItem: 'pl-1 text-body text-fg',
   nestedList: 'mt-3',
-  blockquote:
-    'flex max-w-measure flex-col gap-3 border-l-2 border-border-strong pl-6 text-fg-muted',
+  blockquote: 'flex flex-col gap-3 border-l-2 border-border-strong pl-6 text-fg-muted',
   codeBlock:
     'w-full overflow-x-auto rounded-xl bg-surface-raised p-5 font-mono text-[13px]/6 text-fg',
   codeFrame: 'flex w-full flex-col overflow-hidden rounded-xl bg-surface-raised',
@@ -54,7 +52,7 @@ export const ARTICLE_TYPOGRAPHY = {
   bold: 'font-semibold text-fg',
   italic: 'italic',
   link: 'text-fg underline decoration-fg-muted/60 underline-offset-4 transition-[text-decoration-color] duration-(--dur-pop) ease-orbit hover:decoration-current motion-reduce:transition-none',
-  horizontalRule: 'my-4 max-w-measure border-0 border-t border-border',
+  horizontalRule: 'my-4 border-0 border-t border-border',
   figure: 'm-0 flex flex-col gap-3 py-2',
   image: 'h-auto w-full rounded-xl bg-surface-raised',
   caption: 'text-sm/5 text-fg-muted',
